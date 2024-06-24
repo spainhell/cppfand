@@ -121,9 +121,11 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 	LocVar* lv = nullptr;
 	std::string sLexWord;
 	if (g_compiler->FindLocVar(&LVBD, &lv)) {
-		if (!(lv->f_typ == 'i' || lv->f_typ == 'r' || lv->f_typ == 'f')) g_compiler->Error(177);
+		if (!(lv->f_typ == 'i' || lv->f_typ == 'r' || lv->f_typ == 'f')) {
+			g_compiler->Error(177);
+		}
 		LinkD* ld = nullptr;
-		for (auto& ld1 : LinkDRoot) {
+		for (LinkD* ld1 : LinkDRoot) {
 			if ((ld1->FromFD == file_d) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD)) {
 				ld = ld1;
 			}
@@ -145,9 +147,13 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 		}
 		else {
 			if (lv->f_typ == 'i') {
-				KeyFldD* kf = ((XWKey*)lv->record)->KFlds;
-				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) g_compiler->OldError(155);
-				if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) g_compiler->OldError(181);
+				std::vector<KeyFldD*>* kf = &((XWKey*)lv->record)->KFlds;
+				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) {
+					g_compiler->OldError(155);
+				}
+				if (!kf->empty() && !KeyFldD::EquKFlds(*kf, ld->ToKey->KFlds)) {
+					g_compiler->OldError(181);
+				}
 			}
 			*LLV = lv;
 			*LLD = ld;
@@ -156,7 +162,7 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 		}
 	}
 	g_compiler->TestIdentif();
-	for (auto& ld : LinkDRoot) {
+	for (LinkD* ld : LinkDRoot) {
 		sLexWord = LexWord;
 		if ((ld->FromFD == CFile) && EquUpCase(ld->RoleName, sLexWord)) {
 			if ((ld->IndexRoot == 0)) g_compiler->Error(116);
@@ -169,9 +175,9 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 				g_compiler->Accept(')');
 				if (lv->FD != fd) g_compiler->OldError(149);
 				if (lv->f_typ == 'i') {
-					KeyFldD* kf = ((XWKey*)lv->record)->KFlds;
+					std::vector<KeyFldD*>* kf = &((XWKey*)lv->record)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) g_compiler->OldError(155);
-					if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) g_compiler->OldError(181);
+					if (!kf->empty() && !KeyFldD::EquKFlds(*kf, ld->ToKey->KFlds)) g_compiler->OldError(181);
 				}
 				*LLV = lv;
 				*LLD = ld;
@@ -331,6 +337,47 @@ FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec)
 	return fd;
 }
 
+FrmlElemRecNo* RdKeyOfOrRecNo(instr_type Op, WORD& N, FrmlElem* Arg[30], char& Typ, char FTyp)
+{
+	FileD* FD = g_compiler->RdFileName();
+	XKey* K = RdViewKeyImpl(FD);
+	if (Op == _recno) {
+		//KeyFldD* KF = K->KFlds;
+		N = 0;
+		if (K->KFlds.empty()) {
+			g_compiler->OldError(176);
+		}
+		//while (KF != nullptr) {
+		for (KeyFldD* KF : K->KFlds) {
+			g_compiler->Accept(',');
+			if (N > 29) {
+				g_compiler->Error(123);
+			}
+			Arg[N] = g_compiler->RdFrml(Typ, nullptr);
+			N++;
+			if (Typ != KF->FldD->frml_type) {
+				g_compiler->OldError(12);
+			}
+			//KF = KF->pChain;
+		}
+	}
+	else {
+		g_compiler->Accept(',');
+		N = 1;
+		Arg[0] = g_compiler->RdRealFrml(nullptr);
+	}
+	FrmlElemRecNo* Z = new FrmlElemRecNo(Op, (N + 2) * 4);
+	Z->FFD = FD;
+	Z->Key = K;
+	Z->SaveArgs(Arg, N);
+	if (FTyp == 'R') {
+#ifdef FandSQL
+		if (v_files->typSQLFile) Error(155);
+#endif
+	}
+	return Z;
+}
+
 FrmlElem* RdFunctionP(char& FFTyp)
 {
 	FrmlElem* Z = nullptr;
@@ -362,7 +409,9 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		((FrmlElem21*)Z)->EvalTyp = FTyp;
 		((FrmlElem21*)Z)->EvalP1 = g_compiler->RdStrFrml(nullptr);
 	}
-	else if (FileVarsAllowed) g_compiler->Error(75);
+	else if (FileVarsAllowed) {
+		g_compiler->Error(75);
+	}
 	else if (g_compiler->IsKeyWord("PROMPT")) {
 		g_compiler->RdLex();
 		Z = new FrmlElem11(_prompt, 4);
@@ -380,52 +429,34 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	else if (g_compiler->IsKeyWord("KEYOF")) {
 		g_compiler->RdLex();
 		FTyp = 'S';
-		if (!IsRecVar(&LV)) { Op = _recno; goto label11; }
-		Z = new FrmlElem20(_keyof, 8);
-		((FrmlElem20*)Z)->LV = LV;
-		((FrmlElem20*)Z)->PackKey = RdViewKeyImpl(((FrmlElem20*)Z)->LV->FD);
-		FTyp = 'S';
+		if (!IsRecVar(&LV)) {
+			Op = _recno;
+			Z = RdKeyOfOrRecNo(Op, N, Arg, Typ, FTyp);
+		}
+		else {
+			Z = new FrmlElem20(_keyof, 8);
+			((FrmlElem20*)Z)->LV = LV;
+			((FrmlElem20*)Z)->PackKey = RdViewKeyImpl(((FrmlElem20*)Z)->LV->FD);
+			FTyp = 'S';
+		}
 	}
 	else if (g_compiler->IsKeyWord("RECNO")) {
 		Op = _recno;
-		goto label1;
+		g_compiler->RdLex();
+		FTyp = 'R';
+		Z = RdKeyOfOrRecNo(Op, N, Arg, Typ, FTyp);
 	}
 	else if (g_compiler->IsKeyWord("RECNOABS")) {
 		Op = _recnoabs;
-		goto label1;
+		g_compiler->RdLex();
+		FTyp = 'R';
+		Z = RdKeyOfOrRecNo(Op, N, Arg, Typ, FTyp);
 	}
 	else if (g_compiler->IsKeyWord("RECNOLOG")) {
 		Op = _recnolog;
-	label1:
 		g_compiler->RdLex();
 		FTyp = 'R';
-	label11:
-		FD = g_compiler->RdFileName();
-		XKey* K = RdViewKeyImpl(FD);
-		if (Op == _recno) {
-			KeyFldD* KF = K->KFlds;
-			N = 0;
-			if (KF == nullptr) g_compiler->OldError(176);
-			while (KF != nullptr) {
-				g_compiler->Accept(',');
-				if (N > 29) g_compiler->Error(123);
-				Arg[N] = g_compiler->RdFrml(Typ, nullptr);
-				N++;
-				if (Typ != KF->FldD->frml_type) g_compiler->OldError(12);
-				KF = KF->pChain;
-			}
-		}
-		else {
-			g_compiler->Accept(',');
-			N = 1;
-			Arg[0] = g_compiler->RdRealFrml(nullptr);
-		}
-		Z = new FrmlElemRecNo(Op, (N + 2) * 4); // GetOp(oper, (N + 2) * 4);
-		auto iZ = (FrmlElemRecNo*)Z;
-		iZ->FFD = FD;
-		iZ->Key = K;
-		iZ->SaveArgs(Arg, N);
-		if (FTyp == 'R') goto label2;
+		Z = RdKeyOfOrRecNo(Op, N, Arg, Typ, FTyp);
 	}
 	else if (g_compiler->IsKeyWord("LINK")) {
 		g_compiler->RdLex();
@@ -454,7 +485,9 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		CFile = cf;
 		iZ->LinkLD = LD;
 		FTyp = 'R';
-		goto label2;
+#ifdef FandSQL
+		if (v_files->typSQLFile) Error(155);
+#endif
 	}
 	else if (g_compiler->IsKeyWord("ISDELETED")) {
 		g_compiler->RdLex();
@@ -469,7 +502,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			((FrmlElem14*)Z)->RecFD = FD;
 			g_compiler->Accept(',');
 			((FrmlElem14*)Z)->P1 = g_compiler->RdRealFrml(nullptr);
-		label2: {}
+			//label2: {}
 #ifdef FandSQL
 			if (v_files->typSQLFile) Error(155);
 #endif
@@ -877,11 +910,13 @@ Instr_forall* RdForAll()
 		if (processed_file->typSQLFile) OldError(155);
 #endif
 	}
-	auto PD = new Instr_forall(); // GetPInstr(_forall, 41);
+	Instr_forall* PD = new Instr_forall(); // GetPInstr(_forall, 41);
 	PD->CFD = processed_file;
 	PD->CVar = LVi;
 	// TODO: tady je podminka, by to nespadlo
-	if (LVr != nullptr)	PD->CRecVar = LVr;
+	if (LVr != nullptr) {
+		PD->CRecVar = LVr;
+	}
 #ifdef FandSQL
 	if (processed_file->typSQLFile && IsKeyWord("IN")) {
 		AcceptKeyWord("SQL"); Accept('('); PD->CBool = RdStrFrml();
@@ -900,7 +935,9 @@ Instr_forall* RdForAll()
 		if (Lexem == '(') {
 			g_compiler->RdLex();
 			PD->CBool = g_compiler->RdKeyInBool(PD->CKIRoot, false, true, PD->CSQLFilter, nullptr);
-			if ((!PD->CKIRoot.empty()) && (PD->CLV != nullptr)) g_compiler->OldError(118);
+			if ((!PD->CKIRoot.empty()) && (PD->CLV != nullptr)) {
+				g_compiler->OldError(118);
+			}
 			g_compiler->Accept(')');
 		}
 		if (Lexem == '!') {
@@ -1508,7 +1545,7 @@ std::vector<FieldDescr*> RdSubFldList(const std::vector<FieldDescr*>& v_fields, 
 			}
 			if (!found) {
 				g_compiler->Error(43);
-			}			
+			}
 			g_compiler->RdLex();
 		}
 
@@ -1540,7 +1577,7 @@ Instr_sort* RdSortCall()
 #endif
 	g_compiler->Accept(',');
 	g_compiler->Accept('(');
-	g_compiler->RdKFList(&PD->SK, PD->SortFD);
+	g_compiler->RdKFList(PD->SK, PD->SortFD);
 	g_compiler->Accept(')');
 	return PD;
 }
@@ -1625,8 +1662,8 @@ void RdEditOpt(EditOpt* EO, FileD* file_d)
 		if (EO->ViewKey == EO->SelKey) {
 			g_compiler->OldError(184);
 		}
-		if ((EO->ViewKey->KFlds != nullptr)
-			&& (EO->SelKey->KFlds != nullptr)
+		if ((!EO->ViewKey->KFlds.empty())
+			&& (!EO->SelKey->KFlds.empty())
 			&& !KeyFldD::EquKFlds(EO->SelKey->KFlds, EO->ViewKey->KFlds)) {
 			g_compiler->OldError(178);
 		}
@@ -1765,7 +1802,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 		if (!has_first) {
 			g_compiler->OldError(51);
 			g_compiler->Accept('(');
-			g_compiler->RdKFList(&RO->SK, CFile);
+			g_compiler->RdKFList(RO->SK, CFile);
 			g_compiler->Accept(')');
 		}
 		WORD Low = CurrPos;
@@ -1796,7 +1833,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 		if (!has_first) {
 			g_compiler->OldError(51);
 			g_compiler->Accept('(');
-			g_compiler->RdKFList(&RO->SK, CFile);
+			g_compiler->RdKFList(RO->SK, CFile);
 			g_compiler->Accept(')');
 		}
 		RO->Ctrl = RdSubFldList(RO->Flds, 'C');
@@ -1805,7 +1842,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 		if (!has_first) {
 			g_compiler->OldError(51);
 			g_compiler->Accept('(');
-			g_compiler->RdKFList(&RO->SK, CFile);
+			g_compiler->RdKFList(RO->SK, CFile);
 			g_compiler->Accept(')');
 		}
 		RO->Sum = RdSubFldList(RO->Flds, 'S');
@@ -1840,7 +1877,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 			g_compiler->OldError(51);
 		}
 		g_compiler->Accept('(');
-		g_compiler->RdKFList(&RO->SK, g_compiler->processing_F);
+		g_compiler->RdKFList(RO->SK, g_compiler->processing_F);
 		g_compiler->Accept(')');
 	}
 	else if (g_compiler->IsOpt("HEAD")) {
@@ -2218,9 +2255,11 @@ Instr* RdGetIndex()
 	while (Lexem == ',') {
 		g_compiler->RdLex();
 		if (g_compiler->IsOpt("SORT")) {
-			if (((XWKey*)lv->record)->KFlds != nullptr) g_compiler->OldError(175);
+			if (!((XWKey*)lv->record)->KFlds.empty()) {
+				g_compiler->OldError(175);
+			}
 			g_compiler->Accept('(');
-			g_compiler->RdKFList(&PD->key_fields, g_compiler->processing_F);
+			g_compiler->RdKFList(PD->key_fields, g_compiler->processing_F);
 			g_compiler->Accept(')');
 		}
 		else if (g_compiler->IsOpt("COND")) {

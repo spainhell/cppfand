@@ -181,23 +181,37 @@ size_t GetLengthOfStyledString(std::string& input)
 	return count;
 }
 
-std::string RepeatString(std::string& input, size_t count)
+std::string RepeatString(std::string& input, int32_t count)
 {
 	std::string result;
-	result.reserve(input.length() * count);
-	for (size_t i = 0; i < count; i++) {
-		result += input;
+
+	if (count <= 0) {
+		// do nothing
 	}
+	else {
+		result.reserve(input.length() * count);
+		for (int32_t i = 0; i < count; i++) {
+			result += input;
+		}
+	}
+
 	return result;
 }
 
-std::string RepeatString(char input, size_t count)
+std::string RepeatString(char input, int32_t count)
 {
 	std::string result;
-	result.reserve(count);
-	for (size_t i = 0; i < count; i++) {
-		result += input;
+
+	if (count <= 0) {
+		// do nothing
 	}
+	else {
+		result.reserve(count);
+		for (int32_t i = 0; i < count; i++) {
+			result += input;
+		}
+	}
+
 	return result;
 }
 

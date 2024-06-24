@@ -144,10 +144,11 @@ bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** 
 	}
 	else {
 		ToFD->ZeroAllFlds(*newRecord, false);
-		const KeyFldD* KF = K->KFlds;
-		for (auto& arg : LD->Args) {
-			FieldDescr* F = arg->FldD;
-			FieldDescr* F2 = KF->FldD;
+		//const KeyFldD* KF = K->KFlds;
+		//for (KeyFldD* arg : LD->Args) {
+		for (size_t i = 0; i < LD->Args.size(); i++) {
+			FieldDescr* F = LD->Args[i]->FldD;
+			FieldDescr* F2 = K->KFlds[i]->FldD;
 			if (F2->isStored()) {
 				switch (F->frml_type) {
 				case 'S': {
@@ -167,7 +168,7 @@ bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** 
 				}
 				}
 			}
-			KF = KF->pChain;
+			//KF = KF->pChain;
 		}
 	}
 

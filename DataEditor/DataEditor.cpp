@@ -1374,11 +1374,13 @@ void DataEditor::DisplWwRecsOrPage(WORD& c_page, ERecTxtD** rt)
 void DataEditor::DuplOwnerKey()
 {
 	if (!edit_->DownSet || (edit_->OwnerTyp == 'i')) return;
-	KeyFldD* KF = edit_->DownLD->ToKey->KFlds;
-	for (auto& arg : edit_->DownLD->Args) {
-		DuplFld(edit_->DownLD->ToFD, file_d_, edit_->DownRecPtr, edit_->NewRecPtr, edit_->OldRecPtr,
-			KF->FldD, arg->FldD);
-		KF = KF->pChain;
+	//KeyFldD* KF = edit_->DownLD->ToKey->KFlds;
+	for (KeyFldD* KF : edit_->DownLD->ToKey->KFlds) {
+		for (auto& arg : edit_->DownLD->Args) {
+			DuplFld(edit_->DownLD->ToFD, file_d_, edit_->DownRecPtr, edit_->NewRecPtr, edit_->OldRecPtr,
+				KF->FldD, arg->FldD);
+			//KF = KF->pChain;
+		}
 	}
 }
 
@@ -1400,20 +1402,27 @@ void DataEditor::BuildWork()
 {
 	void* p = nullptr;
 	XKey* K = nullptr;
-	KeyFldD* KF = nullptr;
+	std::vector<KeyFldD*> *KF = nullptr;
 	XString xx;
-	bool dupl = true, intvl = false;
+	bool dupl = true;
+	bool intvl = false;
 
 	if (!file_d_->Keys.empty()) {
-		KF = file_d_->Keys[0]->KFlds;
+		KF = &file_d_->Keys[0]->KFlds;
 	}
+
 	if (HasIndex) {
 		K = VK;
-		KF = K->KFlds;
+		KF = &K->KFlds;
 		dupl = K->Duplic;
 		intvl = K->IntervalTest;
 	}
-	WK->Open(file_d_, KF, dupl, intvl);
+
+	if (KF == nullptr) {
+		KF = new std::vector<KeyFldD*>();
+	}
+
+	WK->Open(file_d_, *KF, dupl, intvl);
 	if (params_->OnlyAppend) return;
 	FrmlElem* boolP = edit_->Cond;
 	//KeyInD* ki = edit_->KIRoot;
@@ -1438,7 +1447,7 @@ void DataEditor::BuildWork()
 			}
 			if (!edit_->KIRoot.empty()) {
 				wk2 = new XWKey(file_d_);
-				wk2->Open(file_d_, KF, true, false);
+				wk2->Open(file_d_, *KF, true, false);
 				file_d_->FF->CreateWIndex(Scan, wk2, 'W');
 				XScan* Scan2 = new XScan(file_d_, wk2, edit_->KIRoot, false);
 				Scan2->Reset(nullptr, false, record_);
@@ -1472,7 +1481,7 @@ void DataEditor::BuildWork()
 	if (f != nullptr) {
 		file_d_->FldD.clear();
 		file_d_->FldD.push_back(f);
-		WK->KFlds = KF;
+		WK->KFlds = *KF;
 		file_d_->FF->RecLen = l;
 	}
 	if (!ok) {
@@ -1484,14 +1493,14 @@ void DataEditor::BuildWork()
 void DataEditor::SetStartRec()
 {
 	int n = 0;
-	KeyFldD* kf = nullptr;
+	//KeyFldD* kf = nullptr;
 	XKey* k = VK;
 	if (params_->Subset) {
 		k = WK;
 	}
-	if (k != nullptr) {
-		kf = k->KFlds;
-	}
+	//if (k != nullptr) {
+	//	kf = k->KFlds;
+	//}
 	if ((!edit_->StartRecKey.empty()) && (k != nullptr)) {
 		if (k->FindNr(file_d_, edit_->StartRecKey, n)) {
 			n = MaxL(1, MinL(n, CNRecs()));
@@ -1524,10 +1533,17 @@ void DataEditor::SetStartRec()
 		}
 		params_->Subset = true;
 		if (n == 0) {
-			WK->Open(file_d_, nullptr, true, false);
+			std::vector<KeyFldD*> unused;
+			WK->Open(file_d_, unused, true, false);
 		}
 		else {
-			WK->OneRecIdx(file_d_, kf, n, record_);
+			if (k != nullptr) {
+				WK->OneRecIdx(file_d_, k->KFlds, n, record_);
+			}
+			else {
+				std::vector<KeyFldD*> unused;
+				WK->OneRecIdx(file_d_, unused, n, record_);
+			}
 		}
 		BaseRec = 1;
 		IRec = 1;
@@ -1747,21 +1763,24 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 	void* p = nullptr;
 	void* p2 = nullptr;
 	XKey* k = nullptr;
-	KeyFldD* kf = nullptr, * kf1 = nullptr, * kf2 = nullptr; // , * Arg = nullptr;
+	//std::vector<KeyFldD*> *kf = nullptr;
+	//std::vector<KeyFldD*> *kf1 = nullptr;
+	//std::vector<KeyFldD*> *kf2 = nullptr;
+	// , * Arg = nullptr;
 
-	for (auto& LD : LinkDRoot) {
+	for (LinkD* LD : LinkDRoot) {
 		if ((LD->MemberRef != 0) && (LD->ToFD == cf) && ((PNew != nullptr) || (LD->MemberRef != 2))) {
-			kf2 = LD->ToKey->KFlds;
-			xold.PackKF(cf, kf2, POld);
+			//kf2 = &LD->ToKey->KFlds;
+			xold.PackKF(cf, LD->ToKey->KFlds, POld);
 			if (PNew != nullptr) {
-				xnew.PackKF(cf, kf2, PNew);
+				xnew.PackKF(cf, LD->ToKey->KFlds, PNew);
 				if (xnew.S == xold.S) continue;
 			}
 #ifdef FandSQL
 			sql = LD->FromFD->IsSQLFile;
 #endif
 			k = GetFromKey(LD);
-			kf1 = k->KFlds;
+			//kf1 = &;
 			p = LD->FromFD->GetRecSpace();
 			if (PNew != nullptr) {
 				p2 = LD->FromFD->GetRecSpace();
@@ -1772,7 +1791,7 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 #ifdef FandSQL
 			if (!sql)
 #endif
-				LD->FromFD->FF->ScanSubstWIndex(Scan, kf1, 'W');
+				LD->FromFD->FF->ScanSubstWIndex(Scan, k->KFlds, 'W');
 		label1:
 			Scan->GetRec(p);
 			if (!Scan->eof) {
@@ -1790,10 +1809,12 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 				}
 				else {
 					Move(p, p2, LD->FromFD->FF->RecLen);
-					kf = kf2;
-					for (auto& arg : LD->Args) {
-						DuplFld(cf, LD->FromFD, PNew, p2, nullptr, kf->FldD, arg->FldD);
-						kf = kf->pChain;
+					//kf = &LD->ToKey->KFlds;
+					for (size_t i = 0; i < LD->Args.size(); i++) {
+						KeyFldD* arg = LD->Args[i];
+						KeyFldD* k1 = LD->ToKey->KFlds[i];
+						DuplFld(cf, LD->FromFD, PNew, p2, nullptr, k1->FldD, arg->FldD);
+						//kf = kf->pChain;
 					}
 					RunAddUpdate(LD->FromFD, 'd', p, false, nullptr, LD, p2);
 					UpdMemberRef(p, p2);
@@ -1808,7 +1829,7 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 			LD->FromFD->ClearRecSpace(p);
 			ReleaseStore(&p);
 		}
-	}
+	} // for
 }
 
 void DataEditor::WrJournal(char Upd, void* RP, double Time)
@@ -2909,7 +2930,7 @@ bool DataEditor::PromptSearch(bool create)
 	FileD* FD = file_d_;
 	XKey* K = VK;
 	if (params_->Subset) K = WK;
-	KeyFldD* KF = K->KFlds;
+	std::vector<KeyFldD*>::iterator KF = K->KFlds.begin();
 
 	void* RP = file_d_->GetRecSpace();
 	//record_ = RP;
@@ -2918,7 +2939,7 @@ bool DataEditor::PromptSearch(bool create)
 	x.Clear();
 	bool li = params_->F3LeadIn && !IsNewRec;
 	int w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
-	if (KF == nullptr) {
+	if (KF == K->KFlds.end()) {
 		result = true;
 		//record_ = edit_->NewRecPtr;
 		PopW(w);
@@ -2928,43 +2949,45 @@ bool DataEditor::PromptSearch(bool create)
 	if (HasIndex && edit_->DownSet && (VK == edit_->DownKey)) {
 		FileD* FD2 = edit_->DownLD->ToFD;
 		void* RP2 = edit_->DownRecPtr;
-		KeyFldD* KF2 = edit_->DownLD->ToKey->KFlds;
+		std::vector<KeyFldD*>::iterator KF2 = edit_->DownLD->ToKey->KFlds.begin();
 
-		while (KF2 != nullptr) {
-			F = KF->FldD;
-			FieldDescr* F2 = KF2->FldD;
+		while (KF2 != edit_->DownLD->ToKey->KFlds.end()) {
+			F = (*KF)->FldD;
+			FieldDescr* F2 = (*KF2)->FldD;
 			switch (F->frml_type) {
 			case 'S': {
 				s = FD2->loadS(F2, record_);
-				x.StoreStr(s, KF);
+				x.StoreStr(s, *KF);
 				file_d_->saveS(F, s, RP);
 				break;
 			}
 			case 'R': {
 				r = FD2->loadR(F2, record_);
-				x.StoreReal(r, KF);
+				x.StoreReal(r, *KF);
 				file_d_->saveR(F, r, RP);
 				break;
 			}
 			case 'B': {
 				b = FD2->loadB(F2, record_);
-				x.StoreBool(b, KF);
+				x.StoreBool(b, *KF);
 				file_d_->saveB(F, b, RP);
 				break;
 			}
 			}
-			KF2 = KF2->pChain;
-			KF = KF->pChain;
+			++KF2; // = KF2->pChain;
+			++KF;  // = KF->pChain;
 		}
 	}
-	if (KF == nullptr) {
+
+	if (KF == K->KFlds.end()) {
 		result = true;
 		PopW(w);
 		ReleaseStore(&RP);
 		return result;
 	}
-	while (KF != nullptr) {
-		F = KF->FldD;
+
+	while (KF != K->KFlds.end()) {
+		F = (*KF)->FldD;
 		if (li) {
 			EFldD* D = FindEFld(F);
 			if (D != nullptr) {
@@ -2996,18 +3019,18 @@ bool DataEditor::PromptSearch(bool create)
 			}
 			switch (F->frml_type) {
 			case 'S': {
-				x.StoreStr(s, KF);
+				x.StoreStr(s, *KF);
 				file_d_->saveS(F, s, RP);
 				break;
 			}
 			case 'R': {
-				x.StoreReal(r, KF);
+				x.StoreReal(r, *KF);
 				file_d_->saveR(F, r, RP);
 				break;
 			}
 			case 'B': {
 				b = s[0] = AbbrYes;
-				x.StoreBool(b, KF);
+				x.StoreBool(b, *KF);
 				file_d_->saveB(F, b, RP);
 				break;
 			}
@@ -3016,7 +3039,7 @@ bool DataEditor::PromptSearch(bool create)
 				found = GotoXRec(&x, n);
 				if ((pos == 0) && (F->frml_type == 'S')) {
 					x = x_old;
-					x.StoreStr(file_d_->loadS(F, edit_->NewRecPtr), KF);
+					x.StoreStr(file_d_->loadS(F, edit_->NewRecPtr), *KF);
 				}
 				if (pos != 0) {
 					x = x_old;
@@ -3025,7 +3048,7 @@ bool DataEditor::PromptSearch(bool create)
 			}
 			break;
 		}
-		KF = KF->pChain;
+		++KF; // = KF->pChain;
 	}
 
 	if (li) {
@@ -3115,13 +3138,13 @@ void DataEditor::CheckFromHere()
 
 void DataEditor::Sorting()
 {
-	KeyFldD* SKRoot = nullptr;
+	std::vector<KeyFldD*> SKRoot;
 	void* p = nullptr;
 	LockMode md;
 	SaveFiles();
 	MarkStore(p);
 
-	if (!g_compiler->PromptSortKeys(edit_->Flds, SKRoot) || (SKRoot == nullptr)) {
+	if (!g_compiler->PromptSortKeys(edit_->FD, edit_->Flds, SKRoot) || (SKRoot.empty())) {
 		ReleaseStore(&p);
 		record_ = edit_->NewRecPtr;
 		DisplAllWwRecs();
@@ -3256,14 +3279,17 @@ bool DataEditor::FldInModeF3Key(FieldDescr* F)
 {
 	auto result = false;
 	if ((F->Flg & f_Stored) == 0) return result;
-	KeyFldD* KF = VK->KFlds;
-	while (KF != nullptr) {
+
+	//KeyFldD* KF = VK->KFlds;
+	//while (KF != nullptr) {
+	for (KeyFldD* KF : VK->KFlds) {
 		if (KF->FldD == F) {
 			result = true;
 			return result;
 		}
-		KF = KF->pChain;
+		//KF = KF->pChain;
 	}
+
 	return result;
 }
 
@@ -4224,10 +4250,12 @@ bool DataEditor::ShiftF7Duplicate()
 		params_->WasUpdated = true;
 	}
 
-	KeyFldD* kf2 = edit_->ShiftF7LD->ToKey->KFlds;
-	for (auto& arg : edit_->ShiftF7LD->Args) {
-		DuplFld(edit_->FD, file_d_, edit_->NewRecPtr, record_, ee->OldRecPtr, kf2->FldD, arg->FldD);
-		kf2 = kf2->pChain;
+	//KeyFldD* kf2 = edit_->ShiftF7LD->ToKey->KFlds;
+	for (KeyFldD* kf2 : edit_->ShiftF7LD->ToKey->KFlds) {
+		for (KeyFldD* arg : edit_->ShiftF7LD->Args) {
+			DuplFld(edit_->FD, file_d_, edit_->NewRecPtr, record_, ee->OldRecPtr, kf2->FldD, arg->FldD);
+			//kf2 = kf2->pChain;
+		}
 	}
 
 	file_d_->SetUpdFlag(record_);
@@ -4510,13 +4538,22 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 void DataEditor::StartRprt(RprtOpt* RO)
 {
 	bool displ = false;
-	XWKey* k = nullptr; KeyFldD* kf = nullptr;
-	if (IsNewRec || params_->EdRecVar || (EdBreak == 16) || !WriteCRec(true, displ)) return;
-	if (displ) DisplAllWwRecs();
-	kf = nullptr;
-	if (VK != nullptr) kf = VK->KFlds;
-	k = new XWKey(file_d_);
-	k->OneRecIdx(file_d_, kf, AbsRecNr(CRec()), record_);
+	if (IsNewRec || params_->EdRecVar || (EdBreak == 16) || !WriteCRec(true, displ)) {
+		return;
+	}
+	if (displ) {
+		DisplAllWwRecs();
+	}
+	XWKey* k = new XWKey(file_d_);
+
+	if (VK != nullptr) {
+		k->OneRecIdx(file_d_, VK->KFlds, AbsRecNr(CRec()), record_);
+	}
+	else {
+		std::vector<KeyFldD*> unused;
+		k->OneRecIdx(file_d_, unused, AbsRecNr(CRec()), record_);
+	}
+
 	RO->FDL.FD = file_d_;
 	RO->FDL.ViewKey = k;
 	ReportProc(RO, false);

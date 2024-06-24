@@ -37,7 +37,7 @@ XKey::XKey(FileD* parent, unsigned char* inputStr)
 	parent_ = parent;
 	size_t index = 0;
 	Chain = reinterpret_cast<XKey*>(*(unsigned int*)&inputStr[index]); index += 4;
-	KFlds = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
+	//TODO: KFlds = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
 	IntervalTest = *(bool*)&inputStr[index]; index++;
 	Duplic = *(bool*)&inputStr[index]; index++;
 	InWork = *(bool*)&inputStr[index]; index++;
@@ -612,4 +612,14 @@ bool XKey::Delete(FileD* file_d, int RecNr, void* record)
 	bool b = RecNrToPath(file_d, xx, RecNr, record);
 	if (b) DeleteOnPath(file_d);
 	return b;
+}
+
+void XKey::CalcIndexLen()
+{
+	IndexLen = 0;
+	for (const KeyFldD* key_field : KFlds) {
+		if (key_field->FldD != nullptr) {
+			IndexLen += key_field->FldD->NBytes;
+		}
+	}
 }

@@ -1338,7 +1338,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 		if (CFile->FF->file_type == FileType::INDEX) {
 			k = CFile->Keys[0];
 			while (k != nullptr) {
-				kf = k->KFlds; inOut = false;
+				//kf = k->KFlds; inOut = false;
 				while (kf != nullptr) {
 					m = 1; n = 0; i++; fl = si->FL;
 					while (fl != nullptr) {
@@ -1355,7 +1355,8 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 						n++;
 					} goto label2;
 				label1:
-					kf = kf->pChain;
+					//kf = kf->pChain;
+					printf("");
 				}
 				if ((InpMask & w) == w) {
 					sz += i;

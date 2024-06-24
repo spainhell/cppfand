@@ -913,7 +913,6 @@ bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 	NN = NRecs;
 	int N = NN;
 	if (N == 0) return bResult;
-	KeyFldD* KF = Key->KFlds;
 
 	do {
 		if (Result == _gt) {
@@ -924,17 +923,19 @@ bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 		}
 		N = (L + R) / 2;
 		_parent->ReadRec(N, record);
-		x.PackKF(_parent, KF, record);
+		x.PackKF(_parent, Key->KFlds, record);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
 
-	if ((N == NN) && (Result == _lt)) NN++;
+	if ((N == NN) && (Result == _lt)) {
+		NN++;
+	}
 	else {
 		if (Key->Duplic && (Result == _equ)) {
 			while (N > 1) {
 				N--;
 				_parent->ReadRec(N, record);
-				x.PackKF(_parent, KF, record);
+				x.PackKF(_parent, Key->KFlds, record);
 				if (CompStr(x.S, XX.S) != _equ) {
 					N++;
 					_parent->ReadRec(N, record);
@@ -944,8 +945,11 @@ bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 		}
 		NN = N;
 	}
-	if ((Result == _equ) || Key->IntervalTest && (Result == _gt))
+
+	if ((Result == _equ) || Key->IntervalTest && (Result == _gt)) {
 		bResult = true;
+	}
+
 	return bResult;
 }
 
@@ -1081,44 +1085,57 @@ void FandFile::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 	delete[] record; record = nullptr;
 }
 
-void FandFile::ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
+void FandFile::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ)
 {
 	unsigned short n = 0;
 	XWKey* k2 = new XWKey(_parent);
-	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) /*F6-autoreport & sort*/ {
+
+	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) {
+		/* F6-autoreport & sort */
 		XKey* k = Scan->Key;
 		n = k->IndexLen;
-		KeyFldD* kf = SK;
-		while (kf != nullptr) {
+
+		//KeyFldD* kf = SK;
+		//while (kf != nullptr) {
+		for (KeyFldD* kf : SK) {
 			n += kf->FldD->NBytes;
-			kf = kf->pChain;
+			//kf = kf->pChain;
 		}
+
 		if (n > 255) {
 			WrLLF10Msg(155);
 			delete k2; k2 = nullptr;
 			return;
 		}
-		kf = k->KFlds;
-		KeyFldD* kfroot = nullptr;
-		KeyFldD* kf2 = nullptr;
-		while (kf != nullptr) {
-			kf2 = new KeyFldD();
-			*kf2 = *kf;
-			ChainLast(kfroot, kf2);
-			kf = kf->pChain;
-		}
-		if (kf2 != nullptr) {
-			kf2->pChain = SK;
-		}
-		SK = kfroot;
-	}
-	k2->Open(_parent, SK, true, false);
-	CreateWIndex(Scan, k2, Typ);
 
+		//kf = k->KFlds;
+		std::vector<KeyFldD*> kfroot;
+		//KeyFldD* kf2 = nullptr;
+		//while (kf != nullptr) {
+		for (KeyFldD* kf : k->KFlds) {
+			//kf2 = new KeyFldD();
+			//*kf2 = *kf;
+			//ChainLast(kfroot, kf2);
+			//kf = kf->pChain;
+			kfroot.push_back(kf);
+		}
+		if (SK.size() > kfroot.size()) {
+			for (size_t i = 0; i < SK.size(); i++) {
+				kfroot.push_back(SK[i]);
+			}
+		}
+
+		k2->Open(_parent, kfroot, true, false);
+	}
+	else {
+		k2->Open(_parent, SK, true, false);
+	}
+
+	CreateWIndex(Scan, k2, Typ);
 	Scan->SubstWIndex(k2);
 }
 
-void FandFile::SortAndSubst(KeyFldD* SK)
+void FandFile::SortAndSubst(std::vector<KeyFldD*>& SK)
 {
 	BYTE* record = _parent->GetRecSpace();
 

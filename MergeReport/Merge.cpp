@@ -92,14 +92,20 @@ void Merge::Read()
 			}
 			ID->Scan = new XScan(FD, CViewKey, KI, true);
 			if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
-				report_compiler->RdKFList(&ID->MFld, FD);
+				report_compiler->RdKFList(ID->MFld, FD);
 			}
 			if (Ii > 1) {
-				if (IDA[Ii - 1]->MFld == nullptr) {
-					if (ID->MFld != nullptr) report_compiler->OldError(22);
+				if (IDA[Ii - 1]->MFld.empty()) {
+					if (!ID->MFld.empty()) {
+						report_compiler->OldError(22);
+					}
 				}
-				else if (ID->MFld == nullptr) CopyPrevMFlds();
-				else CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
+				else if (ID->MFld.empty()) {
+					CopyPrevMFlds();
+				}
+				else {
+					CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
+				}
 			}
 			RdAutoSortSK_M(ID, report_compiler);
 			report_compiler->TestLex('#');
@@ -438,38 +444,35 @@ FrmlElem* Merge::RdOutpFldName(char& FTyp)
 
 void Merge::MakeOldMFlds()
 {
-	KeyFldD* M = IDA[1]->MFld;
+	//KeyFldD* M = IDA[1]->MFld;
 	WORD n = 0;
 	OldMFlds.clear();
-	while (M != nullptr) {
+	//while (M != nullptr) {
+	for (KeyFldD* M : IDA[1]->MFld) {
 		OldMFlds.push_back(ConstListEl());
-		M = M->pChain;
+		//M = M->pChain;
 	}
 }
 
 void Merge::RdAutoSortSK_M(InpD* ID, std::unique_ptr<Compiler>& compiler)
 {
-	KeyFldD* M = nullptr;
+	//KeyFldD* M = nullptr;
 	KeyFldD* SK = nullptr;
 	if (!ID->AutoSort) return;
-	M = ID->MFld;
-	while (M != nullptr) {
+	//M = ID->MFld;
+
+	//while (M != nullptr) {
+	for (KeyFldD* M : ID->MFld) {
 		SK = new KeyFldD();
 		*SK = *M;
-		if (ID->SK == nullptr) {
-			ID->SK = SK;
-			SK->pChain = nullptr;
-		}
-		else {
-			ChainLast(ID->SK, SK);
-		}
-		M = M->pChain;
+		ID->SK.push_back(SK);
+		//M = M->pChain;
 	}
 	if (Lexem == ';') {
 		compiler->RdLex();
-		compiler->RdKFList(&ID->SK, compiler->processing_F);
+		compiler->RdKFList(ID->SK, compiler->processing_F);
 	}
-	if (ID->SK == nullptr) {
+	if (ID->SK.empty()) {
 		compiler->OldError(60);
 	}
 }
@@ -748,40 +751,41 @@ void Merge::RdOutpRD(OutpRD** RDRoot)
 	MakeImplAssign();
 }
 
-WORD Merge::CompMFlds(KeyFldD* M)
+WORD Merge::CompMFlds(std::vector<KeyFldD*>& M)
 {
 	XString x;
 	x.PackKF(CFile, M, CRecPtr);
 	return CompStr(x.S, OldMXStr.S);
 }
 
-void Merge::SetOldMFlds(KeyFldD* M)
+void Merge::SetOldMFlds(std::vector<KeyFldD*>& M)
 {
 	//ConstListEl* C = nullptr;
 	FieldDescr* F = nullptr;
 	OldMXStr.Clear();
 	//C = OldMFlds;
-	for (ConstListEl& C : OldMFlds) {
-		F = M->FldD;
+	for (size_t i = 0; i < OldMFlds.size(); i++) {
+		ConstListEl* C = &OldMFlds[i];
+		F = M[i]->FldD;
 		switch (F->frml_type) {
 		case 'S': {
-			C.S = CFile->loadS(F, CRecPtr);
-			OldMXStr.StoreStr(C.S, M);
+			C->S = CFile->loadS(F, CRecPtr);
+			OldMXStr.StoreStr(C->S, M[i]);
 			break;
 		}
 		case 'R': {
-			C.R = CFile->loadR(F, CRecPtr);
-			OldMXStr.StoreReal(C.R, M);
+			C->R = CFile->loadR(F, CRecPtr);
+			OldMXStr.StoreReal(C->R, M[i]);
 			break;
 		}
 		default: {
-			C.B = CFile->loadB(F, CRecPtr);
-			OldMXStr.StoreBool(C.B, M);
+			C->B = CFile->loadB(F, CRecPtr);
+			OldMXStr.StoreBool(C->B, M[i]);
 			break;
 		}
 		}
 		//C = (ConstListEl*)C->pChain;
-		M = M->pChain;
+		//M = M->pChain;
 	}
 }
 
@@ -961,20 +965,21 @@ void Merge::MoveForwToRecM(InpD* ID)
 	}
 }
 
-void Merge::SetMFlds(KeyFldD* M)
+void Merge::SetMFlds(std::vector<KeyFldD*>& M)
 {
 	FieldDescr* F = nullptr;
 	std::vector<ConstListEl>::iterator it0 = OldMFlds.begin();
-	while (M != nullptr) {
+	//while (M != nullptr) {
+	for (KeyFldD* M : M) {
 		F = M->FldD;
 		switch (F->frml_type) {
 		case 'S': { CFile->saveS(F, it0->S, CRecPtr); break; }
 		case 'R': { CFile->saveR(F, it0->R, CRecPtr); break; }
 		default: { CFile->saveB(F, it0->B, CRecPtr); break; }
 		}
-		M = M->pChain;
+		//M = M->pChain;
 
-		if (it0 != OldMFlds.end()) it0++;
+		if (it0 != OldMFlds.end()) ++it0;
 	}
 }
 

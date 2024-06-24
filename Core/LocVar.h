@@ -1,5 +1,6 @@
 #pragma once
 #include "base.h"
+#include "Chained.h"
 #include "constants.h"
 
 

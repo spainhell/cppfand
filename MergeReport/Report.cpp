@@ -160,13 +160,13 @@ void Report::Read(RprtOpt* RO)
 				ID->Scan->ResetLV(FDL->LVRecPtr);
 			}
 			if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
-				report_compiler->RdKFList(&ID->MFld, FD);
+				report_compiler->RdKFList(ID->MFld, FD);
 			}
 			if (Ii > 1) {
-				if (IDA[Ii - 1]->MFld == nullptr) {
-					if (ID->MFld != nullptr) report_compiler->OldError(22);
+				if (IDA[Ii - 1]->MFld.empty()) {
+					if (!ID->MFld.empty()) report_compiler->OldError(22);
 				}
-				else if (ID->MFld == nullptr) {
+				else if (ID->MFld.empty()) {
 					CopyPrevMFlds();
 				}
 				else {
@@ -671,8 +671,9 @@ LvDescr* Report::MakeOldMLvD()
 	//LvDescr* L = (LvDescr*)GetZStore(sizeof(*L)); 
 	LvDescr* L = new LvDescr();
 	LstLvM = L;
-	KeyFldD* M = IDA[1]->MFld;
-	while (M != nullptr) {
+	//KeyFldD* M = IDA[1]->MFld;
+	//while (M != nullptr) {
+	for (KeyFldD* M : IDA[1]->MFld) {
 		OldMFlds.push_back(ConstListEl());
 		NewMFlds.push_back(ConstListEl());
 		L1 = new LvDescr();
@@ -680,47 +681,59 @@ LvDescr* Report::MakeOldMLvD()
 		L1->Chain = L;
 		L = L1;
 		L->Fld = M->FldD;
-		M = (KeyFldD*)M->pChain;
+		//M = (KeyFldD*)M->pChain;
 	}
 	return L;
 }
 
 void Report::RdAutoSortSK(InpD* ID, std::unique_ptr<Compiler>& compiler)
 {
-	KeyFldD* M = nullptr; KeyFldD* SK = nullptr; LvDescr* L = nullptr;
-	WORD n = 0; bool as = false;
+	KeyFldD* SK = nullptr;
+	//WORD n = 0;
 	if (Lexem == ';') {
 		compiler->RdLex();
-		compiler->RdKFList(&ID->SFld, compiler->processing_F);
+		compiler->RdKFList(ID->SFld, compiler->processing_F);
 	}
-	L = nullptr;
-	as = ID->AutoSort;
-	if (as) {
+	LvDescr* L = nullptr;
+	bool auto_sort = ID->AutoSort;
+
+	if (auto_sort) {
 		SK = (KeyFldD*)(&ID->SK);
-		M = ID->MFld;
-		while (M != nullptr) {
-			SK->pChain = new KeyFldD();
-			SK = SK->pChain;
-			*SK = *M;
-			M = M->pChain;
+		//M = ID->MFld;
+		//while (M != nullptr) {
+		for (KeyFldD* M : ID->MFld) {
+			//SK->pChain = new KeyFldD();
+			//SK = SK->pChain;
+			//*SK = *M;
+			//M = M->pChain;
+
+			// TODO: this is probably wrong:
+			ID->SK.push_back(M);
 		}
 	}
-	M = ID->SFld;
-	while (M != nullptr) {
+
+	//M = ID->SFld;
+	//while (M != nullptr) {
+	for (KeyFldD* M : ID->SFld) {
 		L = NewLvS(L, ID);
 		L->Fld = M->FldD;
-		n = sizeof(void*) + M->FldD->NBytes + 1;
+		//WORD n = sizeof(void*) + M->FldD->NBytes + 1;
 		ID->OldSFlds.push_back(ConstListEl());
-		if (as) {
-			SK->pChain = new KeyFldD();
-			SK = SK->pChain;
-			*SK = *M;
+		if (auto_sort) {
+			//SK->pChain = new KeyFldD();
+			//SK = SK->pChain;
+			//*SK = *M;
+
+			// TODO: this is probably wrong:
+			ID->SK.push_back(M);
 		}
-		M = M->pChain;
+		//M = M->pChain;
 	}
-	if (as && (ID->SK == nullptr)) {
+
+	if (auto_sort && (ID->SK.empty())) {
 		compiler->OldError(60);
 	}
+
 	ID->FrstLvS = NewLvS(L, ID);
 }
 
@@ -1812,32 +1825,38 @@ void Report::CloseInp()
 	}
 }
 
-WORD Report::CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv)
+WORD Report::CompMFlds(std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M, short& NLv)
 {
 	XString x;
 	NLv = 0;
-	for (ConstListEl& c : C) {
+	//for (ConstListEl& c : C) {
+	for (size_t i = 0; i < C.size(); i++) {
+		ConstListEl& c = C[i];
+		KeyFldD* m = M[i];
 		NLv++;
 		x.Clear();
-		x.StoreKF(CFile, M, CRecPtr);
+		x.StoreKF(CFile, m, CRecPtr);
 		std::string s = x.S;
 		int res = CompStr(s, c.S);
 		if (res != _equ) {
 			return res;
 		}
-		M = M->pChain;
+		//M = M->pChain;
 	}
 	return _equ;
 }
 
-void Report::GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M)
+void Report::GetMFlds(std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M)
 {
-	for (auto& c : C) {
+	//for (auto& c : C) {
+	for (size_t i = 0; i < C.size(); i++) {
+		ConstListEl& c = C[i];
+		KeyFldD* m = M[i];
 		XString x;
 		x.Clear();
-		x.StoreKF(CFile, M, CRecPtr);
+		x.StoreKF(CFile, m, CRecPtr);
 		c.S = x.S;
-		M = M->pChain;
+		//M = M->pChain;
 	}
 }
 
@@ -1849,41 +1868,46 @@ void Report::MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C
 	}
 }
 
-void Report::PutMFlds(KeyFldD* M)
+void Report::PutMFlds(std::vector<KeyFldD*>& M)
 {
 	if (MinID == nullptr) return;
 	FileD* cf = CFile;
 	FileD* cf1 = MinID->Scan->FD;
 	void* cr = CRecPtr;
 	void* cr1 = MinID->ForwRecPtr;
-	KeyFldD* m1 = MinID->MFld;
-	while (M != nullptr) {
-		FieldDescr* f = M->FldD;
-		FieldDescr* f1 = m1->FldD;
+	//KeyFldD* m1 = MinID->MFld;
+
+	//while (M != nullptr) {
+	for (size_t i = 0; i < M.size(); i++) {
+		FieldDescr* f = M[i]->FldD;
+		FieldDescr* f1 = MinID->MFld[i]->FldD;
 		CFile = cf1;
 		CRecPtr = cr1;
 		switch (f->frml_type) {
 		case 'S': {
 			std::string s = CFile->loadS(f1, CRecPtr);
-			CFile = cf; CRecPtr = cr;
+			CFile = cf;
+			CRecPtr = cr;
 			CFile->saveS(f, s, CRecPtr);
 			break;
 		}
 		case 'R': {
 			double r = CFile->loadR(f1, CRecPtr);
-			CFile = cf; CRecPtr = cr;
+			CFile = cf;
+			CRecPtr = cr;
 			CFile->saveR(f, r, CRecPtr);
 			break;
 		}
 		default: {
 			bool b = CFile->loadB(f1, CRecPtr);
-			CFile = cf; CRecPtr = cr;
+			CFile = cf;
+			CRecPtr = cr;
 			CFile->saveB(f, b, CRecPtr);
 			break;
 		}
 		}
-		M = M->pChain;
-		m1 = m1->pChain;
+		//M = M->pChain;
+		//m1 = m1->pChain;
 	}
 }
 
@@ -1939,18 +1963,16 @@ LvDescr* Report::GetDifLevel()
 {
 	//ConstListEl* C1 = NewMFlds;
 	//ConstListEl* C2 = OldMFlds;
-	KeyFldD* M = IDA[1]->MFld;
+	//KeyFldD* M = IDA[1]->MFld;
 	LvDescr* L = LstLvM->ChainBack;
 	size_t vIndex = 0;
-	while (M != nullptr) {
-		//if (C1->S != C2->S) {
+	//while (M != nullptr) {
+	for (KeyFldD* M : IDA[1]->MFld) {
 		if (NewMFlds[vIndex].S != OldMFlds[vIndex].S) {
 			return L;
 		}
-		//C1 = (ConstListEl*)C1->pChain;
-		//C2 = (ConstListEl*)C2->pChain;
 		vIndex++;
-		M = (KeyFldD*)M->pChain;
+		//M = (KeyFldD*)M->pChain;
 		L = L->ChainBack;
 	}
 	return nullptr;
@@ -1958,7 +1980,6 @@ LvDescr* Report::GetDifLevel()
 
 void Report::MoveForwToRec(InpD* ID)
 {
-	/* !!! with ID^ do!!! */
 	CFile = ID->Scan->FD;
 	CRecPtr = CFile->FF->RecPtr;
 	Move(ID->ForwRecPtr, CRecPtr, CFile->FF->RecLen + 1);
@@ -1985,7 +2006,9 @@ void Report::MoveForwToRec(InpD* ID)
 void Report::MoveFrstRecs()
 {
 	for (short i = 1; i <= MaxIi; i++) {
-		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
+		if (IDA[i]->Exist) {
+			MoveForwToRec(IDA[i]);
+		}
 		else {
 			CFile = IDA[i]->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
@@ -2001,46 +2024,43 @@ void Report::MergeProc(std::string& text)
 	short res = 0;
 	for (short i = 1; i <= MaxIi; i++) {
 		InpD* ID = IDA[i];
-		/* !!! with ID^ do!!! */
-		{
-			if (ID->Exist) {
-				CFile = ID->Scan->FD;
-				CRecPtr = CFile->FF->RecPtr;
-				LvDescr* L = ID->LstLvS;
-			label1:
-				ZeroSumFlds(L);
-				GetMFlds(ID->OldSFlds, ID->SFld);
-				if (WasFF2) PrintPageHd(text);
-				Headings(L, ID->FrstLvS, text);
-				if (PrintDH == 0) PrintDH = 1;
-			label2:
-				PrintBlock(ID->FrstLvS->Ft, text, ID->FrstLvS->Hd); /*DE*/
-				SumUp(CFile, ID->Sum, CRecPtr);
-				ReadInpFile(ID);
-				if (ID->Scan->eof) goto label4;
-				res = CompMFlds(NewMFlds, ID->MFld, nlv);
-				if ((res == _lt) && (MaxIi > 1)) {
-					SetMsgPar(ID->Scan->FD->Name);
-					RunError(607);
-				}
-				if (res != _equ) goto label4;
-				res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
-				if (res == _equ) {
-					MoveForwToRec(ID);
-					goto label2;
-				}
-				L = ID->LstLvS;
-				while (nlv > 1) {
-					L = L->ChainBack;
-					nlv--;
-				}
-				Footings(ID->FrstLvS->Chain, L, text);
-				if (WasFF2) PrintPageFt(text);
-				MoveForwToRec(ID);
-				goto label1;
-			label4:
-				Footings(ID->FrstLvS->Chain, ID->LstLvS, text);
+		if (ID->Exist) {
+			CFile = ID->Scan->FD;
+			CRecPtr = CFile->FF->RecPtr;
+			LvDescr* L = ID->LstLvS;
+		label1:
+			ZeroSumFlds(L);
+			GetMFlds(ID->OldSFlds, ID->SFld);
+			if (WasFF2) PrintPageHd(text);
+			Headings(L, ID->FrstLvS, text);
+			if (PrintDH == 0) PrintDH = 1;
+		label2:
+			PrintBlock(ID->FrstLvS->Ft, text, ID->FrstLvS->Hd); /*DE*/
+			SumUp(CFile, ID->Sum, CRecPtr);
+			ReadInpFile(ID);
+			if (ID->Scan->eof) goto label4;
+			res = CompMFlds(NewMFlds, ID->MFld, nlv);
+			if ((res == _lt) && (MaxIi > 1)) {
+				SetMsgPar(ID->Scan->FD->Name);
+				RunError(607);
 			}
+			if (res != _equ) goto label4;
+			res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
+			if (res == _equ) {
+				MoveForwToRec(ID);
+				goto label2;
+			}
+			L = ID->LstLvS;
+			while (nlv > 1) {
+				L = L->ChainBack;
+				nlv--;
+			}
+			Footings(ID->FrstLvS->Chain, L, text);
+			if (WasFF2) PrintPageFt(text);
+			MoveForwToRec(ID);
+			goto label1;
+		label4:
+			Footings(ID->FrstLvS->Chain, ID->LstLvS, text);
 		}
 	}
 }

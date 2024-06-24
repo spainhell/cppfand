@@ -91,7 +91,7 @@ public:
 	FrmlElem* RdStrFrml(MergeReportBase* caller);
 	XKey* RdViewKey(FileD* file_d);
 	KeyFldD* RdKF(FileD* FD);
-	WORD RdKFList(KeyFldD** KFRoot, FileD* FD);
+	WORD RdKFList(std::vector<KeyFldD*>& KFRoot, FileD* FD);
 	bool IsKeyArg(FieldDescr* F, FileD* FD);
 	void CompileRecLen(FileD* file_d);
 	stSaveState* SaveCompState();
@@ -101,7 +101,7 @@ public:
 	FrmlElem* RdAttr();
 	void RdW(WRectFrml& W);
 	void RdFrame(FrmlElem** Z, BYTE& WFlags);
-	bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot);
+	bool PromptSortKeys(FileD* file_d, std::vector<FieldDescr*>& FL, std::vector<KeyFldD*>& SKRoot);
 	void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller);
 	bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
 	void RdFldList(std::vector<FieldDescr*>& vFields);
@@ -116,8 +116,8 @@ public:
 
 private:
 	double ValofS(pstring& S);
-	void SrchF(FieldDescr* F);
-	void SrchZ(FrmlElem* Z);
+	bool SrchF(FieldDescr* F1, FieldDescr* F);
+	bool SrchZ(FieldDescr* F1, FrmlElem* Z);
 	bool IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunCode);
 	void TestBool(char FTyp);
 	LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList);
@@ -136,4 +136,6 @@ private:
 	std::vector<FrmlElem*> RdFL(bool NewMyBP);
 	std::vector<FrmlElem*> RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1);
 	LinkD* FindOwnLD(FileD* FD, std::string RoleName);
+	void SetLocVars(FrmlElem* Z, char typ, bool return_param, std::vector<LocVar*>& newVars);
+	void RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vector<LocVar*> newVars);
 };

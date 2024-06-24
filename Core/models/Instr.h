@@ -209,7 +209,7 @@ public:
 	Instr_sort();
 	~Instr_sort() override;
 	FileD* SortFD = nullptr;
-	KeyFldD* SK = nullptr;
+	std::vector<KeyFldD*> SK;
 };
 
 class Instr_edit : public Instr
@@ -299,7 +299,7 @@ public:
 	char mode = '\0'; /*+,-,blank*/
 	FrmlElem* condition = nullptr; /* || RecNr-Frml */
 	XKey* keys = nullptr;
-	KeyFldD* key_fields = nullptr;
+	std::vector<KeyFldD*> key_fields;
 	std::vector<KeyInD*> key_in_root;
 	bool sql_filter = false;
 	char owner_type = '\0';
