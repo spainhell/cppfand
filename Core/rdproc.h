@@ -82,7 +82,7 @@ Instr* RdLinkRec();
 Instr* RdBackup(char MTyp, bool IsBackup);
 Instr* RdSetEditTxt();
 FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op);
-AssignD* MakeImplAssign(FileD* FD1, FileD* FD2);
+std::vector<AssignD*> MakeImplAssign(FileD* FD1, FileD* FD2);
 Instr_assign* RdAssign();
 Instr* RdWith();
 Instr_assign* RdUserFuncAssign();

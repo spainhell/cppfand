@@ -180,24 +180,22 @@ void AssignField(Instr_assign* PD)
 	CFile->OldLockMode(md);
 }
 
-void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
+void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 {
-	pstring EmptyStr(1);
-	EmptyStr = "";
-	pstring ss;
 	FileD* FD1 = LV1->FD;  // destination record
 	FileD* FD2 = LV2->FD;  // source record
 	void* RP1 = LV1->record;
 	void* RP2 = LV2->record;
 
-	while (A != nullptr) {
-		switch (A->Kind) {
+	//while (A != nullptr) {
+	for (AssignD* a : A) {
+		switch (a->Kind) {
 		case MInstrCode::_zero: {
-			FieldDescr* F = A->outputFldD;
+			FieldDescr* F = a->outputFldD;
 			CFile = FD1;
 			CRecPtr = RP1;
 			switch (F->frml_type) {
-			case 'S': { CFile->saveS(F, EmptyStr, CRecPtr); break; }
+			case 'S': { CFile->saveS(F, "", CRecPtr); break; }
 			case 'R': { CFile->saveR(F, 0.0, CRecPtr); break; }
 			default: { CFile->saveB(F, false, CRecPtr); break; }
 			}
@@ -206,12 +204,12 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 		case MInstrCode::_output: {
 			CFile = FD1;
 			CRecPtr = RP1;
-			((FrmlElemNewFile*)A->Frml)->NewRP = RP2;
-			AssgnFrml(CFile, CRecPtr, A->OFldD, A->Frml, false, false);
+			((FrmlElemNewFile*)a->Frml)->NewRP = RP2;
+			AssgnFrml(CFile, CRecPtr, a->OFldD, a->Frml, false, false);
 			break;
 		}
 		}
-		A = A->pChain;
+		//A = A->pChain;
 	}
 	CFile = FD1; CRecPtr = RP1;
 	CFile->SetUpdFlag(CRecPtr);

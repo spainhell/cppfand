@@ -17,7 +17,7 @@ class FieldDescr;
 
 enum class MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifThenElse };
 
-struct AssignD : public Chained<AssignD>
+struct AssignD
 {
 	MInstrCode Kind = MInstrCode::_zero;
 	FieldDescr* inputFldD = nullptr;
