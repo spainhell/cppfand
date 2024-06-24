@@ -188,7 +188,7 @@ LocVar* LocVarBlkD::GetRoot()
 
 LocVar* LocVarBlkD::FindByName(std::string Name)
 {
-	for (auto& i : vLocVar) {
+	for (LocVar*& i : vLocVar) {
 		if (EquUpCase(Name, i->name)) return i;
 	}
 	return nullptr;

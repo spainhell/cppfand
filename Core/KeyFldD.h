@@ -3,7 +3,7 @@
 
 class FieldDescr;
 
-class KeyFldD //: public Chained<KeyFldD>
+class KeyFldD
 {
 public:
 	KeyFldD() {}

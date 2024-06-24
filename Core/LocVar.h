@@ -1,13 +1,12 @@
 #pragma once
 #include "base.h"
-#include "Chained.h"
 #include "constants.h"
 
 
 class FrmlElem;
 class FileD;
 
-class LocVar : public Chained<LocVar>
+class LocVar
 {
 public:
 	LocVar() = default;
@@ -27,7 +26,7 @@ public:
 	std::string S;
 };
 
-class LocVarBlkD : public Chained<LocVarBlkD>
+class LocVarBlkD
 {
 public:
 	LocVarBlkD() {  }

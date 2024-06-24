@@ -1067,18 +1067,25 @@ void Compiler::RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char C
 	}
 }
 
-bool Compiler::FindLocVar(LocVar* LVRoot, LocVar** LV)
-{
-	auto result = false;
-	if (Lexem != _identifier) return result;
-	*LV = LVRoot;
-	while (*LV != nullptr) {
-		pstring lvName = (*LV)->name.c_str();
-		if (EquUpCase(lvName, LexWord)) { return true; }
-		*LV = (*LV)->pChain;
-	}
-	return result;
-}
+//LocVar* FindLocVar(std::vector<LocVar*>& LVRoot)
+//{
+//	LocVar* result = nullptr;
+//
+//	if (Lexem != _identifier) {
+//		return result;
+//	}
+//	else {
+//		for (LocVar* LV : LVRoot) {
+//			//pstring lvName = LV->name.c_str();
+//			if (EquUpCase(LV->name, LexWord)) {
+//				result = LV;
+//				break;
+//			}
+//		}
+//	}
+//
+//	return result;
+//}
 
 bool Compiler::FindLocVar(LocVarBlkD* LVB, LocVar** LV)
 {
@@ -1366,7 +1373,7 @@ label1:
 	return result;
 }
 
-[[nodiscard]]bool Compiler::SrchF(FieldDescr* F1, FieldDescr* F)
+[[nodiscard]] bool Compiler::SrchF(FieldDescr* F1, FieldDescr* F)
 {
 	bool result = false;
 
@@ -1436,7 +1443,7 @@ label1:
 bool Compiler::IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunCode)
 {
 	// prevedeme vse ze vstupu na mala pismena
-	for (auto&& c : input)	{
+	for (auto&& c : input) {
 		c = tolower(c);
 	}
 	auto it = strs.find(input);
@@ -2647,7 +2654,7 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 		if (result_owned->ownLD == nullptr) {
 			OldError(182);
 		}
-		
+
 		FileD* previous_f = processing_F;
 		//CFile = result_owned->ownLD->FromFD;
 		processing_F = result_owned->ownLD->FromFD;

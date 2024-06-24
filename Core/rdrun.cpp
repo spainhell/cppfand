@@ -43,7 +43,7 @@ bool EFldD::Ed(bool IsNewRec)
 
 void ResetLVBD()
 {
-	LVBD.pChain = nullptr;
+	//LVBD.pChain = nullptr;
 	LVBD.vLocVar.clear();
 	LVBD.NParam = 0;
 	LVBD.FceName = "";

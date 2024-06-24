@@ -85,9 +85,10 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 {
 	FrmlElem* Z = nullptr;
 	g_compiler->Accept('.');
+
 	switch (LV->f_typ) {
 	case 'r': {
-		auto Z = new FrmlElem7(_recvarfld, 12);
+		FrmlElem7* Z = new FrmlElem7(_recvarfld, 12);
 		FileD* previous = g_compiler->processing_F;
 		g_compiler->processing_F = LV->FD;
 		Z->File2 = LV->FD;
@@ -97,21 +98,22 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 		Z->P011 = g_compiler->RdFldNameFrmlF(FTyp, nullptr);
 		FileVarsAllowed = fa;
 		g_compiler->processing_F = previous;
-		return Z;
 		break;
 	}
 	case 'i': {
-		auto Z = new FrmlElem22(_indexnrecs, 4);
+		FrmlElem22* Z = new FrmlElem22(_indexnrecs, 4);
 		Z->WKey = (XWKey*)LV->record;
-		std::string nrecs = "nrecs";
-		g_compiler->AcceptKeyWord(nrecs);
+		g_compiler->AcceptKeyWord("nrecs");
 		FTyp = 'R';
-		return Z;
 		break;
 	}
-	default: g_compiler->OldError(177); break;
+	default: {
+		g_compiler->OldError(177);
+		break;
 	}
-	return nullptr;
+	}
+
+	return Z;
 }
 
 char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
