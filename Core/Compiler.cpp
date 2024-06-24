@@ -2618,60 +2618,70 @@ LinkD* Compiler::FindOwnLD(FileD* FD, std::string RoleName)
 
 FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 {
-	FrmlElem* z = nullptr;
+	FrmlElem* result = nullptr;
 
 	if (IsKeyWord("OWNED")) {
-		LinkD* ld = nullptr;
+
 		FieldNameType rff = rdFldNameType;
 		rdFldNameType = FieldNameType::F;
 		// TODO: g_compiler !!! ptrRdFldNameFrml = RdFldNameFrmlF;
 		Accept('(');
-		z = new FrmlElemOwned(_owned, 12); // GetOp(_owned, 12);
+
+		result = new FrmlElemOwned(_owned, 12); // GetOp(_owned, 12);
+		FrmlElemOwned* result_owned = static_cast<FrmlElemOwned*>(result);
+
 		TestIdentif();
 		SkipBlank(false);
+
 		if (ForwChar == '(') {
 			std::string role_name = LexWord;
 			RdLex();
 			RdLex();
-			ld = FindOwnLD(FD, role_name);
+			result_owned->ownLD = FindOwnLD(FD, role_name);
 			Accept(')');
 		}
 		else {
-			ld = FindOwnLD(FD, FD->Name);
+			result_owned->ownLD = FindOwnLD(FD, FD->Name);
 		}
-		if (ld == nullptr) OldError(182);
-		((FrmlElemOwned*)z)->ownLD = ld;
-		FileD* cf = CFile;
-		CFile = ld->FromFD;
-		processing_F = ld->FromFD;
+
+		if (result_owned->ownLD == nullptr) {
+			OldError(182);
+		}
+		
+		FileD* previous_f = processing_F;
+		//CFile = result_owned->ownLD->FromFD;
+		processing_F = result_owned->ownLD->FromFD;
+
 		if (Lexem == '.') {
 			RdLex();
-			((FrmlElemOwned*)z)->ownSum = RdFldNameFrmlF(FTyp, caller);
+			result_owned->ownSum = RdFldNameFrmlF(FTyp, caller);
 			if (FTyp != 'R') OldError(20);
 		}
+
 		if (Lexem == ':') {
 			char typ = '\0';
 			RdLex();
-			((FrmlElemOwned*)z)->ownBool = RdFormula(typ, caller);
+			result_owned->ownBool = RdFormula(typ, caller);
 			TestBool(typ);
 		}
+
 		Accept(')');
-		CFile = cf;
-		processing_F = cf;
+
+		processing_F = previous_f;
 		FTyp = 'R';
 		rdFldNameType = rff;
 	}
 	else {
 		FieldDescr* f = FindFldName(FD);
 		if (f == nullptr) {
-			z = nullptr;
+			result = nullptr;
 		}
 		else {
 			RdLex();
-			z = MakeFldFrml(f, FTyp);
+			result = MakeFldFrml(f, FTyp);
 		}
 	}
-	return z;
+	return result;
 }
 
 FrmlElem* Compiler::RdFldNameFrmlF(char& FTyp, MergeReportBase* caller)

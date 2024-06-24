@@ -29,8 +29,8 @@ std::string GetStyledStringOfLength(std::string& input, size_t from, size_t leng
 /// vrati delku formatovaneho retezce (pocet zobrazitelnych znaku)
 size_t GetLengthOfStyledString(std::string& input);
 
-std::string RepeatString(std::string& input, size_t count);
-std::string RepeatString(char input, size_t count);
+std::string RepeatString(std::string& input, int32_t count);
+std::string RepeatString(char input, int32_t count);
 
 std::string lowerCaseString(std::string input);
 std::string upperCaseString(std::string input);

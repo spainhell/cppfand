@@ -1404,17 +1404,24 @@ void DataEditor::BuildWork()
 	XKey* K = nullptr;
 	std::vector<KeyFldD*> *KF = nullptr;
 	XString xx;
-	bool dupl = true, intvl = false;
+	bool dupl = true;
+	bool intvl = false;
 
 	if (!file_d_->Keys.empty()) {
-		*KF = file_d_->Keys[0]->KFlds;
+		KF = &file_d_->Keys[0]->KFlds;
 	}
+
 	if (HasIndex) {
 		K = VK;
-		*KF = K->KFlds;
+		KF = &K->KFlds;
 		dupl = K->Duplic;
 		intvl = K->IntervalTest;
 	}
+
+	if (KF == nullptr) {
+		KF = new std::vector<KeyFldD*>();
+	}
+
 	WK->Open(file_d_, *KF, dupl, intvl);
 	if (params_->OnlyAppend) return;
 	FrmlElem* boolP = edit_->Cond;

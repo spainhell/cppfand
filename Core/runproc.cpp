@@ -1636,7 +1636,11 @@ void RunProcedure(std::vector<Instr*>& PDRoot)
 	bool BrkP = BreakP;
 	ExitP = false;
 	BreakP = false;
+
+	// ****** RUN INSTRUCTIONS ****** //
 	RunInstr(PDRoot);
+	// ****************************** //
+
 	ExitP = ExP;
 	BreakP = BrkP;
 }
@@ -1663,9 +1667,9 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("(Odkud:string; Filtr:string; Index:string; VetaR:record of REPORT) var Pgm,Impl,Posl,u,t,r,s:string;") != std::string::npos) {
-		printf("");
-	}
+	//if (srcCode.find("") != std::string::npos) {
+	//	printf("");
+	//}
 #endif
 
 	// save LVBD
@@ -1725,7 +1729,7 @@ void CallProcedure(Instr_proc* PD)
 		}
 		default: {
 			FrmlElem* z = PD->TArg[i].Frml;
-			auto lv = *it0;
+			LocVar* lv = *it0;
 			if (lv->is_return_param && (z->Op != _getlocvar)
 				|| PD->TArg[i].FromProlog
 				&& (PD->TArg[i].IsRetPar != lv->is_return_param)) {
@@ -1755,8 +1759,9 @@ void CallProcedure(Instr_proc* PD)
 		++it0;
 	}
 
-	// read procedure instructions
+	// ****** READ PROCEDURE BODY ****** //
 	std::vector<Instr*> instructions = ReadProcBody();
+	// ********************************* //
 
 	FDLocVarAllowed = false;
 	it0 = it1;

@@ -1894,7 +1894,7 @@ label1:
 	}
 	case _repeatstr: {
 		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
-		size_t i = RunInt(file_d, iX0->P2, record);
+		int32_t i = RunInt(file_d, iX0->P2, record);
 		std::string input = RunStdStr(file_d, iX0->P1, record);
 		result = RepeatString(input, i);
 		break;
