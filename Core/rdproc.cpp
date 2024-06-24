@@ -2347,7 +2347,6 @@ Instr_graph* RdGraphP()
 {
 	FrmlElem* FrmlArr[15];
 	WORD i;
-	GraphVD* VD; GraphWD* WD; GraphRGBD* RGBD; WinG* Ww;
 
 	pstring Nm1[11] = { "TYPE", "HEAD", "HEADX", "HEADY", "HEADZ", "FILL", "DIRX", "GRID", "PRINT", "PALETTE", "ASSIGN" };
 	pstring Nm2[6] = { "WIDTH", "RECNO", "NRECS", "MAX", "MIN", "GRPOLY" };
@@ -2356,7 +2355,7 @@ Instr_graph* RdGraphP()
 	g_compiler->RdLex();
 	PD->GD = new GraphD();
 
-	auto PDGD = PD->GD;
+	GraphD* PDGD = PD->GD;
 	if (g_compiler->IsOpt("GF")) PDGD->GF = g_compiler->RdStrFrml(nullptr);
 	else {
 		PDGD->FD = g_compiler->RdFileName();
@@ -2401,8 +2400,9 @@ Instr_graph* RdGraphP()
 			else PDGD->Cond = g_compiler->RdKeyInBool(PDGD->KeyIn, false, true, PDGD->SQLFilter, nullptr);
 		}
 		else if (g_compiler->IsOpt("TXT")) {
-			VD = new GraphVD();
-			ChainLast(PDGD->V, VD);
+			GraphVD* VD = new GraphVD();
+			//ChainLast(PDGD->V, VD);
+			PDGD->V.push_back(VD);
 			g_compiler->Accept('(');
 			VD->XZ = g_compiler->RdRealFrml(nullptr); g_compiler->Accept(',');
 			VD->YZ = g_compiler->RdRealFrml(nullptr); g_compiler->Accept(',');
@@ -2411,8 +2411,10 @@ Instr_graph* RdGraphP()
 			VD->Text = g_compiler->RdStrFrml(nullptr); g_compiler->Accept(')');
 		}
 		else if (g_compiler->IsOpt("TXTWIN")) {
-			WD = new GraphWD();
-			ChainLast(PDGD->W, WD); g_compiler->Accept('(');
+			GraphWD* WD = new GraphWD();
+			//ChainLast(PDGD->W, WD);
+			PDGD->W.push_back(WD);
+			g_compiler->Accept('(');
 			WD->XZ = g_compiler->RdRealFrml(nullptr); g_compiler->Accept(',');
 			WD->YZ = g_compiler->RdRealFrml(nullptr); g_compiler->Accept(',');
 			WD->XK = g_compiler->RdRealFrml(nullptr); g_compiler->Accept(',');
@@ -2422,8 +2424,9 @@ Instr_graph* RdGraphP()
 			WD->Text = g_compiler->RdStrFrml(nullptr); g_compiler->Accept(')');
 		}
 		else if (g_compiler->IsOpt("RGB")) {
-			RGBD = new GraphRGBD();
-			ChainLast(PDGD->RGB, RGBD);
+			GraphRGBD* RGBD = new GraphRGBD();
+			//ChainLast(PDGD->RGB, RGBD);
+			PDGD->RGB.push_back(RGBD);
 			g_compiler->Accept('(');
 			RGBD->Barva = g_compiler->RdStrFrml(nullptr);
 			g_compiler->Accept(',');
@@ -2435,7 +2438,7 @@ Instr_graph* RdGraphP()
 			g_compiler->Accept(')');
 		}
 		else if (g_compiler->IsOpt("WW")) {
-			Ww = new WinG();
+			WinG* Ww = new WinG();
 			g_compiler->Accept('(');
 			if (Lexem == '(') { g_compiler->RdLex(); Ww->WFlags = WNoPop; }
 			g_compiler->RdW(Ww->W);

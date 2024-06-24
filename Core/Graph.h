@@ -5,21 +5,21 @@
 
 class FieldDescr;
 
-struct GraphVD : public Chained<GraphVD>
+struct GraphVD
 {
 	//GraphVD* pChain;
 	FrmlElem* XZ, *YZ, *Velikost; /*float*/
 	FrmlElem* BarPis, *Text; /*pstring*/
 };
 
-struct GraphWD : public Chained<GraphWD>
+struct GraphWD
 {
 	//GraphWD* pChain;
 	FrmlElem* XZ, *YZ, *XK, *YK; /*float*/
 	FrmlElem* BarPoz, *BarPis, *Text; /*pstring*/
 };
 
-struct GraphRGBD : public Chained<GraphRGBD>
+struct GraphRGBD
 {
 	// GraphRGBD* pChain;
 	FrmlElem* Barva; /*pstring*/
@@ -45,9 +45,9 @@ struct GraphD
 	FrmlElem* T, *H, *HX, *HY, *HZ, *C, *D, *R, *P, *CO, *Assign, *Cond; /*pstring*/
 	FrmlElem* S, *RS, *RN, *Max, *Min, *SP; /*float*/
 	bool Interact;
-	GraphVD* V;
-	GraphWD* W;
-	GraphRGBD* RGB;
+	std::vector<GraphVD*> V;
+	std::vector<GraphWD*> W;
+	std::vector<GraphRGBD*> RGB;
 	std::vector<KeyInD*> KeyIn;
 	bool SQLFilter;
 	XKey* ViewKey;

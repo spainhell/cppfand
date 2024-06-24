@@ -15,7 +15,7 @@ enum class FType
 	MariaDB
 };
 
-class FileD //: public Chained<FileD>
+class FileD
 {
 public:
 	FileD(FType f_type);
