@@ -1896,10 +1896,13 @@ std::map<std::string, int> S3Fun = {
 FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 {
 	instr_type FunCode = _notdefined;
-	FrmlElem* Z = nullptr; FrmlElem* Z1 = nullptr; FrmlElem* Z2 = nullptr; FrmlElem* Z3 = nullptr;
+	FrmlElem* Z = nullptr;
+	FrmlElem* Z1 = nullptr;
+	FrmlElem* Z2 = nullptr;
+	FrmlElem* Z3 = nullptr;
 	char Typ = '\0';
-	short I = 0, N = 0; BYTE* B = nullptr;
-	//pstring Options;
+	short I = 0, N = 0;
+	BYTE* B = nullptr;
 
 	switch (Lexem) {
 	case _identifier: {
@@ -1943,12 +1946,15 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				}
 				Accept(',');
 				((FrmlElemFunction*)Z)->P2 = RdAdd(Typ, caller);
-				if (((BYTE)FunCode == _str) && (Typ == 'S')) goto label0;
-				TestReal(Typ);
-				Accept(',');
-				((FrmlElemFunction*)Z)->P3 = RdAdd(Typ, caller);
-				TestReal(Typ);
-			label0:
+				if (((BYTE)FunCode == _str) && (Typ == 'S')) {
+					// do nothing
+				}
+				else {
+					TestReal(Typ);
+					Accept(',');
+					((FrmlElemFunction*)Z)->P3 = RdAdd(Typ, caller);
+					TestReal(Typ);
+				}
 				Accept(')');
 			}
 			else if (IsKeyWord("COND"))
@@ -2059,7 +2065,8 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				iZ->P1 = Z1;
 				iZ->Mask = LexWord;
 				RdLex();
-				goto label4;
+				FTyp = 'R';
+				Accept(')');
 			}
 			else if (IsKeyWord("REPLACE")) {
 				RdLex();
@@ -2111,7 +2118,8 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 			label3:
 				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
 				TestString(Typ);
-				goto label4;
+				FTyp = 'R';
+				Accept(')');
 			}
 			else if (IsFun(R1Fun, LexWord, FunCode))
 			{
@@ -2119,7 +2127,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
 				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
 				TestReal(Typ);
-			label4:
+			//label4:
 				FTyp = 'R';
 				Accept(')');
 			}
@@ -2138,7 +2146,8 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 					((FrmlElemFunction*)Z)->N21 = RdInteger();
 					if (((FrmlElemFunction*)Z)->N21 > 3) OldError(136);
 				}
-				goto label4;
+				FTyp = 'R';
+				Accept(')');
 			}
 			else if (IsKeyWord("LEADCHAR"))
 			{
@@ -2227,9 +2236,11 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				else {
 					Z = caller->RdFldNameFrml(FTyp); // volani ukazatele na funkci
 				}
+
 				if (Z == nullptr) {
 					return nullptr;
 				}
+
 				if ((Z->Op != _access) || (((FrmlElem7*)Z)->LD != nullptr)) {
 					FrstSumVar = false;
 				}

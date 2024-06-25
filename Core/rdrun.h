@@ -34,7 +34,7 @@ struct AssignD
 	std::vector<AssignD*> ElseInstr;
 };
 
-struct OutpFD : public Chained<OutpFD>
+struct OutpFD
 {
 	FileD* FD = nullptr;
 	LockMode Md = NullMode;
@@ -267,7 +267,7 @@ extern std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/
 extern InpD* IDA[30];
 extern short MaxIi;
 extern XString OldMXStr;                  /* Merge */
-extern OutpFD* OutpFDRoot;
+extern std::vector<OutpFD*> OutpFDRoot;
 extern OutpRD* OutpRDs;
 extern bool Join;
 extern bool PrintView;                  /* Report */

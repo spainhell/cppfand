@@ -115,7 +115,10 @@ void Merge::Read()
 	MaxIi = Ii;
 	MakeOldMFlds();
 	OldMXStr.Clear();
-	OutpFDRoot = nullptr; OutpRDs = nullptr; Join = false; WasOi = false;
+	OutpFDRoot.clear();
+	OutpRDs = nullptr;
+	Join = false;
+	WasOi = false;
 	g_compiler->rdFldNameType = FieldNameType::none;
 
 	while (true) {
@@ -590,12 +593,17 @@ void Merge::MakeImplAssign()
 
 void Merge::TestIsOutpFile(FileD* FD)
 {
-	OutpFD* OFD = OutpFDRoot;
-	while (OFD != nullptr) {
-		if (OFD->FD == FD) {
+	//OutpFD* OFD = OutpFDRoot;
+	//while (OFD != nullptr) {
+	//	if (OFD->FD == FD) {
+	//		g_compiler->OldError(173);
+	//	}
+	//	OFD = OFD->pChain;
+	//}
+	for (OutpFD* output : OutpFDRoot) {
+		if (output->FD == FD) {
 			g_compiler->OldError(173);
 		}
-		OFD = OFD->pChain;
 	}
 }
 
@@ -681,8 +689,9 @@ label1:
 
 void Merge::RdOutpRD(OutpRD** RDRoot)
 {
-	OutpRD* R = nullptr; FileD* FD = nullptr;
-	OutpFD* OD = nullptr; InpD* ID = nullptr;
+	OutpRD* R = nullptr;
+	FileD* FD = nullptr;
+	InpD* ID = nullptr;
 	short I = 0;
 
 	RD = new OutpRD();
@@ -694,8 +703,11 @@ void Merge::RdOutpRD(OutpRD** RDRoot)
 	if (g_compiler->IsKeyWord("DUMMY")) RD->OD = nullptr;
 	else {
 		FD = g_compiler->RdFileName();
-		OD = OutpFDRoot;
-		while (OD != nullptr) {
+		OutpFD* OD = nullptr;
+		//OD = OutpFDRoot;
+		//while (OD != nullptr) {
+		for (size_t i = 0; i < OutpFDRoot.size(); i++) {
+			OD = OutpFDRoot[i];
 			if (OD->FD == FD) {
 				if (Lexem == '+') {
 					if (OD->Append) {
@@ -710,7 +722,7 @@ void Merge::RdOutpRD(OutpRD** RDRoot)
 				}
 				goto label1;
 			}
-			OD = OD->pChain;
+			//OD = OD->pChain;
 		}
 
 		OD = new OutpFD();
@@ -725,15 +737,17 @@ void Merge::RdOutpRD(OutpRD** RDRoot)
 				if (FD->typSQLFile) g_compiler->Error(172);
 			}
 		}
-		if (Lexem == '+')
-		{
+		if (Lexem == '+') {
 			OD->Append = true;
 			if (OD->InplFD != nullptr) g_compiler->Error(32);
 			g_compiler->RdLex();
 		}
-		else OD->Append = false;
-		if (OutpFDRoot == nullptr) OutpFDRoot = OD;
-		else ChainLast(OutpFDRoot, OD);
+		else {
+			OD->Append = false;
+		}
+		//if (OutpFDRoot == nullptr) OutpFDRoot = OD;
+		//else ChainLast(OutpFDRoot, OD);
+		OutpFDRoot.push_back(OD);
 	label1:
 		RD->OD = OD;
 	}
@@ -887,11 +901,12 @@ void Merge::OpenInpM()
 
 void Merge::OpenOutp()
 {
-	OutpFD* OD = OutpFDRoot;
-	while (OD != nullptr) {
-		CFile = OD->FD;
+	//OutpFD* OD = OutpFDRoot;
+	//while (OD != nullptr) {
+	for (OutpFD* OD : OutpFDRoot) {
+		FileD* f = OD->FD;
 #ifdef FandSQL
-		if (CFile->IsSQLFile) {
+		if (f->IsSQLFile) {
 			New(Strm, init);
 			Strm->OutpRewrite(OD->Append);
 			CRecPtr = OD->RecPtr;
@@ -901,41 +916,45 @@ void Merge::OpenOutp()
 #endif
 		{
 			if (OD->InplFD != nullptr) {
-				OD->FD = CFile->OpenDuplicateF(true);
+				OD->FD = f->OpenDuplicateF(true);
 			}
 			else {
-				OD->Md = CFile->FF->RewriteFile(OD->Append);
+				OD->Md = f->FF->RewriteFile(OD->Append);
 			}
-			OD = OD->pChain;
+			//OD = OD->pChain;
 		}
 	}
 }
 
 void Merge::CloseInpOutp()
 {
-	OutpFD* OD = OutpFDRoot;
-	while (OD != nullptr) {
-		CFile = OD->FD;
+	//OutpFD* OD = OutpFDRoot;
+	//while (OD != nullptr) {
+	FileD* f = nullptr;
+
+	for (OutpFD* OD : OutpFDRoot) {
+		f = OD->FD;
 		OD->FD->ClearRecSpace(OD->RecPtr);
 #ifdef FandSQL
-		if (CFile->IsSQLFile) /* !!! with Strm^ do!!! */ {
+		if (f->IsSQLFile) /* !!! with Strm^ do!!! */ {
 			OutpClose(); Done();
 		}
 		else
 #endif
 		{
 			if (OD->InplFD != nullptr) {
-				CFile = OD->InplFD;
-				CFile->FF->SubstDuplF(OD->FD, true);
+				f = OD->InplFD;
+				f->FF->SubstDuplF(OD->FD, true);
 			}
-			else CFile->OldLockMode(OD->Md);
+			else f->OldLockMode(OD->Md);
 		}
-		OD = OD->pChain;
+		//OD = OD->pChain;
 	}
+
 	for (short i = 1; i <= MaxIi; i++) {
 		IDA[i]->Scan->Close();
-		CFile->ClearRecSpace(IDA[i]->ForwRecPtr);
-		CFile->OldLockMode(IDA[i]->Md);
+		f->ClearRecSpace(IDA[i]->ForwRecPtr);
+		f->OldLockMode(IDA[i]->Md);
 	}
 }
 
