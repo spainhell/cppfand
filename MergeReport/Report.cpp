@@ -185,10 +185,11 @@ void Report::Read(RprtOpt* RO)
 	MaxIi = Ii;
 	FrstLvM = MakeOldMLvD();
 
-	PageHd = nullptr;
-	RprtHd = nullptr;
-	PageFt = nullptr;
+	PageHd.clear();
+	RprtHd.clear();
+	PageFt.clear();
 	PFZeroLst.clear();
+
 	while (true) {
 		g_compiler->ReadChar();
 		s = toupper(CurrChar);
@@ -202,47 +203,47 @@ void Report::Read(RprtOpt* RO)
 			Rd_Oi();
 			g_compiler->RdLex();
 			WhatToRd = 'i';
-			RdBlock(&IDA[Oi]->FrstLvS->Ft);
+			RdBlock(IDA[Oi]->FrstLvS->Ft);
 		}
 		else if (s == "RH") { // hlavicka sestavy
 			g_compiler->RdLex();
-			RdBlock(&RprtHd);
+			RdBlock(RprtHd);
 		}
 		else if (s == "PH") { // hlavicka stranky
 			g_compiler->RdLex();
-			RdBlock(&PageHd);
+			RdBlock(PageHd);
 		}
 		else if (s == "DH") { // hlavicka detailu
 			Rd_Oi();
 			g_compiler->RdLex();
 			WhatToRd = 'i';
-			RdBlock(&IDA[Oi]->FrstLvS->Hd);
+			RdBlock(IDA[Oi]->FrstLvS->Hd);
 		}
 		else if (s == "CH") { // hlavicka skupiny
 			Rd_Oi();
 			L = RdKeyName();
-			RdBlock(&L->Hd);
+			RdBlock(L->Hd);
 		}
 		else if (s == "RF") { // paticka sestavy
 			ChainSum = true;
 			g_compiler->RdLex();
 			LvToRd = LstLvM;
 			CZeroLst = &LvToRd->ZeroLst;
-			RdBlock(&LvToRd->Ft);
+			RdBlock(LvToRd->Ft);
 		}
 		else if (s == "CF") { // paticka skupiny
 			ChainSum = true;
 			Rd_Oi();
 			LvToRd = RdKeyName();
 			CZeroLst = &LvToRd->ZeroLst;
-			RdBlock(&LvToRd->Ft);
+			RdBlock(LvToRd->Ft);
 		}
 		else if (s == "PF") { // paticka stranky
 			ChainSum = true;
 			g_compiler->RdLex();
 			LvToRd = LstLvM;
 			CZeroLst = &PFZeroLst;
-			RdBlock(&PageFt);
+			RdBlock(PageFt);
 		}
 		else {
 			g_compiler->Error(57);
@@ -274,7 +275,7 @@ void Report::Run(RprtOpt* RO)
 	WORD Times = 0;
 	bool ex = false, b = false;
 	BlkD* BD = nullptr;
-	BlkD* RFb = nullptr;
+	std::vector<BlkD*> RFb;
 	LockMode md;
 	if (SelQuest) {
 		CFile = IDA[1]->Scan->FD;
@@ -324,8 +325,10 @@ label0:
 	GetMinKey();
 	ZeroCount();
 	MoveFrstRecs();
-	if (RprtHd != nullptr) {
-		if (RprtHd->FF1) FormFeed(ReportString);
+	if (!RprtHd.empty()) {
+		if (RprtHd[0]->FF1) {
+			FormFeed(ReportString);
+		}
 		RprtPage = 1;
 		PrintBlkChn(RprtHd, ReportString, false, false);
 		TruncLine(ReportString);
@@ -350,7 +353,9 @@ label1:
 		TruncLine(ReportString);
 		PrintBlkChn(RFb, ReportString, false, true);
 		b = WasFF2;
-		if ((PageFt != nullptr) && !PageFt->NotAtEnd) PrintPageFt(ReportString);
+		if (!PageFt.empty() && !PageFt[0]->NotAtEnd) {
+			PrintPageFt(ReportString);
+		}
 		TruncLine(ReportString);
 		RunMsgOff();
 		if (Times > 1 /*only LPT1*/) {
@@ -514,11 +519,12 @@ bool Report::FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF)
 	auto result = false;
 label1:
 	while (L != nullptr) {
-		BlkD* B1 = L->Ft;
-		while (B1 != nullptr) {
+		//BlkD* B1 = L->Ft;
+		//while (B1 != nullptr) {
+		for (BlkD* B1 : L->Ft) {
 			//RFldD* RF1 = B1->RFD;
 			//while (RF1 != nullptr) {
-			for (auto rf : B1->ReportFields) {
+			for (RFldD* rf : B1->ReportFields) {
 				std::string sLexWord = LexWord;
 				if ((Lexem == _identifier) && EquUpCase(rf->Name, sLexWord)) {
 					g_compiler->RdLex();
@@ -529,7 +535,7 @@ label1:
 				}
 				//RF1 = (RFldD*)RF1->pChain;
 			}
-			B1 = (BlkD*)B1->pChain;
+			//B1 = (BlkD*)B1->pChain;
 		}
 		L = L->ChainBack;
 	}
@@ -773,7 +779,7 @@ label1:
 	g_compiler->AcceptKeyWord("END");
 }
 
-void Report::RdBlock(BlkD** BB)
+void Report::RdBlock(std::vector<BlkD*>& BB)
 {
 	// metoda pouzivala metodu StoreCh, ta byla nahrazena promennou storedCh, ktera slouzi k ukladani nactenych dat
 
@@ -792,8 +798,9 @@ void Report::RdBlock(BlkD** BB)
 	LocVar* LV = nullptr;
 
 	CBlk = new BlkD();
-	if (*BB == nullptr) *BB = CBlk;
-	else ChainLast(*BB, CBlk);
+	//if (*BB == nullptr) *BB = CBlk;
+	//else ChainLast(*BB, CBlk);
+	BB.push_back(CBlk);
 	size_t reportFieldsVectorIndex = 0;
 	RdCond();
 	if (g_compiler->IsKeyWord("BEGIN")) {
@@ -1473,18 +1480,19 @@ bool Report::OutOfLineBound(BlkD* B)
 		|| B->AbsLine && (RunInt(CFile, B->LineNo, CRecPtr) < RprtLine));
 }
 
-void Report::PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine)
+void Report::PrintBlkChn(std::vector<BlkD*>& block, std::string& text, bool ChkPg, bool ChkLine)
 {
-	while (B != nullptr) {
-		if (RunBool(CFile, B->Bool, CRecPtr)) {
+	//while (B != nullptr) {
+	for (BlkD* b : block) {
+		if (RunBool(CFile, b->Bool, CRecPtr)) {
 			if (ChkLine) {
-				if (OutOfLineBound(B)) WasFF2 = true;
-				if (B->FF1 || WasFF2) NewPage(text);
+				if (OutOfLineBound(b)) WasFF2 = true;
+				if (b->FF1 || WasFF2) NewPage(text);
 			}
-			PrintTxt(B, text, ChkPg);
-			WasFF2 = B->FF2;
+			PrintTxt(b, text, ChkPg);
+			WasFF2 = b->FF2;
 		}
-		B = B->pChain;
+		//B = B->pChain;
 	}
 }
 
@@ -1732,46 +1740,58 @@ void Report::PendingTT(std::string& text)
 	//}
 }
 
-void Report::PrintBlock(BlkD* B, std::string& text, BlkD* DH)
+void Report::PrintBlock(std::vector<BlkD*>& block, std::string& text, std::vector<BlkD*>& dh)
 {
-	WORD LAfter = 0; BlkD* B1 = nullptr;
+	WORD LAfter = 0;
+	std::vector<BlkD*>::iterator DH = dh.begin();
+	//BlkD* B1 = nullptr;
 	bool pdh = false;
-	while (B != nullptr) {
-		if (RunBool(CFile, B->Bool, CRecPtr)) {
-			if (B != Y.Blk) {
-				if ((B->NTxtLines > 0) && (B->NBlksFrst < LineLenLst)) TruncLine(text);
-				if (OutOfLineBound(B)) WasFF2 = true;
-				LAfter = RprtLine + MaxI(0, B->NTxtLines - 1);
-				if ((DH != nullptr) && (PrintDH >= DH->DHLevel + 1)) {
-					B1 = DH;
-					while (B1 != nullptr) {
-						if (RunBool(CFile, B1->Bool, CRecPtr)) LAfter += B1->NTxtLines;
-						B1 = B1->pChain;
+	//while (b != nullptr) {
+	for (BlkD* b : block) {
+		if (RunBool(CFile, b->Bool, CRecPtr)) {
+			if (b != Y.Blk) {
+				if ((b->NTxtLines > 0) && (b->NBlksFrst < LineLenLst)) {
+					TruncLine(text);
+				}
+				if (OutOfLineBound(b)) {
+					WasFF2 = true;
+				}
+				LAfter = RprtLine + MaxI(0, b->NTxtLines - 1);
+				if ((DH != dh.end()) && (PrintDH >= (*DH)->DHLevel + 1)) {
+					std::vector<BlkD*>::iterator B1 = DH;
+					while (B1 != dh.end()) {
+						if (RunBool(CFile, (*B1)->Bool, CRecPtr)) LAfter += (*B1)->NTxtLines;
+						++B1; // = B1->pChain;
 					}
 				}
-				if (B->FF1 || WasFF2 || FrstBlk && (B->NTxtLines > 0) ||
+				if (b->FF1 || WasFF2 || FrstBlk && (b->NTxtLines > 0) ||
 					(PgeLimit < PgeSize) && (LAfter > PgeLimit))
 					NewPage(text);
-				if ((DH != nullptr) && (PrintDH >= DH->DHLevel + 1)) {
-					PrintBlkChn(DH, text, true, false);
+				if ((DH != dh.end()) && (PrintDH >= (*DH)->DHLevel + 1)) {
+					// create new vector from DH to the end
+					std::vector<BlkD*> dh2(DH, dh.end());
+					PrintBlkChn(dh2, text, true, false);
 					PrintDH = 0;
 				}
 			}
 			WasOutput = false;
-			PrintTxt(B, text, true);
-			WasFF2 = B->FF2;
-			if ((DH == nullptr) && WasOutput) pdh = true;
-			SumUp(CFile, B->Sum, CRecPtr);
+			PrintTxt(b, text, true);
+			WasFF2 = b->FF2;
+			if ((DH == dh.end()) && WasOutput) {
+				pdh = true;
+			}
+			SumUp(CFile, b->Sum, CRecPtr);
 		}
-		B = B->pChain;
+		//b = b->pChain;
 	}
 	if (pdh) PrintDH = 2;
 }
 
 void Report::Footings(LvDescr* L, LvDescr* L2, std::string& text)
 {
+	std::vector<BlkD*> unused;
 	while (L != nullptr) {
-		PrintBlock(L->Ft, text, nullptr);
+		PrintBlock(L->Ft, text, unused);
 		if (L == L2) return;
 		L = L->Chain;
 	}
@@ -1779,8 +1799,9 @@ void Report::Footings(LvDescr* L, LvDescr* L2, std::string& text)
 
 void Report::Headings(LvDescr* L, LvDescr* L2, std::string& text)
 {
+	std::vector<BlkD*> unused;
 	while ((L != nullptr) && (L != L2)) {
-		PrintBlock(L->Hd, text, nullptr);
+		PrintBlock(L->Hd, text, unused);
 		L = L->ChainBack;
 	}
 }

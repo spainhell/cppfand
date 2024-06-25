@@ -27,6 +27,9 @@
     <ClInclude Include="MergeReportBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BlkD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Report.cpp">
@@ -39,6 +42,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MergeReportBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BlkD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

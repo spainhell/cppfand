@@ -21,9 +21,7 @@ std::vector<OutpRD*> OutpRDs;
 bool Join;
 bool PrintView;                  /* Report */
 TextFile Rprt;		// puvodne text - souvisi s text. souborem
-BlkD* RprtHd;
-BlkD* PageHd;
-BlkD* PageFt;
+
 std::vector<FrmlElemSum*> PFZeroLst;
 LvDescr* FrstLvM;
 LvDescr* LstLvM; /* LstLvM->Ft=RF */

@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BlkD.h" />
     <ClInclude Include="ReportGenerator.h" />
     <ClInclude Include="Merge.h" />
     <ClInclude Include="Report.h" />
     <ClInclude Include="MergeReportBase.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BlkD.cpp" />
     <ClCompile Include="ReportGenerator.cpp" />
     <ClCompile Include="Merge.cpp" />
     <ClCompile Include="Report.cpp" />

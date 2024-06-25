@@ -182,16 +182,20 @@ void FileD::AssignNRecs(bool Add, int N)
 #endif
 	md = NewLockMode(DelMode);
 	OldNRecs = FF->NRecs;
+
 	if (Add) {
 		N = N + OldNRecs;
 	}
+
 	if ((N < 0) || (N == OldNRecs)) {
 		OldLockMode(md);
 		return;
 	}
+
 	if ((N == 0) && (FF->TF != nullptr)) {
 		FF->TF->SetEmpty();
 	}
+
 	if (FF->file_type == FileType::INDEX) {
 		if (N == 0) {
 			FF->NRecs = 0;
@@ -209,18 +213,22 @@ void FileD::AssignNRecs(bool Add, int N)
 			RunError(821);
 		}
 	}
+
 	if (N < OldNRecs) {
 		DecNRecs(OldNRecs - N);
 		OldLockMode(md);
 		return;
 	}
+
 	BYTE* record = GetRecSpace();
 	ZeroAllFlds(record, false);
 	SetDeletedFlag(record);
 	IncNRecs(N - OldNRecs);
+
 	for (int i = OldNRecs + 1; i <= N; i++) {
 		WriteRec(i, record);
 	}
+
 	delete[] record; record = nullptr;
 
 	OldLockMode(md);

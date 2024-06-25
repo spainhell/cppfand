@@ -1,11 +1,10 @@
 #pragma once
+#include "BlkD.h"
 #include "MergeReportBase.h"
-#include "../Core/access-structs.h"
 #include "../Core/Compiler.h"
 #include "../Core/rdrun.h"
 
 struct InpD;
-struct BlkD;
 class KeyFldD;
 
 struct TTD
@@ -60,7 +59,7 @@ private:
 	LvDescr* NewLvS(LvDescr* L, InpD* ID);
 	void RdAssignBlk(std::vector<AssignD*>* ARoot);
 	void RdBeginEnd(std::vector<AssignD*>* ARoot);
-	void RdBlock(BlkD** BB);
+	void RdBlock(std::vector<BlkD*>& BB);
 	void RdCh(short& LineLen);
 	short NUnderscores(char C, short& LineLen);
 	void EndString(BlkD* block, BYTE* buffer, size_t LineLen, size_t NBytesStored);
@@ -80,7 +79,7 @@ private:
 	void RunAProc(std::vector<AssignD*> vAssign);
 	void PrintTxt(BlkD* B, std::string& text, bool ChkPg);
 	bool OutOfLineBound(BlkD* B);
-	void PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine);
+	void PrintBlkChn(std::vector<BlkD*>& block, std::string& text, bool ChkPg, bool ChkLine);
 	void PrintPageFt(std::string& text);
 	void PrintPageHd(std::string& text);
 	void NewPage(std::string& text);
@@ -89,7 +88,7 @@ private:
 	std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap);
 	void CheckPgeLimit(std::string& text);
 	void PendingTT(std::string& text);
-	void PrintBlock(BlkD* B, std::string& text, BlkD* DH);
+	void PrintBlock(std::vector<BlkD*>& block, std::string& text, std::vector<BlkD*>& dh);
 	void Footings(LvDescr* L, LvDescr* L2, std::string& text);
 	void Headings(LvDescr* L, LvDescr* L2, std::string& text);
 	void ReadInpFile(InpD* ID);
