@@ -116,7 +116,7 @@ void Merge::Read()
 	MakeOldMFlds();
 	OldMXStr.Clear();
 	OutpFDRoot.clear();
-	OutpRDs = nullptr;
+	OutpRDs.clear();
 	Join = false;
 	WasOi = false;
 	g_compiler->rdFldNameType = FieldNameType::none;
@@ -143,13 +143,13 @@ void Merge::Read()
 				g_compiler->RdLex();
 				WhatToRd = 'i';
 				ChainSum = false;
-				RdOutpRD(&(IDA[Oi]->RD));
+				RdOutpRD(IDA[Oi]->RD);
 			}
 			else if (CurrChar == '_') {
 				g_compiler->RdLex();
 				WhatToRd = 'O';
 				ChainSum = true;
-				RdOutpRD(&OutpRDs);
+				RdOutpRD(OutpRDs);
 			}
 			else g_compiler->Error(90);
 		}
@@ -687,7 +687,7 @@ label1:
 	return A;
 }
 
-void Merge::RdOutpRD(OutpRD** RDRoot)
+void Merge::RdOutpRD(std::vector<OutpRD*>& RDRoot)
 {
 	OutpRD* R = nullptr;
 	FileD* FD = nullptr;
@@ -695,12 +695,15 @@ void Merge::RdOutpRD(OutpRD** RDRoot)
 	short I = 0;
 
 	RD = new OutpRD();
-	if (*RDRoot == nullptr) *RDRoot = RD;
-	else ChainLast(*RDRoot, RD);
+	//if (*RDRoot == nullptr) *RDRoot = RD;
+	//else ChainLast(*RDRoot, RD);
+	RDRoot.push_back(RD);
 
 	//RD->Ass = nullptr;
 	//RD->Bool = nullptr;
-	if (g_compiler->IsKeyWord("DUMMY")) RD->OD = nullptr;
+	if (g_compiler->IsKeyWord("DUMMY")) {
+		RD->OD = nullptr;
+	}
 	else {
 		FD = g_compiler->RdFileName();
 		OutpFD* OD = nullptr;
@@ -858,13 +861,15 @@ void Merge::RunAssign(std::vector<AssignD*> Assigns)
 	}
 }
 
-void Merge::WriteOutp(OutpRD* RD)
+void Merge::WriteOutp(std::vector<OutpRD*>& v_outputs)
 {
-	OutpFD* OD;
-	while (RD != nullptr) {
+	//while (RD != nullptr) {
+	for (OutpRD* RD : v_outputs) {
 		if (RunBool(CFile, RD->Bool, CRecPtr)) {
-			OD = RD->OD;
-			if (OD == nullptr /*dummy */) RunAssign(RD->Ass);
+			OutpFD* OD = RD->OD;
+			if (OD == nullptr /*dummy */) {
+				RunAssign(RD->Ass);
+			}
 			else {
 				CFile = OD->FD;
 				CRecPtr = OD->RecPtr;
@@ -882,7 +887,7 @@ void Merge::WriteOutp(OutpRD* RD)
 				}
 			}
 		}
-		RD = RD->pChain;
+		//RD = RD->pChain;
 	}
 }
 

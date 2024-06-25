@@ -46,7 +46,7 @@ struct OutpFD
 #endif
 };
 
-struct OutpRD : public Chained<OutpRD>
+struct OutpRD
 {
 	OutpFD* OD = nullptr; /*nullptr=dummy*/
 	FrmlElem* Bool = nullptr;
@@ -86,7 +86,7 @@ struct InpD
 	LvDescr* FrstLvS = nullptr;
 	LvDescr* LstLvS = nullptr;		/* FrstLvS->Ft=DE */
 	bool IsInplace = false;              /* only Merge */
-	OutpRD* RD = nullptr;
+	std::vector<OutpRD*> RD;
 };
 
 /* Report */
@@ -268,7 +268,7 @@ extern InpD* IDA[30];
 extern short MaxIi;
 extern XString OldMXStr;                  /* Merge */
 extern std::vector<OutpFD*> OutpFDRoot;
-extern OutpRD* OutpRDs;
+extern std::vector<OutpRD*> OutpRDs;
 extern bool Join;
 extern bool PrintView;                  /* Report */
 extern TextFile Rprt;		// puvodne text - souvisi s text. souborem

@@ -17,7 +17,7 @@ InpD* IDA[30];
 short MaxIi;
 XString OldMXStr;                  /* Merge */
 std::vector<OutpFD*> OutpFDRoot;
-OutpRD* OutpRDs;
+std::vector<OutpRD*> OutpRDs;
 bool Join;
 bool PrintView;                  /* Report */
 TextFile Rprt;		// puvodne text - souvisi s text. souborem
