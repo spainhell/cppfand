@@ -119,7 +119,7 @@ public:
 	Instr_writeln();
 	~Instr_writeln() override;
 	WriteType LF = WriteType::write; /* 0-write, 1-writeln, 2-message, 3-message+help */
-	WrLnD WD;
+	std::vector<WrLnD*> WD;
 	RdbD* mHlpRdb = nullptr;
 	FrmlElem* mHlpFrml = nullptr;
 };

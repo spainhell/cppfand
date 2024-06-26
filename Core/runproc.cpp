@@ -253,12 +253,13 @@ void WritelnProc(Instr_writeln* PD)
 	std::string t;
 	std::string x;
 
-	WrLnD* W = &PD->WD;
+	//WrLnD* W = &PD->WD;
 	WriteType LF = PD->LF;
 	TextAttr = ProcAttr;
 	std::string printS;
 
-	while (W != nullptr) {
+	//while (W != nullptr) {
+	for (WrLnD* W : PD->WD) {
 		switch (W->Typ) {
 		case 'S': {
 			if (LF == WriteType::message || LF == WriteType::msgAndHelp) {
@@ -267,7 +268,7 @@ void WritelnProc(Instr_writeln* PD)
 			else {
 				printS += RunStdStr(CFile, W->Frml, CRecPtr);
 			}
-			W = W->pChain;
+			//W = W->pChain;
 			continue;
 			break;
 		}
@@ -283,7 +284,7 @@ void WritelnProc(Instr_writeln* PD)
 			break;
 		}
 		case 'D':
-			x = StrDate(RunReal(CFile, W->Frml, CRecPtr), *W->Mask);
+			x = StrDate(RunReal(CFile, W->Frml, CRecPtr), W->Mask);
 			break;
 		}
 
@@ -294,8 +295,9 @@ void WritelnProc(Instr_writeln* PD)
 			printS += x;
 		}
 
-		W = W->pChain;
-	}
+		//W = W->pChain;
+	} // for
+
 	screen.WriteStyledStringToWindow(printS, ProcAttr);
 
 	while (true) {

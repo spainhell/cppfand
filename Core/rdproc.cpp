@@ -148,7 +148,7 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 			result = 'F';
 			*LLD = ld;
 			return result;
-	}
+		}
 		else {
 			if (lv->f_typ == 'i') {
 				std::vector<KeyFldD*>* kf = &((XWKey*)lv->record)->KFlds;
@@ -164,7 +164,7 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 			result = lv->f_typ;
 			return result;
 		}
-}
+	}
 	g_compiler->TestIdentif();
 	for (LinkD* ld : LinkDRoot) {
 		sLexWord = LexWord;
@@ -378,7 +378,7 @@ FrmlElemRecNo* RdKeyOfOrRecNo(instr_type Op, WORD& N, FrmlElem* Arg[30], char& T
 #ifdef FandSQL
 		if (v_files->typSQLFile) Error(155);
 #endif
-}
+	}
 	return Z;
 }
 
@@ -492,7 +492,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 #ifdef FandSQL
 		if (v_files->typSQLFile) Error(155);
 #endif
-		}
+	}
 	else if (g_compiler->IsKeyWord("ISDELETED")) {
 		g_compiler->RdLex();
 		FTyp = 'B';
@@ -607,7 +607,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	FrmlElem* result = Z;
 	FFTyp = FTyp;
 	return result;
-	}
+}
 
 XKey* RdViewKeyImpl(FileD* FD)
 {
@@ -913,7 +913,7 @@ Instr_forall* RdForAll()
 #ifdef FandSQL
 		if (processed_file->typSQLFile) OldError(155);
 #endif
-		}
+	}
 	Instr_forall* PD = new Instr_forall(); // GetPInstr(_forall, 41);
 	PD->CFD = processed_file;
 	PD->CVar = LVi;
@@ -961,7 +961,7 @@ Instr_forall* RdForAll()
 	g_compiler->AcceptKeyWord("DO");
 	PD->CInstr = RdPInstr();
 	return PD;
-	}
+}
 
 std::vector<Instr*> RdBeginEnd()
 {
@@ -1503,7 +1503,7 @@ void RdProcCall(Instr** pinstr)
 	}
 	else g_compiler->Error(34);
 	g_compiler->Accept(')');
-	}
+}
 
 std::vector<FieldDescr*> RdFlds()
 {
@@ -1675,7 +1675,7 @@ void RdEditOpt(EditOpt* EO, FileD* file_d)
 	else {
 		g_compiler->Error(125);
 	}
-	}
+}
 
 Instr* RdReportCall()
 {
@@ -2161,57 +2161,72 @@ Instr* RdTurnCat()
 
 void RdWriteln(WriteType OpKind, Instr_writeln** pinstr)
 {
-	WrLnD* d = new WrLnD();
+	std::vector<WrLnD*> d;
 	g_compiler->RdLex();
 	FrmlElem* z = nullptr;
-	WrLnD* w = d;
-label1:
-	w->Frml = g_compiler->RdFrml(w->Typ, nullptr);
-	if (w->Typ == 'R') {
-		w->Typ = 'F';
-		if (Lexem == ':') {
-			g_compiler->RdLex();
-			if (Lexem == _quotedstr) {
-				w->Typ = 'D';
-				w->Mask = StoreStr(LexWord);
+	WrLnD* w = new WrLnD();
+	d.push_back(w);
+//label1:
+	while (true) {
+		w->Frml = g_compiler->RdFrml(w->Typ, nullptr);
+
+		if (w->Typ == 'R') {
+			w->Typ = 'F';
+			if (Lexem == ':') {
 				g_compiler->RdLex();
-			}
-			else {
-				w->N = g_compiler->RdInteger();
-				if (Lexem == ':') {
+				if (Lexem == _quotedstr) {
+					w->Typ = 'D';
+					w->Mask = LexWord;
 					g_compiler->RdLex();
-					if (Lexem == '-') {
+				}
+				else {
+					w->N = g_compiler->RdInteger();
+					if (Lexem == ':') {
 						g_compiler->RdLex();
-						w->M = -g_compiler->RdInteger();
+						if (Lexem == '-') {
+							g_compiler->RdLex();
+							w->M = -g_compiler->RdInteger();
+						}
+						else {
+							w->M = g_compiler->RdInteger();
+						}
 					}
-					else w->M = g_compiler->RdInteger();
 				}
 			}
 		}
-	}
-	if (Lexem == ',') {
-		g_compiler->RdLex();
-		if ((OpKind == WriteType::message) && g_compiler->IsOpt("HELP")) {
-			z = g_compiler->RdStrFrml(nullptr);
+
+		if (Lexem == ',') {
+			g_compiler->RdLex();
+			if ((OpKind == WriteType::message) && g_compiler->IsOpt("HELP")) {
+				z = g_compiler->RdStrFrml(nullptr);
+			}
+			else {
+				w = new WrLnD();
+				//if (d == nullptr) d = w;
+				//else ChainLast(d, w);
+				d.push_back(w);
+				//goto label1;
+				continue;
+			}
 		}
-		else {
-			//w = (WrLnD*)GetZStore(sizeof(d));
-			w = new WrLnD();
-			if (d == nullptr) d = w;
-			else ChainLast(d, w);
-			goto label1;
-		}
+
+		break;
+	} // while
+
+	WORD N = 1 + sizeof(WrLnD);
+	if (z != nullptr) {
+		OpKind = WriteType::msgAndHelp;
+		N += 8;
 	}
-	WORD N = 1 + sizeof(d);
-	if (z != nullptr) { OpKind = WriteType::msgAndHelp; N += 8; }
-	auto pd = new Instr_writeln(); // GetPInstr(_writeln, N);
-	/* !!! with pd^ do!!! */
+
+	Instr_writeln* pd = new Instr_writeln();
 	pd->LF = OpKind;
-	pd->WD = *d;
+	pd->WD = d;
 	if (OpKind == WriteType::msgAndHelp) {
 		pd->mHlpRdb = CRdb;
 		pd->mHlpFrml = z;
 	}
+
 	*pinstr = pd;
 }
 

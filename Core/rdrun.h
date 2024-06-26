@@ -216,12 +216,12 @@ struct ChoiceD
 	std::string Txt;
 };
 
-struct WrLnD : Chained<WrLnD>
+struct WrLnD
 {
 	FrmlElem* Frml = nullptr;
 	char Typ = '\0'; /* S, B, F, D */
 	BYTE N = 0, M = 0;
-	std::string* Mask = nullptr;
+	std::string Mask;
 };
 
 struct LockD

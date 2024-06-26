@@ -723,6 +723,8 @@ void Merge::RdOutpRD(std::vector<OutpRD*>& RDRoot)
 				else if (OD->Append) {
 					g_compiler->Error(31);
 				}
+				else {
+				}
 				goto label1;
 			}
 			//OD = OD->pChain;
