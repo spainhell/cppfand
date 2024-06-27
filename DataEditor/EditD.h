@@ -53,7 +53,7 @@ public:
 	//std::vector<std::string> RecTxt;
 	ERecTxtD* RecTxt = nullptr;
 	BYTE NRecs = 0;     /*display*/
-	EFldD* FirstFld = nullptr;
+	std::vector<EFldD*> FirstFld;
 	EFldD* LastFld = nullptr;
 	EFldD* StartFld = nullptr;
 	EFldD* CFld = nullptr; EFldD* FirstEmptyFld = nullptr;    /*copied*/

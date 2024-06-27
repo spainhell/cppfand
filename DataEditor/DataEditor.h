@@ -49,7 +49,7 @@ public:
 
     bool TxtEdCtrlUBrk = false;
     bool TxtEdCtrlF4Brk = false;
-    EFldD* CFld = nullptr;
+    std::vector<EFldD*> CFld;
 
 private:
     FileD* file_d_ = nullptr;

@@ -920,7 +920,7 @@ void DataEditor::DisplFld(EFldD* D, WORD I, BYTE Color)
 // Display a form record
 void DataEditor::DisplRec(WORD I)
 {
-	EFldD* D = nullptr;
+	//EFldD* D = nullptr;
 	bool NewFlds = false;
 	WORD a = edit_->dNorm;
 	int N = BaseRec + I - 1;
@@ -944,8 +944,9 @@ void DataEditor::DisplRec(WORD I)
 		}
 	}
 
-	D = edit_->FirstFld;
-	while (D != nullptr) {
+	//D = edit_->FirstFld;
+	//while (D != nullptr) {
+	for (EFldD* D : edit_->FirstFld) {
 		if (IsCurrNewRec && D == FirstEmptyFld && D->Impl == nullptr) {
 			NewFlds = true;
 		}
@@ -962,7 +963,7 @@ void DataEditor::DisplRec(WORD I)
 		if (IsCurrNewRec && (D == FirstEmptyFld)) {
 			NewFlds = true;
 		}
-		D = D->pChain;
+		//D = D->pChain;
 	}
 	file_d_->ClearRecSpace(p);
 	delete[] p; p = nullptr;
@@ -1005,7 +1006,7 @@ void DataEditor::NewRecExit()
 
 void DataEditor::SetCPage(WORD& c_page, ERecTxtD** rt)
 {
-	c_page = CFld->Page;
+	c_page = CFld[0]->Page;
 	*rt = edit_->RecTxt;
 	for (WORD i = 1; i < c_page; i++) {
 		*rt = (*rt)->pChain;
@@ -1155,20 +1156,22 @@ void DataEditor::IVon()
 void DataEditor::SetRecAttr(WORD I)
 {
 	WORD TA = RecAttr(I);
-	EFldD* D = edit_->FirstFld;
-	while (D != nullptr) {
+	//EFldD* D = edit_->FirstFld;
+	//while (D != nullptr) {
+	for (EFldD* D : edit_->FirstFld) {
 		if (D->Page == CPage) {
 			SetFldAttr(D, I, TA);
 		}
-		D = (EFldD*)D->pChain;
+		//D = (EFldD*)D->pChain;
 	}
 }
 
 void DataEditor::DisplTabDupl()
 {
-	EFldD* D = edit_->FirstFld;
+	//EFldD* D = edit_->FirstFld;
 	TextAttr = edit_->dTab;
-	while (D != nullptr) {
+	//while (D != nullptr) {
+	for (EFldD* D : edit_->FirstFld) {
 		if (D->Page == CPage) {
 			const short Col = D->Col + D->L;
 			const short Row = FldRow(D, 1);
@@ -1183,7 +1186,7 @@ void DataEditor::DisplTabDupl()
 				screen.ScrFormatWrText(Col, Row, "%c", ' '); // printf(" ");
 			}
 		}
-		D = (EFldD*)D->pChain;
+		//D = (EFldD*)D->pChain;
 	}
 }
 
@@ -1273,14 +1276,15 @@ void DataEditor::SetNewWwRecAttr()
 void DataEditor::MoveDispl(WORD From, WORD Where, WORD Number)
 {
 	for (WORD i = 1; i <= Number; i++) {
-		EFldD* D = edit_->FirstFld;
-		while (D != nullptr) {
+		//EFldD* D = edit_->FirstFld;
+		//while (D != nullptr) {
+		for (EFldD* D : edit_->FirstFld) {
 			WORD r1 = FldRow(D, From) - 1;
 			WORD r2 = FldRow(D, Where) - 1;
 			screen.ScrMove(D->Col - 1, r1, D->Col - 1, r2, D->L);
 			if (HasTTWw(D->FldD))
 				screen.ScrMove(D->Col + 1, r1, D->Col + 1, r2, D->FldD->L - 2);
-			D = D->pChain;
+			//D = D->pChain;
 		}
 		if (From < Where) {
 			From--;
