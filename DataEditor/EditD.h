@@ -53,15 +53,13 @@ public:
 	//std::vector<std::string> RecTxt;
 	ERecTxtD* RecTxt = nullptr;
 	BYTE NRecs = 0;     /*display*/
-	std::vector<EFldD*>::iterator FirstFld;
-	EFldD* LastFld = nullptr;
-	EFldD* StartFld = nullptr;
-
+	std::vector<EFldD*> FirstFld;
+	std::vector<EFldD*>::iterator LastFld;
+	std::vector<EFldD*>::iterator StartFld;
 	std::vector<EFldD*>::iterator CFld;
-	std::vector<EFldD*>::iterator FirstEmptyFld;    /*copied*/
-
-	XKey* VK = nullptr; XWKey* WK = nullptr;                  /*  "   */
-	int BaseRec = 0; BYTE IRec = 0;                           /*  "   */
+	std::vector<EFldD*>::iterator FirstEmptyFld;    /* copied */
+	XKey* VK = nullptr; XWKey* WK = nullptr;        /*   "    */
+	int BaseRec = 0; BYTE IRec = 0;                 /*   "    */
 	bool IsNewRec = false;
 
 	std::unique_ptr<DataEditorParams> params_ = std::make_unique<DataEditorParams>();

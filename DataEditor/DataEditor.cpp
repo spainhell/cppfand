@@ -928,7 +928,7 @@ void DataEditor::DisplRec(WORD I)
 {
 	//EFldD* D = nullptr;
 	bool NewFlds = false;
-	WORD a = edit_->dNorm;
+	BYTE a = edit_->dNorm;
 	int N = BaseRec + I - 1;
 	bool IsCurrNewRec = IsNewRec && (I == IRec);
 	uint8_t* p = file_d_->GetRecSpace();
@@ -950,25 +950,26 @@ void DataEditor::DisplRec(WORD I)
 		}
 	}
 
-	std::vector<EFldD*>::iterator D = edit_->FirstFld;
-	while (D != nullptr) {
-		if (IsCurrNewRec && D == FirstEmptyFld && (*D)->Impl == nullptr) {
+	//std::vector<EFldD*>::iterator D = edit_->FirstFld;
+	//while (D != nullptr) {
+	for (EFldD* D : edit_->FirstFld) {
+		if (IsCurrNewRec && D == *FirstEmptyFld && D->Impl == nullptr) {
 			NewFlds = true;
 		}
-		TextAttr = a;
+		TextAttr = static_cast<uint8_t>(a);
 		// Display an item of the record
-		if ((*D)->Page == CPage) {
+		if (D->Page == CPage) {
 			if (NewFlds) {
-				DisplEmptyFld(*D, I);
+				DisplEmptyFld(D, I);
 			}
 			else {
-				DisplFld(*D, I, TextAttr);
+				DisplFld(D, I, TextAttr);
 			}
 		}
-		if (IsCurrNewRec && (D == FirstEmptyFld)) {
+		if (IsCurrNewRec && (D == *FirstEmptyFld)) {
 			NewFlds = true;
 		}
-		++D; //D = D->pChain;
+		//D = D->pChain;
 	}
 
 	file_d_->ClearRecSpace(p);
@@ -1162,35 +1163,37 @@ void DataEditor::IVon()
 void DataEditor::SetRecAttr(WORD I)
 {
 	WORD TA = RecAttr(I);
-	std::vector<EFldD*>::iterator D = edit_->FirstFld;
-	while (D != nullptr) {
-		if ((*D)->Page == CPage) {
-			SetFldAttr(*D, I, TA);
+	//std::vector<EFldD*>::iterator D = edit_->FirstFld;
+	//while (D != nullptr) {
+	for (EFldD* D : edit_->FirstFld) {
+		if (D->Page == CPage) {
+			SetFldAttr(D, I, TA);
 		}
-		++D; //D = (EFldD*)D->pChain;
+		//D = (EFldD*)D->pChain;
 	}
 }
 
 void DataEditor::DisplTabDupl()
 {
 	TextAttr = edit_->dTab;
-	std::vector<EFldD*>::iterator D = edit_->FirstFld;
-	while (D != nullptr) {
-		if ((*D)->Page == CPage) {
-			const short Col = (*D)->Col + (*D)->L;
-			const short Row = FldRow(*D, 1);
-			if ((*D)->Tab) {
-				if ((*D)->Dupl) screen.ScrFormatWrText(Col, Row, "%c", 0x1F); // printf("%c", 0x1F);
+	//std::vector<EFldD*>::iterator D = edit_->FirstFld;
+	//while (D != nullptr) {
+	for (EFldD* D : edit_->FirstFld) {
+		if (D->Page == CPage) {
+			const short Col = D->Col + D->L;
+			const short Row = FldRow(D, 1);
+			if (D->Tab) {
+				if (D->Dupl) screen.ScrFormatWrText(Col, Row, "%c", 0x1F); // printf("%c", 0x1F);
 				else screen.ScrFormatWrText(Col, Row, "%c", 0x11); // printf("%c", 0x11);
 			}
-			else if ((*D)->Dupl) {
+			else if (D->Dupl) {
 				screen.ScrFormatWrText(Col, Row, "%c", 0x19); // printf("%c", 0x19);
 			}
 			else {
 				screen.ScrFormatWrText(Col, Row, "%c", ' '); // printf(" ");
 			}
 		}
-		++D; //D = (EFldD*)D->pChain;
+		//D = (EFldD*)D->pChain;
 	}
 }
 
@@ -1280,15 +1283,17 @@ void DataEditor::SetNewWwRecAttr()
 void DataEditor::MoveDispl(WORD From, WORD Where, WORD Number)
 {
 	for (WORD i = 1; i <= Number; i++) {
-		std::vector<EFldD*>::iterator D = edit_->FirstFld;
-		while (D != nullptr) {
-			WORD r1 = FldRow(*D, From) - 1;
-			WORD r2 = FldRow(*D, Where) - 1;
-			screen.ScrMove((*D)->Col - 1, r1, (*D)->Col - 1, r2, (*D)->L);
-			if (HasTTWw((*D)->FldD))
-				screen.ScrMove((*D)->Col + 1, r1, (*D)->Col + 1, r2, (*D)->FldD->L - 2);
+		//std::vector<EFldD*>::iterator D = edit_->FirstFld;
+		//while (D != nullptr) {
+		for (EFldD* D : edit_->FirstFld) {
+			WORD r1 = FldRow(D, From) - 1;
+			WORD r2 = FldRow(D, Where) - 1;
+			screen.ScrMove(D->Col - 1, r1, D->Col - 1, r2, D->L);
+			if (HasTTWw(D->FldD))
+				screen.ScrMove(D->Col + 1, r1, D->Col + 1, r2, D->FldD->L - 2);
 			//D = D->pChain;
 		}
+
 		if (From < Where) {
 			From--;
 			Where--;
@@ -1694,6 +1699,18 @@ void DataEditor::RefreshSubset()
 	}
 	DisplAllWwRecs();
 	file_d_->OldLockMode(md);
+}
+
+void DataEditor::GotoPrevRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld)
+{
+	--NewFld;
+	GotoRecFld(NewRec, NewFld);
+}
+
+void DataEditor::GotoNextRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld)
+{
+	++NewFld;
+	GotoRecFld(NewRec, NewFld);
 }
 
 void DataEditor::GotoRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld)
@@ -2145,7 +2162,7 @@ bool DataEditor::DeleteRecProc()
 		}
 		file_d_->DeleteRec(N, record_);
 	}
-	CFld = edit_->FirstFld;
+	CFld = edit_->FirstFld.begin();
 	IRec = (BYTE)oIRec;
 	BaseRec = oBaseRec;
 	file_d_->ClearDeletedFlag(record_);
@@ -2659,8 +2676,8 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		}
 	}
 	if (params_->MustCheck) {   /* repeat field checking */
-		std::vector<EFldD*>::iterator D = edit_->FirstFld;
-		while (D != nullptr) {
+		std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+		while (D != edit_->FirstFld.end()) {
 			C = CompChk(*D, 'F');
 			if (C != nullptr) {
 				if (MayDispl) GotoRecFld(CRec(), D);
@@ -2704,7 +2721,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 	}
 #endif
 	if (HasIndex) {   /* test duplicate keys */
-		for (auto& K : file_d_->Keys) {
+		for (XKey* K : file_d_->Keys) {
 			if (!K->Duplic && TestDuplKey(file_d_, K)) {
 				UnLockWithDep(OldMd);
 				DuplKeyMsg(K);
@@ -2818,7 +2835,7 @@ void DataEditor::DuplFromPrevRec()
 
 void DataEditor::InsertRecProc(void* RP)
 {
-	GotoRecFld(CRec(), edit_->FirstFld);
+	GotoRecFld(CRec(), edit_->FirstFld.begin());
 	IsNewRec = true;
 	LockRec(false);
 	if (RP != nullptr) {
@@ -2840,11 +2857,10 @@ void DataEditor::InsertRecProc(void* RP)
 
 void DataEditor::AppendRecord(void* RP)
 {
-	WORD Max;
 	IVoff();
 	IsNewRec = true;
-	Max = edit_->NRecs;
-	CFld = edit_->FirstFld;
+	WORD Max = edit_->NRecs;
+	CFld = edit_->FirstFld.begin();
 	FirstEmptyFld = CFld;
 	if (IRec < Max) {
 		IRec++;
@@ -2893,22 +2909,17 @@ bool DataEditor::GotoXRec(XString* PX, int& N)
 	return result;
 }
 
-EFldD* DataEditor::FindEFld(FieldDescr* F)
+std::vector<EFldD*>::iterator DataEditor::FindEFld(FieldDescr* F)
 {
-	std::vector<EFldD*>::iterator D = edit_->FirstFld;
-	while (D != nullptr) {
+	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+	while (D != edit_->FirstFld.end()) {
 		if ((*D)->FldD == F) {
 			break;
 		}
 		++D; // = D->pChain;
 	}
-	if (D == nullptr)
-	{
-		return nullptr;
-	}
-	else {
-		return *D;
-	}
+
+	return D;
 }
 
 void DataEditor::CreateOrErr(bool create, void* RP, int N)
@@ -3000,9 +3011,9 @@ bool DataEditor::PromptSearch(bool create)
 	while (KF != K->KFlds.end()) {
 		F = (*KF)->FldD;
 		if (li) {
-			EFldD* D = FindEFld(F);
-			if (D != nullptr) {
-				GotoRecFld(CRec(), *D);
+			std::vector<EFldD*>::iterator D = FindEFld(F);
+			if (D != edit_->FirstFld.end()) {
+				GotoRecFld(CRec(), D);
 			}
 		}
 		TextAttr = screen.colors.pTxt;
@@ -3086,7 +3097,7 @@ bool DataEditor::PromptAndSearch(bool create)
 		return result;
 	}
 	result = PromptSearch(create);
-	GotoRecFld(CRec(), edit_->FirstFld);
+	GotoRecFld(CRec(), edit_->FirstFld.begin());
 	return result;
 }
 
@@ -3116,7 +3127,7 @@ void DataEditor::CheckFromHere()
 
 	while (true) {
 		if (!file_d_->DeletedFlag(record_))
-			while (D != nullptr) {
+			while (D != edit_->FirstFld.end()) {
 				ChkD* C = CompChk(*D, '?');
 				if (C != nullptr) {
 					if (BaseRec + edit_->NRecs - 1 < N) {
@@ -3135,7 +3146,7 @@ void DataEditor::CheckFromHere()
 			N++;
 			DisplRecNr(N);
 			RdRec(N);
-			D = edit_->FirstFld;
+			D = edit_->FirstFld.begin();
 			continue;
 		}
 		break;
@@ -3315,11 +3326,11 @@ bool DataEditor::ExNotSkipFld()
 	bool result = false;
 	if (edit_->NFlds == 1) return result;
 
-	std::vector<EFldD*>::iterator D = edit_->FirstFld;
-	while (D != nullptr) {
+	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+	while (D != edit_->FirstFld.end()) {
 		if ((D != CFld) && !IsSkipFld(*D)) {
 			result = true;
-			return result;
+			break;
 		}
 		++D; // D = D->pChain;
 	}
@@ -3382,11 +3393,15 @@ label1:
 		result = false;
 		return result;
 	}
-	if (CFld->pChain != nullptr) {
-		GotoRecFld(CRec(), CFld->pChain);
+
+	++CFld;
+	if (CFld != edit_->FirstFld.end()) {
+		--CFld;
+		GotoNextRecFld(CRec(), CFld);
 		if (Mode == 1 || Mode == 3) Mode = 0;
 	}
 	else {
+		--CFld;
 		WasNewRec = IsNewRec;
 		Mode = 0; NR++;
 		if (!WriteCRec(true, displ)) return result;
@@ -3416,7 +3431,7 @@ label1:
 						DisplRecNr(i);
 						if (!file_d_->DeletedFlag(record_) && RunBool(file_d_, edit_->Bool, record_)) {
 							RdRec(CRec());
-							GotoRecFld(i, edit_->FirstFld);
+							GotoRecFld(i, edit_->FirstFld.begin());
 							goto label2;
 						}
 					}
@@ -3427,7 +3442,7 @@ label1:
 					Beep(); Beep();
 					return result;
 				}
-				else GotoRecFld(CRec() + 1, edit_->FirstFld);
+				else GotoRecFld(CRec() + 1, edit_->FirstFld.begin());
 			else {
 			label3:
 				GotoRecFld(CRec(), OldCFld);
@@ -3889,9 +3904,9 @@ label1:
 		break;
 	}
 	case 2: {
-		if (CFld->FldD->Flg && f_Stored != 0) {
-			B = CFld->Dupl;
-			CFld->Dupl = !B;
+		if (((*CFld)->FldD->Flg & f_Stored) != 0) {
+			B = (*CFld)->Dupl;
+			(*CFld)->Dupl = !B;
 			DisplTabDupl();
 			if (B) edit_->NDuplSet--;
 			else edit_->NDuplSet++;
@@ -3899,8 +3914,8 @@ label1:
 		break;
 	}
 	case 3: {
-		B = CFld->Tab;
-		CFld->Tab = !B;
+		B = (*CFld)->Tab;
+		(*CFld)->Tab = !B;
 		DisplTabDupl();
 		if (B) edit_->NTabsSet--;
 		else edit_->NTabsSet++;
@@ -4418,8 +4433,10 @@ void DataEditor::DelNewRec()
 	LockMode md;
 	file_d_->DelAllDifTFlds(record_, nullptr);
 	if (CNRecs() == 1) return;
-	IsNewRec = false; params_->Append = false;
-	params_->WasUpdated = false; CFld = edit_->FirstFld;
+	IsNewRec = false;
+	params_->Append = false;
+	params_->WasUpdated = false;
+	CFld = edit_->FirstFld.begin();
 	if (CRec() > CNRecs()) { // pozor! uspodarani IF a ELSE neni jasne !!!
 		if (IRec > 1) IRec--;
 		else BaseRec--;
@@ -4429,11 +4446,11 @@ void DataEditor::DelNewRec()
 	DisplWwRecsOrPage(CPage, &RT);
 }
 
-EFldD* DataEditor::FrstFldOnPage(WORD Page)
+std::vector<EFldD*>::iterator DataEditor::FrstFldOnPage(WORD Page)
 {
-	EFldD* D = edit_->FirstFld;
-	while (D->Page < Page) {
-		D = D->pChain;
+	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+	while ((*D)->Page < Page) {
+		++D; //D = D->pChain;
 	}
 	return D;
 }
@@ -4698,7 +4715,7 @@ void DataEditor::CtrlReadKbd()
 	unsigned int D = 0;
 
 	if (params_->F1Mode && params_->Mode24 && CRdb->help_file != nullptr) {
-		DisplayLastLineHelp(file_d_->ChptPos.rdb, file_d_->Name + "." + CFld->FldD->Name, params_->Mode24);
+		DisplayLastLineHelp(file_d_->ChptPos.rdb, file_d_->Name + "." + (*CFld)->FldD->Name, params_->Mode24);
 	}
 
 	TestEvent();
@@ -4786,8 +4803,8 @@ void DataEditor::MouseProc()
 	for (WORD i = 1; i <= edit_->NRecs; i++) {
 		int n = BaseRec + i - 1;
 		if (n > CNRecs()) goto label1;
-		std::vector<EFldD*>::iterator D = edit_->FirstFld;
-		while (D != nullptr) {
+		std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+		while (D != edit_->FirstFld.end()) {
 			if (IsNewRec && (i == IRec) && (D == FirstEmptyFld)) goto label1;
 			if (((*D)->Page == CPage) && MouseInRect((*D)->Col - 1, FldRow(*D, i) - 1, (*D)->L, 1)) {
 				if ((i != IRec) && (IsNewRec || !WriteCRec(true, Displ))) goto label1;
@@ -4843,15 +4860,18 @@ void DataEditor::ToggleSelectAll()
 
 void DataEditor::GoStartFld(EFldD* SFld)
 {
-	while ((*CFld != SFld) && (CFld->pChain != nullptr)) {
+	std::vector<EFldD*>::iterator nextCFld = CFld;
+	++nextCFld;
+
+	while ((*CFld != SFld) && (nextCFld != edit_->FirstFld.end())) {
 		if (IsFirstEmptyFld()) {
-			if ((CFld->Impl != nullptr) && LockRec(true)) {
-				AssignFld((*CFld)->FldD, CFld->Impl);
+			if (((*CFld)->Impl != nullptr) && LockRec(true)) {
+				AssignFld((*CFld)->FldD, (*CFld)->Impl);
 			}
-			FirstEmptyFld = FirstEmptyFld->pChain;
+			++FirstEmptyFld; // = FirstEmptyFld->pChain;
 			DisplFld(*CFld, IRec, TextAttr);
 		}
-		GotoRecFld(CRec(), CFld->pChain);
+		GotoRecFld(CRec(), nextCFld);
 	}
 }
 
@@ -4876,8 +4896,8 @@ void DataEditor::RunEdit(XString* PX, WORD& Brk)
 		GoPrevNextRec(+1, true);
 	}
 	//if (/*edit_->StartFld != nullptr*/ true) { GoStartFld(&edit_->StartFld); goto label1; }
-	if (edit_->StartFld != nullptr) {
-		GoStartFld(edit_->StartFld);
+	if (edit_->StartFld != edit_->FirstFld.end()) {
+		GoStartFld(*edit_->StartFld);
 		goto label1;
 	}
 label0:
@@ -5054,8 +5074,8 @@ label81:
 			}
 			case __UP: {
 				if (params_->LUpRDown) {
-					if ((*CFld)->ChainBack != nullptr) {
-						GotoRecFld(CRec(), (*CFld)->ChainBack);
+					if (CFld != edit_->FirstFld.begin()) {
+						GotoPrevRecFld(CRec(), CFld);
 					}
 				}
 				else {
@@ -5065,8 +5085,8 @@ label81:
 			}
 			case __DOWN: {
 				if (params_->LUpRDown) {
-					if ((CFld->pChain != nullptr) && !IsFirstEmptyFld())
-						GotoRecFld(CRec(), CFld->pChain);
+					if ((*CFld != edit_->FirstFld.back()) && !IsFirstEmptyFld())
+						GotoNextRecFld(CRec(), CFld);
 				}
 				else {
 					goto defaultCaseLabel;
@@ -5075,23 +5095,23 @@ label81:
 			}
 			case __LEFT:
 			case 'S': {
-				if ((*CFld)->ChainBack != nullptr) {
-					GotoRecFld(CRec(), (*CFld)->ChainBack);
+				if (CFld != edit_->FirstFld.begin()) {
+					GotoPrevRecFld(CRec(), CFld);
 				}
 				break;
 			}
 			case __RIGHT:
 			case 'D': {
-				if ((CFld->pChain != nullptr) && !IsFirstEmptyFld())
-					GotoRecFld(CRec(), CFld->pChain);
+				if ((*CFld != edit_->FirstFld.back()) && !IsFirstEmptyFld())
+					GotoNextRecFld(CRec(), CFld);
 				break;
 			}
 			case __HOME:
 			label3:
-				GotoRecFld(CRec(), edit_->FirstFld); break;
+				GotoRecFld(CRec(), edit_->FirstFld.begin()); break;
 			case __END: {
 			label4:
-				if (IsNewRec && (FirstEmptyFld != nullptr))
+				if (IsNewRec && (FirstEmptyFld != edit_->FirstFld.end()))
 					GotoRecFld(CRec(), FirstEmptyFld);
 				else GotoRecFld(CRec(), edit_->LastFld);
 				break;
@@ -5241,7 +5261,7 @@ label81:
 							break;
 						case __CTRL_PAGEUP:
 						label5:
-							GotoRecFld(1, edit_->FirstFld); break;
+							GotoRecFld(1, edit_->FirstFld.begin()); break;
 						case __CTRL_PAGEDOWN:
 						label6:
 							GotoRecFld(CNRecs(), edit_->LastFld); break;

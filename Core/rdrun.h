@@ -164,7 +164,7 @@ struct EdExitD
 
 struct EFldD
 {
-	EFldD* ChainBack = nullptr;
+	//EFldD* ChainBack = nullptr;
 	FieldDescr* FldD = nullptr;
 	std::vector<ChkD*> Chk;
 	FrmlElem* Impl = nullptr;
