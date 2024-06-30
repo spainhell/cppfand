@@ -226,7 +226,10 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	if (D != edit->FirstFld.end()) {
 		g_compiler->Error(30);
 	}
-	// TODO: sort items in FirstFld by ScanNr
+	// sort items in FirstFld by ScanNr
+	std::ranges::sort(edit->FirstFld, [](const EFldD* a, const EFldD* b) {
+		return a->ScanNr < b->ScanNr;
+		});
 	//D = FindScanNr(1);
 	//(*D)->ChainBack = nullptr;
 	//for (i = 2; i <= N; i++) {
@@ -554,7 +557,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		}
 		else if (edit_->VK == nullptr) {
 			edit_->VK = edit_->FD->Keys.empty() ? nullptr : edit_->FD->Keys[0];
-		}
+	}
 #ifdef FandSQL
 		if (file_d->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(file_d->Name); RunError(652); }
 #endif
@@ -566,7 +569,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 				RunError(663);
 			}
 		}
-	}
+}
 	if (EO->StartFieldZ != nullptr) {
 		std::string rss = RunShortStr(file_d, EO->StartFieldZ, record);
 		std::string s = TrailChar(rss, ' ');

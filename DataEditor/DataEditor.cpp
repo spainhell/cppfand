@@ -4872,6 +4872,8 @@ void DataEditor::GoStartFld(EFldD* SFld)
 			DisplFld(*CFld, IRec, TextAttr);
 		}
 		GotoRecFld(CRec(), nextCFld);
+		nextCFld = CFld;
+		++nextCFld;
 	}
 }
 
