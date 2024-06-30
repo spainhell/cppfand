@@ -142,7 +142,7 @@ unsigned short CompLexLongStr(LongStr* S1, LongStr* S2)
 		b2[i] = CharOrdTab[S2->A[i]];
 	}
 
-	auto result = CmpLxStr(b1, l1, b2, l2);
+	uint16_t result = CmpLxStr(b1, l1, b2, l2);
 
 	delete[] b1;
 	delete[] b2;
@@ -226,7 +226,7 @@ unsigned short CompLexStrings(const std::string& S1, const std::string& S2)
 		b2[i] = CharOrdTab[(unsigned char)S2[i]];
 	}
 
-	auto result = CmpLxStr(b1, l1, b2, l2);
+	uint16_t result = CmpLxStr(b1, l1, b2, l2);
 
 	delete[] b1;
 	delete[] b2;

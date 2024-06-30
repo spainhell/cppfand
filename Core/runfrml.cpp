@@ -2057,10 +2057,17 @@ std::string Replace(std::string text, std::string oldText, std::string& newText,
 			oldText[i] = UpcCharTab[(BYTE)oldText[i]];
 		}
 	}
-	else {
+
+	if (tilda) {
+		for (size_t i = 0; i < copyInputText.length(); i++) {
+			copyInputText[i] = CharOrdTab[(BYTE)copyInputText[i]];
+		}
+		for (size_t i = 0; i < oldText.length(); i++) {
+			oldText[i] = CharOrdTab[(BYTE)oldText[i]];
+		}
 	}
 
-	if (tilda || words) {
+	if (words) {
 		throw std::exception("Replace() not implemented.");
 	}
 
@@ -2120,8 +2127,8 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 		std::string oldText = RunStdStr(file_d, iZ->P1, record); //j = 1;
 		std::string newText = RunStdStr(file_d, iZ->P3, record);
 
-		auto res = Replace(text, oldText, newText, iZ->Options);
-		auto result = new LongStr(res.length());
+		string res = Replace(text, oldText, newText, iZ->Options);
+		LongStr* result = new LongStr(res.length());
 		result->LL = res.length();
 		memcpy(result->A, res.c_str(), res.length());
 		return result;
