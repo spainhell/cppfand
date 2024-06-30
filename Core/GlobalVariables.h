@@ -130,8 +130,6 @@ extern wdaystt* WDaysTab;
 extern char AbbrYes;
 extern char AbbrNo;
 
-extern char CharOrdTab[256];
-extern char UpcCharTab[256];
 extern WORD TxtCols, TxtRows;
 
 extern short prCurr, prMax;

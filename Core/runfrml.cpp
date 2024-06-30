@@ -2060,7 +2060,9 @@ std::string Replace(std::string text, std::string oldText, std::string& newText,
 	else {
 	}
 
-	if (tilda || words) throw std::exception("Replace() not implemented.");
+	if (tilda || words) {
+		throw std::exception("Replace() not implemented.");
+	}
 
 	// we are looking for equ strings in transformed string (copyInputText),
 	// but we change text in original string (text) too!!!
