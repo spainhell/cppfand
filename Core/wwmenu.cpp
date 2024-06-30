@@ -611,6 +611,7 @@ bool TMenuBoxP::ExecItem(WORD& I)
 {
 	bool result = false;
 	if (!PD->PullDown) return result;
+
 	if (I == 0) {
 		if ((Event.What == evMouseDown) || !PD->WasESCBranch) return result;
 		RunInstr(PD->ESCInstr);
@@ -619,8 +620,14 @@ bool TMenuBoxP::ExecItem(WORD& I)
 		ChoiceD* choice = getChoice(I);
 		RunInstr(choice->v_instr);
 	}
-	if (ExitP) { I = 255; return result; }
+
+	if (ExitP) {
+		I = 255;
+		return result;
+	}
+
 	I = 0;
+
 	if (PD->Loop) {
 		if (BreakP) {
 			BreakP = false;
@@ -628,11 +635,13 @@ bool TMenuBoxP::ExecItem(WORD& I)
 		}
 		result = true;
 	}
-	else
+	else {
 		if (BreakP) {
 			BreakP = false;
 			I = 255;
 		}
+	}
+
 	return result;
 }
 

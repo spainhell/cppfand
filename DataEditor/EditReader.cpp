@@ -46,8 +46,9 @@ void EditReader::StoreRT(WORD Ln, std::vector<std::string>& SL, WORD NFlds)
 	}
 	RT->N = Ln;
 	RT->SL = SL;
-	if (edit_->RecTxt == nullptr) edit_->RecTxt = RT;
-	else ChainLast(edit_->RecTxt, RT);
+	//if (edit_->RecTxt == nullptr) edit_->RecTxt = RT;
+	//else ChainLast(edit_->RecTxt, RT);
+	edit_->RecTxt.push_back(RT);
 }
 
 void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
@@ -331,7 +332,7 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 	edit_->LastFld = edit_->FirstFld.back();
 	edit_->NPages = NPages;
 	if (NPages == 1) {
-		ERecTxtD* er = edit_->RecTxt;
+		ERecTxtD* er = edit_->RecTxt[0];
 		if (er->N == 2) {
 			edit_->HdTxt.clear();
 			edit_->HdTxt.push_back(er->SL[0]);
@@ -490,7 +491,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		edit_->NRecs = 1;
 	}
 	else {
-		edit_->NRecs = (edit_->Rows - edit_->NHdTxt) / edit_->RecTxt->N;
+		edit_->NRecs = (edit_->Rows - edit_->NHdTxt) / edit_->RecTxt[0]->N;
 	}
 	edit_->BaseRec = 1;
 	edit_->IRec = 1;

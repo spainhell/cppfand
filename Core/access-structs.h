@@ -12,32 +12,6 @@ class FrmlElemSum;
 class FieldDescr;
 class LocVarBlkD;
 
-//struct FieldListEl : public Chained<FieldListEl>
-//{
-//	FieldDescr* FldD = nullptr;
-//};
-//typedef FieldListEl* FieldList;
-// std::vector<FieldDescr*>&
-
-//struct FrmlListEl : public Chained<FrmlListEl>
-//{
-//	FrmlElem* Frml = nullptr;
-//};
-//typedef FrmlListEl* FrmlList;
-// std::vector<FrmlElem*>&
-
-//struct StringListEl : public Chained<StringListEl>
-//{
-//	std::string S;
-//};
-//typedef StringListEl* StringList;
-
-//struct KeyListEl : public Chained<KeyListEl>
-//{
-//	XKey* Key = nullptr;
-//};
-// std::vector<XKey*>
-
 struct KeyInD
 {
 	std::vector<FrmlElem*> FL1;
