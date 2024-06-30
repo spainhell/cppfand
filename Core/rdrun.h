@@ -162,9 +162,9 @@ struct EdExitD
 	/*"Q" quit   #0 dummy*/
 };
 
-struct EFldD : public Chained<EFldD>
+struct EFldD
 {
-	EFldD* ChainBack = nullptr;
+	//EFldD* ChainBack = nullptr;
 	FieldDescr* FldD = nullptr;
 	std::vector<ChkD*> Chk;
 	FrmlElem* Impl = nullptr;

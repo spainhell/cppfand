@@ -1669,13 +1669,13 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 	}
 	if (CurrPos == 0) {
 		data_editor->DisplEditWw();
-		data_editor->GotoRecFld(InpRdbPos.i_rec, data_editor->GetEditD()->FirstFld->pChain);
+		data_editor->GotoNextRecFld(InpRdbPos.i_rec, data_editor->GetEditD()->FirstFld.begin());
 		SetMsgPar(s);
 		WrLLF10Msg(110);
 		Brk = 0;
 		return;
 	}
-	data_editor->CFld = data_editor->GetEditD()->LastFld;
+	data_editor->CFld = data_editor->GetEditD()->GetEFldIter(data_editor->GetEditD()->LastFld);
 	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
 	data_editor->GetFileD()->saveR(ChptTxtPos, CurrPos, data_editor->GetRecord());
 	data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
@@ -1862,7 +1862,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 					if (Brk == 1) {
 						data_editor->DisplEditWw();
 					}
-					data_editor->GotoRecFld(InpRdbPos.i_rec, edit->FirstFld->pChain);
+					data_editor->GotoNextRecFld(InpRdbPos.i_rec, edit->FirstFld.begin());
 					data_editor->RunEdit(nullptr, Brk);
 					continue;
 				}
@@ -1886,7 +1886,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 						continue;
 					}
 					if (Brk == 1) data_editor->DisplEditWw();
-					data_editor->GotoRecFld(InpRdbPos.i_rec, edit->FirstFld->pChain);
+					data_editor->GotoNextRecFld(InpRdbPos.i_rec, edit->FirstFld.begin());
 					data_editor->RunEdit(nullptr, Brk);
 					continue;
 				}

@@ -1667,9 +1667,9 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	//if (srcCode.find("") != std::string::npos) {
-	//	printf("");
-	//}
+	if (srcCode.find("ufo") != std::string::npos) {
+		printf("");
+	}
 #endif
 
 	// save LVBD

@@ -23,6 +23,7 @@ public:
 	// EditD* PrevE; - toto bude pChain ...
 	EditD(uint8_t cols, uint8_t rows);
 	~EditD();
+	std::vector<EFldD*>::iterator GetEFldIter(EFldD* e_fld);
 	FileD* FD = nullptr;
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;
@@ -35,16 +36,16 @@ public:
 	BYTE dDel = 0, dTab = 0, dSelect = 0;
 	std::string Top;
 	BYTE WFlags = 0;                             /* copied from options */
-	std::vector<EdExitD*> ExD;                   /*      "         */
-	FileD* Journal = nullptr;                    /*      "         */
-	std::string ViewName;                        /*      "         */
-	char OwnerTyp = '\0'; /* #0=CtrlF7 */        /*      "         */
-	LinkD* DownLD = nullptr;                     /*      "         */
-	LocVar* DownLV = nullptr;                    /*      "         */
-	void* DownRecPtr; void* LVRecPtr;            /*      "         */
-	std::vector<KeyInD*> KIRoot;                 /*      "         */
-	bool SQLFilter = false;                      /*      "         */
-	XWKey* SelKey = nullptr;                     /*      "         */
+	std::vector<EdExitD*> ExD;                   /*          "          */
+	FileD* Journal = nullptr;                    /*          "          */
+	std::string ViewName;                        /*          "          */
+	char OwnerTyp = '\0'; /* #0=CtrlF7 */        /*          "          */
+	LinkD* DownLD = nullptr;                     /*          "          */
+	LocVar* DownLV = nullptr;                    /*          "          */
+	void* DownRecPtr; void* LVRecPtr;            /*          "          */
+	std::vector<KeyInD*> KIRoot;                 /*          "          */
+	bool SQLFilter = false;                      /*          "          */
+	XWKey* SelKey = nullptr;                     /*          "          */
 	std::vector<std::string> HdTxt;
 	BYTE NHdTxt = 0;
 	unsigned int SaveAfter = 0, WatchDelay = 0, RefreshDelay = 0;
@@ -53,12 +54,15 @@ public:
 	//std::vector<std::string> RecTxt;
 	ERecTxtD* RecTxt = nullptr;
 	BYTE NRecs = 0;     /*display*/
-	EFldD* FirstFld = nullptr;
+	std::vector<EFldD*> FirstFld;
+	std::vector<EFldD*>::iterator CFld;
 	EFldD* LastFld = nullptr;
 	EFldD* StartFld = nullptr;
-	EFldD* CFld = nullptr; EFldD* FirstEmptyFld = nullptr;    /*copied*/
-	XKey* VK = nullptr; XWKey* WK = nullptr;                  /*  "   */
-	int BaseRec = 0; BYTE IRec = 0;                           /*  "   */
+	EFldD* FirstEmptyFld = nullptr;					/* copied */
+	XKey* VK = nullptr;								/*   "    */		
+	XWKey* WK = nullptr;							/*   "    */
+	int BaseRec = 0;								/*   "    */
+	BYTE IRec = 0;									/*   "    */
 	bool IsNewRec = false;
 
 	std::unique_ptr<DataEditorParams> params_ = std::make_unique<DataEditorParams>();
@@ -66,10 +70,14 @@ public:
 	bool DownSet = false, IsLocked = false, WwPart = false;
 	XKey* DownKey = nullptr;
 	int LockedRec = 0;
-	FrmlElem* Cond = nullptr; FrmlElem* Bool = nullptr;
+	FrmlElem* Cond = nullptr;
+	FrmlElem* Bool = nullptr;
 	std::string BoolTxt;
-	std::string Head; std::string Last;
-	std::string CtrlLast; std::string AltLast; std::string ShiftLast;
+	std::string Head;
+	std::string Last;
+	std::string CtrlLast;
+	std::string AltLast;
+	std::string ShiftLast;
 	WORD NFlds = 0, NTabsSet = 0, NDuplSet = 0, NEdSet = 0;
 	bool EdUpdated = false;
 	std::vector<ImplD*> Impl;

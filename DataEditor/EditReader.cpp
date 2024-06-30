@@ -52,8 +52,8 @@ void EditReader::StoreRT(WORD Ln, std::vector<std::string>& SL, WORD NFlds)
 
 void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 {
-	EFldD* D = nullptr;
-	EFldD* D1 = nullptr;
+	//EFldD* D = nullptr;
+	//EFldD* D1 = nullptr;
 	EFldD* PrevD = nullptr;
 	FieldDescr* F = nullptr;
 	std::vector<std::string> SLRoot;
@@ -113,18 +113,22 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 
 	while (true) {
 		N++;
-		D = new EFldD();
+		EFldD* D = new EFldD();
 		if (Lexem == _number) {
 			M = g_compiler->RdInteger();
 			if (M == 0) g_compiler->OldError(115);
 			g_compiler->Accept(':');
 			D->ScanNr = M;
 		}
-		else D->ScanNr = N;
-		D1 = FindScanNr(D->ScanNr);
+		else {
+			D->ScanNr = N;
+		}
 
-		if (edit->FirstFld == nullptr) edit->FirstFld = D;
-		else ChainLast(edit->FirstFld, D);
+		EFldD* D1 = FindScanNr(D->ScanNr);
+
+		//if (edit->FirstFld == nullptr) edit->FirstFld = D;
+		//else ChainLast(edit->FirstFld, D);
+		edit->FirstFld.push_back(D);
 
 		if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) {
 			g_compiler->Error(77);
@@ -142,98 +146,105 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	g_compiler->TestLex(';');
 	g_compiler->SkipBlank(true);
 	/* read record lines */
-	D = edit->FirstFld;
+	std::vector<EFldD*>::iterator D = edit->FirstFld.begin();
 	NPages = 0;
 	NPages++;
 	Ln = 0;
 	NFlds = 0;
 	SLRoot.clear();
 
-label5:
-	s = ""; Ln++;
-	Col = edit->FrstCol;
-	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{')) {
-		if (ForwChar == '_') {
-			if (D == nullptr) {
-				g_compiler->Error(30);
+	while (true) {
+		s = "";
+		Ln++;
+		Col = edit->FrstCol;
+		while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{')) {
+			if (ForwChar == '_') {
+				if (D == edit->FirstFld.end()) {
+					g_compiler->Error(30);
+				}
+				NFlds++;
+				(*D)->Col = Col;
+				(*D)->Ln = Ln;
+				(*D)->Page = NPages;
+				M = 0;
+				while (ForwChar == '_') {
+					s += ' ';
+					M++; Col++;
+					g_compiler->ReadChar();
+				}
+				F = (*D)->FldD;
+				(*D)->L = F->L;
+				if (F->field_type == FieldType::TEXT) {
+					(*D)->L = 1;
+				}
+				if ((F->field_type == FieldType::ALFANUM) && (M < F->L)) {
+					(*D)->L = M;
+				}
+				else if (M != (*D)->L) {
+					str((*D)->L, 2, s);
+					SetMsgPar(s, F->Name);
+					g_compiler->Error(79);
+				}
+				if (Col > edit->LastCol) g_compiler->Error(102);
+				++D; //D = D->pChain;
 			}
-			NFlds++;
-			D->Col = Col;
-			D->Ln = Ln;
-			D->Page = NPages;
-			M = 0;
-			while (ForwChar == '_') {
-				s += ' ';
-				M++; Col++;
+			else {
+				if (!screen.SetStyleAttr(ForwChar, a)) {
+					if (Col > edit->LastCol) {
+						g_compiler->Error(102);
+					}
+					Col++;
+				}
+				s += static_cast<char>(ForwChar);
 				g_compiler->ReadChar();
 			}
-			F = D->FldD;
-			D->L = F->L;
-			if (F->field_type == FieldType::TEXT) {
-				D->L = 1;
-			}
-			if ((F->field_type == FieldType::ALFANUM) && (M < F->L)) {
-				D->L = M;
-			}
-			else if (M != D->L) {
-				str(D->L, 2, s);
-				SetMsgPar(s, F->Name);
-				g_compiler->Error(79);
-			}
-			if (Col > edit->LastCol) g_compiler->Error(102);
-			D = D->pChain;
 		}
-		else {
-			if (!screen.SetStyleAttr(ForwChar, a)) {
-				if (Col > edit->LastCol) {
-					g_compiler->Error(102);
-				}
-				Col++;
-			}
-			s += static_cast<char>(ForwChar);
-			g_compiler->ReadChar();
-		}
-	}
 
-	//SToSL(&SLRoot, s);
-	SLRoot.push_back(s);
-	c = ForwChar;
-	if (c == '\\') g_compiler->ReadChar();
-	g_compiler->SkipBlank(true);
-	if (ForwChar != 0x1A) {
-		if ((c == '\\') || (edit->NHdTxt + Ln == edit->Rows)) {
-			StoreRT(Ln, SLRoot, NFlds);
-			NPages++;
-			Ln = 0;
-			NFlds = 0;
-			SLRoot.clear();
-			goto label5;
+		//SToSL(&SLRoot, s);
+		SLRoot.push_back(s);
+		c = ForwChar;
+		if (c == '\\') g_compiler->ReadChar();
+		g_compiler->SkipBlank(true);
+		if (ForwChar != 0x1A) {
+			if ((c == '\\') || (edit->NHdTxt + Ln == edit->Rows)) {
+				StoreRT(Ln, SLRoot, NFlds);
+				NPages++;
+				Ln = 0;
+				NFlds = 0;
+				SLRoot.clear();
+				continue;
+			}
+			else {
+				continue;
+			}
 		}
-		else {
-			goto label5;
-		}
+		break;
 	}
 	StoreRT(Ln, SLRoot, NFlds);
 	edit->NPages = NPages;
 
-	if (D != nullptr) {
+	if (D != edit->FirstFld.end()) {
 		g_compiler->Error(30);
 	}
-	D = FindScanNr(1);
-	D->ChainBack = nullptr;
-	for (i = 2; i <= N; i++) {
-		PrevD = D;
-		D = FindScanNr(D->ScanNr + 1);
-		D->ChainBack = PrevD;
-	}
-	edit->LastFld = D;
-	PrevD = nullptr;
-	while (D != nullptr) {
-		D->pChain = PrevD;
-		PrevD = D;
-		D = D->ChainBack;
-	}
-	edit->FirstFld = PrevD;
+	// sort items in FirstFld by ScanNr
+	std::ranges::sort(edit->FirstFld, [](const EFldD* a, const EFldD* b) {
+		return a->ScanNr < b->ScanNr;
+		});
+	//D = FindScanNr(1);
+	//(*D)->ChainBack = nullptr;
+	//for (i = 2; i <= N; i++) {
+	//	PrevD = (*D);
+	//	D = FindScanNr((*D)->ScanNr + 1);
+	//	(*D)->ChainBack = PrevD;
+	//}
+	edit->LastFld = edit->FirstFld.back();
+	//PrevD = nullptr;
+	//while (D != edit->FirstFld.end()) {
+	//	D->pChain = PrevD;
+	//	PrevD = D;
+	//	D = D->ChainBack;
+	//}
+	//edit->FirstFld = PrevD;
 }
 
 EditD* EditReader::GetEditD()
@@ -243,14 +254,17 @@ EditD* EditReader::GetEditD()
 
 EFldD* EditReader::FindScanNr(WORD N)
 {
-	EFldD* D = edit_->FirstFld;
-	EFldD* D1 = nullptr;
+	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+	EFldD* result = nullptr;
 	WORD M = 0xffff;
-	while (D != nullptr) {
-		if ((D->ScanNr >= N) && (D->ScanNr < M)) { M = D->ScanNr; D1 = D; }
-		D = D->pChain;
+	while (D != edit_->FirstFld.end()) {
+		if (((*D)->ScanNr >= N) && ((*D)->ScanNr < M)) {
+			M = (*D)->ScanNr;
+			result = *D;
+		}
+		++D; // = D->pChain;
 	}
-	return D1;
+	return result;
 }
 
 void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
@@ -258,26 +272,28 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 	WORD L = 0, i = 0, m = 0, FldLen = 0;
 	pstring s = "";
 	std::vector<std::string> SLRoot;
-	EFldD* D = (EFldD*)(&edit_->FirstFld);  // TODO: this is not correct, but it works -> refactor!
-	EFldD* PrevD = nullptr;
+	//std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();  // TODO: this is not correct, but it works -> refactor!
+	//EFldD* PrevD = nullptr;
 	WORD NPages = 1; WORD Ln = 0;
 	WORD Col = edit_->FrstCol;
 	WORD maxcol = edit_->LastCol - edit_->FrstCol;
 	//while (FL != nullptr) {
-	for (auto& F : FL) {
+	for (FieldDescr* F : FL) {
 		//FieldDescr* F = FL->FldD;
 		//FL = (FieldListEl*)FL->pChain;
 		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
-		D->pChain = new EFldD();
-		D = D->pChain;
-		D->ChainBack = PrevD;
-		PrevD = D;
-		D->FldD = F;
-		D->L = F->L;
-		if (D->L > maxcol) D->L = maxcol;
-		if ((edit_->FD->FF->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
-		FldLen = D->L;
-		if (F->field_type == FieldType::TEXT) D->L = 1;
+		//D->pChain = new EFldD();
+		EFldD* newD = new EFldD();
+		edit_->FirstFld.push_back(newD);
+		//D = D->pChain;
+		//D->ChainBack = PrevD;
+		//PrevD = D;
+		newD->FldD = F;
+		newD->L = F->L;
+		if (newD->L > maxcol) newD->L = maxcol;
+		if ((edit_->FD->FF->file_type == FileType::CAT) && (newD->L > 44)) newD->L = 44; /*catalog pathname*/
+		FldLen = newD->L;
+		if (F->field_type == FieldType::TEXT) newD->L = 1;
 		L = F->Name.length();
 		if (FldLen > L) L = FldLen;
 		if (Col + L > edit_->LastCol) {
@@ -300,9 +316,9 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 		s = s + F->Name;
 		m = L - F->Name.length() - m;
 		for (i = 1; i <= m + 1; i++) s.Append(' ');
-		D->Col = Col + (L - FldLen + 1) / 2;
-		D->Ln = Ln + 2;
-		D->Page = NPages;
+		newD->Col = Col + (L - FldLen + 1) / 2;
+		newD->Ln = Ln + 2;
+		newD->Page = NPages;
 		Col += (L + 1);
 	}
 	//SToSL(&SLRoot, s);
@@ -311,8 +327,8 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 	SLRoot.push_back("");
 	Ln += 2;
 	StoreRT(Ln, SLRoot, 1);
-	D->pChain = nullptr;
-	edit_->LastFld = D;
+	//D->pChain = nullptr;
+	edit_->LastFld = edit_->FirstFld.back();
 	edit_->NPages = NPages;
 	if (NPages == 1) {
 		ERecTxtD* er = edit_->RecTxt;
@@ -324,11 +340,16 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 			er->SL.erase(er->SL.begin());
 			er->N = 1;
 
-			D = edit_->FirstFld;
-			while (D != nullptr) {
+			//D = edit_->FirstFld;
+			//while (D != nullptr) {
+			//	D->Ln--;
+			//	D = D->pChain;
+			//}
+
+			for (EFldD* D : edit_->FirstFld) {
 				D->Ln--;
-				D = D->pChain;
 			}
+
 			if (edit_->Rows == 1) {
 				edit_->NHdTxt = 0;
 				edit_->HdTxt.clear();
@@ -473,8 +494,8 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	}
 	edit_->BaseRec = 1;
 	edit_->IRec = 1;
-	edit_->CFld = edit_->FirstFld;
-	edit_->FirstEmptyFld = edit_->FirstFld;
+	edit_->CFld = edit_->FirstFld.begin();
+	edit_->FirstEmptyFld = edit_->FirstFld.front();
 	edit_->params_->ChkSwitch = true;
 	edit_->params_->WarnSwitch = true;
 
@@ -536,7 +557,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		}
 		else if (edit_->VK == nullptr) {
 			edit_->VK = edit_->FD->Keys.empty() ? nullptr : edit_->FD->Keys[0];
-		}
+	}
 #ifdef FandSQL
 		if (file_d->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(file_d->Name); RunError(652); }
 #endif
@@ -548,16 +569,21 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 				RunError(663);
 			}
 		}
-	}
+}
 	if (EO->StartFieldZ != nullptr) {
 		std::string rss = RunShortStr(file_d, EO->StartFieldZ, record);
 		std::string s = TrailChar(rss, ' ');
-		EFldD* D = edit_->FirstFld;
-		while (D != nullptr) {
-			if (EquUpCase(D->FldD->Name, s)) {
-				edit_->StartFld = D;
+		//EFldD* D = edit_->FirstFld;
+		//while (D != nullptr) {
+		//	if (EquUpCase(D->FldD->Name, s)) {
+		//		edit_->StartFld = D;
+		//	}
+		//	D = D->pChain;
+		//}
+		for (EFldD* ef : edit_->FirstFld) {
+			if (EquUpCase(ef->FldD->Name, s)) {
+				edit_->StartFld = ef;
 			}
-			D = D->pChain;
 		}
 	}
 	edit_->WatchDelay = RunInt(file_d, EO->WatchDelayZ, record) * 1000;
@@ -573,8 +599,9 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	edit_->ShiftLast = GetStr_E(EO->ShiftLast, record);
 	F2NoUpd = edit_->params_->OnlyTabs && EO->Tab.empty() && !EO->NegTab && edit_->params_->OnlyAppend;
 
-	EFldD* D = edit_->FirstFld;
-	while (D != nullptr) {
+	//EFldD* D = edit_->FirstFld;
+	//while (D != nullptr) {
+	for (EFldD* D : edit_->FirstFld) {
 		edit_->NFlds++;
 		F = D->FldD;
 		b = FieldInList(F, EO->Tab);
@@ -589,8 +616,9 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		if (EO->NegDupl) b = !b;
 		if (b && ((F->Flg & f_Stored) != 0)) D->Dupl = true;
 		if (b || ((F->Flg & f_Stored) != 0)) edit_->NDuplSet++;
-		D = D->pChain;
+		//D = D->pChain;
 	}
+
 	if (edit_->params_->OnlyTabs && (edit_->NTabsSet == 0)) {
 		edit_->params_->NoDelete = true;
 		if (!edit_->params_->OnlyAppend) {
@@ -604,31 +632,48 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 
 EFldD* EditReader::FindEFld_E(FieldDescr* F)
 {
-	EFldD* D = edit_->FirstFld;
-	while (D != nullptr) {
-		if (D->FldD == F) break;
-		D = D->pChain;
+	EFldD* result = nullptr;
+	//EFldD* D = edit_->FirstFld;
+	//while (D != nullptr) {
+	for (EFldD* D : edit_->FirstFld) {
+		if (D->FldD == F) {
+			result = D;
+			break;
+		}
+		//D = D->pChain;
 	}
-	return D;
+	return result;
 }
 
 void EditReader::ZeroUsed()
 {
-	EFldD* D = edit_->FirstFld;
-	while (D != nullptr) {
+	//EFldD* D = edit_->FirstFld;
+	//while (D != nullptr) {
+	//	D->Used = false;
+	//	D = D->pChain;
+	//}
+	for (EFldD* D : edit_->FirstFld) {
 		D->Used = false;
-		D = D->pChain;
 	}
 }
 
 EFldD* EditReader::LstUsedFld()
 {
-	EFldD* D = edit_->LastFld;
-	while (D != nullptr) {
-		if (D->Used) break;
-		D = D->ChainBack;
+	EFldD* result = nullptr;
+	//EFldD* D = edit_->LastFld;
+	//while (D != nullptr) {
+	//	if (D->Used) break;
+	//	D = D->ChainBack;
+	//}
+	//return D;
+	std::vector<EFldD*>::reverse_iterator D = edit_->FirstFld.rbegin();
+	for (; D != edit_->FirstFld.rend(); ++D) {
+		if ((*D)->Used) {
+			result = *D;
+			break;
+		}
 	}
-	return D;
+	return result;
 }
 
 void EditReader::RdDepChkImpl(EditD* edit)

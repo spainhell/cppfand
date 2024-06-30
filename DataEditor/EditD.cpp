@@ -17,3 +17,14 @@ EditD::~EditD()
 {
 }
 
+std::vector<EFldD*>::iterator EditD::GetEFldIter(EFldD* e_fld)
+{
+	// find e_fld in FirstFld and return it as iterator
+	for (std::vector<EFldD*>::iterator it = FirstFld.begin(); it != FirstFld.end(); ++it) {
+		if (*it == e_fld) {
+			return it;
+		}
+	}
+	return FirstFld.end();
+}
+

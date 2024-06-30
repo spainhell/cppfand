@@ -15,6 +15,6 @@ int CompStr(std::string& S1, std::string& S2);
 
 unsigned short CompLexLongStr(LongStr* S1, LongStr* S2);
 unsigned short CompLexLongShortStr(LongStr* S1, pstring& S2);
-unsigned short CompLexStr(pstring& S1, pstring& S2);
-unsigned short CompLexStr(const pstring& S1, const pstring& S2);
+//unsigned short CompLexStr(pstring& S1, pstring& S2);
+//unsigned short CompLexStr(const pstring& S1, const pstring& S2);
 unsigned short CompLexStrings(const std::string& S1, const std::string& S2);

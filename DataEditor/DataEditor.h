@@ -38,7 +38,9 @@ public:
     void ReadParamsFromE(const EditD* edit);
     bool SelFldsForEO(EditOpt* EO, LinkD* LD);
     void DisplEditWw();
-    void GotoRecFld(int NewRec, EFldD* NewFld);
+    void GotoPrevRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld);
+    void GotoNextRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld);
+    void GotoRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld);
     void SetNewCRec(int N, bool withRead);
     bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
     bool OpenEditWw();
@@ -49,7 +51,7 @@ public:
 
     bool TxtEdCtrlUBrk = false;
     bool TxtEdCtrlF4Brk = false;
-    EFldD* CFld = nullptr;
+    std::vector<EFldD*>::iterator CFld;
 
 private:
     FileD* file_d_ = nullptr;
@@ -125,7 +127,7 @@ private:
     void InsertRecProc(void* RP);
     void AppendRecord(void* RP);
     bool GotoXRec(XString* PX, int& N);
-    EFldD* FindEFld(FieldDescr* F);
+    std::vector<EFldD*>::iterator FindEFld(FieldDescr* F);
     void CreateOrErr(bool create, void* RP, int N);
     bool PromptSearch(bool create);
     bool PromptAndSearch(bool create);
@@ -165,7 +167,7 @@ private:
     bool DuplToPrevEdit();
     void Calculate2();
     void DelNewRec();
-    EFldD* FrstFldOnPage(WORD Page);
+    std::vector<EFldD*>::iterator FrstFldOnPage(WORD Page);
     void F6Proc();
     int GetEdRecNo();
     void SetEdRecNoEtc(int RNr);
