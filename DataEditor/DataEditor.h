@@ -195,7 +195,7 @@ private:
     bool TestMask(std::string& S, std::string Mask);
     void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R);
 
-    std::vector<EFldD*>::iterator FirstEmptyFld;
+    EFldD* FirstEmptyFld = nullptr;
     XKey* VK = nullptr;
     XWKey* WK = nullptr;
     ERecTxtD* RT = nullptr;

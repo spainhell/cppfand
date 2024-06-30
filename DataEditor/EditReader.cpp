@@ -226,6 +226,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	if (D != edit->FirstFld.end()) {
 		g_compiler->Error(30);
 	}
+	// TODO: sort items in FirstFld by ScanNr
 	//D = FindScanNr(1);
 	//(*D)->ChainBack = nullptr;
 	//for (i = 2; i <= N; i++) {
@@ -233,7 +234,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	//	D = FindScanNr((*D)->ScanNr + 1);
 	//	(*D)->ChainBack = PrevD;
 	//}
-	edit->LastFld = edit->FirstFld.end() - 1; // TODO: rend()?
+	edit->LastFld = edit->FirstFld.back();
 	//PrevD = nullptr;
 	//while (D != edit->FirstFld.end()) {
 	//	D->pChain = PrevD;
@@ -324,7 +325,7 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 	Ln += 2;
 	StoreRT(Ln, SLRoot, 1);
 	//D->pChain = nullptr;
-	edit_->LastFld = edit_->FirstFld.end() - 1;
+	edit_->LastFld = edit_->FirstFld.back();
 	edit_->NPages = NPages;
 	if (NPages == 1) {
 		ERecTxtD* er = edit_->RecTxt;
@@ -491,7 +492,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	edit_->BaseRec = 1;
 	edit_->IRec = 1;
 	edit_->CFld = edit_->FirstFld.begin();
-	edit_->FirstEmptyFld = edit_->FirstFld.begin();
+	edit_->FirstEmptyFld = edit_->FirstFld.front();
 	edit_->params_->ChkSwitch = true;
 	edit_->params_->WarnSwitch = true;
 
@@ -576,9 +577,9 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		//	}
 		//	D = D->pChain;
 		//}
-		for (size_t i = 0; i < edit_->FirstFld.size(); i++) {
-			if (EquUpCase(edit_->FirstFld[i]->FldD->Name, s)) {
-				edit_->StartFld = edit_->FirstFld.begin() + static_cast<int>(i);
+		for (EFldD* ef : edit_->FirstFld) {
+			if (EquUpCase(ef->FldD->Name, s)) {
+				edit_->StartFld = ef;
 			}
 		}
 	}

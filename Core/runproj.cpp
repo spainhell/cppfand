@@ -1675,7 +1675,7 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 		Brk = 0;
 		return;
 	}
-	data_editor->CFld = data_editor->GetEditD()->LastFld;
+	data_editor->CFld = data_editor->GetEditD()->GetEFldIter(data_editor->GetEditD()->LastFld);
 	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
 	data_editor->GetFileD()->saveR(ChptTxtPos, CurrPos, data_editor->GetRecord());
 	data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
