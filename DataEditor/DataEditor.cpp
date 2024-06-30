@@ -1002,7 +1002,7 @@ void DataEditor::UnLockRec(EditD* edit)
 
 void DataEditor::NewRecExit()
 {
-	for (auto& X : edit_->ExD) {
+	for (EdExitD* X : edit_->ExD) {
 		if (X->AtNewRec) {
 			EdBreak = 18;
 			LastTxtPos = -1;
@@ -1013,7 +1013,7 @@ void DataEditor::NewRecExit()
 
 void DataEditor::SetCPage(WORD& c_page, ERecTxtD** rt)
 {
-	c_page = CFld[0]->Page;
+	c_page = (*CFld)->Page;
 	*rt = edit_->RecTxt;
 	for (WORD i = 1; i <= c_page; i++) {
 		*rt = (*rt)->pChain;
