@@ -38,7 +38,7 @@ public:
     void ReadParamsFromE(const EditD* edit);
     bool SelFldsForEO(EditOpt* EO, LinkD* LD);
     void DisplEditWw();
-    void GotoRecFld(int NewRec, EFldD* NewFld);
+    void GotoRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld);
     void SetNewCRec(int N, bool withRead);
     bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
     bool OpenEditWw();
@@ -49,7 +49,7 @@ public:
 
     bool TxtEdCtrlUBrk = false;
     bool TxtEdCtrlF4Brk = false;
-    std::vector<EFldD*> CFld;
+    std::vector<EFldD*>::iterator CFld;
 
 private:
     FileD* file_d_ = nullptr;
@@ -193,7 +193,7 @@ private:
     bool TestMask(std::string& S, std::string Mask);
     void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R);
 
-    EFldD* FirstEmptyFld = nullptr;
+    std::vector<EFldD*>::iterator FirstEmptyFld;
     XKey* VK = nullptr;
     XWKey* WK = nullptr;
     ERecTxtD* RT = nullptr;

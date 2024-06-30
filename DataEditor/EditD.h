@@ -53,10 +53,13 @@ public:
 	//std::vector<std::string> RecTxt;
 	ERecTxtD* RecTxt = nullptr;
 	BYTE NRecs = 0;     /*display*/
-	std::vector<EFldD*> FirstFld;
+	std::vector<EFldD*>::iterator FirstFld;
 	EFldD* LastFld = nullptr;
 	EFldD* StartFld = nullptr;
-	EFldD* CFld = nullptr; EFldD* FirstEmptyFld = nullptr;    /*copied*/
+
+	std::vector<EFldD*>::iterator CFld;
+	std::vector<EFldD*>::iterator FirstEmptyFld;    /*copied*/
+
 	XKey* VK = nullptr; XWKey* WK = nullptr;                  /*  "   */
 	int BaseRec = 0; BYTE IRec = 0;                           /*  "   */
 	bool IsNewRec = false;
