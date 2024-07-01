@@ -177,7 +177,7 @@ struct EFldD
 	bool Ed(bool IsNewRec);
 };
 
-struct ERecTxtD : public Chained<ERecTxtD>
+struct ERecTxtD
 {
 	WORD N;
 	std::vector<std::string> SL;

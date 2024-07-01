@@ -1014,9 +1014,10 @@ void DataEditor::NewRecExit()
 void DataEditor::SetCPage(WORD& c_page, ERecTxtD** rt)
 {
 	c_page = (*CFld)->Page;
-	*rt = edit_->RecTxt;
+	*rt = edit_->RecTxt[0];
 	for (WORD i = 1; i < c_page; i++) {
-		*rt = (*rt)->pChain;
+		//*rt = (*rt)->pChain;
+		*rt = edit_->RecTxt[i];
 	}
 }
 

@@ -52,7 +52,7 @@ public:
 	BYTE RecNrPos = 0, RecNrLen = 0;
 	BYTE NPages = 0;
 	//std::vector<std::string> RecTxt;
-	ERecTxtD* RecTxt = nullptr;
+	std::vector<ERecTxtD*> RecTxt;
 	BYTE NRecs = 0;     /*display*/
 	std::vector<EFldD*> FirstFld;
 	std::vector<EFldD*>::iterator CFld;
