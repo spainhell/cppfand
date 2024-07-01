@@ -168,7 +168,7 @@ bool SetTopDir(std::string& p, std::string& n)
 		}
 		EditDRoot = nullptr;
 		LinkDRoot.clear();
-		FuncDRoot = nullptr;
+		FuncDRoot.clear();
 		TopDataDir = GetEnv("FANDDATA");
 		DelBackSlash(TopRdbDir);
 		DelBackSlash(TopDataDir);

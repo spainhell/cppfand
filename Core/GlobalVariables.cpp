@@ -7,7 +7,7 @@ WORD randIndex = 0;
 FileD* CFile;
 //std::vector<FileD*> FileDRoot;	// only current RDB
 std::deque<LinkD*> LinkDRoot;	// for all RDBs
-FuncD* FuncDRoot;
+std::deque<FuncD*> FuncDRoot;
 void* CRecPtr;
 XKey* CViewKey;
 std::string TopRdbDir, TopDataDir;

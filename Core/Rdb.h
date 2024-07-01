@@ -14,7 +14,7 @@ public:
 	std::vector<FileD*> v_files;
 	FileD* help_file = nullptr; // { v_files=FileDRoot and = Chpt for this RDB }
 	std::deque<LinkD*> OldLDRoot;
-	FuncD* OldFCRoot = nullptr;
+	std::deque<FuncD*> OldFCRoot;
 	bool Encrypted = false;
 	std::string RdbDir;
 	std::string DataDir;
