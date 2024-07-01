@@ -1771,18 +1771,16 @@ FrmlElem* Compiler::RdFormula(char& FTyp, MergeReportBase* caller)
 bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 {
 	char typ = '\0';
-	FuncD* fc = FuncDRoot;
-	while (fc != nullptr) {
+	//FuncD* fc = FuncDRoot;
+	//while (fc != nullptr) {
+	for (FuncD* fc : FuncDRoot) {
 		if (EquUpCase(fc->name, LexWord)) {
 			RdLex(); RdLex();
-			FrmlElemUserFunc* z = new FrmlElemUserFunc(_userfunc, 8); // GetOp(_userfunc, 8);
+			FrmlElemUserFunc* z = new FrmlElemUserFunc(_userfunc, 8);
 			z->FC = fc;
 			WORD n = fc->LVB.NParam;
-			auto itr = fc->LVB.vLocVar.begin();
+			std::vector<LocVar*>::iterator itr = fc->LVB.vLocVar.begin();
 			for (WORD i = 1; i <= n; i++) {
-				//FrmlListEl* fl = new FrmlListEl();
-				//if (z->FrmlL == nullptr) z->FrmlL = fl;
-				//else ChainLast(z->FrmlL, fl);
 				FrmlElem* frml = RdFormula(typ, caller);
 				z->FrmlL.push_back(frml);
 
@@ -1797,7 +1795,7 @@ bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 			*ZZ = z;
 			return true;
 		}
-		fc = fc->Chain;
+		//fc = fc->Chain;
 	}
 	return false;
 }

@@ -2987,16 +2987,28 @@ void ReadDeclChpt()
 	while (true) {
 		if (g_compiler->IsKeyWord("FUNCTION")) {
 			g_compiler->TestIdentif();
-			FuncD* fc = FuncDRoot;
-			while (fc != CRdb->OldFCRoot) {
-				if (EquUpCase(fc->name, LexWord)) {
+
+			//FuncD* fc = FuncDRoot;
+			//while (fc != CRdb->OldFCRoot) {
+			//	if (EquUpCase(fc->name, LexWord)) {
+			//		g_compiler->Error(26);
+			//	}
+			//	fc = fc->Chain;
+			//}
+
+			int32_t items = FuncDRoot.size() - CRdb->OldFCRoot.size();
+			std::deque<FuncD*>::iterator it0 = FuncDRoot.begin();
+			for (int32_t i = 0; i < items; i++) {
+				if (EquUpCase((*it0)->name, LexWord)) {
 					g_compiler->Error(26);
 				}
-				fc = fc->Chain;
+				++it0;
 			}
-			fc = new FuncD();
-			fc->Chain = FuncDRoot;
-			FuncDRoot = fc;
+
+			FuncD* fc = new FuncD();
+			//fc->Chain = FuncDRoot;
+			//FuncDRoot = fc;
+			FuncDRoot.push_front(fc);
 			fc->name = LexWord;
 			g_compiler->rdFldNameType = FieldNameType::P;
 			//ptrRdFldNameFrml = RdFldNameFrmlP;
@@ -3008,7 +3020,9 @@ void ReadDeclChpt()
 			ResetLVBD();
 			LVBD.FceName = fc->name;
 			g_compiler->Accept('(');
-			if (Lexem != ')') g_compiler->RdLocDcl(&LVBD, true, false, 'D'); // nacte parametry funkce
+			if (Lexem != ')') {
+				g_compiler->RdLocDcl(&LVBD, true, false, 'D'); // nacte parametry funkce
+			}
 			g_compiler->Accept(')');
 			g_compiler->Accept(':');
 			// nacte typ navratove hodnoty
