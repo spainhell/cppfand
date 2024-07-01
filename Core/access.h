@@ -21,7 +21,7 @@ struct DepD
 struct FuncD
 {
 	std::string name;
-	FuncD* Chain = nullptr;
+	//FuncD* Chain = nullptr;
 	char FTyp = '\0';
 	LocVarBlkD LVB; // {1.LV is result}
 	std::vector<Instr*> v_instr; // {InstrPtr}
