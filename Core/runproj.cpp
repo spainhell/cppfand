@@ -123,7 +123,7 @@ void GetSplitChapterName(FileD* file_d, void* record, std::string& name, std::st
 	}
 	else {
 		ext = name.substr(i, 255);
-		name = name.substr(1, i - 1);
+		name = name.substr(0, i);
 	}
 }
 

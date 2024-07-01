@@ -3799,7 +3799,7 @@ label2:
 	case __ALT_F1: {
 		heslo = file_d_->loadS(ChptTyp, record_);
 	label3:
-		Help((RdbD*)&HelpFD, heslo, false);
+		Help((RdbD*)HelpFD, heslo, false);
 		goto label4;
 		break;
 	}
@@ -4271,12 +4271,14 @@ void DataEditor::ShiftF7Proc()
 
 bool DataEditor::ShiftF7Duplicate()
 {
-	auto result = false;
+	bool result = false;
 	EditD* ee = edit_->pChain;
 
 	file_d_ = ee->FD;
 	record_ = ee->NewRecPtr;
-	if (!ELockRec(ee, file_d_->IRec, ee->IsNewRec, ee->params_->Subset)) return result;
+	if (!ELockRec(ee, file_d_->IRec, ee->IsNewRec, ee->params_->Subset)) {
+		return result;
+	}
 	if (!params_->WasUpdated) {
 		Move(record_, ee->OldRecPtr, file_d_->FF->RecLen);
 		params_->WasUpdated = true;
@@ -4305,7 +4307,7 @@ bool DataEditor::ShiftF7Duplicate()
 bool DataEditor::DuplToPrevEdit()
 {
 	LockMode md;
-	auto result = false;
+	bool result = false;
 	EditD* ee = edit_->pChain;
 	if (ee == nullptr) return result;
 	FieldDescr* f1 = (*CFld)->FldD;
@@ -4971,7 +4973,7 @@ label81:
 			case __F1: {
 				// index napovedy
 				ReadMessage(7);
-				Help((RdbD*)&HelpFD, MsgLine, false);
+				Help((RdbD*)HelpFD, MsgLine, false);
 				break;
 			}
 			case __CTRL_F1: {
