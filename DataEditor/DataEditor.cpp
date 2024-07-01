@@ -2375,7 +2375,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	std::unique_ptr<DataEditor> data_editor2 = std::make_unique<DataEditor>();
 
 	if (LkD == nullptr) {
-		for (auto& ld : LinkDRoot) {
+		for (LinkD* ld : LinkDRoot) {
 			FileD* ToFD = ld->ToFD;
 			if ((ld->FromFD == file_d_) && data_editor2->ForNavigate(ToFD)) {
 				std::string s;
@@ -2388,6 +2388,11 @@ void DataEditor::UpwEdit(LinkD* LkD)
 					data_editor2->CFld = this->CFld;
 					data_editor2->SetPointTo(ld, &s1, &s2);
 				} while (SL != nullptr);*/
+
+				s1 = data_editor2->GetFileViewName(ToFD, ToFD->ViewNames, 0) + s;
+				ww.PutSelect(s1);
+				data_editor2->CFld = this->CFld;
+				data_editor2->SetPointTo(ld, &s1, &s2);
 
 				for (size_t i = 0; i < ToFD->ViewNames.size(); i++) {
 					s1 = data_editor2->GetFileViewName(ToFD, ToFD->ViewNames, i) + s;
@@ -4031,7 +4036,7 @@ bool DataEditor::SelFldsForEO(EditOpt* EO, LinkD* LD)
 	wwmix ww;
 
 	void* p = nullptr;
-	auto result = true;
+	bool result = true;
 	if (EO->Flds.empty()) return result;
 	//FieldListEl* FL = options->Flds;
 	if (!EO->UserSelFlds) {
@@ -4053,19 +4058,20 @@ bool DataEditor::SelFldsForEO(EditOpt* EO, LinkD* LD)
 	//while (FL != nullptr) {
 	for (FieldDescr* F : EO->Flds) {
 		if ((LD == nullptr) || !FinArgs(LD, F)) {
-			pstring s = F->Name;
-			if ((F->Flg & f_Stored) == 0) {
-				pstring olds = s;
-				s = SelMark;
-				s += olds;
+			if (!F->isStored()) {
+				ww.PutSelect(static_cast<char>(SelMark) + F->Name);
 			}
-			ww.PutSelect(s);
+			else {
+				ww.PutSelect(F->Name);
+			}
 		}
 		//FL = FL->pChain;
 	}
-	if (EO->Flds.empty()) WrLLF10Msg(156);
+	if (EO->Flds.empty()) {
+		WrLLF10Msg(156);
+	}
 	else {
-		ww.SelFieldList(36, true, EO->Flds);
+		ww.SelFieldList(file_d_, 36, true, EO->Flds);
 	}
 	if (EO->Flds.empty()) {
 		ReleaseStore(&p);

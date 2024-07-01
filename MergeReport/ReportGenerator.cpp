@@ -62,7 +62,7 @@ bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 			if (f->field_type != FieldType::TEXT) ww.PutSelect(f->Name);
 		}
 
-		if (!ww.SelFieldList(37, false, RO->Ctrl)) {
+		if (!ww.SelFieldList(CFile, 37, false, RO->Ctrl)) {
 			return result; // TODO: RO->Ctrl[0] is probably bad idea
 		}
 
@@ -70,7 +70,7 @@ bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 			if (f->frml_type == 'R') ww.PutSelect(f->Name);
 		}
 
-		if (!ww.SelFieldList(38, true, RO->Sum)) {
+		if (!ww.SelFieldList(CFile, 38, true, RO->Sum)) {
 			return result;  // TODO: RO->Sum[0] is probably bad idea
 		}
 	}
@@ -144,7 +144,7 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	}
 
 	CFile = fd;
-	ww.SelFieldList(36, true, ro->Flds);
+	ww.SelFieldList(CFile, 36, true, ro->Flds);
 	if (ro->Flds.empty()) return result;
 	ro->Mode = _ARprt;
 
@@ -152,13 +152,13 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 		ww.PutSelect(fl->Name);
 	}
 
-	if (!ww.SelFieldList(37, false, ro->Ctrl)) return result;
+	if (!ww.SelFieldList(CFile, 37, false, ro->Ctrl)) return result;
 
 	for (auto& fl : ro->Flds) {
 		if (fl->frml_type == 'R') ww.PutSelect(fl->Name);
 	}
 
-	if (!ww.SelFieldList(38, false, ro->Sum)) return result;
+	if (!ww.SelFieldList(CFile, 38, false, ro->Sum)) return result;
 
 	result = GenAutoRprt(ro, false);
 	return result;

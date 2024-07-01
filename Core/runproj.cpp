@@ -852,7 +852,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 			case 'F': {
 				FD = FindFD();
 				if (FD != nullptr && CC == __CTRL_F9) {
-					std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+					std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>(FD);
 					std::unique_ptr<EditOpt> edit_opt = std::make_unique<EditOpt>();
 					edit_opt->UserSelFlds = true;
 					CFile = FD;
