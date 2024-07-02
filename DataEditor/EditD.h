@@ -85,6 +85,7 @@ public:
 	std::string StartRecKey;
 	short StartIRec = 0;
 	int OwnerRecNo = 0;
-	LinkD* ShiftF7LD = nullptr;
+	LinkD* ShiftF7_link = nullptr;
+	EditD* ShiftF7_caller = nullptr;
 	void* AfterE = nullptr;
 };

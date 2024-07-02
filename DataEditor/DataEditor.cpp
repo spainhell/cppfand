@@ -1423,7 +1423,7 @@ void DataEditor::BuildWork()
 {
 	void* p = nullptr;
 	XKey* K = nullptr;
-	std::vector<KeyFldD*> *KF = nullptr;
+	std::vector<KeyFldD*>* KF = nullptr;
 	XString xx;
 	bool dupl = true;
 	bool intvl = false;
@@ -2480,7 +2480,8 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		EditReader* reader = new EditReader();
 		reader->NewEditD(LD->ToFD, EO, data_editor2->record_);
 		data_editor2->edit_ = reader->GetEditD();
-		data_editor2->edit_->ShiftF7LD = LkD;
+		data_editor2->edit_->ShiftF7_link = LkD;
+		data_editor2->edit_->ShiftF7_caller = edit_;
 		if (data_editor2->OpenEditWw()) {
 			data_editor2->RunEdit(px, Brk);
 		}
@@ -4199,19 +4200,9 @@ void DataEditor::DownEdit()
 
 	for (LinkD* ld : LinkDRoot) {
 		FileD* FD = ld->FromFD;
-		//std::vector<std::string> SL;
 		if ((ld->ToFD == file_d_) && data_editor2->ForNavigate(FD) && (ld->IndexRoot != 0)) {
 			/*own key with equal beginning*/
-			//SL = FD->ViewNames;
 			XKey* K = GetFromKey(ld);
-			/*do {
-				std::string s = data_editor2->GetFileViewName(FD, &SL);
-				std::string kali = K->Alias;
-				if (!K->Alias.empty()) {
-					s += "/" + kali;
-				}
-				ww.PutSelect(s);
-			} while (SL != nullptr);*/
 
 			std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames, 0);
 			std::string kali = K->Alias;
@@ -4229,7 +4220,6 @@ void DataEditor::DownEdit()
 				ww.PutSelect(s);
 			}
 		}
-		//ld = ld->pChain;
 	}
 	ss.Abcd = true;
 	ww.SelectStr(0, 0, 35, "");
@@ -4241,8 +4231,7 @@ void DataEditor::DownEdit()
 		LinkD* LD = *LinkDRoot.begin();
 		data_editor2->GetSel2S(s1, s2, '/', 2);
 		ali = GetFromKey(LD)->Alias;
-		//while ((LD->ToFD != edit_->v_files) || (LD->IndexRoot == 0) || (s2 != ali)
-		//	|| !EquFileViewName(LD->FromFD, s1, options)) LD = LD->pChain;
+
 		for (LinkD* ld : LinkDRoot) {
 			if ((ld->ToFD != file_d_)
 				|| (ld->IndexRoot == 0)
@@ -4296,21 +4285,23 @@ void DataEditor::ShiftF7Proc()
 bool DataEditor::ShiftF7Duplicate()
 {
 	bool result = false;
-	EditD* ee = edit_->pChain;
 
+	EditD* ee = edit_->ShiftF7_caller;
 	file_d_ = ee->FD;
 	record_ = ee->NewRecPtr;
+
 	if (!ELockRec(ee, file_d_->IRec, ee->IsNewRec, ee->params_->Subset)) {
 		return result;
 	}
+
 	if (!params_->WasUpdated) {
 		Move(record_, ee->OldRecPtr, file_d_->FF->RecLen);
 		params_->WasUpdated = true;
 	}
 
-	//KeyFldD* kf2 = edit_->ShiftF7LD->ToKey->KFlds;
-	for (KeyFldD* kf2 : edit_->ShiftF7LD->ToKey->KFlds) {
-		for (KeyFldD* arg : edit_->ShiftF7LD->Args) {
+	//KeyFldD* kf2 = edit_->ShiftF7_link->ToKey->KFlds;
+	for (KeyFldD* kf2 : edit_->ShiftF7_link->ToKey->KFlds) {
+		for (KeyFldD* arg : edit_->ShiftF7_link->Args) {
 			DuplFld(edit_->FD, file_d_, edit_->NewRecPtr, record_, ee->OldRecPtr, kf2->FldD, arg->FldD);
 			//kf2 = kf2->pChain;
 		}
@@ -4321,10 +4312,6 @@ bool DataEditor::ShiftF7Duplicate()
 	record_ = edit_->NewRecPtr;
 	result = true;
 
-	keyboard.AddToFrontKeyBuf(0x0D); // ^M .. \r .. #13
-	//pstring oldKbdBuffer = KbdBuffer;
-	//KbdBuffer = 0x0D; // ^M
-	//KbdBuffer += oldKbdBuffer;
 	return result;
 }
 
@@ -4686,7 +4673,7 @@ void DataEditor::DisplLL()
 		return;
 	}
 
-	if (edit_->ShiftF7LD != nullptr) {
+	if (edit_->ShiftF7_link != nullptr) {
 		n = 144;
 	}
 	else if (params_->NoCreate || params_->Only1Record) {
@@ -4986,8 +4973,13 @@ label81:
 				&& LockRec(true)) {
 				//keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
 				const bool res = !EditItemProc(true, true, Brk);
-				if (res) goto label7;
-				if (Brk != 0) goto fin;
+				if (res) {
+					goto label7;
+				}
+				if (Brk != 0) {
+					SetEdRecNoEtc(0);
+					goto label71;
+				}
 			}
 		}
 		else {
@@ -5018,7 +5010,8 @@ label81:
 							DelNewRec();
 						}
 						else {
-							goto label9;
+							EdBreak = 0;
+							goto label7;
 						}
 					}
 					else
@@ -5030,12 +5023,16 @@ label81:
 						goto label0;
 					}
 				}
-			label9:
 				EdBreak = 0;
 			label7:
 				if (IsNewRec && !EquOldNewRec()) {
-					if (!params_->Prompt158 || PromptYN(158)) goto fin;
-					else goto label1;
+					if (!params_->Prompt158 || PromptYN(158)) {
+						SetEdRecNoEtc(0);
+						goto label71;
+					}
+					else {
+						goto label1;
+					}
 				}
 				EdBr = EdBreak;
 				n = GetEdRecNo();
@@ -5047,9 +5044,6 @@ label81:
 					//if ((IsNewRec || WriteCRec(true, Displ)) && ((EdBreak == 11) || NoESCPrompt || !spec.ESCverify && !MustESCPrompt || PromptYN(137))) {
 					EdBreak = EdBr;
 					SetEdRecNoEtc(n);
-					goto label71;
-				fin:
-					SetEdRecNoEtc(0);
 				label71:
 					if (IsNewRec && !params_->EdRecVar) DelNewRec();
 					IVoff();
@@ -5070,7 +5064,8 @@ label81:
 				// ukonceni editace bez ulozeni zmen
 				UndoRecord();
 				EdBreak = 0;
-				goto fin;
+				SetEdRecNoEtc(0);
+				goto label71;
 			}
 			case 'U' + CTRL: {
 				// obnoveni puvodniho stavu
@@ -5151,24 +5146,50 @@ label81:
 			case __ENTER: {
 				if (params_->SelMode && (edit_->SelKey != nullptr) && !IsNewRec) {
 					if (WriteCRec(true, Displ)) {
-						if ((edit_->SelKey != nullptr) && (edit_->SelKey->NRecs() == 0)) ToggleSelectRec();
-						EdBreak = 12; goto fin;
+						if ((edit_->SelKey != nullptr) && (edit_->SelKey->NRecs() == 0)) {
+							ToggleSelectRec();
+						}
+						EdBreak = 12;
+						SetEdRecNoEtc(0);
+						goto label71;
 					}
 				}
-				else
-					if ((edit_->ShiftF7LD != nullptr) && !IsNewRec) {
-						if (ShiftF7Duplicate()) goto label9;
+				else {
+					if ((edit_->ShiftF7_link != nullptr) && !IsNewRec) {
+						if (ShiftF7Duplicate()) {
+							// TODO: probably don't continue, caller should manage this
+							EdBreak = 0;
+							keyboard.AddToFrontKeyBuf(__ENTER);
+							//goto label7;
+							return;
+						}
 					}
-					else
-						if (!CtrlMProc(3)) goto label7;
+					else {
+						if (!CtrlMProc(3)) {
+							goto label7;
+						}
+					}
+				}
 				break;
 			}
 			case __INSERT: {
 				// zahajeni opravy udaje
-				b = false;
-				if ((*CFld)->Ed(IsNewRec) && LockRec(true)) b = true;
-				if (!EditItemProc(false, b, Brk)) goto label7;
-				if (Brk != 0) goto fin;
+				if ((*CFld)->Ed(IsNewRec) && LockRec(true)) {
+					b = true;
+				}
+				else {
+					b = false;
+				}
+
+				if (!EditItemProc(false, b, Brk)) {
+					goto label7;
+				}
+
+				if (Brk != 0) {
+					SetEdRecNoEtc(0);
+					goto label71;
+				}
+
 				break;
 			}
 			case __F4: {
@@ -5205,7 +5226,8 @@ label81:
 								if (((CNRecs() == 0) || (CNRecs() == 1) && IsNewRec) && params_->NoCreate) {
 									WrLLF10Msg(112);
 									EdBreak = 13;
-									goto fin;
+									SetEdRecNoEtc(0);
+									goto label71;
 								}
 								if (b && !CtrlMProc(0)) {
 									goto label7;
@@ -5316,7 +5338,8 @@ label81:
 								}
 								else {
 									Brk = 2;
-									goto fin;
+									SetEdRecNoEtc(0);
+									goto label71;
 								}
 							}
 							else if (IsTestRun && (file_d_ != catalog->GetCatalogFile()) && (KbdChar == __ALT_F2)) {
@@ -5324,7 +5347,14 @@ label81:
 							}
 							break;
 						case __F6: if (!params_->EdRecVar) F6Proc(); break;
-						case __F4: if (DuplToPrevEdit()) { EdBreak = 14; goto fin; } break;
+						case __F4: {
+							if (DuplToPrevEdit()) {
+								EdBreak = 14;
+								SetEdRecNoEtc(0);
+								goto label71;
+							}
+							break;
+						}
 						case __CTRL_F7: DownEdit(); break;
 						case __F8: {
 							if (edit_->SelKey != nullptr) {
@@ -5359,7 +5389,8 @@ label81:
 						case __ALT_F9:
 							if (IsCurrChpt(file_d_)) {
 								Brk = 2;
-								goto fin;
+								SetEdRecNoEtc(0);
+								goto label71;
 							}
 							break;
 						case __ALT_F7:
