@@ -85,7 +85,7 @@ void wwmix::SelectStr(short C1, short R1, WORD NMsg, std::string LowTxt)
 {
 	WORD cols = 0, MaxBase = 0;
 	WORD key;
-	char schar;
+	char schar = ' ';
 	short b = 0;
 	Item* p = nullptr;
 	short i = 0, iOld = 0;
@@ -192,19 +192,20 @@ void wwmix::SelectStr(short C1, short R1, WORD NMsg, std::string LowTxt)
 			ss.Empty = true;
 			ss.Pointto = nullptr;
 			ss.Size = 0;
-			//p = (Item*)sv.pChain;
-			for (auto& p : sv.items) { //while (p != nullptr) {
+
+			for (Item& p : sv.items) {
 				if (p.Tag != ' ') ss.Size++;
-				//p = (Item*)p->pChain;
 			}
+
 			if (ss.Subset && ss.ImplAll && (ss.Size == 0)) {
-				// p = (Item*)sv.pChain;
-				for (auto& p : sv.items) { //while (p != nullptr) {
-					if (p.S[0] != SelMark) {
+				for (Item& p : sv.items) {
+					if (p.S[0] != static_cast<char>(SelMark)) {
 						p.Tag = schar;
 						ss.Size++;
 					}
-					//p = (Item*)p->pChain;
+					else {
+						// calculated item
+					}
 				}
 			}
 			if (Event.Pressed.KeyCombination() == __ESC) {
@@ -562,7 +563,7 @@ bool wwmix::MouseInItem(short& I)
 std::string wwmix::GetSelect()
 {
 	Item* p = nullptr;
-	pstring result;
+	std::string result;
 	if (!ss.Subset) {
 		p = GetItem(sv.iItem);
 		result = p->S;
@@ -580,17 +581,19 @@ std::string wwmix::GetSelect()
 		if (i == sv.items.size() - 1) {
 			// on the last item with Tag == ' '
 			p = nullptr;
+			break;
 		}
 	}
 
 	if (p == nullptr) {
 		ss.Tag = ' ';
 		result = "";
-		return result;
 	}
-	ss.Tag = p->Tag;
-	result = p->S;
-	//p = (Item*)p->pChain;
+	else {
+		ss.Tag = p->Tag;
+		result = p->S;
+	}
+
 	return result;
 }
 

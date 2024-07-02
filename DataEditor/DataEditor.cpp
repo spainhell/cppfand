@@ -2455,7 +2455,9 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		}
 		EO->SetOnlyView = true;
 	}
-	x.PackKF(data_editor2->file_d_, LD->Args, data_editor2->record_);
+
+	// prepare DB key from current item
+	x.PackKF(file_d_, LD->Args, record_);
 	px = &x;
 	K = LD->ToKey;
 
