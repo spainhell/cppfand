@@ -64,6 +64,14 @@ FileD* DataEditor::GetFileD()
 	return file_d_;
 }
 
+void DataEditor::SetEditD(EditD* edit)
+{
+	edit_ = edit;
+	file_d_ = edit_->FD;
+	original_record_ = edit_->FD->GetRecSpace();
+	record_ = original_record_;
+}
+
 void DataEditor::SetFileD(FileD* file_d)
 {
 	//if (record_ != nullptr) {
@@ -2342,7 +2350,7 @@ bool DataEditor::EquFileViewName(FileD* FD, std::string S, EditOpt** EO)
 			}
 		}
 	}
-	else if (S == std::string(FD->Name)) {
+	else if (S == FD->Name) {
 		*EO = new EditOpt();
 		(*EO)->UserSelFlds = true;
 		(*EO)->Flds = g_compiler->AllFldsList(FD, false);
@@ -4192,7 +4200,7 @@ void DataEditor::DownEdit()
 	for (LinkD* ld : LinkDRoot) {
 		FileD* FD = ld->FromFD;
 		//std::vector<std::string> SL;
-		if ((ld->ToFD == data_editor2->file_d_) && data_editor2->ForNavigate(FD) && (ld->IndexRoot != 0)) {
+		if ((ld->ToFD == file_d_) && data_editor2->ForNavigate(FD) && (ld->IndexRoot != 0)) {
 			/*own key with equal beginning*/
 			//SL = FD->ViewNames;
 			XKey* K = GetFromKey(ld);
@@ -4204,6 +4212,14 @@ void DataEditor::DownEdit()
 				}
 				ww.PutSelect(s);
 			} while (SL != nullptr);*/
+
+			std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames, 0);
+			std::string kali = K->Alias;
+			if (!K->Alias.empty()) {
+				s += "/" + kali;
+			}
+			ww.PutSelect(s);
+
 			for (size_t i = 0; i < FD->ViewNames.size(); i++) {
 				std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames, i);
 				std::string kali = K->Alias;
@@ -4228,7 +4244,7 @@ void DataEditor::DownEdit()
 		//while ((LD->ToFD != edit_->v_files) || (LD->IndexRoot == 0) || (s2 != ali)
 		//	|| !EquFileViewName(LD->FromFD, s1, options)) LD = LD->pChain;
 		for (LinkD* ld : LinkDRoot) {
-			if ((ld->ToFD != data_editor2->edit_->FD)
+			if ((ld->ToFD != file_d_)
 				|| (ld->IndexRoot == 0)
 				|| (s2 != ali)
 				|| !data_editor2->EquFileViewName(ld->FromFD, s1, &EO)) {
@@ -4242,10 +4258,10 @@ void DataEditor::DownEdit()
 		data_editor2->file_d_ = LD->FromFD;
 		if (data_editor2->SelFldsForEO(EO, LD)) {
 			EO->DownLD = LD;
-			EO->DownRecPtr = data_editor2->record_;
+			EO->DownRecPtr = record_;
 			EditReader* reader = new EditReader();
 			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->record_);
-			edit_ = reader->GetEditD();
+			data_editor2->edit_ = reader->GetEditD();
 			if (data_editor2->OpenEditWw()) {
 				data_editor2->RunEdit(nullptr, Brk);
 			}

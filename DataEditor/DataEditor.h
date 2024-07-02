@@ -20,7 +20,8 @@ public:
     ~DataEditor();
 
 	FileD* GetFileD();
-    void SetFileD(FileD* file_d);
+    void SetEditD(EditD* edit);
+	void SetFileD(FileD* file_d);
 
     uint8_t* GetRecord();
 
