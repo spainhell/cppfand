@@ -5346,7 +5346,12 @@ label81:
 								EditHelpOrCat(KbdChar, 1, file_d_->Name + "." + (*CFld)->FldD->Name);
 							}
 							break;
-						case __F6: if (!params_->EdRecVar) F6Proc(); break;
+						case __F6: {
+							if (!params_->EdRecVar) {
+								F6Proc();
+							}
+							break;
+						}
 						case __F4: {
 							if (DuplToPrevEdit()) {
 								EdBreak = 14;
@@ -5355,7 +5360,10 @@ label81:
 							}
 							break;
 						}
-						case __CTRL_F7: DownEdit(); break;
+						case __CTRL_F7: {
+							DownEdit();
+							break;
+						}
 						case __F8: {
 							if (edit_->SelKey != nullptr) {
 								ToggleSelectRec(); GoPrevNextRec(+1, true);

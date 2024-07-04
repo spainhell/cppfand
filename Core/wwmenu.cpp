@@ -483,7 +483,9 @@ WORD TMenuBox::Exec(WORD IStart)
 		case __ESC: {
 			i = 0;
 			ClearHlp();
-			return 0;
+			if (!ExecItem(i)) {
+				return (j << 8) + i;
+			}
 			break;
 		}
 		case __UP: {

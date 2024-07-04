@@ -1258,13 +1258,13 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			BreakP = false;
 			break;
 		}
-									 //case PInstrCode::_not_defined: {
-									 //	// contains only sub-instructions
-									 //	RunInstr(PD->sub_instr);
-									 //	break;
-									 //}
+		 //case PInstrCode::_not_defined: {
+		 //	// contains only sub-instructions
+		 //	RunInstr(PD->sub_instr);
+		 //	break;
+		 //}
 		case PInstrCode::_menubox: {
-			auto menu = std::make_unique<TMenuBoxP>(0, 0, nullptr, (Instr_menu*)PD);
+			std::unique_ptr<TMenuBoxP> menu = std::make_unique<TMenuBoxP>(0, 0, nullptr, (Instr_menu*)PD);
 			menu->call();
 			break;
 		}
@@ -1340,9 +1340,9 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_gotoxy: {
-			auto iPD = (Instr_gotoxy*)PD;
-			WORD x = RunInt(CFile, iPD->GoX, CRecPtr);
-			WORD y = RunInt(CFile, iPD->GoY, CRecPtr);
+			Instr_gotoxy* iPD = (Instr_gotoxy*)PD;
+			WORD x = static_cast<uint16_t>(RunInt(CFile, iPD->GoX, CRecPtr));
+			WORD y = static_cast<uint16_t>(RunInt(CFile, iPD->GoY, CRecPtr);
 			screen.GotoXY(x + WindMin.X - 1, y + WindMin.Y - 1, absolute);
 			break;
 		}
@@ -1351,7 +1351,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_lproc: {
-			auto iPD = (Instr_lproc*)PD;
+			Instr_lproc* iPD = (Instr_lproc*)PD;
 			RunProlog(&iPD->lpPos, iPD->lpName);
 			break;
 		}
@@ -1360,7 +1360,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_sort: {
-			auto iPD = (Instr_sort*)PD;
+			Instr_sort* iPD = (Instr_sort*)PD;
 			SortProc(iPD->SortFD, iPD->SK);
 			break;
 		}
@@ -1369,7 +1369,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_asgnloc: {
-			auto iPD = (Instr_assign*)PD;
+			Instr_assign* iPD = (Instr_assign*)PD;
 			LVAssignFrml(CFile, iPD->AssLV, iPD->Add, iPD->Frml, CRecPtr);
 			break;
 		}
@@ -1378,13 +1378,13 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_asgnrecvar: {
-			auto iPD = (Instr_assign*)PD;
+			Instr_assign* iPD = (Instr_assign*)PD;
 			AssignRecVar(iPD->RecLV1, iPD->RecLV2, iPD->Ass);
 			break;
 		}
 		case PInstrCode::_asgnpar: {
 			// ulozi globalni parametr - do souboru
-			auto iPD = (Instr_assign*)PD;
+			Instr_assign* iPD = (Instr_assign*)PD;
 			AsgnParFldFrml(iPD->FD, iPD->FldD, iPD->Frml, iPD->Add);
 			break;
 		}
@@ -1393,9 +1393,9 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_asgnnrecs: {
-			auto iPD = (Instr_assign*)PD;
+			Instr_assign* iPD = (Instr_assign*)PD;
 			CFile = iPD->FD;
-			CFile->AssignNRecs(iPD->Add, RunInt(CFile, iPD->Frml, CRecPtr));
+			iPD->FD->AssignNRecs(iPD->Add, RunInt(iPD->FD, iPD->Frml, CRecPtr));
 			break;
 		}
 		case PInstrCode::_appendRec: {
@@ -1486,17 +1486,17 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_indexfile: {
-			auto iPD = (Instr_indexfile*)PD;
+			Instr_indexfile* iPD = (Instr_indexfile*)PD;
 			iPD->IndexFD->FF->IndexFileProc(iPD->Compress);
 			break;
 		}
 		case PInstrCode::_display: {
-			auto iPD = (Instr_merge_display*)PD;
+			Instr_merge_display* iPD = (Instr_merge_display*)PD;
 			DisplayProc(iPD->Pos.rdb, iPD->Pos.i_rec);
 			break;
 		}
 		case PInstrCode::_mount: {
-			auto iPD = (Instr_mount*)PD;
+			Instr_mount* iPD = (Instr_mount*)PD;
 			MountProc(iPD->MountCatIRec, iPD->MountNoCancel);
 			break;
 		}
@@ -1667,7 +1667,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("ufo") != std::string::npos) {
+	if (srcCode.find("eb,kb,dO,dO2,dN:real; ef,el,s,dr,fi,bhc,khd:string;") != std::string::npos) {
 		printf("");
 	}
 #endif

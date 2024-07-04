@@ -950,31 +950,9 @@ bool EqualsMask(const std::string& value, std::string& mask)
 	return CmpStringWithMask(value, mask);
 }
 
-bool EquLongStr(LongStr* S1, LongStr* S2)
-{
-	if (S1->LL != S2->LL) return false;
-	if (S1->LL == 0) return true;
-	for (size_t i = 0; i < S1->LL; i++)	{
-		if (S1->A[i] != S2->A[i]) return false;
-	}
-	return true;
-}
-
 bool EquArea(void* p1, void* p2, size_t len)
 {
-	//auto* c1 = static_cast<unsigned char*>(P1);
-	//auto* c2 = static_cast<unsigned char*>(P2);
-	//for (size_t i = 0; i < len; i++) {
-	//	if (c1[i] != c2[i]) return false;
-	//}
-	//return true;
-
 	return memcmp(p1, p2, len) == 0;
-}
-
-WORD ListLength(void* P)
-{
-	return 0;
 }
 
 int StoreAvail()

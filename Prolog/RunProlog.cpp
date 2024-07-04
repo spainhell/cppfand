@@ -420,6 +420,16 @@ std::string RunLSExpr(TTerm* t)
 	return result;
 }
 
+bool EquLongStr(LongStr* S1, LongStr* S2)
+{
+	if (S1->LL != S2->LL) return false;
+	if (S1->LL == 0) return true;
+	for (size_t i = 0; i < S1->LL; i++) {
+		if (S1->A[i] != S2->A[i]) return false;
+	}
+	return true;
+}
+
 bool UnifyTermsCC(TTerm* T1, TTerm* T2)
 {
 	short i = 0;
