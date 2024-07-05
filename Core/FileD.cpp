@@ -100,13 +100,13 @@ void FileD::WriteRec(size_t rec_nr, void* record) const
 	this->FF->WriteRec(rec_nr, record);
 }
 
-BYTE* FileD::GetRecSpace()
+uint8_t* FileD::GetRecSpace()
 {
 	size_t length = FF->RecLen + 2;
 	// 0. BYTE in front (.X00) -> Valid Record Flag (but it's calculated in RecLen for index file)
 	// 1. BYTE in the end -> Work Flag
 	// 2. BYTE in the end -> Update Flag
-	BYTE* result = new BYTE[length];
+	uint8_t* result = new uint8_t[length];
 	memset(result, '\0', length);
 	return result;
 }

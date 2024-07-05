@@ -4529,13 +4529,13 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 {
 	bool upd = false;
 	bool b = false, b2 = false, lkd = false;
-	char* p = nullptr;
+	uint8_t* p = nullptr;
 	WORD d = 0; LockMode md; /*float t;*/
 
 	auto result = false;
 	file_d_->FF->WasWrRec = false;
 	if (HasTF) {
-		p = (char*)file_d_->GetRecSpace();
+		p = file_d_->GetRecSpace();
 		Move(record_, p, file_d_->FF->RecLen);
 	}
 	SetEdRecNoEtc(0);

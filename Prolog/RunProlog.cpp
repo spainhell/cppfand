@@ -1122,25 +1122,27 @@ FileD* NextFD(FileD* FD)
 		r = FD->ChptPos.rdb; /*not .RDB*/
 	}
 
+	std::vector<FileD*>::iterator it0 = std::ranges::find(r->v_files, FD);
+	++it0;
+
 	while (true) {
 		// find FD in r->v_files
-		std::vector<FileD*>::iterator it0 = std::ranges::find(r->v_files, FD);
-		++it0;
-
 		if (it0 == r->v_files.end()) {
 			r = r->ChainBack;
 			if (r != nullptr) {
 				it0 = r->v_files.begin();
-				continue;
+			}
+			else {
+				FD = nullptr;
+				break;
 			}
 		}
 		else if ((FD->FF->file_type == FileType::RDB) || (FD->ChptPos.rdb == nullptr)) {
-			continue;
+			++it0;
 		}
 		else {
-			// do nothing
+			break;
 		}
-		break;
 	}
 
 	return FD;

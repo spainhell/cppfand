@@ -53,7 +53,7 @@ public:
 	void ReadRec(size_t rec_nr, void* record) const;
 	void WriteRec(size_t rec_nr, void* record) const;
 
-	BYTE* GetRecSpace();
+	uint8_t* GetRecSpace();
 
 	// delete 'T' from working file if exists
 	void ClearRecSpace(void* record);

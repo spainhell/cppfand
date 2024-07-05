@@ -1342,7 +1342,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 		case PInstrCode::_gotoxy: {
 			Instr_gotoxy* iPD = (Instr_gotoxy*)PD;
 			WORD x = static_cast<uint16_t>(RunInt(CFile, iPD->GoX, CRecPtr));
-			WORD y = static_cast<uint16_t>(RunInt(CFile, iPD->GoY, CRecPtr);
+			WORD y = static_cast<uint16_t>(RunInt(CFile, iPD->GoY, CRecPtr));
 			screen.GotoXY(x + WindMin.X - 1, y + WindMin.Y - 1, absolute);
 			break;
 		}
