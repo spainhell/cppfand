@@ -88,6 +88,7 @@
     <ClCompile Include="runfand.cpp" />
     <ClCompile Include="runfrml.cpp" />
     <ClCompile Include="runproc.cpp" />
+    <ClCompile Include="Users.cpp" />
     <ClCompile Include="wwmenu.cpp" />
     <ClCompile Include="wwmix.cpp" />
   </ItemGroup>
@@ -133,6 +134,7 @@
     <ClInclude Include="runproc.h" />
     <ClInclude Include="Cfg.h" />
     <ClInclude Include="switches.h" />
+    <ClInclude Include="Users.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />
   </ItemGroup>

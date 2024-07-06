@@ -1881,13 +1881,13 @@ void DataEditor::WrJournal(char Upd, void* RP, double Time)
 		file_d_ = edit_->Journal;
 		//record_ = GetRecSpace();
 
-		const auto newData = std::make_unique<BYTE[]>(file_d_->FF->RecLen + 2);
+		const std::unique_ptr newData = std::make_unique<uint8_t[]>(file_d_->FF->RecLen + 2);
 
-		auto it = file_d_->FldD.begin();
+		std::vector<FieldDescr*>::iterator it = file_d_->FldD.begin();
 
 		file_d_->saveS(*it++, std::string(1, Upd), newData.get());	// change type
 		file_d_->saveR(*it++, n, newData.get());								// record number
-		file_d_->saveR(*it++, UserCode, newData.get());						// user code
+		file_d_->saveR(*it++, user->get_user_code(), newData.get());		// user code
 		file_d_->saveR(*it++, Time, newData.get());							// timestamp
 
 		char* src = (char*)RP;
@@ -2237,15 +2237,15 @@ void DataEditor::FindExistTest(FrmlElem* Z, LinkD** LD)
 
 bool DataEditor::TestAccRight(std::string& S)
 {
-	if (UserCode == 0) { return true; }
+	if (user->get_user_code() == 0) { return true; }
 	//TODO: return OverlapByteStr((void*)(uintptr_t(S) + 5 + S->S.length()), &AccRight);
 	return false;
 }
 
 bool DataEditor::ForNavigate(FileD* FD)
 {
-	auto result = true;
-	if (UserCode == 0) return result;
+	bool result = true;
+	if (user->get_user_code() == 0) return result;
 
 	//StringListEl* S = FD->ViewNames;
 	//while (S != nullptr) {
@@ -2255,7 +2255,6 @@ bool DataEditor::ForNavigate(FileD* FD)
 	for (std::string& S : FD->ViewNames) {
 		if (TestAccRight(S)) return result;
 	}
-
 
 	result = false;
 	return result;

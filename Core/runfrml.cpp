@@ -787,7 +787,8 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _trust: {
 		FrmlElem1* iX1 = (FrmlElem1*)X;
-		result = (UserCode == 0) || OverlapByteStr(&iX1->N01, &AccRight);
+		// TODO: result = (UserCode == 0) || OverlapByteStr(&iX1->N01, &AccRight);
+		return user->get_user_code() == 0;
 		break;
 	}
 	case _isnewrec: {
@@ -988,12 +989,12 @@ label1:
 		goto label1;
 	}
 	case _newfile: {
-		auto iX = (FrmlElemNewFile*)X;
+		FrmlElemNewFile* iX = (FrmlElemNewFile*)X;
 		result = RunReal(iX->NewFile, iX->Frml, iX->NewRP);
 		break;
 	}
 	case _getWORDvar: {
-		auto i = ((FrmlElem1*)X)->N01;
+		uint8_t i = ((FrmlElem1*)X)->N01;
 		switch (i) {
 		case 0: return RprtLine;
 		case 1: return RprtPage;
@@ -1002,7 +1003,7 @@ label1:
 		case 4: return EdIRec;
 		case 5: return MenuX;
 		case 6: return MenuY;
-		case 7: return UserCode;
+		case 7: return user->get_user_code();
 		default: throw std::exception("RunFrml.cpp, RunReal(), case _getWORDvar: index out");
 		}
 		break;
@@ -2103,7 +2104,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 		break;
 	}
 	case _strdate1: {
-		auto iZ = (FrmlElemDateMask*)Z;
+		FrmlElemDateMask* iZ = (FrmlElemDateMask*)Z;
 		s = StrDate(RunReal(file_d, iZ->P1, record), iZ->Mask);
 		break;
 	}
@@ -2174,17 +2175,37 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 		}
 		break;
 	}
-	case _username: s = UserName; break;
-	case _accright: s = AccRight; break;
-	case _version: s = Version; break;
-	case _edfield: s = EdField; break;
-	case _edfile: {
-		s[0] = 0;
-		if (EditDRoot != nullptr) s = EditDRoot->FD->Name;
+	case _username: {
+		s = user->get_user_name();
 		break;
 	}
-	case _edkey: s = EdKey; break;
-	case _edreckey: s = EdRecKey; break;
+	case _accright: {
+		s = user->get_acc_rights();
+		break;
+	}
+	case _version: {
+		s = Version;
+		break;
+	}
+	case _edfield: {
+		s = EdField;
+		break;
+	}
+	case _edfile: {
+		s[0] = 0;
+		if (EditDRoot != nullptr) {
+			s = EditDRoot->FD->Name;
+		}
+		break;
+	}
+	case _edkey: {
+		s = EdKey;
+		break;
+	}
+	case _edreckey: {
+		s = EdRecKey;
+		break;
+	}
 	case _getenv: {
 		s = RunShortStr(file_d, iZ0->P1, record);
 		if (s == "") s = paramstr[0];

@@ -1,4 +1,6 @@
 #pragma once
+#include <set>
+
 #include "AddD.h"
 #include "../Common/pstring.h"
 #include "rdrun.h"
@@ -12,6 +14,7 @@ void RdChkDChain(std::vector<ChkD*>& C);
 void RdChkDsFromPos(FileD* FD, std::vector<ChkD*>& C); // r98
 void RdBegViewDcl(EditOpt* EO); // r110
 void RdByteList(pstring* s);
+[[nodiscard]] std::set<uint16_t> RdAccRights();
 void RdByteListInStore();
 bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO);
 

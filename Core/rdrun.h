@@ -230,7 +230,7 @@ struct LockD
 	FileD* FD = nullptr;
 	FrmlElem* Frml = nullptr;
 	LockMode Md, OldMd;
-	int N = 0;
+	int32_t N = 0;
 };
 
 struct TypAndFrml

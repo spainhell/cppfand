@@ -368,6 +368,33 @@ void RdByteList(pstring* s)
 	g_compiler->Accept(')');
 }
 
+std::set<uint16_t> RdAccRights()
+{
+	std::set<uint16_t> s;
+	g_compiler->Accept('(');
+	while (true) {
+		short i1 = g_compiler->RdInteger();
+		short i2 = i1;
+		if (i1 < 0) g_compiler->OldError(133);
+		if (Lexem == _subrange) {
+			g_compiler->RdLex();
+			i2 = g_compiler->RdInteger();
+			if (i2 < i1) g_compiler->OldError(133);
+		}
+		if ((i2 > 255)) g_compiler->OldError(133);
+		for (short i = i1; i <= i2; i++) {
+			s.insert(i);
+		}
+		if (Lexem == ',') {
+			g_compiler->RdLex();
+			continue;
+		}
+		break;
+	}
+	g_compiler->Accept(')');
+	return s;
+}
+
 void RdByteListInStore()
 {
 	pstring s;
