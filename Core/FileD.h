@@ -45,7 +45,7 @@ public:
 	std::vector<FieldDescr*> FldD;
 	std::vector<XKey*> Keys;
 	std::vector<AddD*> Add;
-	std::vector<std::string> ViewNames;  //after each string BYTE string with user codes 
+	std::vector<std::string> ViewNames;  // after each string BYTE string with user codes 
 
 	WORD GetNrKeys();
 	void Reset();

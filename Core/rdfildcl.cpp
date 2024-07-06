@@ -338,9 +338,11 @@ void RdBegViewDcl(EditOpt* EO)
 	}
 }
 
-void RdByteList(pstring* s)
+std::string RdByteList()
 {
 	g_compiler->Accept('(');
+
+	std::string s;
 	short l = 0;
 
 	while (true) {
@@ -355,7 +357,7 @@ void RdByteList(pstring* s)
 		if ((i2 > 255) || (l + i2 - i1 >= 255)) g_compiler->OldError(133);
 		for (short i = i1; i <= i2; i++) {
 			l++;
-			(*s)[l] = (char)i;
+			s += static_cast<char>(i);
 		}
 		if (Lexem == ',') {
 			g_compiler->RdLex();
@@ -364,42 +366,21 @@ void RdByteList(pstring* s)
 		break;
 	}
 
-	(*s)[0] = (char)l;
 	g_compiler->Accept(')');
+
+	return s;
 }
 
 std::set<uint16_t> RdAccRights()
 {
-	std::set<uint16_t> s;
-	g_compiler->Accept('(');
-	while (true) {
-		short i1 = g_compiler->RdInteger();
-		short i2 = i1;
-		if (i1 < 0) g_compiler->OldError(133);
-		if (Lexem == _subrange) {
-			g_compiler->RdLex();
-			i2 = g_compiler->RdInteger();
-			if (i2 < i1) g_compiler->OldError(133);
-		}
-		if ((i2 > 255)) g_compiler->OldError(133);
-		for (short i = i1; i <= i2; i++) {
-			s.insert(i);
-		}
-		if (Lexem == ',') {
-			g_compiler->RdLex();
-			continue;
-		}
-		break;
-	}
-	g_compiler->Accept(')');
-	return s;
-}
+	std::set<uint16_t> result;
+	std::string s = RdByteList();
 
-void RdByteListInStore()
-{
-	pstring s;
-	RdByteList(&s);
-	StoreStr(s);
+	for (char c : s) {
+		result.insert(static_cast<uint16_t>(c));
+	}
+
+	return result;
 }
 
 bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
@@ -428,15 +409,18 @@ bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 			std::string sLexWord = LexWord;
 			if (EquUpCase(ViewName, sLexWord)) found = true;
 			EO->ViewName = LexWord;
-			g_compiler->RdLex(); /*'('*/
+
+			// skip access rights in brackets (already loaded in FileD->ViewNames)
+			g_compiler->RdLex(); // '('
 			do {
 				g_compiler->RdLex();
 			} while (!(Lexem == ')' || Lexem == 0x1A));
 			g_compiler->RdLex();
-			g_compiler->RdLex();/*"):"*/
+			g_compiler->RdLex(); // "):"
+
 			K = g_compiler->RdViewKey(file_d);
 			if (K != nullptr) {
-				g_compiler->RdLex();/*','*/
+				g_compiler->RdLex(); // ','
 				EO->ViewKey = K;
 			}
 			RdBegViewDcl(EO);
@@ -487,11 +471,14 @@ void TestUserView(FileD* file_d)
 		else {
 			ChainLast(file_d->ViewNames, S);
 		}*/
-		file_d->ViewNames.push_back(LexWord);
-
+		std::string view_name = LexWord;
 		g_compiler->RdLex();
-		RdByteListInStore();
+		std::string view_rights = RdByteList();
+		// insert view name and rights into ViewNames (e.g. "VIEW1:\001\002\005")
+		file_d->ViewNames.push_back(view_name + ':' + view_rights);
+
 		g_compiler->Accept(':');
+
 		XKey* K = g_compiler->RdViewKey(file_d); // nacteni klice, podle ktereho budou polozky setrideny
 		if (K != nullptr) {
 			g_compiler->Accept(',');
@@ -522,6 +509,8 @@ void TestDupl(FileD* FD)
 	}*/
 
 	for (std::string& s : FD->ViewNames) {
+		size_t i = s.find_first_of(':');
+		s = s.substr(0, i);
 		if (EquUpCase(s, LexWord)) {
 			g_compiler->Error(26);
 		}
