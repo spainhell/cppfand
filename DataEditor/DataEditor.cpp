@@ -2235,11 +2235,10 @@ void DataEditor::FindExistTest(FrmlElem* Z, LinkD** LD)
 	}
 }
 
-bool DataEditor::TestAccRight(std::string& S)
+bool DataEditor::TestAccRight(const std::string& acc_rights)
 {
 	if (user->get_user_code() == 0) { return true; }
-	//TODO: return OverlapByteStr((void*)(uintptr_t(S) + 5 + S->S.length()), &AccRight);
-	return false;
+	return user->trust(acc_rights);
 }
 
 bool DataEditor::ForNavigate(FileD* FD)
@@ -2252,8 +2251,10 @@ bool DataEditor::ForNavigate(FileD* FD)
 	//	if (TestAccRight(S)) return result;
 	//	S = S->pChain;
 	//}
-	for (std::string& S : FD->ViewNames) {
-		if (TestAccRight(S)) return result;
+	for (std::string& view_name : FD->ViewNames) {
+		size_t colon = view_name.find_first_of(':');
+		std::string acc = view_name.substr(colon + 1);
+		if (TestAccRight(acc)) return result;
 	}
 
 	result = false;
@@ -2272,8 +2273,11 @@ std::string DataEditor::GetFileViewName(FileD* FD, std::vector<std::string>& SL,
 
 	std::string result = "\x1"; // ^A
 	for (size_t i = index_from; i <= SL.size(); i++) {
-		if (TestAccRight(SL[i])) {
-			result += SL[i];
+		size_t colon = SL[i].find_first_of(":");
+		std::string name = SL[i].substr(0, colon);
+		std::string acc = SL[i].substr(colon + 1);
+		if (TestAccRight(acc)) {
+			result += name;
 			break;
 		}
 	}

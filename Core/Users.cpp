@@ -1,5 +1,6 @@
 #include "Users.h"
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 
@@ -77,4 +78,18 @@ void Users::set_acc_right(uint16_t acc_right)
 {
 	AccRight.clear();
 	AccRight.insert(acc_right);
+}
+
+bool Users::trust(const std::string& acc_rights)
+{
+	std::set<uint16_t> rights_set;
+	for (const char& acc_right : acc_rights) {
+		rights_set.insert(acc_right);
+	}
+	// compare two sets
+	std::set<int> common_rights;
+	std::ranges::set_intersection(AccRight, rights_set, 
+	                              std::inserter(common_rights, common_rights.begin()));
+
+	return !common_rights.empty();
 }

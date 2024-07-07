@@ -19,6 +19,7 @@ public:
 	void set_user_code(uint32_t user_code);
 	void set_acc_rights(const std::string& acc_rights);
 	void set_acc_right(uint16_t acc_right);
+	bool trust(const std::string& acc_rights);
 
 private:
 	std::string UserName;

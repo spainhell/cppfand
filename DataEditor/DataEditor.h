@@ -111,7 +111,7 @@ private:
     bool DeleteRecProc();
     ChkD* CompChk(EFldD* D, char Typ);
     void FindExistTest(FrmlElem* Z, LinkD** LD);
-    bool TestAccRight(std::string& S);
+    bool TestAccRight(const std::string& acc_rights);
     bool ForNavigate(FileD* FD);
     std::string GetFileViewName(FileD* FD, std::vector<std::string>& SL, size_t index_from);
     void SetPointTo(LinkD* LD, std::string* s1, std::string* s2);
