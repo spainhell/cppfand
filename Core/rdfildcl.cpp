@@ -508,10 +508,10 @@ void TestDupl(FileD* FD)
 		S = (StringList)S->pChain;
 	}*/
 
-	for (std::string& s : FD->ViewNames) {
-		size_t i = s.find_first_of(':');
-		s = s.substr(0, i);
-		if (EquUpCase(s, LexWord)) {
+	for (std::string& view_name : FD->ViewNames) {
+		size_t i = view_name.find_first_of(':');
+		std::string name_only = view_name.substr(0, i);
+		if (EquUpCase(name_only, LexWord)) {
 			g_compiler->Error(26);
 		}
 	}

@@ -964,7 +964,7 @@ void DataEditor::DisplRec(WORD I)
 		if (IsCurrNewRec && D == FirstEmptyFld && D->Impl == nullptr) {
 			NewFlds = true;
 		}
-		TextAttr = static_cast<uint8_t>(a);
+		TextAttr = a;
 		// Display an item of the record
 		if (D->Page == CPage) {
 			if (NewFlds) {
@@ -2261,25 +2261,15 @@ bool DataEditor::ForNavigate(FileD* FD)
 	return result;
 }
 
-std::string DataEditor::GetFileViewName(FileD* FD, std::vector<std::string>& SL, size_t index_from)
+std::string DataEditor::GetFileViewName(FileD* FD, const std::string& view_name)
 {
-	//if (*SL == nullptr) { return FD->Name; }
-	//std::string result = "\x1"; // ^A
-	//while (!TestAccRight(*SL)) *SL = (*SL)->pChain;
-	//result += (*SL)->S;
-	//do { *SL = (*SL)->pChain; } while (!(SL == nullptr || TestAccRight(*SL)));
+	std::string result;
+	size_t colon = view_name.find_first_of(':');
+	std::string name = view_name.substr(0, colon);
+	std::string acc = view_name.substr(colon + 1);
 
-	if (index_from >= SL.size()) { return FD->Name; }
-
-	std::string result = "\x1"; // ^A
-	for (size_t i = index_from; i <= SL.size(); i++) {
-		size_t colon = SL[i].find_first_of(":");
-		std::string name = SL[i].substr(0, colon);
-		std::string acc = SL[i].substr(colon + 1);
-		if (TestAccRight(acc)) {
-			result += name;
-			break;
-		}
+	if (TestAccRight(acc)) {
+		result = "\x1" + name; // ^A + name
 	}
 
 	return result;
@@ -2344,7 +2334,9 @@ bool DataEditor::EquFileViewName(FileD* FD, std::string S, EditOpt** EO)
 		//	}
 		//	SL = SL->pChain;
 		//}
-		for (std::string& s : FD->ViewNames) {
+		for (std::string s : FD->ViewNames) {
+			size_t index = s.find_first_of(':');
+			s = s.substr(0, index);
 			if (s == S) {
 				*EO = new EditOpt();
 				(*EO)->UserSelFlds = true;
@@ -2400,16 +2392,25 @@ void DataEditor::UpwEdit(LinkD* LkD)
 					data_editor2->SetPointTo(ld, &s1, &s2);
 				} while (SL != nullptr);*/
 
-				s1 = data_editor2->GetFileViewName(ToFD, ToFD->ViewNames, 0) + s;
-				ww.PutSelect(s1);
-				data_editor2->CFld = this->CFld;
-				data_editor2->SetPointTo(ld, &s1, &s2);
-
-				for (size_t i = 0; i < ToFD->ViewNames.size(); i++) {
-					s1 = data_editor2->GetFileViewName(ToFD, ToFD->ViewNames, i) + s;
+				if (ToFD->ViewNames.empty()) {
+					s1 = ToFD->Name;
 					ww.PutSelect(s1);
 					data_editor2->CFld = this->CFld;
 					data_editor2->SetPointTo(ld, &s1, &s2);
+				}
+				else {
+					for (size_t i = 0; i < ToFD->ViewNames.size(); i++) {
+						s1 = data_editor2->GetFileViewName(ToFD, ToFD->ViewNames[i]);
+						if (s1.empty()) {
+							continue;
+						}
+						else {
+							s1 += s;
+							ww.PutSelect(s1);
+							data_editor2->CFld = this->CFld;
+							data_editor2->SetPointTo(ld, &s1, &s2);
+						}
+					}
 				}
 
 			}
@@ -2832,7 +2833,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-}
+	}
 
 void DataEditor::DuplFromPrevRec()
 {
@@ -4127,12 +4128,27 @@ void DataEditor::ImbeddEdit()
 				//	}
 				//	ww.PutSelect(s);
 				//} while (SL != nullptr);
-				for (size_t i = 0; i < f->ViewNames.size(); i++) {
-					std::string s = data_editor2->GetFileViewName(f, f->ViewNames, i);
+				if (f->ViewNames.empty()) {
+					std::string s = f->Name;
 					if (R != CRdb) {
 						s = R->v_files[0]->Name + "." + s;
 					}
 					ww.PutSelect(s);
+				}
+				else {
+					//for (size_t i = 0; i < f->ViewNames.size(); i++
+					for (size_t j = 0; j < f->ViewNames.size(); i++) {
+						std::string s = data_editor2->GetFileViewName(f, f->ViewNames[j]);
+						if (s.empty()) {
+							continue;
+						}
+						else {
+							if (R != CRdb) {
+								s = R->v_files[0]->Name + "." + s;
+							}
+							ww.PutSelect(s);
+						}
+					}
 				}
 			}
 			//FD = FD->pChain;
@@ -4188,17 +4204,12 @@ void DataEditor::DownEdit()
 	wwmix ww;
 
 	EditOpt* EO = nullptr;
-	WORD Brk;
 	void* p = nullptr;
-	std::string s1, s2;
-	std::string ali;
-	//LinkD* LD = LinkDRoot;
 	MarkStore(p);
 
 	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	file_d_->IRec = AbsRecNr(CRec());
 
-	//EditD* EE = WriteParamsToE();
 	std::unique_ptr<DataEditor> data_editor2 = std::make_unique<DataEditor>();
 
 	for (LinkD* ld : LinkDRoot) {
@@ -4207,20 +4218,28 @@ void DataEditor::DownEdit()
 			/*own key with equal beginning*/
 			XKey* K = GetFromKey(ld);
 
-			std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames, 0);
-			std::string kali = K->Alias;
-			if (!K->Alias.empty()) {
-				s += "/" + kali;
-			}
-			ww.PutSelect(s);
-
-			for (size_t i = 0; i < FD->ViewNames.size(); i++) {
-				std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames, i);
+			if (FD->ViewNames.empty()) {
+				std::string s = FD->Name;
 				std::string kali = K->Alias;
 				if (!K->Alias.empty()) {
 					s += "/" + kali;
 				}
 				ww.PutSelect(s);
+			}
+			else {
+				for (size_t i = 0; i < FD->ViewNames.size(); i++) {
+					std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames[i]);
+					if (s.empty()) {
+						continue;
+					}
+					else {
+						std::string kali = K->Alias;
+						if (!K->Alias.empty()) {
+							s += "/" + kali;
+						}
+						ww.PutSelect(s);
+					}
+				}
 			}
 		}
 	}
@@ -4231,14 +4250,15 @@ void DataEditor::DownEdit()
 		// do nothing;
 	}
 	else {
+		std::string s2;
+		std::string s1;
 		LinkD* LD = *LinkDRoot.begin();
 		data_editor2->GetSel2S(s1, s2, '/', 2);
-		ali = GetFromKey(LD)->Alias;
 
 		for (LinkD* ld : LinkDRoot) {
 			if ((ld->ToFD != file_d_)
 				|| (ld->IndexRoot == 0)
-				|| (s2 != ali)
+				|| (s2 != GetFromKey(LD)->Alias)
 				|| !data_editor2->EquFileViewName(ld->FromFD, s1, &EO)) {
 				continue;
 			}
@@ -4248,6 +4268,9 @@ void DataEditor::DownEdit()
 		}
 
 		data_editor2->file_d_ = LD->FromFD;
+		if (EO == nullptr) {
+			EO = new EditOpt();
+		}
 		if (data_editor2->SelFldsForEO(EO, LD)) {
 			EO->DownLD = LD;
 			EO->DownRecPtr = record_;
@@ -4255,6 +4278,7 @@ void DataEditor::DownEdit()
 			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->record_);
 			data_editor2->edit_ = reader->GetEditD();
 			if (data_editor2->OpenEditWw()) {
+				WORD Brk;
 				data_editor2->RunEdit(nullptr, Brk);
 			}
 			SaveFiles();
@@ -4267,6 +4291,7 @@ void DataEditor::DownEdit()
 	ReleaseStore(&p);
 	//ReadParamsFromE(EE);
 	DisplEditWw();
+	delete EO; EO = nullptr;
 }
 
 void DataEditor::ShiftF7Proc()
@@ -4274,15 +4299,14 @@ void DataEditor::ShiftF7Proc()
 	/* find last (first decl.) foreign key link with CFld as an argument */
 	FieldDescr* F = (*CFld)->FldD;
 	LinkD* LD1 = nullptr;
-	for (LinkD* ld : LinkDRoot) { //while (LD != nullptr) {
+	for (LinkD* ld : LinkDRoot) {
 		for (KeyFldD* arg : ld->Args) {
-			//KeyFldD* KF = ld->Args;
-			//while (KF != nullptr) {
 			if ((arg->FldD == F) && ForNavigate(ld->ToFD)) LD1 = ld;
-			//KF = KF->pChain;
 		}
 	}
-	if (LD1 != nullptr) UpwEdit(LD1);
+	if (LD1 != nullptr) {
+		UpwEdit(LD1);
+	}
 }
 
 bool DataEditor::ShiftF7Duplicate()
@@ -4468,7 +4492,7 @@ std::vector<EFldD*>::iterator DataEditor::FrstFldOnPage(WORD Page)
 	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
 	while ((*D)->Page < Page) {
 		++D; //D = D->pChain;
-	}
+}
 	return D;
 }
 
