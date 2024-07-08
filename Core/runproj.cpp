@@ -684,9 +684,10 @@ void CreateOpenChpt(std::string Nm, bool create)
 	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
 	if (top) {
-		UserName = "";
-		UserCode = 0;
-		AccRight[0] = 0;
+		//UserName = "";
+		//UserCode = 0;
+		//AccRight[0] = 0;
+		user->clear();
 	}
 	else {
 		if (CRdb->ChainBack != nullptr)	CRdb->help_file = CRdb->ChainBack->help_file;
@@ -1006,52 +1007,58 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 	return result;
 }
 
-void RdUserId(bool Chk)
+void RdUserId(bool check)
 {
-	wwmix ww;
-	pstring pw(20); pstring pw2(20); pstring name(20);
-	pstring acc;
+	std::string pw;
+	std::set<uint16_t> acc;
 
 	//ptrRdFldNameFrml = nullptr;
 	g_compiler->rdFldNameType = FieldNameType::none;
 	g_compiler->RdLex();
 	if (Lexem == 0x1A) return;
-	if (Chk) pw = ww.PassWord(false);
+	if (check) {
+		wwmix ww;
+		pw = ww.PassWord(false);
+	}
 	//label1:
 	while (true) {
 		g_compiler->TestLex(_quotedstr);
-		name = LexWord;
+		std::string name = LexWord;
 		g_compiler->RdLex();
 		g_compiler->Accept(',');
-		WORD code = g_compiler->RdInteger();
+		uint16_t code = g_compiler->RdInteger();
 		g_compiler->Accept(',');
 
 		FrmlElem* Z = g_compiler->RdStrFrml(nullptr);
-		pw2 = RunShortStr(g_compiler->processing_F, Z, nullptr);
+		std::string pw2 = RunShortStr(g_compiler->processing_F, Z, nullptr);
 		delete Z; Z = nullptr;
 
 		if (Lexem == ',') {
 			g_compiler->RdLex();
-			RdByteList(&acc);
+			acc = RdAccRights();
 		}
 		else {
-			acc[0] = 1;
-			acc[1] = (char)code;
+			//acc[0] = 1;
+			//acc[1] = (char)code;
+			acc.clear();
+			acc.insert(code);
 		}
 
-		if (Chk) {
+		if (check) {
 			if (EquUpCase(pw, pw2)) {
-				UserName = name;
-				UserCode = code;
-				UserPassWORD = pw2;
-				AccRight = acc;
+				//UserName = name;
+				//UserCode = code;
+				//UserPassWORD = pw2;
+				//AccRight = acc;
+				user->set(name, code, pw2, acc);
 				return;
 			}
 		}
 		else if (code == 0) {
-			UserName = name;
-			UserCode = code;
-			UserPassWORD = pw2;
+			//UserName = name;
+			//UserCode = code;
+			//UserPassWORD = pw2;
+			user->set_acc_0(name, code, pw2);
 		}
 		if (Lexem != 0x1A) {
 			g_compiler->Accept(';');
@@ -1062,7 +1069,7 @@ void RdUserId(bool Chk)
 		}
 		break;
 	}
-	if (Chk) {
+	if (check) {
 		RunError(629);
 	}
 }
@@ -1381,8 +1388,12 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 		RP.rdb = CRdb;
 		bool rdb_top = (CRdb->ChainBack == nullptr);
 		if (rdb_top) {
-			UserName[0] = 0; UserCode = 0;
-			UserPassWORD[0] = 0; AccRight[0] = 0;
+			//UserName[0] = 0;
+			//UserCode = 0;
+			//UserPassWORD[0] = 0;
+			//AccRight[0] = 0;
+			user->clear();
+
 			if (ChptTF->CompileAll || CompileFD) {
 				Switches[0] = 0;
 			}

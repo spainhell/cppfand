@@ -1,8 +1,11 @@
 #pragma once
+#include <memory>
+
 #include "access.h"
 #include "Catalog.h"
 
 #include "ResFile.h"
+#include "Users.h"
 #include "../fandio/FandTFile.h"
 
 class MergeReportBase;
@@ -42,9 +45,10 @@ extern FieldDescr* ChptTyp, *ChptName, *ChptTxt;
 
 // ********** konstanty ********** // r496
 extern bool EscPrompt;
-extern pstring UserName;
-extern pstring UserPassWORD;
-extern pstring AccRight;
+//extern pstring UserName;
+//extern pstring UserPassWORD;
+//extern pstring AccRight;
+extern std::unique_ptr<Users> user;
 extern bool EdUpdated;
 extern int EdRecNo;
 extern pstring EdRecKey;
@@ -58,7 +62,7 @@ extern WORD RprtLine; extern WORD RprtPage; extern WORD PgeLimit; // {report}
 extern WORD EdBreak;
 extern WORD EdIRec; // {common - alphabetical order}
 extern WORD MenuX; extern WORD MenuY;
-extern WORD UserCode;
+//extern WORD UserCode;
 // **********
 
 // extern WORD* WordVarArr;

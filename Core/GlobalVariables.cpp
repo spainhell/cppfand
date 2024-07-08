@@ -35,9 +35,10 @@ FieldDescr* ChptVerif; // { updated record }
 FieldDescr* ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
 FieldDescr* ChptTyp, *ChptName, *ChptTxt;
 bool EscPrompt = false;
-pstring UserName = pstring(20);
-pstring UserPassWORD = pstring(20);
-pstring AccRight;
+//pstring UserName = pstring(20);
+//pstring UserPassWORD = pstring(20);
+//pstring AccRight;
+std::unique_ptr<Users> user = std::make_unique<Users>();
 bool EdUpdated = false;
 int EdRecNo = 0;
 pstring EdRecKey = "";
@@ -51,7 +52,7 @@ WORD RprtLine = 0; WORD RprtPage = 0; WORD PgeLimit = 0; // {report}
 WORD EdBreak = 0;
 WORD EdIRec = 1; // {common - alphabetical order}
 WORD MenuX = 1; WORD MenuY = 1;
-WORD UserCode = 0;
+//WORD UserCode = 0;
 // WORD* WordVarArr = &RprtLine;
 std::string MountedVol[FloppyDrives];
 pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";

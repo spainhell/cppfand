@@ -45,7 +45,7 @@ public:
 	std::vector<FieldDescr*> FldD;
 	std::vector<XKey*> Keys;
 	std::vector<AddD*> Add;
-	std::vector<std::string> ViewNames;  //after each string BYTE string with user codes 
+	std::vector<std::string> ViewNames;  // after each string BYTE string with user codes 
 
 	WORD GetNrKeys();
 	void Reset();
@@ -53,7 +53,7 @@ public:
 	void ReadRec(size_t rec_nr, void* record) const;
 	void WriteRec(size_t rec_nr, void* record) const;
 
-	uint8_t* GetRecSpace();
+	uint8_t* GetRecSpace() const;
 
 	// delete 'T' from working file if exists
 	void ClearRecSpace(void* record);

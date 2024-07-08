@@ -449,7 +449,7 @@ std::string GetStr(FrmlElem* Z)
 {
 	std::string result;
 	if (Z == nullptr) {
-		
+
 	}
 	else {
 		//result = RunShortStr(CFile, Z, CRecPtr);
@@ -1116,12 +1116,12 @@ void AssgnCatFld(Instr_assign* PD, void* record)
 
 void AssgnAccRight(Instr_assign* PD)
 {
-	AccRight = RunShortStr(CFile, PD->Frml, CRecPtr);
+	user->set_acc_rights(RunShortStr(CFile, PD->Frml, CRecPtr));
 }
 
 void AssgnUserName(Instr_assign* PD)
 {
-	UserName = RunShortStr(CFile, PD->Frml, CRecPtr);
+	user->set_user_name(RunShortStr(CFile, PD->Frml, CRecPtr));
 }
 
 void ReleaseDriveProc(FrmlElem* Z)
@@ -1204,9 +1204,11 @@ void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 	LockD* ld = &PD->WLD;
 	while (ld != Ld1) {
 		CFile = ld->FD;
-		if (CFile->FF->IsShared()) {
-			if (Op == PInstrCode::_withlocked) CFile->Unlock(ld->N);
-			CFile->OldLockMode(ld->OldMd);
+		if (ld->FD->FF->IsShared()) {
+			if (Op == PInstrCode::_withlocked) {
+				ld->FD->Unlock(ld->N);
+			}
+			ld->FD->OldLockMode(ld->OldMd);
 		}
 		ld = ld->Chain;
 	}
@@ -1258,11 +1260,11 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			BreakP = false;
 			break;
 		}
-		 //case PInstrCode::_not_defined: {
-		 //	// contains only sub-instructions
-		 //	RunInstr(PD->sub_instr);
-		 //	break;
-		 //}
+									 //case PInstrCode::_not_defined: {
+									 //	// contains only sub-instructions
+									 //	RunInstr(PD->sub_instr);
+									 //	break;
+									 //}
 		case PInstrCode::_menubox: {
 			std::unique_ptr<TMenuBoxP> menu = std::make_unique<TMenuBoxP>(0, 0, nullptr, (Instr_menu*)PD);
 			menu->call();
@@ -1445,9 +1447,12 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_asgnusercode: {
-			UserCode = RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
-			AccRight[0] = 0x01;
-			AccRight[1] = (char)UserCode;
+			//UserCode = RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
+			//AccRight[0] = 0x01;
+			//AccRight[1] = (char)UserCode;
+			uint32_t userCode = RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
+			user->set_user_code(userCode);
+			user->set_acc_right(static_cast<uint16_t>(userCode));
 			break;
 		}
 		case PInstrCode::_asgnAccRight: {
@@ -1618,7 +1623,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_portout: {
-			auto iPD = (Instr_portout*)PD;
+			Instr_portout* iPD = (Instr_portout*)PD;
 			PortOut(RunBool(CFile, iPD->IsWord, CRecPtr),
 				(WORD)(RunInt(CFile, iPD->Port, CRecPtr)),
 				(WORD)(RunInt(CFile, iPD->PortWhat, CRecPtr)));

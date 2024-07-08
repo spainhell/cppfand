@@ -2202,7 +2202,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 			}
 			else if (IsKeyWord("TRUST")) {
 				Z = new FrmlElemFunction(_trust, 0); // GetOp(_trust, 0);
-				RdByteListInStore();
+				RdByteList();
 				FTyp = 'B';
 			}
 			else if (IsKeyWord("EQUMASK")) {
