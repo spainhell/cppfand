@@ -1756,9 +1756,7 @@ label1:
 		break;
 	}
 	case _selectstr: {
-		LongStr* s = RunSelectStr(file_d, (FrmlElemFunction*)X, record);
-		result = std::string(s->A, s->LL);
-		delete s;
+		result = RunSelectStr(file_d, (FrmlElemFunction*)X, record);
 		break;
 	}
 	case _clipbd: {
@@ -2035,65 +2033,63 @@ void StrMask(double R, pstring& Mask)
 //	return CopyToLongStr(s);
 //}
 
-LongStr* RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
+std::string RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 {
 	wwmix ww;
 
-	LongStr* s2 = nullptr;
-	pstring x(80); pstring mode(5);
-	void* p2 = nullptr; void* pl = nullptr;
-	WORD i;
-
 	std::string std_s = RunString(file_d, Z->P3, record);
-	LongStr* s = new LongStr(std_s.length());
-	s->LL = std_s.length();
-	memcpy(s->A, std_s.c_str(), s->LL);
-
-	WORD n = CountDLines(s->A, s->LL, Z->Delim);
-	for (i = 1; i <= n; i++) {
-		//x = GetDLine(s->A, s->LL, Z->Delim, i);
-		std::string std_s = std::string(s->A, s->LL);
-		x = GetNthLine(std_s, i, 1, Z->Delim);
-		if (x != "") ww.PutSelect(x);
+	size_t n = CountLines(std_s, Z->Delim);
+	for (size_t i = 1; i <= n; i++) {
+		std::string x = GetNthLine(std_s, i, 1, Z->Delim);
+		if (!x.empty()) {
+			ww.PutSelect(x);
+		}
 	}
-	mode = RunString(file_d, Z->P6, record);
-	for (i = 1; i <= mode.length(); i++)
+
+	std::string mode = RunString(file_d, Z->P6, record);
+	for (size_t i = 0; i < mode.length(); i++) {
 		switch (toupper(mode[i])) {
 		case 'A': ss.Abcd = true; break;
 		case 'S': ss.Subset = true; break;
 		case 'I': ss.ImplAll = true; break;
 		}
+	}
+
 	SetMsgPar(RunString(file_d, Z->P4, record));
-	ww.SelectStr(RunInt(file_d, Z->P1, record), RunInt(file_d, Z->P2, record), 110, RunString(file_d, Z->P5, record));
-	MarkStore(p2);
-	s2 = new LongStr(s->LL + 2); // GetStore2(s->LL + 2);
-	n = 1; LastExitCode = 0;
-	if (Event.Pressed.KeyCombination() == __ESC) LastExitCode = 1;
-	else
+	ww.SelectStr(
+		RunInt(file_d, Z->P1, record), RunInt(file_d, Z->P2, record), 
+		110, RunString(file_d, Z->P5, record)
+	);
+
+	std::string s2;
+	LastExitCode = 0;
+
+	size_t count = 0;
+	if (Event.Pressed.KeyCombination() == __ESC) {
+		LastExitCode = 1;
+	}
+	else {
+		std::string x;
 		do {
 			x = ww.GetSelect();
-			if (x != "") {
-				if (n > 1) { s2->A[n] = 0x0D; n++; }
-				Move(&x[1], &s2->A[n], x.length());
-				n += x.length();
+			if (!x.empty()) {
+				if (count > 0) {
+					s2 += 0x0D;
+				}
+				count++;
+				s2 += x;
 			}
-		} while (!(!ss.Subset || (x == "")));
-	delete s; s = nullptr;
-	s = new LongStr(n + 1);
-	s->LL = n - 1;
-	Move(s2->A, s->A, n - 1);
-	ReleaseStore(&p2);
-	return s;
-}
-
-void LowCase(LongStr* S)
-{
-	for (WORD i = 0; i < S->LL; i++) { S->A[i] = static_cast<char>(tolower(S->A[i])); }
+		} while (!(!ss.Subset || (x.empty())));
+	}
+	
+	return s2;
 }
 
 void LowCase(std::string& text)
 {
-	for (auto& c : text) { c = static_cast<char>(tolower(c)); }
+	for (char& c : text) {
+		c = static_cast<char>(tolower(c));
+	}
 }
 
 double RoundReal(double RR, short M)
