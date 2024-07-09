@@ -1544,6 +1544,51 @@ FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record)
 	return Z;
 }
 
+std::string Replace(std::string text, std::string oldText, std::string& newText, std::string options)
+{
+
+	bool tilda = options.find('~') != std::string::npos;
+	bool words = (options.find('w') != std::string::npos) || (options.find('W') != std::string::npos);
+	bool upper = (options.find('u') != std::string::npos) || (options.find('U') != std::string::npos);
+
+	std::string copyInputText = text;
+
+	if (upper) {
+		for (size_t i = 0; i < copyInputText.length(); i++) {
+			copyInputText[i] = UpcCharTab[(BYTE)copyInputText[i]];
+		}
+		for (size_t i = 0; i < oldText.length(); i++) {
+			oldText[i] = UpcCharTab[(BYTE)oldText[i]];
+		}
+	}
+
+	if (tilda) {
+		for (size_t i = 0; i < copyInputText.length(); i++) {
+			copyInputText[i] = CharOrdTab[(BYTE)copyInputText[i]];
+		}
+		for (size_t i = 0; i < oldText.length(); i++) {
+			oldText[i] = CharOrdTab[(BYTE)oldText[i]];
+		}
+	}
+
+	if (words) {
+		throw std::exception("Replace() not implemented.");
+	}
+
+	// we are looking for equ strings in transformed string (copyInputText),
+	// but we change text in original string (text) too!!!
+	size_t old_len = oldText.length();
+	size_t pos = copyInputText.find(oldText);
+
+	while (pos != std::string::npos) {
+		text = text.replace(pos, old_len, newText);
+		copyInputText = copyInputText.replace(pos, old_len, newText);
+		pos = copyInputText.find(oldText, pos + newText.length());
+	}
+
+	return text;
+}
+
 std::string RunString(FileD* file_d, FrmlElem* X, void* record)
 {
 	int RecNo = 0;
@@ -1595,8 +1640,7 @@ label1:
 	case _cond: {
 	label2:
 		if (((FrmlElemFunction*)X)->P1 != nullptr)
-			if (!RunBool(file_d, ((FrmlElemFunction*)X)->P1, record))
-			{
+			if (!RunBool(file_d, ((FrmlElemFunction*)X)->P1, record)) {
 				if (((FrmlElemFunction*)X)->P3 == nullptr) {
 					return "";
 				}
@@ -1712,7 +1756,7 @@ label1:
 		break;
 	}
 	case _selectstr: {
-		auto s = RunSelectStr(file_d, (FrmlElemFunction*)X, record);
+		LongStr* s = RunSelectStr(file_d, (FrmlElemFunction*)X, record);
 		result = std::string(s->A, s->LL);
 		delete s;
 		break;
@@ -1721,10 +1765,163 @@ label1:
 		result = TWork.Read(ClpBdPos);
 		break;
 	}
+	case _char: {
+		FrmlElemFunction* iZ0 = (FrmlElemFunction*)X;
+		double r = RunReal(file_d, iZ0->P1, record);
+		char s = (char)trunc(r);
+		result = s;
+		break;
+	}
+	case _strdate1: {
+		FrmlElemDateMask* iZ = (FrmlElemDateMask*)X;
+		result = StrDate(RunReal(file_d, iZ->P1, record), iZ->Mask);
+		break;
+	}
+	case _str: {
+		FrmlElemFunction* iZ0 = (FrmlElemFunction*)X;
+		if (iZ0->P3 != nullptr) {
+			double r = RunReal(file_d, iZ0->P1, record);
+			WORD l = RunInt(file_d, iZ0->P2, record);
+			BYTE m = RunInt(file_d, iZ0->P3, record);
+			pstring s;
+			if (m == 255) {
+				str(r, s);
+			}
+			else {
+				str(r, l, m, s);
+			}
+			result = s;
+		}
+		else {
+			pstring s = RunString(file_d, iZ0->P2, record);
+			StrMask(RunReal(file_d, iZ0->P1, record), s);
+			result = s;
+		}
+		break;
+	}
+	case _replace: {
+		FrmlElemPosReplace* iZ = (FrmlElemPosReplace*)X;
+		std::string text = RunString(file_d, iZ->P2, record);
+		std::string oldText = RunString(file_d, iZ->P1, record); //j = 1;
+		std::string newText = RunString(file_d, iZ->P3, record);
+		result = Replace(text, oldText, newText, iZ->Options);
+		break;
+	}
+	case _prompt: {
+		FrmlElem11* iZ = (FrmlElem11*)X;
+		std::string s0 = RunString(file_d, iZ->P1, record);
+		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+		result = data_editor->PromptS(s0, iZ->P2, iZ->FldD);
+		break;
+	}
+	case _getpath: {
+		FrmlElemFunction* iZ0 = (FrmlElemFunction*)X;
+		wwmix ww;
+		std::string s = ".*";
+		if (iZ0->P1 != nullptr) {
+			s = RunString(file_d, iZ0->P1, record);
+		}
+		result = ww.SelectDiskFile(s, 35, false);
+		break;
+	}
+	case _catfield: {
+		FrmlElemCatalogField* iZ = (FrmlElemCatalogField*)X;
+		std::string stdS = catalog->GetField(iZ->CatIRec, iZ->CatFld);
+		bool empty = stdS.empty(); // bude se jednat jen o cestu, bez nazvu souboru
+		if (iZ->CatFld == catalog->CatalogPathNameField()) {
+			stdS = FExpand(stdS);
+			if (empty) AddBackSlash(stdS); // za cestu pridame '\'
+		}
+		result = stdS;
+		break;
+	}
+	case _password: {
+		wwmix ww;
+		result = ww.PassWord(false);
+		break;
+	}
+	case _readkey: {
+		WORD keyb = ReadKbd();
+		if (keyb <= 0x00FF) {
+			// it's char
+			result = (char)Lo(keyb);
+		}
+		else {
+			result = '\0';
+			result += (char)Lo(keyb);
+		}
+		break;
+	}
+	case _username: {
+		result = user->get_user_name();
+		break;
+	}
+	case _accright: {
+		result = user->get_acc_rights();
+		break;
+	}
+	case _version: {
+		result = Version;
+		break;
+	}
+	case _edfield: {
+		result = EdField;
+		break;
+	}
+	case _edfile: {
+		if (EditDRoot != nullptr) {
+			result = EditDRoot->FD->Name;
+		}
+		break;
+	}
+	case _edkey: {
+		result = EdKey;
+		break;
+	}
+	case _edreckey: {
+		result = EdRecKey;
+		break;
+	}
+	case _getenv: {
+		FrmlElemFunction* iZ0 = (FrmlElemFunction*)X;
+		std::string s = RunString(file_d, iZ0->P1, record);
+		if (s == "") s = paramstr[0];
+		else s = GetEnv(s.c_str());
+		result = s;
+		break;
+	}
+	case _keyof: {
+		auto iZ = (FrmlElem20*)X;
+		XString x;
+		x.PackKF(iZ->LV->FD, iZ->PackKey->KFlds, iZ->LV->record);
+		result = x.S;
+		break;
+	}
+	case _keybuf: {
+		while (KeyPressed()) {
+			AddToKbdBuf(ReadKey());
+		}
+		result = keyboard.GetKeyBufAsString(); // KbdBuffer;
+		break;
+	}
+	case _recno: {
+		XString x;
+		GetRecNoXString(file_d, (FrmlElemRecNo*)X, x, record);
+		result = x.S;
+		break;
+	}
+	case _edbool: {
+		if ((EditDRoot != nullptr) && EditDRoot->params_->Select
+			&& (!EditDRoot->BoolTxt.empty())) {
+			result = EditDRoot->BoolTxt;
+		}
+		break;
+	}
 	default: {
-		auto s = RunS(file_d, X, record);
-		result = std::string(s->A, s->LL);
-		delete s;
+		//auto s = RunS(file_d, X, record);
+		//result = std::string(s->A, s->LL);
+		//delete s;
+		throw std::exception("RunString() not implemented.");
 	}
 	}
 	return result;
@@ -1822,202 +2019,21 @@ void StrMask(double R, pstring& Mask)
 	if (minus) Mask = tmp + Mask;
 }
 
-std::string Replace(std::string text, std::string oldText, std::string& newText, std::string options)
-{
-
-	bool tilda = options.find('~') != std::string::npos;
-	bool words = (options.find('w') != std::string::npos) || (options.find('W') != std::string::npos);
-	bool upper = (options.find('u') != std::string::npos) || (options.find('U') != std::string::npos);
-
-	std::string copyInputText = text;
-
-	if (upper) {
-		for (size_t i = 0; i < copyInputText.length(); i++) {
-			copyInputText[i] = UpcCharTab[(BYTE)copyInputText[i]];
-		}
-		for (size_t i = 0; i < oldText.length(); i++) {
-			oldText[i] = UpcCharTab[(BYTE)oldText[i]];
-		}
-	}
-
-	if (tilda) {
-		for (size_t i = 0; i < copyInputText.length(); i++) {
-			copyInputText[i] = CharOrdTab[(BYTE)copyInputText[i]];
-		}
-		for (size_t i = 0; i < oldText.length(); i++) {
-			oldText[i] = CharOrdTab[(BYTE)oldText[i]];
-		}
-	}
-
-	if (words) {
-		throw std::exception("Replace() not implemented.");
-	}
-
-	// we are looking for equ strings in transformed string (copyInputText),
-	// but we change text in original string (text) too!!!
-	size_t old_len = oldText.length();
-	size_t pos = copyInputText.find(oldText);
-
-	while (pos != std::string::npos) {
-		text = text.replace(pos, old_len, newText);
-		copyInputText = copyInputText.replace(pos, old_len, newText);
-		pos = copyInputText.find(oldText, pos + newText.length());
-	}
-
-	return text;
-}
-
-LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
-{
-	wwmix ww;
-
-	pstring s;
-	XString* x = (XString*)&s;
-	WORD l = 0;
-	double r = 0; BYTE m = 0;
-
-	auto iZ0 = (FrmlElemFunction*)Z;
-
-	switch (Z->Op) {
-	case _char: {
-		s[0] = 1;
-		s[1] = trunc(RunReal(file_d, iZ0->P1, record));
-		break;
-	}
-	case _strdate1: {
-		FrmlElemDateMask* iZ = (FrmlElemDateMask*)Z;
-		s = StrDate(RunReal(file_d, iZ->P1, record), iZ->Mask);
-		break;
-	}
-	case _str: {
-		if (iZ0->P3 != nullptr) {
-			r = RunReal(file_d, iZ0->P1, record);
-			l = RunInt(file_d, iZ0->P2, record);
-			m = RunInt(file_d, iZ0->P3, record);
-			if (m == 255) str(r, s);
-			else str(r, l, m, s);
-		}
-		else {
-			s = RunString(file_d, iZ0->P2, record);
-			StrMask(RunReal(file_d, iZ0->P1, record), s);
-		}
-		break;
-	}
-	case _replace: {
-		auto iZ = (FrmlElemPosReplace*)Z;
-		std::string text = RunString(file_d, iZ->P2, record);
-		std::string oldText = RunString(file_d, iZ->P1, record); //j = 1;
-		std::string newText = RunString(file_d, iZ->P3, record);
-
-		string res = Replace(text, oldText, newText, iZ->Options);
-		LongStr* result = new LongStr(res.length());
-		result->LL = res.length();
-		memcpy(result->A, res.c_str(), res.length());
-		return result;
-	}
-	case _prompt: {
-		auto iZ = (FrmlElem11*)Z;
-		auto s0 = RunString(file_d, iZ->P1, record);
-		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
-		s = data_editor->PromptS(s0, iZ->P2, iZ->FldD);
-		break;
-	}
-	case _getpath: {
-		s = ".*";
-		if (iZ0->P1 != nullptr) s = RunString(file_d, iZ0->P1, record);
-		s = ww.SelectDiskFile(s, 35, false);
-		break;
-	}
-	case _catfield: {
-		auto iZ = (FrmlElemCatalogField*)Z;
-		std::string stdS = catalog->GetField(iZ->CatIRec, iZ->CatFld);
-		bool empty = stdS.empty(); // bude se jednat jen o cestu, bez nazvu souboru
-		if (iZ->CatFld == catalog->CatalogPathNameField()) {
-			stdS = FExpand(stdS);
-			if (empty) AddBackSlash(stdS); // za cestu pridame '\'
-		}
-		s = stdS;
-		break;
-	}
-	case _password: {
-		s = ww.PassWord(false); break;
-	}
-	case _readkey: {
-		WORD keyb = ReadKbd();
-		if (keyb <= 0x00FF) {
-			// it's char
-			s[1] = (char)Lo(keyb);
-			s[0] = 1;
-		}
-		else {
-			s[1] = '\0';
-			s[2] = (char)Lo(keyb);
-			s[0] = 1;
-		}
-		break;
-	}
-	case _username: {
-		s = user->get_user_name();
-		break;
-	}
-	case _accright: {
-		s = user->get_acc_rights();
-		break;
-	}
-	case _version: {
-		s = Version;
-		break;
-	}
-	case _edfield: {
-		s = EdField;
-		break;
-	}
-	case _edfile: {
-		s[0] = 0;
-		if (EditDRoot != nullptr) {
-			s = EditDRoot->FD->Name;
-		}
-		break;
-	}
-	case _edkey: {
-		s = EdKey;
-		break;
-	}
-	case _edreckey: {
-		s = EdRecKey;
-		break;
-	}
-	case _getenv: {
-		s = RunString(file_d, iZ0->P1, record);
-		if (s == "") s = paramstr[0];
-		else s = GetEnv(s.c_str());
-		break;
-	}
-	case _keyof: {
-		auto iZ = (FrmlElem20*)Z;
-		x->PackKF(iZ->LV->FD, iZ->PackKey->KFlds, iZ->LV->record);
-		break;
-	}
-	case _keybuf: {
-		while (KeyPressed()) {
-			AddToKbdBuf(ReadKey());
-		}
-		s = keyboard.GetKeyBufAsString(); // KbdBuffer;
-		break;
-	}
-	case _recno: {
-		GetRecNoXString(file_d, (FrmlElemRecNo*)Z, *x, record);
-		break;
-	}
-	case _edbool: {
-		s[0] = 0;
-		if ((EditDRoot != nullptr) && EditDRoot->params_->Select
-			&& (!EditDRoot->BoolTxt.empty())) s = EditDRoot->BoolTxt;
-		break;
-	}
-	}
-	return CopyToLongStr(s);
-}
+//LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
+//{
+//	wwmix ww;
+//
+//	pstring s;
+//	XString* x = (XString*)&s;
+//	WORD l = 0;
+//	double r = 0; BYTE m = 0;
+//
+//	auto iZ0 = (FrmlElemFunction*)Z;
+//
+//	switch (Z->Op) {
+//	}
+//	return CopyToLongStr(s);
+//}
 
 LongStr* RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 {
