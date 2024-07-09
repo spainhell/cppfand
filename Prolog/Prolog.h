@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 
-#include "../Core/Chained.h"
+#include "Chained.h"
 
 #include "../Core/models/Instr.h"
 #include "../Core/FieldDescr.h"

@@ -25,6 +25,7 @@
     <ClCompile Include="TMemory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Chained.h" />
     <ClInclude Include="Prolog.h" />
     <ClInclude Include="RdProlog.h" />
     <ClInclude Include="RunProlog.h" />

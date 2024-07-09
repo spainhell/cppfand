@@ -143,25 +143,15 @@ bool ActiveRdbOnDrive(WORD D)
 void CloseFilesOnDrive(WORD drive)
 {
 	RdbD* R = CRdb;
-	//FileD* CF = CFile;
 
 	while (R != nullptr) {
-		/*FileD* f = R->v_files;
-		while (f != nullptr) {
-			if (f->FF->Drive == drive) {
-				f->CloseFile();
-			}
-			f = f->pChain;
-		}*/
 		for (FileD* f : R->v_files) {
 			if (f->FF->Drive == drive) {
 				f->CloseFile();
 			}
 		}
-
 		R = R->ChainBack;
 	}
-	//CFile = CF;
 }
 
 WORD TestMountVol(char DriveC)

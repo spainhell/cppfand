@@ -1128,21 +1128,30 @@ FileD* NextFD(FileD* FD)
 	while (true) {
 		// find FD in r->v_files
 		if (it0 == r->v_files.end()) {
+			RdbD* prev_rdb = r;
 			r = r->ChainBack;
 			if (r != nullptr) {
 				it0 = r->v_files.begin();
 			}
 			else {
-				FD = nullptr;
+				r = prev_rdb;
+				it0 = r->v_files.end();
 				break;
 			}
 		}
-		else if ((FD->FF->file_type == FileType::RDB) || (FD->ChptPos.rdb == nullptr)) {
+		else if (((*it0)->FF->file_type == FileType::RDB) || ((*it0)->ChptPos.rdb == nullptr)) {
 			++it0;
 		}
 		else {
 			break;
 		}
+	}
+
+	if (it0 == r->v_files.end()) {
+		FD = nullptr;
+	}
+	else {
+		FD = *it0;
 	}
 
 	return FD;

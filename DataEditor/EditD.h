@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "DataEditorParams.h"
-#include "../Core/Chained.h"
 #include "../Core/FileD.h"
 
 struct ImplD;
@@ -17,7 +16,7 @@ struct KeyInD;
 class LocVar;
 class FieldDescr;
 
-class EditD : public Chained<EditD>
+class EditD
 {
 public:
 	// EditD* PrevE; - toto bude pChain ...

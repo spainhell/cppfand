@@ -99,7 +99,6 @@
     <ClInclude Include="base.h" />
     <ClInclude Include="Catalog.h" />
     <ClInclude Include="CfgFile.h" />
-    <ClInclude Include="Chained.h" />
     <ClInclude Include="ChkD.h" />
     <ClInclude Include="Coding.h" />
     <ClInclude Include="Compiler.h" />

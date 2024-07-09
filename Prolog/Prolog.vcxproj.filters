@@ -41,5 +41,8 @@
     <ClInclude Include="Prolog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Chained.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

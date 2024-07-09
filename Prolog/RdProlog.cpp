@@ -4,7 +4,7 @@
 #include "RunProlog.h"
 #include "TMemory.h"
 #include "../Core/base.h"
-#include "../Core/Chained.h"
+#include "Chained.h"
 #include "../Core/FieldDescr.h"
 #include "../Core/FileD.h"
 #include "../Common/pstring.h"

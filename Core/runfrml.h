@@ -12,12 +12,10 @@
 
 double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, void* record);
 LongStr* CopyToLongStr(pstring& SS);
-LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S);
 bool RunBool(FileD* file_d, FrmlElem* X, void* record);
 bool InReal(FileD* file_d, FrmlElemIn* frml, void* record);
 bool LexInStr(std::string& S, FrmlElemIn* X);
-bool InStr(LongStr* S, FrmlElemIn* X);
 bool InStr(std::string& S, FrmlElemIn* X);
 bool RunModulo(FileD* file_d, FrmlElemFunction* X, void* record);
 bool RunEquMask(FileD* file_d, FrmlElemFunction* X, void* record);
@@ -38,7 +36,6 @@ std::string RunString(FileD* file_d, FrmlElem* X, void* record);
 //std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record);
 void AddToLongStr(LongStr* S, void* P, WORD L);
 void StrMask(double R, pstring& Mask);
-//LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record);
 std::string RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record);
 void LowCase(std::string& text);
 double RoundReal(double RR, short M);

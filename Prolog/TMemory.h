@@ -1,5 +1,5 @@
 #pragma once
-#include "../Core/Chained.h"
+#include "Chained.h"
 #include "../Common/typeDef.h"
 #include "../Common/pstring.h"
 

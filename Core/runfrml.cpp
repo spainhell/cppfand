@@ -122,15 +122,6 @@ LongStr* CopyToLongStr(pstring& SS)
 	return s;
 }
 
-LongStr* CopyToLongStr(std::string& SS)
-{
-	size_t l = SS.length();
-	LongStr* s = new LongStr(l);
-	s->LL = l;
-	memcpy(s->A, SS.c_str(), l);
-	return s;
-}
-
 pstring LeadChar(char C, pstring S)
 {
 	// TODO: do it better
@@ -574,10 +565,9 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElemUserFunc* X, void* record)
 
 bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 {
-
-
 	bool result = false;
 	if (X == nullptr) { return true; }
+
 	switch (X->Op) {
 	case _and: {
 		auto iX0 = (FrmlElemFunction*)X;
@@ -613,8 +603,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	case _instr: {
 		auto iX0 = (FrmlElemIn*)X;
 		std::string s = RunString(file_d, iX0->frml_elem, record);
-		switch (iX0->param)
-		{
+		switch (iX0->param) {
 		case 0:
 			result = InStr(s, iX0); break;
 		case 1:
@@ -656,7 +645,9 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		result = (cmpRes & iX0->N21) != 0;
 		break;
 	}
-	case _const: result = ((FrmlElemBool*)X)->B; break;
+	case _const: {
+		result = ((FrmlElemBool*)X)->B; break;
+	}
 	case _mouseevent: {
 	label2:
 		auto iX1 = (FrmlElem1*)X;
@@ -847,12 +838,6 @@ bool LexInStr(std::string& S, FrmlElemIn* X)
 		if (res1 == _lt && res2 == _gt) return true;
 	}
 	return false;
-}
-
-bool InStr(LongStr* S, FrmlElemIn* X)
-{
-	std::string s = std::string(S->A, S->LL);
-	return InStr(s, X);
 }
 
 bool InStr(std::string& S, FrmlElemIn* X)
@@ -2017,22 +2002,6 @@ void StrMask(double R, pstring& Mask)
 	if (minus) Mask = tmp + Mask;
 }
 
-//LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
-//{
-//	wwmix ww;
-//
-//	pstring s;
-//	XString* x = (XString*)&s;
-//	WORD l = 0;
-//	double r = 0; BYTE m = 0;
-//
-//	auto iZ0 = (FrmlElemFunction*)Z;
-//
-//	switch (Z->Op) {
-//	}
-//	return CopyToLongStr(s);
-//}
-
 std::string RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 {
 	wwmix ww;
@@ -2047,17 +2016,18 @@ std::string RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 	}
 
 	std::string mode = RunString(file_d, Z->P6, record);
-	for (size_t i = 0; i < mode.length(); i++) {
-		switch (toupper(mode[i])) {
+	for (char i : mode) {
+		switch (toupper(i)) {
 		case 'A': ss.Abcd = true; break;
 		case 'S': ss.Subset = true; break;
 		case 'I': ss.ImplAll = true; break;
+		default: break;
 		}
 	}
 
 	SetMsgPar(RunString(file_d, Z->P4, record));
 	ww.SelectStr(
-		RunInt(file_d, Z->P1, record), RunInt(file_d, Z->P2, record), 
+		RunInt(file_d, Z->P1, record), RunInt(file_d, Z->P2, record),
 		110, RunString(file_d, Z->P5, record)
 	);
 
@@ -2081,7 +2051,7 @@ std::string RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 			}
 		} while (!(!ss.Subset || (x.empty())));
 	}
-	
+
 	return s2;
 }
 

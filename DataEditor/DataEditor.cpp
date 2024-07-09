@@ -4346,7 +4346,7 @@ bool DataEditor::DuplToPrevEdit()
 {
 	LockMode md;
 	bool result = false;
-	EditD* ee = edit_->pChain;
+	EditD* ee = nullptr; // TODO: edit_->pChain;
 	if (ee == nullptr) return result;
 	FieldDescr* f1 = (*CFld)->FldD;
 
