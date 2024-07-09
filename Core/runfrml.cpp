@@ -2105,57 +2105,6 @@ double RoundReal(double RR, short M)
 	return int(R) / Power10[M];
 }
 
-LongStr* LongLeadChar(char C, char CNew, LongStr* S)
-{
-	WORD i = 0;
-	WORD l = S->LL;
-	while (i < l) {
-		if (S->A[i] != C) goto label1;
-		if (CNew != 0) S->A[i] = CNew; i++;
-	}
-label1:
-	if (CNew == 0) {
-		l -= i - 1;
-		S->LL = l;
-		if ((i > 1) && (l > 0)) memcpy(&S->A[1], &S->A[i], l);
-		// ReleaseAfterLongStr(S);
-	}
-	return S;
-}
-
-LongStr* LongTrailChar(char C, char CNew, LongStr* S)
-{
-	WORD l = S->LL;
-	while (l > 0) {
-		if (S->A[l - 1] != C) goto label1;
-		if (CNew != 0) S->A[l - 1] = CNew;
-		l--;
-	}
-label1:
-	if (CNew == 0) {
-		S->LL = l;
-		// ReleaseAfterLongStr(S);
-	}
-	return S;
-}
-
-LongStr* RepeatStr(LongStr* S, short N)
-{
-	WORD l = S->LL;
-	if (l == 0) return S;
-	if (N <= 0) { S->LL = 0; return S; }
-
-	auto newS = new LongStr(S->LL * N);
-	newS->LL = 0;
-
-	while ((N > 1) && (S->LL + l <= MaxLStrLen)) {
-		memcpy(&newS->A[newS->LL], S->A, l);
-		newS->LL += l;
-		N--;
-	}
-	return newS;
-}
-
 void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record)
 {
 	FileD* fd = X->RecFD;
