@@ -619,7 +619,7 @@ void BackupM(Instr_backup* PD)
 		s = RunStdStr(CFile, PD->bmMasks, CRecPtr);
 	}
 	TzFile* F = new TzFile(PD->IsBackup, PD->NoCompress, PD->bmSubDir, PD->bmOverwr,
-		PD->BrCatIRec, RunShortStr(CFile, PD->bmDir, CRecPtr));
+		PD->BrCatIRec, RunStdStr(CFile, PD->bmDir, CRecPtr));
 	try {
 		LastExitCode = 1;
 		if (PD->IsBackup) {

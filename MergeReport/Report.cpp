@@ -2013,7 +2013,7 @@ void Report::MoveForwToRec(InpD* ID)
 		for (ChkD* C : ID->Chk) { //while (C != nullptr) {
 			if (!RunBool(CFile, C->Bool, CRecPtr)) {
 				ID->Warning = true;
-				ID->ErrTxtFrml->S = RunShortStr(CFile, C->TxtZ, CRecPtr);
+				ID->ErrTxtFrml->S = RunStdStr(CFile, C->TxtZ, CRecPtr);
 				if (!C->Warning) {
 					ID->Error = true;
 					return;

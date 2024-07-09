@@ -59,7 +59,7 @@ bool Add(FileD* file_d, AddD* add_d, void* record, double value, bool back)
 	if (add_d->Chk == nullptr) return result;
 
 	if (!back && !RunBool(file_d, add_d->Chk->Bool, record)) {
-		SetMsgPar(RunShortStr(file_d, add_d->Chk->TxtZ, record));
+		SetMsgPar(RunStdStr(file_d, add_d->Chk->TxtZ, record));
 		WrLLF10Msg(110);
 		result = false;
 	}
@@ -298,7 +298,7 @@ bool Assign(FileD* file_d, AddD* add_d, void* record)
 			s = RunStdStr(file_d, z, record);
 		}
 		else {
-			s = RunShortStr(file_d, z, record);
+			s = RunStdStr(file_d, z, record);
 		}
 		break;
 	}

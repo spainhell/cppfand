@@ -124,7 +124,7 @@ bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<Ke
 		KeyFldD* key_field = KF[i];
 		switch (key_field->FldD->frml_type) {
 		case 'S': {
-			StoreStr(RunShortStr(file_d, Z, record), key_field);
+			StoreStr(RunStdStr(file_d, Z, record), key_field);
 			break;
 		}
 		case 'R': {

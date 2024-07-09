@@ -263,7 +263,7 @@ void WritelnProc(Instr_writeln* PD)
 		switch (W->Typ) {
 		case 'S': {
 			if (LF == WriteType::message || LF == WriteType::msgAndHelp) {
-				t += RunShortStr(CFile, W->Frml, CRecPtr);
+				t += RunStdStr(CFile, W->Frml, CRecPtr);
 			}
 			else {
 				printS += RunStdStr(CFile, W->Frml, CRecPtr);
@@ -311,7 +311,7 @@ void WritelnProc(Instr_writeln* PD)
 			SetMsgPar(t);
 			WrLLF10Msg(110);
 			if (Event.Pressed.KeyCombination() == __F1) {
-				Help(PD->mHlpRdb, RunShortStr(CFile, PD->mHlpFrml, CRecPtr), false);
+				Help(PD->mHlpRdb, RunStdStr(CFile, PD->mHlpFrml, CRecPtr), false);
 				continue;
 			}
 			break;
@@ -320,7 +320,7 @@ void WritelnProc(Instr_writeln* PD)
 			SetMsgPar(t);
 			WrLLF10Msg(110);
 			if (Event.Pressed.KeyCombination() == __F1) {
-				Help(PD->mHlpRdb, RunShortStr(CFile, PD->mHlpFrml, CRecPtr), false);
+				Help(PD->mHlpRdb, RunStdStr(CFile, PD->mHlpFrml, CRecPtr), false);
 				continue;
 			}
 			break;
@@ -336,7 +336,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 
 	if (IRec == 0) {
 		WORD i = 0;
-		str = GetHlpText(CRdb, RunShortStr(CFile, (FrmlElem*)R, CRecPtr), true, i);
+		str = GetHlpText(CRdb, RunStdStr(CFile, (FrmlElem*)R, CRecPtr), true, i);
 		if (str.empty()) return;
 	}
 	else {
@@ -359,7 +359,7 @@ void ClrWwProc(Instr_clrww* PD)
 	WORD a = RunWordImpl(CFile, PD->Attr2, screen.colors.uNorm, CRecPtr);
 	char c = ' ';
 	if (PD->FillC != nullptr) {
-		std::string s = RunShortStr(CFile, PD->FillC, CRecPtr);
+		std::string s = RunStdStr(CFile, PD->FillC, CRecPtr);
 		if (s.length() > 0) {
 			c = s[0];
 		}
@@ -453,7 +453,7 @@ std::string GetStr(FrmlElem* Z)
 	}
 	else {
 		//result = RunShortStr(CFile, Z, CRecPtr);
-		result = RunShortStr(nullptr, Z, nullptr);
+		result = RunStdStr(nullptr, Z, nullptr);
 	}
 	return result;
 }
@@ -504,7 +504,7 @@ void EditTxtProc(Instr_edittxt* PD)
 		lp, PD->EdTxtMode, msg, PD->ExD, i,
 		RunInt(nullptr, PD->TxtXY, nullptr), /*RunInt(CFile, PD->TxtXY, CRecPtr),*/
 		pv, a,
-		RunShortStr(nullptr, PD->Hd, nullptr), /*RunShortStr(CFile, PD->Hd, CRecPtr),*/
+		RunStdStr(nullptr, PD->Hd, nullptr), /*RunShortStr(CFile, PD->Hd, CRecPtr),*/
 		PD->WFlags, &MsgS);
 
 	ReleaseStore(&p);
@@ -546,7 +546,7 @@ void DeleteRecProc(Instr_recs* PD)
 	CFile = PD->RecFD;
 	CRecPtr = PD->RecFD->GetRecSpace();
 	if (PD->ByKey) {
-		x.S = RunShortStr(CFile, PD->RecNr, CRecPtr);
+		x.S = RunStdStr(CFile, PD->RecNr, CRecPtr);
 #ifdef FandSQL
 		if (CFile->IsSQLFile) { Strm1->DeleteXRec(PD->Key, &x, PD->AdUpd); delete[] CRecPtr; return; }
 #endif
@@ -635,7 +635,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	bool app = false;
 	BYTE* record1 = lv->FD->GetRecSpace();
 	if (PD->ByKey) {
-		x.S = RunShortStr(lv->FD, PD->RecNr, lv->record);
+		x.S = RunStdStr(lv->FD, PD->RecNr, lv->record);
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
 			if (IsRead) if (Strm1->SelectXRec(k, @x, PD->CompOp, true)) goto label4; else goto label2;
@@ -927,13 +927,13 @@ label1:
 
 void HeadLineProc(FrmlElem* Z)
 {
-	UserHeadLine(RunShortStr(CFile, Z, CRecPtr));
+	UserHeadLine(RunStdStr(CFile, Z, CRecPtr));
 }
 
 void SetKeyBufProc(FrmlElem* Z)
 {
 	//KbdBuffer = RunShortStr(Z);
-	std::string keyBuf = RunShortStr(CFile, Z, CRecPtr);
+	std::string keyBuf = RunStdStr(CFile, Z, CRecPtr);
 	keyboard.SetKeyBuf(keyBuf);
 }
 
@@ -956,7 +956,7 @@ void WithWindowProc(Instr_window* PD)
 
 	ProcAttr = RunWordImpl(CFile, PD->Attr, screen.colors.uNorm, CRecPtr); // nacte barvy do ProcAttr
 	RunWFrml(CFile, PD->W, PD->WithWFlags, v, CRecPtr); // nacte rozmery okna
-	auto top = RunShortStr(CFile, PD->Top, CRecPtr); // nacte nadpis
+	auto top = RunStdStr(CFile, PD->Top, CRecPtr); // nacte nadpis
 	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags); // vykresli oramovane okno s nadpisem
 	if ((PD->WithWFlags & WNoClrScr) == 0) {
 		ClrScr(TextAttr);
@@ -1060,7 +1060,7 @@ void WithLockedProc(Instr_withshared* PD)
 
 void HelpProc(Instr_help* PD)
 {
-	Help(PD->HelpRdb0, RunShortStr(CFile, PD->Frml0, CRecPtr), true);
+	Help(PD->HelpRdb0, RunStdStr(CFile, PD->Frml0, CRecPtr), true);
 }
 
 HANDLE OpenHForPutTxt(Instr_puttxt* PD)
@@ -1110,24 +1110,24 @@ void PutTxt(Instr_puttxt* PD)
 void AssgnCatFld(Instr_assign* PD, void* record)
 {
 	if (PD->FD3 != nullptr) PD->FD3->CloseFile();
-	std::string data = RunShortStr(PD->FD3, PD->Frml3, record);
+	std::string data = RunStdStr(PD->FD3, PD->Frml3, record);
 	catalog->SetField(PD->CatIRec, PD->CatFld, data);
 }
 
 void AssgnAccRight(Instr_assign* PD)
 {
-	user->set_acc_rights(RunShortStr(CFile, PD->Frml, CRecPtr));
+	user->set_acc_rights(RunStdStr(CFile, PD->Frml, CRecPtr));
 }
 
 void AssgnUserName(Instr_assign* PD)
 {
-	user->set_user_name(RunShortStr(CFile, PD->Frml, CRecPtr));
+	user->set_user_name(RunStdStr(CFile, PD->Frml, CRecPtr));
 }
 
 void ReleaseDriveProc(FrmlElem* Z)
 {
 	SaveFiles();
-	pstring s = RunShortStr(CFile, Z, CRecPtr);
+	pstring s = RunStdStr(CFile, Z, CRecPtr);
 	char c = (char)toupper((char)s[1]);
 	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives);
 	else

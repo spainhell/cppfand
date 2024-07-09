@@ -1030,7 +1030,7 @@ void RdUserId(bool check)
 		g_compiler->Accept(',');
 
 		FrmlElem* Z = g_compiler->RdStrFrml(nullptr);
-		std::string pw2 = RunShortStr(g_compiler->processing_F, Z, nullptr);
+		std::string pw2 = RunStdStr(g_compiler->processing_F, Z, nullptr);
 		delete Z; Z = nullptr;
 
 		if (Lexem == ',') {

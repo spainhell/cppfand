@@ -399,7 +399,7 @@ std::string EditReader::GetStr_E(FrmlElem* Z, uint8_t* record)
 {
 	if (Z == nullptr) return "";
 	else {
-		std::string s = RunShortStr(file_d_, Z, record);
+		std::string s = RunStdStr(file_d_, Z, record);
 		//while (GetLengthOfStyledString(s) > TxtCols) {
 		//	// smaz posledni znak z retezce
 		//	s.erase(s.length() - 1);
@@ -451,7 +451,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	edit_->dSelect = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSelect, screen.colors.dSelect, rec));
 	edit_->Top = RunStdStr(file_d, EO->Top, rec);
 	if (EO->Mode != nullptr) {
-		std::string mode = RunShortStr(file_d, EO->Mode, rec);
+		std::string mode = RunStdStr(file_d, EO->Mode, rec);
 		int result = edit_->params_->SetFromString(mode, false);
 		if (result != 0) {
 			g_compiler->Error(92);
@@ -532,7 +532,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		edit_->RefreshDelay = RunWordImpl(file_d, EO->RefreshDelayZ, spec.RefreshDelay, record) * 1000;
 		edit_->SaveAfter = RunWordImpl(file_d, EO->SaveAfterZ, spec.UpdCount, record) * 1000;
 		if (EO->StartRecKeyZ != nullptr) {
-			edit_->StartRecKey = RunShortStr(file_d, EO->StartRecKeyZ, record);
+			edit_->StartRecKey = RunStdStr(file_d, EO->StartRecKeyZ, record);
 		}
 		edit_->StartRecNo = RunInt(file_d, EO->StartRecNoZ, record);
 		edit_->StartIRec = RunInt(file_d, EO->StartIRecZ, record);
@@ -572,7 +572,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		}
 }
 	if (EO->StartFieldZ != nullptr) {
-		std::string rss = RunShortStr(file_d, EO->StartFieldZ, record);
+		std::string rss = RunStdStr(file_d, EO->StartFieldZ, record);
 		std::string s = TrailChar(rss, ' ');
 		//EFldD* D = edit_->FirstFld;
 		//while (D != nullptr) {

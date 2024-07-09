@@ -1858,7 +1858,7 @@ void CallFandProc(TCommand* cmd)
 			case 'S': {
 				if ((w & 1) == 0) {
 					if (d->Typ == _StrD) {
-						CurrInst->Vars[i] = GetStringTerm(RunShortStr(CFile, ta->Frml, CRecPtr));
+						CurrInst->Vars[i] = GetStringTerm(RunStdStr(CFile, ta->Frml, CRecPtr));
 					}
 					else {
 						std::string std_s = RunStdStr(CFile, ta->Frml, CRecPtr);
