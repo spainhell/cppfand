@@ -980,7 +980,7 @@ void Merge::MoveForwToRecM(InpD* ID)
 		for (ChkD* C : ID->Chk) { // while (C != nullptr}
 			if (!RunBool(CFile, C->Bool, CRecPtr)) {
 				ID->Warning = true;
-				ID->ErrTxtFrml->S = RunStdStr(CFile, C->TxtZ, CRecPtr);
+				ID->ErrTxtFrml->S = RunString(CFile, C->TxtZ, CRecPtr);
 				if (!C->Warning) {
 					ID->Error = true;
 					return;

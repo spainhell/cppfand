@@ -1858,10 +1858,10 @@ void CallFandProc(TCommand* cmd)
 			case 'S': {
 				if ((w & 1) == 0) {
 					if (d->Typ == _StrD) {
-						CurrInst->Vars[i] = GetStringTerm(RunStdStr(CFile, ta->Frml, CRecPtr));
+						CurrInst->Vars[i] = GetStringTerm(RunString(CFile, ta->Frml, CRecPtr));
 					}
 					else {
-						std::string std_s = RunStdStr(CFile, ta->Frml, CRecPtr);
+						std::string std_s = RunString(CFile, ta->Frml, CRecPtr);
 						s = new LongStr(std_s.length());
 						s->LL = std_s.length();
 						memcpy(s->A, std_s.c_str(), s->LL);
@@ -2478,7 +2478,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		cl = CallLevel;
 	}
 	if (Pos->i_rec == 0) {
-		std::string std_s = RunStdStr(CFile, (FrmlElem*)Pos->rdb, CRecPtr);
+		std::string std_s = RunString(CFile, (FrmlElem*)Pos->rdb, CRecPtr);
 
 		LongStr* longStr = new LongStr(std_s.length());
 		longStr->LL = std_s.length();

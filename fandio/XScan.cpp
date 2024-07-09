@@ -215,7 +215,7 @@ void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 void XScan::ResetSQLTxt(FrmlPtr Z)
 {
 	LongStrPtr s;
-	New(SQLStreamPtr(Strm), init); s = RunStdStr(Z);
+	New(SQLStreamPtr(Strm), init); s = RunString(Z);
 	SQLStreamPtr(Strm)->InpResetTxt(s); ReleaseStore(s);
 	eof = false;
 }

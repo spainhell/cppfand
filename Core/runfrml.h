@@ -34,7 +34,7 @@ WORD RunWordImpl(FileD* file_d, FrmlElem* Z, WORD Impl, void* record);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 XKey* GetFromKey(LinkD* LD);
 FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record);
-std::string RunStdStr(FileD* file_d, FrmlElem* X, void* record);
+std::string RunString(FileD* file_d, FrmlElem* X, void* record);
 //std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record);
 void AddToLongStr(LongStr* S, void* P, WORD L);
 void StrMask(double R, pstring& Mask);

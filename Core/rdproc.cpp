@@ -3081,7 +3081,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 	FrmlElem* z = nullptr;
 	FileD* cf = CFile;
 	cr = CRecPtr;
-	std::string s = RunStdStr(CFile, X->EvalP1, CRecPtr);
+	std::string s = RunString(CFile, X->EvalP1, CRecPtr);
 	if (s.empty()) {
 		LastExitCode = 0;
 	}

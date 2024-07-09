@@ -1347,7 +1347,7 @@ label1:
 			}
 			else {
 				if (RF->Typ == 'P') {
-					std::string s = RunStdStr(CFile, RF->Frml, CRecPtr);
+					std::string s = RunString(CFile, RF->Frml, CRecPtr);
 					//printf("%s%c", Rprt.c_str(), 0x10);
 					text += 0x10;
 					for (size_t i = 0; i < s.length(); i++) {
@@ -1365,7 +1365,7 @@ label1:
 				else
 					switch (RF->FrmlTyp) {
 					case 'S': {
-						std::string S = RunStdStr(CFile, RF->Frml, CRecPtr);
+						std::string S = RunString(CFile, RF->Frml, CRecPtr);
 						S = TrailChar(S, ' ');
 						text += NewTxtCol(S, M, L, RF->BlankOrWrap);
 						break;
@@ -2013,7 +2013,7 @@ void Report::MoveForwToRec(InpD* ID)
 		for (ChkD* C : ID->Chk) { //while (C != nullptr) {
 			if (!RunBool(CFile, C->Bool, CRecPtr)) {
 				ID->Warning = true;
-				ID->ErrTxtFrml->S = RunStdStr(CFile, C->TxtZ, CRecPtr);
+				ID->ErrTxtFrml->S = RunString(CFile, C->TxtZ, CRecPtr);
 				if (!C->Warning) {
 					ID->Error = true;
 					return;

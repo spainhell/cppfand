@@ -147,12 +147,12 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	switch (X->Op) {
 	case _valdate: {
 		FrmlElemDateMask* iX = (FrmlElemDateMask*)X;
-		result = ValDate(RunStdStr(file_d, iX->P1, record), iX->Mask);
+		result = ValDate(RunString(file_d, iX->P1, record), iX->Mask);
 		break;
 	}
 	case _val: {
 		FrmlElemDateMask* iX = (FrmlElemDateMask*)X;
-		std::string valS = RunStdStr(file_d, iX->P1, record);
+		std::string valS = RunString(file_d, iX->P1, record);
 		valS = TrailChar(valS, ' ');
 		valS = LeadChar(valS, ' ');
 		short i;
@@ -161,35 +161,35 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _length: {
 		FrmlElemDateMask* iX = (FrmlElemDateMask*)X;
-		std::string s = RunStdStr(file_d, iX->P1, record);
+		std::string s = RunString(file_d, iX->P1, record);
 		result = s.length();
 		break;
 	}
 	case _linecnt: {
 		// get line counts of input text
 		FrmlElemDateMask* iX = (FrmlElemDateMask*)X;
-		std::string s = RunStdStr(file_d, iX->P1, record);
+		std::string s = RunString(file_d, iX->P1, record);
 		result = CountLines(s, '\r'); // 0x0D, #13
 		break;
 	}
 	case _ord: {
 		FrmlElemDateMask* iX = (FrmlElemDateMask*)X;
-		std::string s = RunStdStr(file_d, iX->P1, record);
+		std::string s = RunString(file_d, iX->P1, record);
 		if (s.empty()) result = 0;
 		else result = s[0];
 		break;
 	}
 	case _prompt: {
 		FrmlElem11* iX = (FrmlElem11*)X;
-		std::string s = RunStdStr(file_d, iX->P1, record);
+		std::string s = RunString(file_d, iX->P1, record);
 		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 		result = data_editor->PromptR(s, iX->P2, iX->FldD);
 		break;
 	}
 	case _pos: {
 		FrmlElemPosReplace* iX = (FrmlElemPosReplace*)X;
-		std::string strS = RunStdStr(file_d, iX->P2, record);
-		std::string strMask = RunStdStr(file_d, iX->P1, record);
+		std::string strS = RunString(file_d, iX->P2, record);
+		std::string strMask = RunString(file_d, iX->P1, record);
 		size_t n = 1; // kolikaty vyskyt najit
 
 		if (iX->Options.find('~') != std::string::npos) {
@@ -222,14 +222,14 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _diskfree: {
 		auto iX = (FrmlElemFunction*)X;
-		std::string s = RunStdStr(file_d, iX->P1, record);
+		std::string s = RunString(file_d, iX->P1, record);
 		DWORD error;
 		result = GetDiskFree(toupper(s[0]) - '@', error);
 		break;
 	}
 #ifdef FandSQL
 	case _sqlfun: if (Strm1 = nullptr) RunRealStr = 0 else {
-		S = RunStdStr(X->frml_elem); RunRealStr = Strm1->SendTxt(S, false);
+		S = RunString(X->frml_elem); RunRealStr = Strm1->SendTxt(S, false);
 		ReleaseStore(S);
 	}
 #endif
@@ -447,7 +447,7 @@ WORD IntTSR(FileD* file_d, FrmlElem* X, void* record)
 
 	switch (iX0->N31) {
 	case 'r': { p = z; break; }
-	case 'S': { s = RunStdStr(file_d, z, record); p = &s; break; }
+	case 'S': { s = RunString(file_d, z, record); p = &s; break; }
 	case 'B': { b = RunBool(file_d, z, record); p = &b; break; }
 	case 'R': { r = RunReal(file_d, z, record); p = &r; break; }
 	}
@@ -612,7 +612,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _instr: {
 		auto iX0 = (FrmlElemIn*)X;
-		std::string s = RunStdStr(file_d, iX0->frml_elem, record);
+		std::string s = RunString(file_d, iX0->frml_elem, record);
 		switch (iX0->param)
 		{
 		case 0:
@@ -643,8 +643,8 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _compstr: {
 		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
-		std::string s1 = RunStdStr(file_d, iX0->P1, record);
-		std::string s2 = RunStdStr(file_d, iX0->P2, record);
+		std::string s1 = RunString(file_d, iX0->P1, record);
+		std::string s2 = RunString(file_d, iX0->P2, record);
 		WORD cmpRes = 0;
 		if (iX0->N22 == 1) {
 			cmpRes = CompLexStrings(TrailChar(s1, ' '), TrailChar(s2, ' '));
@@ -750,14 +750,14 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _prompt: {
 		FrmlElem11* iX = (FrmlElem11*)X;
-		auto s = RunStdStr(file_d, iX->P1, record);
+		auto s = RunString(file_d, iX->P1, record);
 		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 		result = data_editor->PromptB(s, iX->P2, iX->FldD);
 		break;
 	}
 	case _promptyn: {
 		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
-		SetMsgPar(RunStdStr(file_d, iX0->P1, record));
+		SetMsgPar(RunString(file_d, iX0->P1, record));
 		result = PromptYN(110);
 		break;
 	}
@@ -876,7 +876,7 @@ bool InStr(std::string& S, FrmlElemIn* X)
 
 bool RunModulo(FileD* file_d, FrmlElemFunction* X, void* record)
 {
-	std::string input = RunStdStr(file_d, X->P1, record);
+	std::string input = RunString(file_d, X->P1, record);
 	if (input.empty() || input.length() != X->vValues.size()) {
 		return false;
 	}
@@ -900,8 +900,8 @@ bool RunModulo(FileD* file_d, FrmlElemFunction* X, void* record)
 
 bool RunEquMask(FileD* file_d, FrmlElemFunction* X, void* record)
 {
-	const std::string value = RunStdStr(file_d, X->P1, record);
-	std::string mask = RunStdStr(file_d, X->P2, record);
+	const std::string value = RunString(file_d, X->P1, record);
+	std::string mask = RunString(file_d, X->P2, record);
 	const bool result = EqualsMask(value, mask);
 	return result;
 }
@@ -1350,7 +1350,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 				file_d->saveT(field_d, pos, record);
 			}
 			else {
-				std::string s = RunStdStr(file_d, X, record);
+				std::string s = RunString(file_d, X, record);
 				if (Delete) {
 					file_d->FF->DelTFld(field_d, record);
 				}
@@ -1358,7 +1358,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 			}
 		}
 		else {
-			file_d->saveS(field_d, RunStdStr(file_d, X, record), record);
+			file_d->saveS(field_d, RunString(file_d, X, record), record);
 		}
 		break;
 	}
@@ -1383,7 +1383,7 @@ void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, void* record
 {
 	switch (LV->f_typ) {
 	case 'S': {
-		LV->S = RunStdStr(file_d, X, record);
+		LV->S = RunString(file_d, X, record);
 		break;
 	}
 	case 'R': {
@@ -1544,7 +1544,7 @@ FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record)
 	return Z;
 }
 
-std::string RunStdStr(FileD* file_d, FrmlElem* X, void* record)
+std::string RunString(FileD* file_d, FrmlElem* X, void* record)
 {
 	int RecNo = 0;
 	std::string result;
@@ -1566,11 +1566,11 @@ label1:
 		BYTE* newRecord = nullptr;
 		if (iX7->LD != nullptr) {
 			LinkUpw(file_d, iX7->LD, RecNo, true, record, &newRecord);
-			result = RunStdStr(file_d, iX7->P011, newRecord);
+			result = RunString(file_d, iX7->P011, newRecord);
 		}
 		else {
 			LinkLastRec(iX7->File2, RecNo, true, &newRecord);
-			result = RunStdStr(iX7->File2, iX7->P011, newRecord);
+			result = RunString(iX7->File2, iX7->P011, newRecord);
 		}
 
 		iX7->File2->OldLockMode(lm);  /*possibly reading .T*/
@@ -1580,16 +1580,16 @@ label1:
 	}
 	case _recvarfld: {
 		auto iX7 = (FrmlElem7*)X;
-		result = RunStdStr(iX7->File2, iX7->P011, iX7->LD);
+		result = RunString(iX7->File2, iX7->P011, iX7->LD);
 		break;
 	}
 	case _eval: {
-		return RunStdStr(file_d, GetEvalFrml(file_d, (FrmlElem21*)X, record), record);
+		return RunString(file_d, GetEvalFrml(file_d, (FrmlElem21*)X, record), record);
 		break;
 	}
 	case _newfile: {
 		auto iX8 = (FrmlElemNewFile*)X;
-		result = RunStdStr(iX8->NewFile, iX8->Frml, iX8->NewRP);
+		result = RunString(iX8->NewFile, iX8->Frml, iX8->NewRP);
 		break;
 	}
 	case _cond: {
@@ -1609,7 +1609,7 @@ label1:
 	}
 	case _copy: {
 		FrmlElemFunction* const iX0 = static_cast<FrmlElemFunction*>(X);
-		std::string str = RunStdStr(file_d, iX0->P1, record);
+		std::string str = RunString(file_d, iX0->P1, record);
 		int L1 = RunInt(file_d, iX0->P2, record);
 		if (L1 > 0) { L1--; } // RUNFRML.PAS 427 (dec bx)
 		const int L2 = RunInt(file_d, iX0->P3, record);
@@ -1626,8 +1626,8 @@ label1:
 	}
 	case _concat: {
 		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
-		std::string S1 = RunStdStr(file_d, iX0->P1, record);
-		std::string S2 = RunStdStr(file_d, iX0->P2, record);
+		std::string S1 = RunString(file_d, iX0->P1, record);
+		std::string S2 = RunString(file_d, iX0->P2, record);
 		result = S1 + S2;
 		break;
 	}
@@ -1639,7 +1639,7 @@ label1:
 		auto iX0 = (FrmlElemFunction*)X;
 		char c = iX0->N11;
 		char cnew = iX0->N12;
-		auto sp1 = RunStdStr(file_d, iX0->P1, record);
+		auto sp1 = RunString(file_d, iX0->P1, record);
 		result = LeadChar(sp1, c, cnew);
 		break;
 	}
@@ -1647,13 +1647,13 @@ label1:
 		auto iX0 = (FrmlElemFunction*)X;
 		char c = iX0->N11;
 		char cnew = iX0->N12;
-		auto sp1 = RunStdStr(file_d, iX0->P1, record);
+		auto sp1 = RunString(file_d, iX0->P1, record);
 		result = TrailChar(sp1, c, cnew);
 		break;
 	}
 	case _upcase: {
 		auto iX0 = (FrmlElemFunction*)X;
-		result = RunStdStr(file_d, iX0->P1, record);
+		result = RunString(file_d, iX0->P1, record);
 		for (WORD i = 0; i < result.length(); i++) {
 			result[i] = UpcCharTab[(BYTE)result[i]];
 		}
@@ -1661,7 +1661,7 @@ label1:
 	}
 	case _lowcase: {
 		auto iX0 = (FrmlElemFunction*)X;
-		result = RunStdStr(file_d, iX0->P1, record);
+		result = RunString(file_d, iX0->P1, record);
 		LowCase(result);
 		break;
 	}
@@ -1669,7 +1669,7 @@ label1:
 		auto iX0 = (FrmlElemFunction*)X;
 		size_t i = 1;
 		if (iX0->P3 != nullptr) i = RunInt(file_d, iX0->P3, record);
-		std::string s = RunStdStr(file_d, iX0->P1, record);
+		std::string s = RunString(file_d, iX0->P1, record);
 		size_t start = RunInt(file_d, iX0->P2, record);
 		result = GetNthLine(s, start, i);
 		break;
@@ -1677,7 +1677,7 @@ label1:
 	case _repeatstr: {
 		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
 		int32_t i = RunInt(file_d, iX0->P2, record);
-		std::string input = RunStdStr(file_d, iX0->P1, record);
+		std::string input = RunString(file_d, iX0->P1, record);
 		result = RepeatString(input, i);
 		break;
 	}
@@ -1697,7 +1697,7 @@ label1:
 	}
 	case _nodiakr: {
 		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
-		result = RunStdStr(file_d, iX0->P1, record);
+		result = RunString(file_d, iX0->P1, record);
 		ConvToNoDiakr(result, fonts.VFont);
 		break;
 	}
@@ -1708,7 +1708,7 @@ label1:
 	}
 	case _setmybp: {
 		auto iX0 = (FrmlElemFunction*)X;
-		result = RunStdStr(file_d, iX0->P1, record);
+		result = RunString(file_d, iX0->P1, record);
 		break;
 	}
 	case _selectstr: {
@@ -1732,7 +1732,7 @@ label1:
 
 //std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record)
 //{
-//	std::string s = RunStdStr(file_d, X, record);
+//	std::string s = RunString(file_d, X, record);
 //	if (s.length() > 255) s = s.substr(0, 255);
 //	return s;
 //}
@@ -1898,16 +1898,16 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 			else str(r, l, m, s);
 		}
 		else {
-			s = RunStdStr(file_d, iZ0->P2, record);
+			s = RunString(file_d, iZ0->P2, record);
 			StrMask(RunReal(file_d, iZ0->P1, record), s);
 		}
 		break;
 	}
 	case _replace: {
 		auto iZ = (FrmlElemPosReplace*)Z;
-		std::string text = RunStdStr(file_d, iZ->P2, record);
-		std::string oldText = RunStdStr(file_d, iZ->P1, record); //j = 1;
-		std::string newText = RunStdStr(file_d, iZ->P3, record);
+		std::string text = RunString(file_d, iZ->P2, record);
+		std::string oldText = RunString(file_d, iZ->P1, record); //j = 1;
+		std::string newText = RunString(file_d, iZ->P3, record);
 
 		string res = Replace(text, oldText, newText, iZ->Options);
 		LongStr* result = new LongStr(res.length());
@@ -1917,14 +1917,14 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	}
 	case _prompt: {
 		auto iZ = (FrmlElem11*)Z;
-		auto s0 = RunStdStr(file_d, iZ->P1, record);
+		auto s0 = RunString(file_d, iZ->P1, record);
 		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 		s = data_editor->PromptS(s0, iZ->P2, iZ->FldD);
 		break;
 	}
 	case _getpath: {
 		s = ".*";
-		if (iZ0->P1 != nullptr) s = RunStdStr(file_d, iZ0->P1, record);
+		if (iZ0->P1 != nullptr) s = RunString(file_d, iZ0->P1, record);
 		s = ww.SelectDiskFile(s, 35, false);
 		break;
 	}
@@ -1988,7 +1988,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 		break;
 	}
 	case _getenv: {
-		s = RunStdStr(file_d, iZ0->P1, record);
+		s = RunString(file_d, iZ0->P1, record);
 		if (s == "") s = paramstr[0];
 		else s = GetEnv(s.c_str());
 		break;
@@ -2028,7 +2028,7 @@ LongStr* RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 	void* p2 = nullptr; void* pl = nullptr;
 	WORD i;
 
-	std::string std_s = RunStdStr(file_d, Z->P3, record);
+	std::string std_s = RunString(file_d, Z->P3, record);
 	LongStr* s = new LongStr(std_s.length());
 	s->LL = std_s.length();
 	memcpy(s->A, std_s.c_str(), s->LL);
@@ -2040,15 +2040,15 @@ LongStr* RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 		x = GetNthLine(std_s, i, 1, Z->Delim);
 		if (x != "") ww.PutSelect(x);
 	}
-	mode = RunStdStr(file_d, Z->P6, record);
+	mode = RunString(file_d, Z->P6, record);
 	for (i = 1; i <= mode.length(); i++)
 		switch (toupper(mode[i])) {
 		case 'A': ss.Abcd = true; break;
 		case 'S': ss.Subset = true; break;
 		case 'I': ss.ImplAll = true; break;
 		}
-	SetMsgPar(RunStdStr(file_d, Z->P4, record));
-	ww.SelectStr(RunInt(file_d, Z->P1, record), RunInt(file_d, Z->P2, record), 110, RunStdStr(file_d, Z->P5, record));
+	SetMsgPar(RunString(file_d, Z->P4, record));
+	ww.SelectStr(RunInt(file_d, Z->P1, record), RunInt(file_d, Z->P2, record), 110, RunString(file_d, Z->P5, record));
 	MarkStore(p2);
 	s2 = new LongStr(s->LL + 2); // GetStore2(s->LL + 2);
 	n = 1; LastExitCode = 0;
@@ -2171,7 +2171,7 @@ void GetRecNoXString(FileD* file_d, FrmlElemRecNo* Z, XString& X, void* record)
 		FrmlElem* zz = Z->Arg[i];
 		switch (kf->FldD->frml_type) {
 		case 'S': {
-			X.StoreStr(RunStdStr(file_d, zz, record), kf);
+			X.StoreStr(RunString(file_d, zz, record), kf);
 			break;
 		}
 		case 'R': {

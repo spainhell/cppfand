@@ -163,7 +163,7 @@ void Compiler::SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 {
 	if (rdb_pos->i_rec == 0) {
-		std::string run_str = RunStdStr(CFile, (FrmlElem*)rdb_pos->rdb, CRecPtr);
+		std::string run_str = RunString(CFile, (FrmlElem*)rdb_pos->rdb, CRecPtr);
 		// std::string cannot be used here!
 		// it's deleted on the end of this method!
 		LongStr* run_long_str = new LongStr(run_str.length());

@@ -2037,7 +2037,7 @@ void Calculate()
 		}
 		case 'S': {
 			/* wie RdMode fuer _textT ??*/
-			txt = RunStdStr(CFile, Z, CRecPtr);
+			txt = RunString(CFile, Z, CRecPtr);
 			break;
 		}
 		case 'B': {

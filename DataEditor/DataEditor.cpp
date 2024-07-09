@@ -602,7 +602,7 @@ void DataEditor::WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std:
 	if (Impl != nullptr) {
 		switch (F->frml_type) {
 		case 'R': RR = RunReal(file_d_, Impl, record_); break;
-		case 'S': SS = RunStdStr(file_d_, Impl, record_); break;
+		case 'S': SS = RunString(file_d_, Impl, record_); break;
 		default: BB = RunBool(file_d_, Impl, record_); break;
 		}
 		T = DecodeFieldRSB(F, F->L, RR, SS, BB);
@@ -643,7 +643,7 @@ std::string DataEditor::PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	WrPromptTxt(S, Impl, F, Txt, R);
 	auto result = Txt;
 	if (Event.Pressed.KeyCombination() == __ESC) {
-		if (Impl != nullptr) result = RunStdStr(file_d_, Impl, record_);
+		if (Impl != nullptr) result = RunString(file_d_, Impl, record_);
 		else result = "";
 	}
 	return result;
@@ -2531,7 +2531,7 @@ void DataEditor::DisplChkErr(ChkD* C)
 		if (F10SpecKey == __SHIFT_F7) F10SpecKey = 0xfffe;
 		else F10SpecKey = __F1;
 	}
-	SetMsgPar(RunStdStr(file_d_, C->TxtZ, record_));
+	SetMsgPar(RunString(file_d_, C->TxtZ, record_));
 	WrLLF10Msg(110);
 	if (Event.Pressed.KeyCombination() == __F1) {
 		Help(file_d_->ChptPos.rdb, C->HelpName, false);
@@ -3705,7 +3705,7 @@ label1:
 		if (Ed) Kind = 'T';
 	}
 	else {
-		std::string std_s = RunStdStr(file_d_, F->Frml, record_);
+		std::string std_s = RunString(file_d_, F->Frml, record_);
 		S = new LongStr(std_s.length());
 		S->LL = std_s.length();
 		memcpy(S->A, std_s.c_str(), S->LL);
@@ -4441,7 +4441,7 @@ void DataEditor::Calculate2()
 		}
 		case 'S': {
 			/* wie RdMode fuer T ??*/
-			txt = RunStdStr(file_d_, Z, record_);
+			txt = RunString(file_d_, Z, record_);
 			break;
 		}
 		case 'B': {

@@ -266,7 +266,7 @@ std::string FileD::loadS(FieldDescr* field_d, void* record)
 		result = FF->loadS(field_d, record);
 	}
 	else {
-		result = RunStdStr(this, field_d->Frml, record);
+		result = RunString(this, field_d->Frml, record);
 	}
 	return result;
 }
