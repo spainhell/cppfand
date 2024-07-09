@@ -1262,7 +1262,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 	TDomain* d = nullptr;
 	TTerm* t = nullptr;
 	TScanInf* si = nullptr;
-	XKey* k = nullptr;
+	//XKey* k = nullptr;
 	KeyFldD* kf = nullptr;
 	TFldList* fl = nullptr;
 	BYTE a[256]{ 0 };
@@ -1336,8 +1336,9 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 		si = p->scanInf;
 		CFile = si->FD;
 		if (CFile->FF->file_type == FileType::INDEX) {
-			k = CFile->Keys[0];
-			while (k != nullptr) {
+			//k = CFile->Keys[0];
+			//while (k != nullptr) {
+			for (XKey* k : CFile->Keys) {
 				//kf = k->KFlds; inOut = false;
 				while (kf != nullptr) {
 					m = 1; n = 0; i++; fl = si->FL;
@@ -1364,7 +1365,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 					goto label3;
 				}
 			label2:
-				k = k->Chain;
+				//k = k->Chain;
 				i = 0; w = 0;
 			}
 		}
@@ -1383,7 +1384,7 @@ label3:
 				//Move(a, c->ArgI, i);
 
 				c->ArgI[0] = a[0];
-				c->KDOfs = k;
+				//c->KDOfs = k;
 			}
 		}
 	}

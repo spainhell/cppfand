@@ -7,11 +7,11 @@
 #include "../Core/RunMessage.h"
 
 
-XWorkFile::XWorkFile(FileD* parent, XScan* AScan, XKey* AK): WorkFile(parent)
+XWorkFile::XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK): WorkFile(parent)
 {
 	xScan = AScan;
-	xKey = AK;
-	xwFile = AK->GetXFile(parent);
+	xKeys = AK;
+	xwFile = AK[0]->GetXFile(parent);
 }
 
 void XWorkFile::Main(char Typ, void* record)
@@ -21,7 +21,8 @@ void XWorkFile::Main(char Typ, void* record)
 	msgWritten = false;
 	bool frst = true;
 	// for all keys defined in #K
-	while (xKey != nullptr) {
+	//while (xKey != nullptr) {
+	for (XKey* xKey : xKeys) {
 		xxPage = new XXPage();
 		xxPage->Reset(this);
 		xxPage->IsLeaf = true;
@@ -46,7 +47,7 @@ void XWorkFile::Main(char Typ, void* record)
 		}
 		FinishIndex();
 		delete xxPage; xxPage = nullptr;
-		xKey = xKey->Chain;
+		//xKey = xKey->Chain;
 	}
 	xwFile->ReleasePage(xPage, nextXPage);
 	delete xPage; xPage = nullptr;
@@ -99,7 +100,7 @@ bool XWorkFile::GetCRec(void* record)
 
 void XWorkFile::Output(WRec* R, void* record)
 {
-	xxPage->AddToLeaf(_parent, R, xKey, record);
+	xxPage->AddToLeaf(_parent, R, xKeys[0], record);
 }
 
 void XWorkFile::FinishIndex()
@@ -114,7 +115,7 @@ void XWorkFile::FinishIndex()
 		p->GreaterPage = n;
 		XXPage* p1 = p->Chain;
 		if (p1 == nullptr) {
-			n = xKey->IndexRoot;
+			n = xKeys[0]->IndexRoot;
 		}
 		else {
 			n = nextXPage;
@@ -131,8 +132,8 @@ void XWorkFile::FinishIndex()
 		break;
 	}
 
-	if (xKey->InWork) {
-		xKey->NR = sum;
+	if (xKeys[0]->InWork) {
+		xKeys[0]->NR = sum;
 	}
 	else {
 		((FandXFile*)xwFile)->NRecs = sum;

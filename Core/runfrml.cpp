@@ -1514,11 +1514,17 @@ XKey* GetFromKey(LinkD* LD)
 {
 	if (LD->FromFD->Keys.empty()) return nullptr;
 
-	XKey* K = LD->FromFD->Keys[0];
-	while (K->IndexRoot != LD->IndexRoot) {
-		K = K->Chain;
+	// find key in LD->FromFD->Keys with the same index root as LD->IndexRoot
+	vector<XKey*>::iterator it = ranges::find_if(LD->FromFD->Keys, [LD](XKey* K) {
+		return K->IndexRoot == LD->IndexRoot;
+	});
+
+	if (it != LD->FromFD->Keys.end()) {
+		return *it;
 	}
-	return K;
+	else {
+		return nullptr;
+	}
 }
 
 FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record)

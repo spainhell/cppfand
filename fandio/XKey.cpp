@@ -19,9 +19,9 @@ XKey::XKey(FileD* parent)
 
 XKey::XKey(const XKey& orig)
 {
-	if (orig.Chain != nullptr) Chain = new XKey(*orig.Chain);
+	//TODO: if (orig.Chain != nullptr) Chain = new XKey(*orig.Chain);
 	parent_ = orig.parent_;
-	//if (orig.KFlds != nullptr) KFlds = new KeyFldD(*orig.KFlds, copyFlds);
+	//TODO: if (orig.KFlds != nullptr) KFlds = new KeyFldD(*orig.KFlds, copyFlds);
 	KFlds = orig.KFlds;
 	IntervalTest = orig.IntervalTest;
 	Duplic = orig.Duplic;
@@ -36,7 +36,7 @@ XKey::XKey(FileD* parent, unsigned char* inputStr)
 {
 	parent_ = parent;
 	size_t index = 0;
-	Chain = reinterpret_cast<XKey*>(*(unsigned int*)&inputStr[index]); index += 4;
+	//TODO: Chain = reinterpret_cast<XKey*>(*(unsigned int*)&inputStr[index]); index += 4;
 	//TODO: KFlds = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
 	IntervalTest = *(bool*)&inputStr[index]; index++;
 	Duplic = *(bool*)&inputStr[index]; index++;
@@ -347,14 +347,6 @@ int XKey::RecNrToNr(FileD* file_d, int RecNr, void* record)
 	if (RecNrToPath(file_d, x, RecNr, record)) return PathToNr(file_d);
 	else return 0;
 }
-
-//bool XKey::FindNr(XString& X, int& IndexNr)
-//{
-//	int n;
-//	bool result = Search(X, false, n);
-//	IndexNr = PathToNr();
-//	return result;
-//}
 
 bool XKey::FindNr(FileD* file_d, std::string const X, int& IndexNr)
 {

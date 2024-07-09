@@ -1291,31 +1291,51 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 	return result;
 }
 
-bool EquKeys(XKey* K1, XKey* K2)
+bool EquKeys(std::vector<XKey*>& K1, std::vector<XKey*>& K2)
 {
-	auto result = false;
-	while (K1 != nullptr) {
-		if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
-		std::vector<KeyFldD*>::iterator KF1 = K1->KFlds.begin();
-		std::vector<KeyFldD*>::iterator KF2 = K2->KFlds.begin();
-		while (KF1 != K1->KFlds.end()) {
-			if ((KF2 == K2->KFlds.end())
-				|| ((*KF1)->CompLex != (*KF2)->CompLex)
-				|| ((*KF1)->Descend != (*KF2)->Descend)
-				|| ((*KF1)->FldD->Name != (*KF2)->FldD->Name)) 
-			{
-				return result;
-			}
-			++KF1; //= KF1->pChain;
-			++KF2; //= KF2->pChain;
-		}
-		if (KF2 != K2->KFlds.end()) return result;
-		K1 = K1->Chain;
-		K2 = K2->Chain;
+	//auto result = false;
+	//while (K1 != nullptr) {
+	//	if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
+	//	std::vector<KeyFldD*>::iterator KF1 = K1->KFlds.begin();
+	//	std::vector<KeyFldD*>::iterator KF2 = K2->KFlds.begin();
+	//	while (KF1 != K1->KFlds.end()) {
+	//		if ((KF2 == K2->KFlds.end())
+	//			|| ((*KF1)->CompLex != (*KF2)->CompLex)
+	//			|| ((*KF1)->Descend != (*KF2)->Descend)
+	//			|| ((*KF1)->FldD->Name != (*KF2)->FldD->Name)) 
+	//		{
+	//			return result;
+	//		}
+	//		++KF1;
+	//		++KF2;
+	//	}
+	//	if (KF2 != K2->KFlds.end()) return result;
+	//	K1 = K1->Chain;
+	//	K2 = K2->Chain;
+	//}
+	//if (K2 != nullptr) return result;
+	//result = true;
+	//return result;
+	if (K1.size() != K2.size()) {
+		return false;
 	}
-	if (K2 != nullptr) return result;
-	result = true;
-	return result;
+	for (size_t i = 0; i < K1.size(); i++) {
+		if (K1[i]->Duplic != K2[i]->Duplic) {
+			return false;
+		}
+		if (K1[i]->KFlds.size() != K2[i]->KFlds.size()) {
+			return false;
+		}
+		for (size_t j = 0; j < K1[i]->KFlds.size(); j++) {
+			if (   K1[i]->KFlds[j]->CompLex != K2[i]->KFlds[j]->CompLex
+				|| K1[i]->KFlds[j]->Descend != K2[i]->KFlds[j]->Descend
+				|| K1[i]->KFlds[j]->FldD->Name != K2[i]->KFlds[j]->FldD->Name) 
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 bool MergeOldNew(FileD* new_file, FileD* old_file)
@@ -1340,7 +1360,7 @@ bool MergeOldNew(FileD* new_file, FileD* old_file)
 		MergeAndReplace(FDOld, FDNew);
 		result = true;
 	}
-	else if ((FDOld->FF->file_type == FileType::INDEX) && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
+	else if ((FDOld->FF->file_type == FileType::INDEX) && !EquKeys(FDOld->Keys, FDNew->Keys)) {
 		SetPathAndVolume(Chpt);
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);

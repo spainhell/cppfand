@@ -7,9 +7,9 @@
 class XWorkFile : public WorkFile
 {
 public:
-	XWorkFile(FileD* parent, XScan* AScan, XKey* AK);
+	XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK);
 	XXPage* xxPage = nullptr;
-	XKey* xKey = nullptr;
+	std::vector<XKey*> xKeys;
 	XScan* xScan = nullptr;
 	bool msgWritten = false;
 	int nextXPage = 0;
