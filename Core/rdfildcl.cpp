@@ -889,13 +889,13 @@ void RdKeyD(FileD* file_d)
 			}
 			else {
 				K1 = file_d->Keys[0];
-				N = 2;
-				while (K1->Chain != nullptr) {
+				N = file_d->Keys.size() + 2;
+				/*while (K1->Chain != nullptr) {
 					K1 = K1->Chain;
 					N++;
-				}
+				}*/
 				K = new XKey(file_d);
-				K1->Chain = K;
+				//K1->Chain = K;
 				file_d->Keys.push_back(K);
 			}
 
@@ -1040,17 +1040,22 @@ XKey* RdFileOrAlias1(FileD* F)
 {
 	if (F->Keys.empty()) return nullptr;
 
-	XKey* k = F->Keys[0];
 	std::string lw = LexWord;
+	XKey* result = nullptr;
+
 	if (!EquUpCase(F->Name, lw)) {
-		while (k != nullptr) {
-			std::string lw = LexWord;
-			if (EquUpCase(k->Alias, lw)) break;
-			k = k->Chain;
+		for (XKey* k : F->Keys) {
+			if (EquUpCase(k->Alias, lw)) {
+				result = k;
+				break;
+			}
 		}
 	}
-//label1:
-	return k;
+	else {
+		result = F->Keys[0];
+	}
+
+	return result;
 }
 
 void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD)

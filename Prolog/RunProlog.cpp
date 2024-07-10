@@ -1348,7 +1348,7 @@ bool RunBuildIn()
 		CurrInst->Vars[1] = GetStringTerm(Pound(k->Alias));
 		CurrInst->Vars[2] = GetBoolTerm(k->IntervalTest);
 		CurrInst->Vars[3] = GetBoolTerm(k->Duplic);
-		CurrInst->NextBranch = (TBranch*)(k->Chain);
+		//CurrInst->NextBranch = (TBranch*)(k->Chain);
 		break;
 	}
 	case proc_type::_FandLinkP: {
@@ -1402,7 +1402,7 @@ bool RunBuildIn()
 			fd = FindFD(CurrInst->Vars[0]->SS);
 			if (fd == nullptr) goto label1;
 			//k = fd->Keys;
-			while ((k != nullptr) && !EquUpCase(Pound(k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
+			//while ((k != nullptr) && !EquUpCase(Pound(k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
 			if (k == nullptr) goto label1;
 			//kf = k->KFlds;
 		}

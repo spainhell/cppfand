@@ -855,7 +855,7 @@ int FandFile::CreateIndexFile()
 			XScan* scan = new XScan(_parent, nullptr, empty, false);
 			BYTE* record = _parent->GetRecSpace();
 			scan->Reset(nullptr, false, record);
-			XWorkFile* XW = new XWorkFile(_parent, scan, _parent->Keys[0]);
+			XWorkFile* XW = new XWorkFile(_parent, scan, _parent->Keys);
 			XW->Main('X', record);
 			delete[] record; record = nullptr;
 			delete XW; XW = nullptr;
@@ -1079,7 +1079,9 @@ void FandFile::GenerateNew000File(XScan* x, void* record)
 void FandFile::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 {
 	BYTE* record = _parent->GetRecSpace();
-	XWorkFile* XW = new XWorkFile(_parent, Scan, K);
+	std::vector<XKey*> xw_keys;
+	xw_keys.push_back(K);
+	XWorkFile* XW = new XWorkFile(_parent, Scan, xw_keys);
 	XW->Main(Typ, record);
 	delete XW; XW = nullptr;
 	delete[] record; record = nullptr;

@@ -19,9 +19,9 @@ XKey::XKey(FileD* parent)
 
 XKey::XKey(const XKey& orig)
 {
-	if (orig.Chain != nullptr) Chain = new XKey(*orig.Chain);
+	//TODO: if (orig.Chain != nullptr) Chain = new XKey(*orig.Chain);
 	parent_ = orig.parent_;
-	//if (orig.KFlds != nullptr) KFlds = new KeyFldD(*orig.KFlds, copyFlds);
+	//TODO: if (orig.KFlds != nullptr) KFlds = new KeyFldD(*orig.KFlds, copyFlds);
 	KFlds = orig.KFlds;
 	IntervalTest = orig.IntervalTest;
 	Duplic = orig.Duplic;
@@ -30,34 +30,6 @@ XKey::XKey(const XKey& orig)
 	IndexLen = orig.IndexLen;
 	NR = orig.NR;
 	Alias = orig.Alias;
-}
-
-XKey::XKey(FileD* parent, unsigned char* inputStr)
-{
-	parent_ = parent;
-	size_t index = 0;
-	Chain = reinterpret_cast<XKey*>(*(unsigned int*)&inputStr[index]); index += 4;
-	//TODO: KFlds = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
-	IntervalTest = *(bool*)&inputStr[index]; index++;
-	Duplic = *(bool*)&inputStr[index]; index++;
-	InWork = *(bool*)&inputStr[index]; index++;
-	IndexRoot = *(unsigned short*)&inputStr[index]; index += 2;
-	IndexLen = *(unsigned char*)&inputStr[index]; index++;
-	NR = *(int*)&inputStr[index]; index += 4;
-	// !!! TODO: jinak bude chybet ALIAS 
-	// Alias = reinterpret_cast<std::string*>(*(unsigned int*)&inputStr[index + 1]); index += 4;
-
-	//unsigned int DisplOrFrml = *(unsigned int*)&inputStr[index]; index += 4;
-	//if (DisplOrFrml > MaxTxtCols) {
-	//	// jedna se o ukazatel
-	//	Frml = reinterpret_cast<FrmlElem*>(DisplOrFrml);
-	//}
-	//else {
-	//	// jedna se o delku
-	//	Displ = DisplOrFrml;
-	//}
-	//Name[0] = inputStr[index]; index++;
-	//memcpy(&Name[1], &inputStr[index], Name[0]); index += Name[0];
 }
 
 /**
@@ -347,14 +319,6 @@ int XKey::RecNrToNr(FileD* file_d, int RecNr, void* record)
 	if (RecNrToPath(file_d, x, RecNr, record)) return PathToNr(file_d);
 	else return 0;
 }
-
-//bool XKey::FindNr(XString& X, int& IndexNr)
-//{
-//	int n;
-//	bool result = Search(X, false, n);
-//	IndexNr = PathToNr();
-//	return result;
-//}
 
 bool XKey::FindNr(FileD* file_d, std::string const X, int& IndexNr)
 {
