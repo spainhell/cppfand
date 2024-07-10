@@ -11,13 +11,16 @@ class XKey
 public:
 	XKey(FileD* parent);
 	XKey(const XKey& orig);
-	XKey(FileD* parent, unsigned char* inputStr);
-	//XKey* Chain = nullptr;
-	std::vector<KeyFldD*> KFlds;
-	bool IntervalTest = false, Duplic = false, InWork = false;
-	unsigned short IndexRoot = 0; unsigned char IndexLen = 0;
-	int NR = 0; // {used only by XWKey}
+
 	std::string Alias;
+	std::vector<KeyFldD*> KFlds;
+	bool IntervalTest = false;
+	bool Duplic = false;
+	bool InWork = false;
+	unsigned short IndexRoot = 0;
+	unsigned char IndexLen = 0;
+	int NR = 0; // { used only by XWKey }
+
 	XWFile* GetXFile(FileD* file_d);
 	int NRecs();
 	bool Search(FileD* file_d, XString& XX, bool AfterEqu, int& RecNr);

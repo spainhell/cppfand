@@ -1327,9 +1327,9 @@ bool EquKeys(std::vector<XKey*>& K1, std::vector<XKey*>& K2)
 			return false;
 		}
 		for (size_t j = 0; j < K1[i]->KFlds.size(); j++) {
-			if (   K1[i]->KFlds[j]->CompLex != K2[i]->KFlds[j]->CompLex
+			if (K1[i]->KFlds[j]->CompLex != K2[i]->KFlds[j]->CompLex
 				|| K1[i]->KFlds[j]->Descend != K2[i]->KFlds[j]->Descend
-				|| K1[i]->KFlds[j]->FldD->Name != K2[i]->KFlds[j]->FldD->Name) 
+				|| K1[i]->KFlds[j]->FldD->Name != K2[i]->KFlds[j]->FldD->Name)
 			{
 				return false;
 			}
@@ -1640,7 +1640,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr);
 				rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 			}
-				}
+		}
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
 			ChptTF->CompileAll = false;
 			ChptTF->CompileProc = false;
@@ -1659,7 +1659,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 		delete edit; edit = nullptr;
 		delete reader; reader = nullptr;
-			}
+	}
 	catch (std::exception& e) {
 		log->log(loglevel::EXCEPTION, "CompileRdb() exception: ", e.what());
 		result = false;
@@ -1678,7 +1678,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	}
 
 	return result;
-		}
+}
 
 void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 {
@@ -1968,7 +1968,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 
 	Finish_EditExecRdb(wasGraph, w);
 	return result;
-	}
+}
 
 void UpdateCat()
 {

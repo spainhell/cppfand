@@ -32,34 +32,6 @@ XKey::XKey(const XKey& orig)
 	Alias = orig.Alias;
 }
 
-XKey::XKey(FileD* parent, unsigned char* inputStr)
-{
-	parent_ = parent;
-	size_t index = 0;
-	//TODO: Chain = reinterpret_cast<XKey*>(*(unsigned int*)&inputStr[index]); index += 4;
-	//TODO: KFlds = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
-	IntervalTest = *(bool*)&inputStr[index]; index++;
-	Duplic = *(bool*)&inputStr[index]; index++;
-	InWork = *(bool*)&inputStr[index]; index++;
-	IndexRoot = *(unsigned short*)&inputStr[index]; index += 2;
-	IndexLen = *(unsigned char*)&inputStr[index]; index++;
-	NR = *(int*)&inputStr[index]; index += 4;
-	// !!! TODO: jinak bude chybet ALIAS 
-	// Alias = reinterpret_cast<std::string*>(*(unsigned int*)&inputStr[index + 1]); index += 4;
-
-	//unsigned int DisplOrFrml = *(unsigned int*)&inputStr[index]; index += 4;
-	//if (DisplOrFrml > MaxTxtCols) {
-	//	// jedna se o ukazatel
-	//	Frml = reinterpret_cast<FrmlElem*>(DisplOrFrml);
-	//}
-	//else {
-	//	// jedna se o delku
-	//	Displ = DisplOrFrml;
-	//}
-	//Name[0] = inputStr[index]; index++;
-	//memcpy(&Name[1], &inputStr[index], Name[0]); index += Name[0];
-}
-
 /**
  * \brief Returns working or regular index file
  * \return Pointer to working or regular index file

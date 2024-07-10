@@ -1041,17 +1041,21 @@ XKey* RdFileOrAlias1(FileD* F)
 	if (F->Keys.empty()) return nullptr;
 
 	std::string lw = LexWord;
+	XKey* result = nullptr;
 
 	if (!EquUpCase(F->Name, lw)) {
 		for (XKey* k : F->Keys) {
 			if (EquUpCase(k->Alias, lw)) {
-				return k;
+				result = k;
 				break;
 			}
 		}
 	}
+	else {
+		result = F->Keys[0];
+	}
 
-	return nullptr;
+	return result;
 }
 
 void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD)
