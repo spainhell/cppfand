@@ -970,25 +970,20 @@ void WithWindowProc(Instr_window* PD)
 
 void WithLockedProc(Instr_withshared* PD)
 {
-	LockD* ld;
-	int w1;
 	WORD msg;
 	pstring ntxt(10);
 	LockMode md;
 	PInstrCode op = PD->Kind;
 	if (op == PInstrCode::_withlocked) {
-		ld = &PD->WLD;
-		while (ld != nullptr) {
+		for (LockD* ld : PD->WLD) {
 			ld->N = RunInt(CFile, ld->Frml, CRecPtr);
-			ld = ld->Chain;
 		}
 	}
 	int w = 0;
 
-	ld = &PD->WLD;
-
-	while (ld != nullptr) {
-		CFile = ld->FD;
+	std::vector<LockD*>::iterator it = PD->WLD.begin();
+	while (it != PD->WLD.end()) {
+		CFile = (*it)->FD;
 		if (CFile->FF->Handle == nullptr) {
 			if (OpenF1(CFile, CPath, Shared)) {
 				if (CFile->TryLockMode(RdMode, md, 2)) {
@@ -1006,35 +1001,35 @@ void WithLockedProc(Instr_withshared* PD)
 		}
 		if (CFile->FF->IsShared()) {
 			if (op == PInstrCode::_withlocked) {
-				if (CFile->Lock(ld->N, 2)) {
-					ld = ld->Chain;
+				if (CFile->Lock((*it)->N, 2)) {
+					++it;
 					continue;
 				}
 			}
 			else {
-				if (CFile->TryLockMode(ld->Md, ld->OldMd, 2)) {
-					ld = ld->Chain;
+				if (CFile->TryLockMode((*it)->Md, (*it)->OldMd, 2)) {
+					++it;
 					continue;
 				}
 			}
 		label2:
-			UnLck(PD, ld, op);
+			UnLck(PD, *it, op);
 			if (PD->WasElse) {
 				RunInstr(PD->WElseInstr);
 				return;
 			}
-			CFile = ld->FD;
+			CFile = (*it)->FD;
 			SetPathAndVolume(CFile);
 			if (op == PInstrCode::_withlocked) {
 				msg = 839;
-				str(ld->N, ntxt);
+				str((*it)->N, ntxt);
 				SetMsgPar(ntxt, CPath);
 			}
 			else {
 				msg = 825;
-				SetMsgPar(CPath, LockModeTxt[ld->Md]);
+				SetMsgPar(CPath, LockModeTxt[(*it)->Md]);
 			}
-			w1 = PushWrLLMsg(msg, false);
+			int w1 = PushWrLLMsg(msg, false);
 			if (w == 0) {
 				w = w1;
 			}
@@ -1043,11 +1038,10 @@ void WithLockedProc(Instr_withshared* PD)
 			}
 			Beep();
 			KbdTimer(spec.NetDelay, 0);
-			ld = &PD->WLD;
+			it = PD->WLD.begin();
 			continue;
 		}
-		//label3:
-		ld = ld->Chain;
+		++it;
 	}
 
 
@@ -1201,8 +1195,9 @@ void RecallRecProc(Instr_recs* PD)
 
 void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 {
-	LockD* ld = &PD->WLD;
-	while (ld != Ld1) {
+	//LockD* ld = &PD->WLD;
+	//while (ld != Ld1) {
+	for (LockD* ld : PD->WLD) {
 		CFile = ld->FD;
 		if (ld->FD->FF->IsShared()) {
 			if (Op == PInstrCode::_withlocked) {
@@ -1210,7 +1205,7 @@ void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 			}
 			ld->FD->OldLockMode(ld->OldMd);
 		}
-		ld = ld->Chain;
+		//ld = ld->Chain;
 	}
 }
 
