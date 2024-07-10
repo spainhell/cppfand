@@ -355,7 +355,7 @@ public:
 	std::vector<Instr*> WDoInstr;
 	std::vector<Instr*> WElseInstr;
 	bool WasElse = false;
-	LockD WLD;
+	std::vector<LockD*> WLD;
 };
 
 class Instr_graph : public Instr

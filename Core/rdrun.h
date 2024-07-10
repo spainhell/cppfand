@@ -225,7 +225,6 @@ struct WrLnD
 
 struct LockD
 {
-	LockD* Chain = nullptr;
 	FileD* FD = nullptr;
 	FrmlElem* Frml = nullptr;
 	LockMode Md, OldMd;

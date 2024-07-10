@@ -2803,7 +2803,9 @@ Instr_assign* RdAssign()
 
 Instr* RdWith()
 {
-	Instr* P = nullptr; Instr* p2 = nullptr; PInstrCode Op;
+	Instr* P = nullptr;
+	PInstrCode Op;
+
 	if (g_compiler->IsKeyWord("WINDOW")) {
 		P = new Instr_window(); //GetPInstr(_window, 29);
 		auto iP = (Instr_window*)P;
@@ -2831,10 +2833,12 @@ Instr* RdWith()
 		Op = PInstrCode::_withlocked;
 	label1:
 		P = new Instr_withshared(Op);
-		auto iP = (Instr_withshared*)P;
-		LockD* ld = &iP->WLD;
+		Instr_withshared* iP = (Instr_withshared*)P;
 
 		while (true) {
+			LockD* ld = new LockD();
+			iP->WLD.push_back(ld);
+
 			ld->FD = g_compiler->RdFileName();
 			if (Op == PInstrCode::_withlocked) {
 				g_compiler->Accept('[');
@@ -2855,8 +2859,6 @@ Instr* RdWith()
 			}
 			if (Lexem == ',') {
 				g_compiler->RdLex();
-				ld->Chain = new LockD();
-				ld = ld->Chain;
 				continue;
 			}
 			break;
