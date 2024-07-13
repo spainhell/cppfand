@@ -350,38 +350,51 @@ void wwmix::DisplWw()
 	char c;
 	TextAttr = screen.colors.sNorm;
 	WORD max = sv.Base + sv.WwSize - 1;
-	if (sv.Base > 1) c = '';
-	else c = ' ';
+
+	c = sv.Base > 1 ? '' : ' ';
+
 	screen.ScrWrChar(WindMin.X, WindMin.Y, c, TextAttr);
-	if (max >= sv.NItems) c = ' ';
-	else c = '';
+
+	c = max >= sv.NItems ? ' ' : '';
+
 	screen.ScrWrChar(WindMax.X, WindMax.Y, c, TextAttr);
+
 	for (WORD i = sv.Base; i <= max; i++) {
 		WriteItem(i);
 	}
+
 	SetAttr(screen.colors.sHili);
 }
 
 void wwmix::Right()
 {
-	IVOff();
-	sv.iItem++;
-	if (sv.iItem >= sv.Base + sv.WwSize) {
-		sv.Base += sv.Tabs;
-		DisplWw();
+	if (sv.iItem < sv.NItems) {
+		IVOff();
+		sv.iItem++;
+
+		if (sv.iItem >= sv.Base + sv.WwSize) {
+			sv.Base += sv.Tabs;
+			DisplWw();
+		}
+		else {
+			IVOn();
+		}
 	}
-	else IVOn();
 }
 
 void wwmix::Left()
 {
 	if (sv.iItem > 1) {
-		IVOff(); sv.iItem--;
+		IVOff();
+		sv.iItem--;
+
 		if (sv.iItem < sv.Base) {
 			sv.Base -= sv.Tabs;
 			DisplWw();
 		}
-		else IVOn();
+		else {
+			IVOn();
+		}
 	}
 }
 
@@ -390,11 +403,14 @@ void wwmix::Down()
 	if (sv.iItem + sv.Tabs <= sv.NItems) {
 		IVOff();
 		sv.iItem += sv.Tabs;
+
 		if (sv.iItem >= sv.Base + sv.WwSize) {
 			sv.Base += sv.Tabs;
 			DisplWw();
 		}
-		else IVOn();
+		else {
+			IVOn();
+		}
 	}
 }
 
@@ -403,11 +419,14 @@ void wwmix::Up()
 	if (sv.iItem > sv.Tabs) {
 		IVOff();
 		sv.iItem -= sv.Tabs;
+
 		if (sv.iItem < sv.Base) {
 			sv.Base -= sv.Tabs;
 			DisplWw();
 		}
-		else IVOn();
+		else {
+			IVOn();
+		}
 	}
 }
 
