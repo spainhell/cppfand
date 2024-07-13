@@ -41,7 +41,7 @@ void Report::Read(RprtOpt* RO)
 	//if ((RO != nullptr) && (RO->FDL.FD != nullptr)) {
 	//	FDL = &RO->FDL;
 	//}
-	if ((*FDL)->FD != nullptr) {
+	if (FDL != RO->FDL.end() && (*FDL)->FD != nullptr) {
 		++FDL;
 	}
 	ResetLVBD();

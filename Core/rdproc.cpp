@@ -1773,8 +1773,13 @@ Instr* RdReportCall()
 	}
 	while (Lexem == ',') {
 		g_compiler->RdLex();
-		RprtFDListEl* FDL = RO->FDL[RO->FDL.size() - 1]; // last element
-		RdRprtOpt(RO, (has_first && (FDL->LVRecPtr == nullptr)));
+		if (has_first) {
+			RprtFDListEl* FDL = RO->FDL[RO->FDL.size() - 1]; // last element
+			RdRprtOpt(RO, FDL->LVRecPtr == nullptr);
+		}
+		else {
+			RdRprtOpt(RO, false);
+		}
 	}
 	if ((RO->Mode == _ALstg) && ((!RO->Ctrl.empty()) || (!RO->Sum.empty()))) {
 		RO->Mode = _ARprt;
