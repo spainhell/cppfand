@@ -37,9 +37,12 @@ void Report::Read(RprtOpt* RO)
 	CBlkSave = nullptr;
 	PgeSizeZ = nullptr;
 	PgeLimitZ = nullptr;
-	RprtFDListEl* FDL = nullptr;
-	if ((RO != nullptr) && (RO->FDL.FD != nullptr)) {
-		FDL = &RO->FDL;
+	std::vector<RprtFDListEl*>::iterator FDL = RO->FDL.begin();
+	//if ((RO != nullptr) && (RO->FDL.FD != nullptr)) {
+	//	FDL = &RO->FDL;
+	//}
+	if ((*FDL)->FD != nullptr) {
+		++FDL;
 	}
 	ResetLVBD();
 	if (g_compiler->IsKeyWord("VAR")) {
@@ -111,15 +114,17 @@ void Report::Read(RprtOpt* RO)
 					report_compiler->OldError(26);
 				}
 			}
-			if ((FDL != nullptr)) {
+			if (FDL != RO->FDL.end()) {
 				//CFile = FDL->FD;
 				//FD = CFile;
-				FD = FDL->FD;
-				report_compiler->processing_F = FDL->FD;
+				FD = (*FDL)->FD;
+				report_compiler->processing_F = (*FDL)->FD;
 			}
 			CViewKey = report_compiler->RdViewKey(FD);
-			if ((FDL != nullptr)) {
-				if (FDL->ViewKey != nullptr) CViewKey = FDL->ViewKey;
+			if (FDL != RO->FDL.end()) {
+				if ((*FDL)->ViewKey != nullptr) {
+					CViewKey = (*FDL)->ViewKey;
+				}
 			}
 			if (Lexem == '!') {
 				report_compiler->RdLex();
@@ -145,19 +150,22 @@ void Report::Read(RprtOpt* RO)
 				report_compiler->Accept(')');
 			}
 
-			if ((FDL != nullptr) && (FDL->LVRecPtr == nullptr) &&
-				((FDL->Cond != nullptr) || (!FDL->KeyIn.empty()) || (Ii == 1) && RO->UserCondQuest)) {
-				ID->Bool = RunEvalFrml(FD, FDL->Cond, FD->FF->RecPtr);
-				KI = FDL->KeyIn;
-				ID->SQLFilter = FDL->SQLFilter;
+			if ((FDL != RO->FDL.end())
+				&& ((*FDL)->LVRecPtr == nullptr)
+				&&
+				((*FDL)->Cond != nullptr || (!(*FDL)->KeyIn.empty()) || (Ii == 1) && RO->UserCondQuest))
+			{
+				ID->Bool = RunEvalFrml(FD, (*FDL)->Cond, FD->FF->RecPtr);
+				KI = (*FDL)->KeyIn;
+				ID->SQLFilter = (*FDL)->SQLFilter;
 				if (Ii == 1) {
 					SelQuest = RO->UserCondQuest;
 				}
 			}
 
 			ID->Scan = new XScan(FD, CViewKey, KI, true);
-			if ((FDL != nullptr) && (FDL->LVRecPtr != nullptr)) {
-				ID->Scan->ResetLV(FDL->LVRecPtr);
+			if ((FDL != RO->FDL.end()) && ((*FDL)->LVRecPtr != nullptr)) {
+				ID->Scan->ResetLV((*FDL)->LVRecPtr);
 			}
 			if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
 				report_compiler->RdKFList(ID->MFld, FD);
@@ -175,8 +183,8 @@ void Report::Read(RprtOpt* RO)
 			}
 			RdAutoSortSK(ID, report_compiler);
 			report_compiler->TestLex('#');
-			if (FDL != nullptr) {
-				FDL = FDL->Chain;
+			if (FDL != RO->FDL.end()) {
+				++FDL;
 			}
 			// report_compiler destroys itself here
 		}

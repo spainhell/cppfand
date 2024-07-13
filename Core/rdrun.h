@@ -95,7 +95,7 @@ struct InpD
 enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
 struct RprtFDListEl
 {
-	RprtFDListEl* Chain = nullptr;
+	//RprtFDListEl* Chain = nullptr;
 	FileD* FD = nullptr;
 	XKey* ViewKey = nullptr;
 	FrmlElem* Cond = nullptr;
@@ -106,7 +106,7 @@ struct RprtFDListEl
 
 struct RprtOpt
 {
-	RprtFDListEl FDL;
+	std::vector<RprtFDListEl*> FDL;
 	std::string Path;
 	WORD CatIRec = 0;
 	bool UserSelFlds = false, UserCondQuest = false, FromStr = false, SyntxChk = false;
