@@ -1,4 +1,6 @@
 #include "Merge.h"
+#include "InpD.h"
+#include "ConstListEl.h"
 #include "../Common/compare.h"
 #include "../Core/Compiler.h"
 #include "../Core/FieldDescr.h"

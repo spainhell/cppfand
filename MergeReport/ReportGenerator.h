@@ -1,4 +1,5 @@
 #pragma once
+#include "RprtOpt.h"
 #include "../Core/base.h"
 #include "../Core/rdrun.h"
 

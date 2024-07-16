@@ -2,6 +2,7 @@
 #include "../rdrun.h"
 #include "../Graph.h"
 #include "../EditOpt.h"
+#include "../../MergeReport/RprtOpt.h"
 
 enum class PInstrCode
 {

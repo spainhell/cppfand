@@ -1,9 +1,11 @@
 #include "MergeReportBase.h"
+
+#include "InpD.h"
 #include "../Core/Compiler.h"
 #include "../Core/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
-#include "../Core/RunFrml.h""
+#include "../Core/RunFrml.h"
 
 MergeReportBase::MergeReportBase()
 {

@@ -6,6 +6,7 @@
 #include "../Core/RunFrml.h"
 #include "../Core/EditOpt.h"
 #include "../Core/rdrun.h"
+#include "../MergeReport/RprtOpt.h"
 
 enum class FieldType;
 class FieldDescr;
