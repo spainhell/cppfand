@@ -528,14 +528,10 @@ void Report::ChainSumEl()
 bool Report::FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF)
 {
 	bool first = true;
-	auto result = false;
+	bool result = false;
 label1:
 	while (L != nullptr) {
-		//BlkD* B1 = L->Ft;
-		//while (B1 != nullptr) {
 		for (BlkD* B1 : L->Ft) {
-			//RFldD* RF1 = B1->RFD;
-			//while (RF1 != nullptr) {
 			for (RFldD* rf : B1->ReportFields) {
 				std::string sLexWord = LexWord;
 				if ((Lexem == _identifier) && EquUpCase(rf->Name, sLexWord)) {
@@ -545,9 +541,7 @@ label1:
 					*B = B1;
 					return result;
 				}
-				//RF1 = (RFldD*)RF1->pChain;
 			}
-			//B1 = (BlkD*)B1->pChain;
 		}
 		L = L->ChainBack;
 	}

@@ -858,6 +858,32 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 	return file_d;
 }
 
+void ReadAndAddKey(FileD* file_d, std::string alias_name)
+{
+	XKey* K = new XKey(file_d);
+	file_d->Keys.push_back(K);
+
+	K->Alias = alias_name;
+	K->IntervalTest = false;
+	K->Duplic = false;
+	if (Lexem == _le) {
+		K->IntervalTest = true;
+		g_compiler->RdLex();
+	}
+	else if (Lexem == '*') {
+#ifdef FandSQL
+		if (file_d->typSQLFile) Error(155);
+#endif
+		K->Duplic = true;
+		g_compiler->RdLex();
+	}
+	K->IndexRoot = file_d->Keys.size();
+	K->IndexLen = g_compiler->RdKFList(K->KFlds, file_d);
+	if (K->IndexLen > MaxIndexLen) {
+		g_compiler->OldError(105);
+	}
+}
+
 void RdKeyD(FileD* file_d)
 {
 	FieldDescr* F = nullptr;
@@ -868,135 +894,102 @@ void RdKeyD(FileD* file_d)
 	LinkD* L = nullptr;
 	XKey* K = nullptr;
 	XKey* K1 = nullptr;
-	pstring Name;
-	WORD N = 0;
+	std::string name;
 
 	g_compiler->RdLex();
+
 	if (Lexem == '@') {
-		if (!file_d->Keys.empty() || file_d->IsParFile) g_compiler->Error(26);
+		if (!file_d->Keys.empty() || file_d->IsParFile) {
+			g_compiler->Error(26);
+		}
 		g_compiler->RdLex();
 		if (Lexem == '@') {
 			g_compiler->RdLex();
 			file_d->IsParFile = true;
 		}
 		else {
-			Name = "";
+			name = "";
 		label1:
-			if (file_d->Keys.empty()) {
-				N = 1;
-				K = new XKey(file_d);
-				file_d->Keys.push_back(K);
-			}
-			else {
-				K1 = file_d->Keys[0];
-				N = file_d->Keys.size() + 2;
-				/*while (K1->Chain != nullptr) {
-					K1 = K1->Chain;
-					N++;
-				}*/
-				K = new XKey(file_d);
-				//K1->Chain = K;
-				file_d->Keys.push_back(K);
-			}
-
-			K->Alias = Name;
-			K->IntervalTest = false;
-			K->Duplic = false;
-			if (Lexem == _le) {
-				K->IntervalTest = true;
-				g_compiler->RdLex();
-			}
-			else if (Lexem == '*') {
-#ifdef FandSQL
-				if (file_d->typSQLFile) Error(155);
-#endif
-				K->Duplic = true;
-				g_compiler->RdLex();
-			}
-			K->IndexRoot = N;
-			K->IndexLen = g_compiler->RdKFList(K->KFlds, file_d);
-			if (K->IndexLen > MaxIndexLen) {
-				g_compiler->OldError(105);
-			}
+			ReadAndAddKey(file_d, name);
 		}
-		goto label6;
-	}
-label2:
-	g_compiler->TestIdentif();
-	Name = LexWord;
-	g_compiler->SkipBlank(false);
-	if (ForwChar == '(') {
-		g_compiler->RdLex();
-		g_compiler->RdLex();
-		if (Lexem == '@') {
-			CheckDuplAlias(file_d, Name);
-			g_compiler->RdLex();
-			g_compiler->Accept(')');
-			goto label1;
-		}
-		RdFileOrAlias(file_d, &FD, &K);
-		g_compiler->Accept(')');
 	}
 	else {
-		RdFileOrAlias(file_d, &FD, &K);
-	}
-
-	L = g_compiler->FindLD(file_d, Name);
-	if (L != nullptr) {
-		g_compiler->OldError(26);
-	}
-
-	L = new LinkD();
-	L->RoleName = Name;
-	L->FromFD = file_d;
-	L->ToFD = FD;
-	L->ToKey = K;
-	LinkDRoot.push_front(L);
-
-	if (Lexem == '!') {
-		if (file_d->FF->file_type != FileType::INDEX
-#ifdef FandSQL
-			&& !file_d->typSQLFile
-#endif
-			) g_compiler->Error(108);
-		if (K->Duplic) {
-			g_compiler->Error(153);
-		}
-		g_compiler->RdLex();
-		L->MemberRef = 1;
-		if (Lexem == '!') {
+	label2:
+		g_compiler->TestIdentif();
+		name = LexWord;
+		g_compiler->SkipBlank(false);
+		if (ForwChar == '(') {
 			g_compiler->RdLex();
-			L->MemberRef = 2;
+			g_compiler->RdLex();
+			if (Lexem == '@') {
+				CheckDuplAlias(file_d, name);
+				g_compiler->RdLex();
+				g_compiler->Accept(')');
+				goto label1;
+			}
+			RdFileOrAlias(file_d, &FD, &K);
+			g_compiler->Accept(')');
+		}
+		else {
+			RdFileOrAlias(file_d, &FD, &K);
+		}
+
+		L = g_compiler->FindLD(file_d, name);
+		if (L != nullptr) {
+			g_compiler->OldError(26);
+		}
+
+		L = new LinkD();
+		L->RoleName = name;
+		L->FromFD = file_d;
+		L->ToFD = FD;
+		L->ToKey = K;
+		LinkDRoot.push_front(L);
+
+		if (Lexem == '!') {
+			if (file_d->FF->file_type != FileType::INDEX
+#ifdef FandSQL
+				&& !file_d->typSQLFile
+#endif
+				) g_compiler->Error(108);
+			if (K->Duplic) {
+				g_compiler->Error(153);
+			}
+			g_compiler->RdLex();
+			L->MemberRef = 1;
+			if (Lexem == '!') {
+				g_compiler->RdLex();
+				L->MemberRef = 2;
+			}
+		}
+		//Arg = &L->Args;
+		KF = K->KFlds.begin();
+
+		while (true) {
+			F = g_compiler->RdFldName(file_d);
+			if (F->field_type == FieldType::TEXT) g_compiler->OldError(84);
+			arg = new KeyFldD();
+			arg->FldD = F;
+			arg->CompLex = (*KF)->CompLex;
+			arg->Descend = (*KF)->Descend;
+			L->Args.push_back(arg);
+
+			F2 = (*KF)->FldD;
+			if (F->field_type != F2->field_type || F->field_type != FieldType::DATE
+				&& F->L != F2->L || F->field_type == FieldType::FIXED
+				&& F->M != F2->M) {
+				g_compiler->OldError(12);
+			}
+
+			++KF; // = KF->pChain;
+			if (KF != K->KFlds.end()) {
+				g_compiler->Accept(',');
+				continue;
+			}
+			break;
 		}
 	}
-	//Arg = &L->Args;
-	KF = K->KFlds.begin();
 
-	while (true) {
-		F = g_compiler->RdFldName(file_d);
-		if (F->field_type == FieldType::TEXT) g_compiler->OldError(84);
-		arg = new KeyFldD();
-		arg->FldD = F;
-		arg->CompLex = (*KF)->CompLex;
-		arg->Descend = (*KF)->Descend;
-		L->Args.push_back(arg);
-
-		F2 = (*KF)->FldD;
-		if (F->field_type != F2->field_type || F->field_type != FieldType::DATE 
-			&& F->L != F2->L || F->field_type == FieldType::FIXED 
-			&& F->M != F2->M) {
-			g_compiler->OldError(12);
-		}
-
-		++KF; // = KF->pChain;
-		if (KF != K->KFlds.end()) {
-			g_compiler->Accept(',');
-			continue;
-		}
-		break;
-	}
-
-label6:
 	if (Lexem == ';') {
 		g_compiler->RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
