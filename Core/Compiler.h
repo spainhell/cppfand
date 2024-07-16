@@ -3,6 +3,7 @@
 #include "../Common/pstring.h"
 #include "rdrun.h"
 #include "../MergeReport/MergeReportBase.h"
+#include "../MergeReport/RprtOpt.h"
 
 class Compiler;
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr

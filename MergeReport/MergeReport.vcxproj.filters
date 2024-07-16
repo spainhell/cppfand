@@ -30,6 +30,24 @@
     <ClInclude Include="BlkD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RprtFDListEl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RprtOpt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InpD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OutpRD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstListEl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RFldD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Report.cpp">
@@ -46,6 +64,9 @@
     </ClCompile>
     <ClCompile Include="BlkD.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OutpFD.h">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

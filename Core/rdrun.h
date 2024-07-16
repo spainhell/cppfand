@@ -8,8 +8,11 @@
 #include "models/FrmlElem.h"
 #include "../fandio/XScan.h"
 #include "../MergeReport/BlkD.h"
+#include "../MergeReport/ConstListEl.h"
 
 
+struct OutpRD;
+struct OutpFD;
 struct LvDescr;
 class Instr;
 class Instr_proc;
@@ -35,104 +38,8 @@ struct AssignD
 	std::vector<AssignD*> ElseInstr;
 };
 
-struct OutpFD
-{
-	FileD* FD = nullptr;
-	LockMode Md = NullMode;
-	void* RecPtr = nullptr;
-	FileD* InplFD = nullptr;
-	bool Append = false;
-#ifdef FandSQL
-	SQLStreamPtr Strm;
-#endif
-};
-
-struct OutpRD
-{
-	OutpFD* OD = nullptr; /*nullptr=dummy*/
-	FrmlElem* Bool = nullptr;
-	std::vector<AssignD*> Ass;
-};
-
-struct ConstListEl
-{
-	std::string S;
-	double R = 0;
-	bool B = false;
-};
-
-struct InpD
-{
-	XScan* Scan = nullptr;
-	bool AutoSort = false;
-	std::vector<KeyFldD*> SK;
-	LockMode Md = NullMode;
-	int IRec = 0;
-	void* ForwRecPtr = nullptr;
-	FrmlElem* Bool = nullptr;
-	bool SQLFilter = false;
-	std::vector<KeyFldD*> MFld;
-	std::vector<FrmlElemSum*> *Sum = nullptr;
-	bool Exist = false;
-	char Op = '\0';
-	double Count = 0.0;
-	std::vector<ChkD*> Chk;
-	char OpErr = '\0';
-	bool Error = false;
-	char OpWarn = '\0';
-	bool Warning = false;
-	FrmlElemString* ErrTxtFrml = nullptr;
-	std::vector<KeyFldD*> SFld;                /* only Report */
-	std::vector<ConstListEl> OldSFlds;
-	LvDescr* FrstLvS = nullptr;
-	LvDescr* LstLvS = nullptr;		/* FrstLvS->Ft=DE */
-	bool IsInplace = false;              /* only Merge */
-	std::vector<OutpRD*> RD;
-};
 
 /* Report */
-
-enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
-struct RprtFDListEl
-{
-	RprtFDListEl* Chain = nullptr;
-	FileD* FD = nullptr;
-	XKey* ViewKey = nullptr;
-	FrmlElem* Cond = nullptr;
-	std::vector<KeyInD*> KeyIn;
-	bool SQLFilter = false;
-	void* LVRecPtr = nullptr;
-};
-
-struct RprtOpt
-{
-	RprtFDListEl FDL;
-	std::string Path;
-	WORD CatIRec = 0;
-	bool UserSelFlds = false, UserCondQuest = false, FromStr = false, SyntxChk = false;
-	FrmlElem* Times = nullptr;
-	AutoRprtMode Mode = _ALstg;
-	RdbPos RprtPos;
-	std::vector<FieldDescr*> Flds;  // !empty => autoreport
-	std::vector<FieldDescr*> Ctrl;
-	std::vector<FieldDescr*> Sum;
-	std::vector<KeyFldD*> SK;
-	FrmlElem* WidthFrml = nullptr, *Head = nullptr;
-	WORD Width = 0;
-	std::string CondTxt;
-	std::string HeadTxt;
-	char Style = '\0';
-	bool Edit = false, PrintCtrl = false;
-};
-
-struct RFldD
-{
-	char FrmlTyp = '\0';    
-	char Typ = '\0'; /*rdb,F,D,T*/
-	bool BlankOrWrap = false; /*long date "DD.MM.YYYY"*/
-	FrmlElem* Frml = nullptr;
-	std::string Name; /*curr. length*/
-};
 
 struct LvDescr {
 	LvDescr* Chain = nullptr;

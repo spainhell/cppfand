@@ -28,14 +28,13 @@ ReportGenerator::~ReportGenerator()
 
 void ReportGenerator::RunAutoReport(RprtOpt* RO)
 {
-	void* p = nullptr; void* p1 = nullptr;
-	p1 = RO->FDL.FD->FF->RecPtr;
+	void* p1 = RO->FDL[0]->FD->FF->RecPtr;
 	std::string txt = GenAutoRprt(RO, true);
 	g_compiler->SetInpStdStr(txt, false);
 	std::unique_ptr report = std::make_unique<Report>();
 	report->Read(RO);
 	report->Run(RO);
-	RO->FDL.FD->FF->RecPtr = p1;
+	RO->FDL[0]->FD->FF->RecPtr = p1;
 }
 
 bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
@@ -55,7 +54,7 @@ bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 
 	RO->Mode = (AutoRprtMode)(N - 1);
 
-	CFile = RO->FDL.FD;
+	CFile = RO->FDL[0]->FD;
 
 	if (RO->Mode == _ARprt || RO->Mode == _ATotal) {
 		for (auto& f : RO->Flds) {
@@ -128,7 +127,7 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	}
 
 	RprtOpt* ro = g_compiler->GetRprtOpt();
-	ro->FDL.FD = fd;
+	ro->FDL[0]->FD = fd;
 	//FieldDescr* f = fd->FldD.front();
 
 	//while (f != nullptr) {
@@ -250,7 +249,7 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 {
 	std::string s;
 
-	CFile = RO->FDL.FD;
+	CFile = RO->FDL[0]->FD;
 	ARMode = RO->Mode;
 	NLevels = RO->Ctrl.size();
 	PFldDs.clear();

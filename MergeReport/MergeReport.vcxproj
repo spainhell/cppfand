@@ -20,13 +20,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlkD.h" />
+    <ClInclude Include="ConstListEl.h" />
+    <ClInclude Include="InpD.h" />
+    <ClInclude Include="OutpRD.h" />
     <ClInclude Include="ReportGenerator.h" />
     <ClInclude Include="Merge.h" />
     <ClInclude Include="Report.h" />
     <ClInclude Include="MergeReportBase.h" />
+    <ClInclude Include="RFldD.h" />
+    <ClInclude Include="RprtFDListEl.h" />
+    <ClInclude Include="RprtOpt.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BlkD.cpp" />
+    <ClCompile Include="OutpFD.h" />
     <ClCompile Include="ReportGenerator.cpp" />
     <ClCompile Include="Merge.cpp" />
     <ClCompile Include="Report.cpp" />

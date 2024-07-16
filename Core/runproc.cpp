@@ -134,7 +134,7 @@ void PromptAutoRprt(RprtOpt* RO)
 	Move(RO, RO2, sizeof(*RO));
 	//FieldList FL = RO->Flds;
 	//while (FL != nullptr) {
-	for (auto& f : RO->Flds) {
+	for (FieldDescr* f : RO->Flds) {
 		//FieldDescr* F = FL->FldD;
 		if ((f->Flg & f_Stored) != 0) ww.PutSelect(f->Name);
 		else {
@@ -143,10 +143,10 @@ void PromptAutoRprt(RprtOpt* RO)
 		}
 		//FL = (FieldList)FL->pChain;
 	}
-	CFile = RO->FDL.FD;
+	CFile = RO->FDL[0]->FD;
 	if (!ww.SelFieldList(CFile, 36, true, RO2->Flds)) return;
-	if ((RO->FDL.Cond == nullptr) &&
-		!ww.PromptFilter("", &RO2->FDL.Cond, &RO2->CondTxt)) return;
+	if ((RO->FDL[0]->Cond == nullptr) &&
+		!ww.PromptFilter("", &RO2->FDL[0]->Cond, &RO2->CondTxt)) return;
 
 	const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
 	if (auto_report->SelForAutoRprt(RO2)) {

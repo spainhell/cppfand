@@ -1680,7 +1680,6 @@ void RdEditOpt(EditOpt* EO, FileD* file_d)
 Instr* RdReportCall()
 {
 	LocVar* lv = nullptr;
-	RprtFDListEl* FDL = nullptr;
 	Instr_report* PD = new Instr_report();
 	g_compiler->RdLex();
 	RprtOpt* RO = g_compiler->GetRprtOpt();
@@ -1690,7 +1689,6 @@ Instr* RdReportCall()
 
 	if (Lexem != ',') {
 		has_first = true;
-		FDL = &RO->FDL;
 		bool b = false;
 		if (Lexem == '(') {
 			g_compiler->RdLex();
@@ -1698,6 +1696,9 @@ Instr* RdReportCall()
 		}
 
 		while (true) {
+			RprtFDListEl* FDL = new RprtFDListEl();
+			RO->FDL.push_back(FDL);
+
 			if (IsRecVar(&lv)) {
 				FDL->LVRecPtr = lv->record;
 				FDL->FD = lv->FD;
@@ -1714,21 +1715,21 @@ Instr* RdReportCall()
 					g_compiler->Accept(')');
 				}
 			}
+
 			if (b && (Lexem == ',')) {
 				g_compiler->RdLex();
-				FDL->Chain = new RprtFDListEl();
-				FDL = FDL->Chain;
 				continue;
 			}
+
 			break;
 		}
 
 		if (b) {
 			g_compiler->Accept(')');
 		}
-		processing_file = RO->FDL.FD;
+		processing_file = RO->FDL[0]->FD;
 		g_compiler->processing_F = processing_file;
-		CViewKey = RO->FDL.ViewKey;
+		CViewKey = RO->FDL[0]->ViewKey;
 	}
 
 	g_compiler->Accept(',');
@@ -1772,7 +1773,13 @@ Instr* RdReportCall()
 	}
 	while (Lexem == ',') {
 		g_compiler->RdLex();
-		RdRprtOpt(RO, (has_first && (FDL->LVRecPtr == nullptr)));
+		if (has_first) {
+			RprtFDListEl* FDL = RO->FDL[RO->FDL.size() - 1]; // last element
+			RdRprtOpt(RO, FDL->LVRecPtr == nullptr);
+		}
+		else {
+			RdRprtOpt(RO, false);
+		}
 	}
 	if ((RO->Mode == _ALstg) && ((!RO->Ctrl.empty()) || (!RO->Sum.empty()))) {
 		RO->Mode = _ARprt;
@@ -1825,7 +1832,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 				return;
 			}
 		}
-		RO->FDL.Cond = g_compiler->RdKeyInBool(RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter, nullptr);
+		RO->FDL[0]->Cond = g_compiler->RdKeyInBool(RO->FDL[0]->KeyIn, true, true, RO->FDL[0]->SQLFilter, nullptr);
 		N = OldErrPos - Low;
 		RO->CondTxt = std::string((const char*)&InpArrPtr[Low], N);
 

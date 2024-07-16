@@ -3220,17 +3220,17 @@ void DataEditor::AutoReport()
 	void* p = nullptr; RprtOpt* RO = nullptr;
 	FileUseMode UM = Closed;
 	MarkStore(p); RO = g_compiler->GetRprtOpt();
-	RO->FDL.FD = file_d_;
+	RO->FDL[0]->FD = file_d_;
 	RO->Flds = edit_->Flds;
 	if (params_->Select) {
-		RO->FDL.Cond = edit_->Bool;
+		RO->FDL[0]->Cond = edit_->Bool;
 		RO->CondTxt = edit_->BoolTxt;
 	}
 	if (params_->Subset) {
-		RO->FDL.ViewKey = WK;
+		RO->FDL[0]->ViewKey = WK;
 	}
 	else if (HasIndex) {
-		RO->FDL.ViewKey = VK;
+		RO->FDL[0]->ViewKey = VK;
 	}
 	PrintView = false;
 	const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
@@ -4628,8 +4628,8 @@ void DataEditor::StartRprt(RprtOpt* RO)
 		k->OneRecIdx(file_d_, unused, AbsRecNr(CRec()), record_);
 	}
 
-	RO->FDL.FD = file_d_;
-	RO->FDL.ViewKey = k;
+	RO->FDL[0]->FD = file_d_;
+	RO->FDL[0]->ViewKey = k;
 	ReportProc(RO, false);
 	file_d_ = edit_->FD;
 	record_ = edit_->NewRecPtr;
