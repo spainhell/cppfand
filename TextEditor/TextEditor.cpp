@@ -3190,7 +3190,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 				}
 				case __F1: {
 					ReadMessage(6);
-					Help((RdbD*)HelpFD, MsgLine, false);
+					Help(CRdb, MsgLine, false);
 				label2:
 					if (!Loc) {
 						// RdPart();

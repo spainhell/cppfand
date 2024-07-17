@@ -1,16 +1,16 @@
-#include "XKey.h"
 #include <memory>
 
 #include "files.h"
+#include "XKey.h"
+#include "XPage.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
 #include "../Core/obaseww.h"
 #include "../fandio/FandXFile.h"
-#include "XPage.h"
 #include "../Logging/Logging.h"
 #include "../pascal/asm.h"
-#include "../Common/compare.h"
+
 
 XKey::XKey(FileD* parent)
 {
@@ -61,7 +61,7 @@ bool XKey::Search(FileD* file_d, std::string const X, bool AfterEqu, int& RecNr)
 	XItem* x = nullptr;
 	size_t iItemIndex = 0;
 	char result = '\0';
-	auto p = std::make_unique<XPage>();
+	std::unique_ptr<XPage> p = std::make_unique<XPage>();
 	XPathN = 1;
 	int page = IndexRoot;
 	AfterEqu = AfterEqu && Duplic;
@@ -86,12 +86,14 @@ bool XKey::Search(FileD* file_d, std::string const X, bool AfterEqu, int& RecNr)
 
 		if (p->IsLeaf) {
 			x = new XItemLeaf(&p->A[iItemIndex]);
+
 			if (iItem > nItems) {
 				RecNr = parent_->FF->NRecs + 1;
 			}
 			else {
 				RecNr = x->GetN();
 			}
+
 			if (result == _equ) {
 				if (((RecNr == 0) || (RecNr > parent_->FF->NRecs))) {
 					GetXFile(file_d)->Err(833);
@@ -103,18 +105,21 @@ bool XKey::Search(FileD* file_d, std::string const X, bool AfterEqu, int& RecNr)
 			else {
 				searchResult = false;
 			}
+
 			delete x; x = nullptr;
 			return searchResult;
 		}
 		else {
 			x = new XItemNonLeaf(&p->A[iItemIndex]);
 		}
+
 		if (iItem > nItems) {
 			page = p->GreaterPage;
 		}
 		else {
 			page = ((XItemNonLeaf*)x)->DownPage;
 		}
+
 		XPathN++;
 		delete x; x = nullptr;
 	}
@@ -128,7 +133,7 @@ bool XKey::SearchInterval(FileD* file_d, XString& XX, bool AfterEqu, int& RecNr)
 int XKey::PathToNr(FileD* file_d)
 {
 	int n = 0;
-	auto p = std::make_unique<XPage>();
+	std::unique_ptr<XPage> p = std::make_unique<XPage>();
 	
 	for (unsigned short j = 1; j <= XPathN - 1; j++) {
 		GetXFile(file_d)->RdPage(p.get(), XPath[j].Page);
