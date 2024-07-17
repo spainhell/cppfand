@@ -100,7 +100,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 			s = GetHlpText(R, name, byName, iRec);
 			FileD* cf2 = CFile;
 			if (s.empty()) {
-				if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == __CTRL_F1)) {
+				if (frst && (R->help_file == HelpFD) && (KbdChar == __CTRL_F1)) {
 					KbdChar = 0;
 					name = "Ctrl-F1 error";
 					byName = true;
