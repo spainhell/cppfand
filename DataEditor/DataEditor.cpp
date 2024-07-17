@@ -5016,7 +5016,7 @@ label81:
 			case __F1: {
 				// index napovedy
 				std::string msg = ReadMessage(7);
-				Help(CRdb, msg, false);
+				FandHelp(HelpFD, msg, false);
 				break;
 			}
 			case __CTRL_F1: {

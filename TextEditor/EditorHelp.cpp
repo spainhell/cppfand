@@ -16,6 +16,14 @@ const BYTE maxStk = 15;
 WORD iStk = 0;
 struct structStk { RdbD* Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
 
+
+void FandHelp(FileD* help_file, const std::string& name, bool InCWw)
+{
+	std::unique_ptr<RdbD> R = std::make_unique<RdbD>();
+	R->help_file = help_file;
+	Help(R.get(), name, InCWw);
+}
+
 void Help(RdbD* R, std::string name, bool InCWw)
 {
 	void* p = nullptr;
@@ -34,7 +42,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 		backw = false;
 	}
 
-	if (R == (RdbD*)HelpFD) {
+	if (R->help_file == HelpFD) {
 		fd = HelpFD;
 		if (HelpFD->FF->Handle == nullptr) {
 			WrLLF10Msg(57);
@@ -51,12 +59,8 @@ void Help(RdbD* R, std::string name, bool InCWw)
 	int w = 0, w2 = 0;
 
 	try {
-		FileD* cf2;
 		bool byName;
-		bool frst;
 		WORD l;
-		short delta;
-		WORD i;
 		WORD oldIRec;
 		std::string s2;
 		WORD iRec;
@@ -75,9 +79,9 @@ void Help(RdbD* R, std::string name, bool InCWw)
 		else {
 			w = PushW(1, 1, TxtCols, TxtRows, true, true);
 		}
-		i = 1;
-		frst = true;
-		delta = 0;
+		uint16_t i = 1;
+		bool frst = true;
+		int16_t delta = 0;
 		if (backw) {
 			byName = false;
 			if (iStk > 0) {
@@ -94,7 +98,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 
 		while (true) {
 			s = GetHlpText(R, name, byName, iRec);
-			cf2 = CFile;
+			FileD* cf2 = CFile;
 			if (s.empty()) {
 				if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == __CTRL_F1)) {
 					KbdChar = 0;
@@ -114,14 +118,10 @@ void Help(RdbD* R, std::string name, bool InCWw)
 					//view after 1. line
 					l = FindCtrlM(s, 0, 1);
 					l = SkipCtrlMJ(s, l);
-					// char* newA = new char[s->LL - l];
-					// memcpy(newA, &s->A[l], s->LL - l);
-					s2 = s.substr(l, s.length() - l); // new LongStr(newA, s->LL - l);
+					s2 = s.substr(l, s.length() - l);
 				}
 				else {
-					// char* newA = new char[s->LL];
-					// memcpy(newA, s->A, s->LL);
-					s2 = s; // new LongStr(s->A, s->LL);
+					s2 = s;
 				}
 				if (s2.empty()) {
 					if (delta == 0) { /*goto label4*/
@@ -147,8 +147,6 @@ void Help(RdbD* R, std::string name, bool InCWw)
 				Stk[iStk].Rdb = R; Stk[iStk].FD = cf2;
 				Stk[iStk].iR = iRec; Stk[iStk].iT = i;
 				oldIRec = iRec; i = 1; delta = 0;
-				// ReleaseStore(s);
-				// ReleaseStore(s2);
 				CFile = cf2;
 
 				KbdChar = Event.Pressed.KeyCombination();
@@ -196,12 +194,15 @@ void Help(RdbD* R, std::string name, bool InCWw)
 	catch (std::exception& e) {
 		// TODO: log error
 	}
+
 	if (w2 != 0) {
 		PopW(w2);
 	}
+
 	if (w != 0) {
 		PopW(w);
 	}
+
 	ReleaseStore(&p);
 	CFile = cf;
 }
