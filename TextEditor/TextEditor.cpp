@@ -1129,7 +1129,7 @@ void TextEditor::UpdScreen()
 	else if (Mode == HelpM) {
 		//co1 = Part.ColorP;
 		co1 = SetColorOrd(this, 0, textIndex);
-		eScr->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 2, co1, ColKey, TxtColor, InsPage);
+		eScr->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 1, co1, ColKey, TxtColor, InsPage);
 	}
 	else {
 		eScr->EditWrline(Arr, 255, TextLineNr - ScreenFirstLineNr + 1, ColKey, TxtColor, BlockColor);
