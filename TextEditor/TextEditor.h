@@ -31,7 +31,6 @@ struct stEditorParams
 FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller);
 void BlockLRShift(WORD I1);
 void WrCharE(char Ch);
-bool WordExist();
 
 bool TestLastPos(WORD F, WORD T);
 WORD Position(WORD n);
@@ -85,7 +84,7 @@ extern bool Insert, Indent, Wrap, Just;
 extern short LeftMarg, RightMarg;
 extern WORD columnOffset, Colu, Row;
 extern bool InsPg, ChangePart, TypeB;
-extern WORD WordL, LastC, FirstC, FirstR, LastR;
+extern WORD LastC, FirstC, FirstR, LastR;
 extern bool UpdatedL;
 extern std::string FindStr, ReplaceStr;
 extern bool Replace, FirstEvent;
@@ -147,6 +146,7 @@ public:
 	char* _textT = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
 	size_t _lenT = 0;                     // delka editovaneho textu
 
+
 private:
 
 	TextEditorEvents* _events = nullptr;
@@ -157,7 +157,7 @@ private:
 	void DisplLL(WORD Flags);
 	void WrLLMargMsg(std::string& s, WORD n);
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
-	WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos);
+	WORD SetInd(WORD Ind, WORD Pos);
 	void SetBlockBound(int& BBPos, int& EBPos);
 	bool BlockHandle(int& fs, HANDLE W1, char Oper);
 	void BlockCopyMove(char Oper, void* P1, LongStr* sp);
@@ -190,7 +190,7 @@ private:
 	size_t GetLineStartIndex(size_t lineNr);
 	void CopyCurrentLineToArr(size_t Ind);
 	void DekFindLine(int Num);
-	bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI);
+	bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr);
 	void SetWord(WORD WB, WORD WE);
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
@@ -200,7 +200,7 @@ private:
 	void PredPart();
 	void MovePart(WORD Ind);
 	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
-	WORD GetLine(WORD idx);
+	size_t GetLine(size_t idx);
 	WORD CurrentLineFirstCharIndex(WORD index);
 	void NextPartDek();
 	void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last);
@@ -208,5 +208,7 @@ private:
 	bool ReadTextFile();
 	void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count);
 	void UpdateFile();
+	bool WordExist();
 	std::vector<std::string> GetLinesFromT();
+	size_t word_line;
 };

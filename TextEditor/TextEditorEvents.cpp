@@ -392,7 +392,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 	for (auto& X : ExitD) {
 		if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 			editor->TestKod();
-			IndexT = editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
+			IndexT = editor->SetInd(textIndex, positionOnActualLine);
 			ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
 			LastTxtPos = IndexT; // +Part.PosP;
 			TxtXY = ScrT + ((int)positionOnActualLine << 16);
@@ -495,10 +495,10 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 
 void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	wwmix wwmix1;
-	WORD I = 0, I1 = 0;
-	short I2 = 0, I3 = 0;
+	WORD I = 0;
+	size_t I1 = 0, I2 = 0, I3 = 0;
 	HANDLE F1 = nullptr;
-	WORD W1 = 0, W2 = 0;
+	size_t W1 = 0, W2 = 0;
 	int L1 = 0, L2 = 0, fs = 0;
 	stEditorParams ep;
 	std::string ss;
@@ -617,7 +617,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			switch (key) {
 			case __ENTER: {
 				if (mode == HelpM) {
-					Konec = WordExist();
+					Konec = editor->WordExist();
 					Event.Pressed.UpdateKey(key);
 				}
 				else {
@@ -746,10 +746,10 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				if (mode == HelpM) {
 					ScreenIndex = editor->GetLineStartIndex(ScreenFirstLineNr);
 					positionOnActualLine = Position(Colu);
-					if (editor->WordFind(editor->WordNo2() + 1, I1, I2, WordL) && WordExist()) {
+					if (editor->WordFind(editor->WordNo2() + 1, I1, I2, editor->word_line) && editor->WordExist()) {
 						editor->SetWord(I1, I2);
 					}
-					else { WordL = 0; }
+					else { editor->word_line = 0; }
 				}
 				else { BlockUDShift(L1); }
 				break;
@@ -786,15 +786,15 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					ScreenIndex = editor->GetLineStartIndex(ScreenFirstLineNr);
 					positionOnActualLine = Position(Colu);
 					W1 = editor->WordNo2();
-					I3 = WordL;
-					if (editor->WordFind(W1 + 1, I1, I2, WordL) && WordExist()) {
+					I3 = editor->word_line;
+					if (editor->WordFind(W1 + 1, I1, I2, editor->word_line) && editor->WordExist()) {
 						editor->SetWord(I1, I2);
 					}
-					else if (editor->WordFind(W1, I1, I2, WordL) && WordExist()) {
+					else if (editor->WordFind(W1, I1, I2, editor->word_line) && editor->WordExist()) {
 						editor->SetWord(I1, I2);
 					}
 					else {
-						WordL = 0;
+						editor->word_line = 0;
 					}
 				}
 				else {
@@ -1024,7 +1024,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				else {
 					L2 = AbsLenT /* - Part.LenP */ + editor->_lenT;
 					if (TestOptStr('g') || TestOptStr('e'))  L1 = 1;
-					else L1 = /* Part.PosP + */ editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
+					else L1 = /* Part.PosP + */ editor->SetInd(textIndex, positionOnActualLine);
 				}
 				editor->FindReplaceString(L1, L2);
 				if (key == _QA_) editor->DekodLine(textIndex);
@@ -1036,7 +1036,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					editor->TestKod();
 					if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
 					fs = 1;
-					L1 = /* Part.PosP + */ editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
+					L1 = /* Part.PosP + */ editor->SetInd(textIndex, positionOnActualLine);
 					if (TestOptStr('l')) editor->SetBlockBound(fs, L2);
 					else L2 = AbsLenT /* - Part.LenP */ + editor->_lenT;
 					if (L1 < fs)  L1 = fs;  // { if L1>=L2  goto Nic;}
@@ -1222,7 +1222,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					SetPartLine(blocks->EndBLn);
 					I2 = blocks->EndBLn; // -Part.LineP;
 					size_t nextLineIdx = editor->GetLineStartIndex(I2);
-					L1 = editor->SetInd(editor->_textT, editor->_lenT, nextLineIdx, blocks->EndBPos); // +Part.PosP;
+					L1 = editor->SetInd(nextLineIdx, blocks->EndBPos); // +Part.PosP;
 					L2 = blocks->BegBLn; positionOnActualLine = blocks->BegBPos;
 					SetPartLine(L2);
 					I2 = blocks->BegBLn; // -Part.LineP;
@@ -1252,7 +1252,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				do {
 					ss = std::to_string(positionOnActualLine);
 					if (MyPromptLL(410, ss)) goto Nic;
-					val(ss, I1, I);
+					//TODO: val(ss, I1, I);
 				} while (!((I1 < RightMarg) && (I1 > 0)));
 				LeftMarg = I1;
 				break;
@@ -1261,7 +1261,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				do {
 					ss = std::to_string(positionOnActualLine);
 					if (MyPromptLL(409, ss)) goto Nic;
-					val(ss, I1, I); // inc(I1);
+					//TODO: val(ss, I1, I); // inc(I1);
 				} while (!((I1 <= 255) && (LeftMarg < I1)));
 				RightMarg = I1;
 				break;
@@ -1419,7 +1419,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 		positionOnActualLine = Event.Where.X - WindMin.X + 1;
 		if (mode != TextM) positionOnActualLine = Position(positionOnActualLine);
 		positionOnActualLine += BPos;
-		I = editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
+		I = editor->SetInd(textIndex, positionOnActualLine);
 		if (I < editor->_lenT) {
 			if (mode == HelpM) {
 				ClrWord();
@@ -1429,7 +1429,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					Event.Pressed.UpdateKey('M');
 					Konec = true;
 				}
-				else if (WordExist()) {
+				else if (editor->WordExist()) {
 					editor->WordFind(W2, I1, I2, W1);
 					editor->SetWord(I1, I2);
 				}

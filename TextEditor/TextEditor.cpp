@@ -59,10 +59,10 @@ bool bScroll = false, FirstScroll = false, HelpScroll = false;
 int PredScLn = 0;
 WORD PredScPos = 0; // {pozice pred Scroll}
 BYTE FrameDir = 0;
-WORD WordL = 0; // {Mode=HelpM & ctrl-word is on screen}
+//WORD WordL = 0; // {Mode=HelpM & ctrl-word is on screen}
 bool Konec = false;
-WORD i1 = 0, i3 = 0;
-short i2 = 0;
+//WORD i1 = 0, i3 = 0;
+//short i2 = 0;
 // *** konec promennych
 
 const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
@@ -807,7 +807,7 @@ size_t TextEditor::CountChar(char* text, size_t text_len, char C, size_t first, 
  * \param idx - index 0 .. n
  * \return vraci cislo radku (1 .. N), ve kterem se nachazi index
  */
-WORD TextEditor::GetLine(WORD idx)
+size_t TextEditor::GetLine(size_t idx)
 {
 	return CountChar(_textT, _lenT, __CR, 0, idx) + 1;
 }
@@ -899,11 +899,11 @@ size_t TextEditor::GetLineNumber(size_t idx)
 	return line;
 }
 
-WORD TextEditor::SetInd(char* text, size_t len_text, WORD Ind, WORD Pos) // { line, pozice --> index}
+WORD TextEditor::SetInd(WORD Ind, WORD Pos) // { line, pozice --> index}
 {
 	WORD P = Ind == 0 ? 0 : Ind - 1;
-	if (Ind < len_text) {
-		while ((Ind - P < Pos) && (text[Ind - 1] != __CR)) { Ind++; }
+	if (Ind < _lenT) {
+		while ((Ind - P < Pos) && (_textT[Ind - 1] != __CR)) { Ind++; }
 	}
 	return Ind;
 }
@@ -1208,7 +1208,7 @@ void TextEditor::Background()
 	if (HelpScroll) {
 		WORD p = positionOnActualLine;
 		if (Mode == HelpM) {
-			if (WordL == TextLineNr) {
+			if (word_line == TextLineNr) {
 				while (Arr[p] != 0x11) {
 					p++;
 				}
@@ -2076,11 +2076,11 @@ void TextEditor::SetBlockBound(int& BBPos, int& EBPos)
 	SetPartLine(blocks->EndBLn);
 	short i = blocks->EndBLn; // -Part.LineP;
 	size_t nextLineIdx = GetLineStartIndex(i);
-	EBPos = SetInd(_textT, _lenT, nextLineIdx, blocks->EndBPos); // +Part.PosP;
+	EBPos = SetInd(nextLineIdx, blocks->EndBPos); // +Part.PosP;
 	SetPartLine(blocks->BegBLn);
 	i = blocks->BegBLn; // -Part.LineP;
 	nextLineIdx = GetLineStartIndex(i);
-	BBPos = SetInd(_textT, _lenT, nextLineIdx, blocks->BegBPos); // +Part.PosP;
+	BBPos = SetInd(nextLineIdx, blocks->BegBPos); // +Part.PosP;
 }
 
 void ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p)
@@ -2143,7 +2143,7 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 		WORD I2;
 		if (Oper == 'p') {
 			LL2 = AbsLenT + _lenT; // -Part.LenP;
-			LL1 = SetInd(_textT, _lenT, textIndex, positionOnActualLine); // +Part.PosP;
+			LL1 = SetInd(textIndex, positionOnActualLine); // +Part.PosP;
 		}
 		else {
 			SetBlockBound(LL1, LL2);
@@ -2695,9 +2695,9 @@ WORD TextEditor::WordNo(WORD I)
 	return (CountChar(_textT, _lenT, 0x13 /* ^S */, 1, MinW(_lenT, I)) + 1) / 2;
 }
 
-bool WordExist()
+bool TextEditor::WordExist()
 {
-	return (WordL >= ScreenFirstLineNr) && (WordL < ScreenFirstLineNr + PageS);
+	return (word_line >= ScreenFirstLineNr) && (word_line < ScreenFirstLineNr + PageS);
 }
 
 WORD TextEditor::WordNo2()
@@ -2706,7 +2706,7 @@ WORD TextEditor::WordNo2()
 	bool wExists = WordExist();
 
 	if (wExists) {
-		wNo = WordNo(SetInd(_textT, _lenT, textIndex, positionOnActualLine));
+		wNo = WordNo(SetInd(textIndex, positionOnActualLine));
 	}
 	else {
 		wNo = WordNo(ScreenIndex + 1);
@@ -2725,21 +2725,19 @@ void ClrWord()
 	//}
 }
 
-bool TextEditor::WordFind(WORD i, WORD& WB, short& WE, WORD& LI)
+bool TextEditor::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr)
 {
 	bool result = false;
 	if (i == 0) return result;
 	i = i * 2 - 1;
-	WORD k = FindCharPosition(_textT, _lenT, 0x13, i - 1);
-	if (k >= _lenT) return result;
-	WB = k - 1;
-	k++;
-	while (k < _lenT && _textT[k] != 0x13) {
-		k++;
-	}
-	if (k >= _lenT) return result;
-	WE = k;
-	LI = GetLine(WB) + 1;
+
+	word_begin = FindCharPosition(_textT, _lenT, 0x13, i - 1);
+	if (word_begin >= _lenT) return result;
+
+	word_end = FindCharPosition(_textT, _lenT, 0x13, word_begin + 1);
+	if (word_end >= _lenT) return result;
+
+	line_nr = GetLine(word_begin); // TODO: +1 ?;
 	result = true;
 	return result;
 }
@@ -2749,17 +2747,18 @@ void TextEditor::SetWord(WORD WB, WORD WE)
 	_textT[WB] = 0x11;
 	_textT[WE] = 0x11;
 	TextLineNr = GetLineNumber(WB);
-	WordL = TextLineNr;
+	word_line = TextLineNr;
 	positionOnActualLine = WB - textIndex + 1;
 	Colu = Column(positionOnActualLine);
 }
 
 void TextEditor::HelpLU(char dir)
 {
-	WORD I = 0, I1 = 0, h1 = 0, h2 = 0;
-	short I2 = 0;
+	size_t I = 0, I1 = 0, I2 = 0;
+	uint16_t h2 = 0;
 	ClrWord();
-	h1 = WordNo2();
+	uint16_t h1 = WordNo2();
+
 	if (dir == 'U') {
 		DekFindLine(TextLineNr - 1);
 		positionOnActualLine = Position(Colu);
@@ -2768,18 +2767,25 @@ void TextEditor::HelpLU(char dir)
 	else {
 		h2 = h1;
 	}
+
 	if (WordFind(h2, I1, I2, I) && (I >= ScreenFirstLineNr - 1)) {
 		SetWord(I1, I2);
 	}
 	else {
-		if (WordFind(h1 + 1, I1, I2, I) && (I >= ScreenFirstLineNr)) SetWord(I1, I2);
-		else { I1 = SetInd(_textT, _lenT, textIndex, positionOnActualLine); WordL = 0; }
+		if (WordFind(h1 + 1, I1, I2, I) && (I >= ScreenFirstLineNr)) {
+			SetWord(I1, I2);
+		}
+		else {
+			I1 = SetInd(textIndex, positionOnActualLine);
+			word_line = 0;
+		}
 		I = ScreenFirstLineNr - 1;
 	}
 	if (I <= ScreenFirstLineNr - 1) {
 		DekFindLine(ScreenFirstLineNr);
 		RollPred();
 	}
+
 	if (WordExist()) {
 		TextLineNr = GetLineNumber(I1);
 	}
@@ -2787,13 +2793,15 @@ void TextEditor::HelpLU(char dir)
 
 void TextEditor::HelpRD(char dir)
 {
-	WORD I = 0, I1 = 0, h1 = 0, h2 = 0;
-	short I2 = 0;
+	size_t I = 0, I1 = 0, I2 = 0;
+	uint16_t h2 = 0;
+	
 	ClrWord();
-	h1 = WordNo2();
+	uint16_t h1 = WordNo2();
 	if (WordExist()) {
 		h1++;
 	}
+
 	if (dir == 'D') {
 		NextLine(false);
 		positionOnActualLine = Position(Colu);
@@ -2804,6 +2812,7 @@ void TextEditor::HelpRD(char dir)
 	else {
 		h2 = h1 + 1;
 	}
+
 	if (WordFind(h2, I1, I2, I) && (I <= ScreenFirstLineNr + PageS)) {
 		SetWord(I1, I2);
 	}
@@ -2815,14 +2824,17 @@ void TextEditor::HelpRD(char dir)
 			SetWord(I1, I2);
 		}
 		else {
-			I1 = SetInd(_textT, _lenT, textIndex, positionOnActualLine); WordL = 0;
+			I1 = SetInd(textIndex, positionOnActualLine);
+			word_line = 0;
 		}
 		I = ScreenFirstLineNr + PageS;
 	}
+
 	if (I >= ScreenFirstLineNr + PageS) {
 		DekFindLine(ScreenFirstLineNr + PageS - 1);
 		RollNext();
 	}
+
 	if (WordExist()) {
 		TextLineNr = GetLineNumber(I1);
 	}
@@ -2897,10 +2909,14 @@ void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys
 	Konec = false;
 
 	if (Mode == HelpM) {
-		WordL = 0;
-		ScreenIndex = SetInd(_textT, _lenT, textIndex, positionOnActualLine) - 1;
-		if (WordFind(WordNo2() + 1, i1, i2, i3)) {
-			SetWord(i1, i2);
+		word_line = 0;
+		ScreenIndex = SetInd(textIndex, positionOnActualLine) - 1;
+		size_t begin_index;
+		size_t end_index;
+		size_t line_number;
+		uint16_t i = WordNo2() + 1;
+		if (WordFind(i, begin_index, end_index, line_number)) {
+			SetWord(begin_index, end_index);
 		}
 		if (!WordExist()) {
 			TextLineNr = GetLineNumber(IndexT);
@@ -2942,7 +2958,7 @@ void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys
 		textIndex = ScreenIndex;
 	}
 
-	IndexT = SetInd(_textT, _lenT, textIndex, positionOnActualLine);
+	IndexT = SetInd(textIndex, positionOnActualLine);
 	ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
 	if (Mode != HelpM) {
 		TxtXY = ScrT + ((int)positionOnActualLine << 16);
