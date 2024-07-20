@@ -605,7 +605,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					editor->SetPart(L1);
 					I = 1;
 					// TODO: tady se pouzivalo 'I' ve FindCharPosition, ale k cemu je???
-					I = editor->FindCharPosition(editor->_textT, editor->_lenT, 0xFF, 0);
+					I = editor->FindCharPosition(0xFF, 0);
 					editor->_textT[I] = W1;
 					TextLineNr = editor->GetLineNumber(I);
 					positionOnActualLine = I - textIndex + 1;
@@ -715,7 +715,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			case __PAGEUP: {
 				if (mode == HelpM) { editor->TestKod(); }
 				else {
-					ClrWord();
+					editor->ClrWord();
 					TextLineNr = ScreenFirstLineNr;
 				}
 				L1 = blocks->LineAbs(TextLineNr);
@@ -726,7 +726,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					TextLineNr = ScreenFirstLineNr;
 					editor->DekFindLine(blocks->LineAbs(TextLineNr));
 					positionOnActualLine = Position(Colu);
-					j = editor->CountChar(editor->_textT, editor->_lenT, 0x0C, textIndex, ScreenIndex);
+					j = editor->CountChar(0x0C, textIndex, ScreenIndex);
 					if ((j > 0) && InsPg) {
 						editor->DekFindLine(blocks->LineAbs(TextLineNr + j));
 						ScreenFirstLineNr = TextLineNr;
@@ -757,7 +757,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			case __PAGEDOWN: {
 				if (mode != HelpM) editor->TestKod();
 				else {
-					ClrWord();
+					editor->ClrWord();
 					TextLineNr = ScreenFirstLineNr;
 				}
 				L1 = blocks->LineAbs(TextLineNr);
@@ -768,7 +768,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					}
 					editor->DekFindLine(blocks->LineAbs(NewL(RScrL)));
 					positionOnActualLine = Position(Colu);
-					j = editor->CountChar(editor->_textT, editor->_lenT, 0x0C, ScreenIndex, textIndex);
+					j = editor->CountChar(0x0C, ScreenIndex, textIndex);
 					if ((j > 0) && InsPg) {
 						editor->DekFindLine(blocks->LineAbs(TextLineNr - j));
 					}
@@ -1422,7 +1422,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 		I = editor->SetInd(textIndex, positionOnActualLine);
 		if (I < editor->_lenT) {
 			if (mode == HelpM) {
-				ClrWord();
+				editor->ClrWord();
 				editor->WordFind(editor->WordNo(I + 1), I1, I2, W1);
 				if ((I1 <= I) && (I2 >= I)) {
 					editor->SetWord(I1, I2);

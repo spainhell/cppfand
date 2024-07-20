@@ -233,25 +233,23 @@ void HMsgExit(std::string s)
 /// <summary>
 /// Find N-th char position in the text
 /// </summary>
-/// <param name="text">input text</param>
-/// <param name="length">input text length</param>
 /// <param name="c">character to find</param>
 /// <param name="idx_from">start position 0..n</param>
 /// <param name="n">n-th occur 1..n</param>
 /// <returns>index of found character, input text length if not found</returns>
-size_t TextEditor::FindCharPosition(char* text, size_t length, char c, size_t idx_from, size_t n)
+size_t TextEditor::FindCharPosition(char c, size_t idx_from, size_t n)
 {
 	size_t result = std::string::npos; // as not found
 	for (size_t j = 0; j < n; j++) {
-		for (size_t i = idx_from; i < length; i++) {
-			if (text[i] == c) {
+		for (size_t i = idx_from; i < _lenT; i++) {
+			if (_textT[i] == c) {
 				result = i;
 				break;
 			}
 		}
 		idx_from = result + 1;
 	}
-	return result == std::string::npos ? length : result;
+	return result == std::string::npos ? _lenT : result;
 }
 
 bool TestOptStr(char c)
@@ -297,7 +295,7 @@ bool TextEditor::FindString(WORD& I, WORD Len)
 		if (TestOptStr('~')) i1 = FindOrdChar(c, I, Len);
 		else if (TestOptStr('u')) i1 = FindUpcChar(c, I, Len);
 		else {
-			i1 = FindCharPosition(_textT, Len, c, I);
+			i1 = FindCharPosition(c, I);
 		}
 		I = i1;
 		if (I + FindStr.length() > Len) {
@@ -787,13 +785,13 @@ void TextEditor::PredPart()
 
 /// Counts the number of occurrences of a character;
 /// 'first' & 'last' are 0 .. N
-size_t TextEditor::CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
+size_t TextEditor::CountChar(char C, size_t first, size_t last)
 {
 	size_t count = 0;
-	if (first < text_len) {
-		if (last >= text_len) last = text_len - 1;
+	if (first < _lenT) {
+		if (last >= _lenT) last = _lenT - 1;
 		for (size_t i = first; i <= last; i++) {
-			if (text[i] == C) count++;
+			if (_textT[i] == C) count++;
 		}
 	}
 	else {
@@ -809,7 +807,7 @@ size_t TextEditor::CountChar(char* text, size_t text_len, char C, size_t first, 
  */
 size_t TextEditor::GetLine(size_t idx)
 {
-	return CountChar(_textT, _lenT, __CR, 0, idx) + 1;
+	return CountChar(__CR, 0, idx) + 1;
 }
 
 // vraci index 1. znaku na aktualnim radku (index = 0 .. N)
@@ -838,7 +836,7 @@ WORD TextEditor::CurrentLineFirstCharIndex(WORD index)
 
 void TextEditor::DekodLine(size_t lineStartIndex)
 {
-	WORD lineLen = FindCharPosition(_textT, _lenT, __CR, lineStartIndex) - lineStartIndex;
+	WORD lineLen = FindCharPosition(__CR, lineStartIndex) - lineStartIndex;
 	HardL = true;
 	NextLineStartIndex = lineStartIndex + lineLen + 1; // 1 = CR
 
@@ -987,7 +985,7 @@ size_t TextEditor::GetLineStartIndex(size_t lineNr)
 	}
 	else {
 		// hledame pozici za n-tym vyskytem _CR
-		size_t pos = FindCharPosition(_textT, _lenT, __CR, 0, lineNr - 1) + 1;
+		size_t pos = FindCharPosition(__CR, 0, lineNr - 1) + 1;
 		// pokud je na nalezene pozici _LF, jdi o 1 dal
 		if (pos < _lenT && _textT[pos] == __LF) {
 			pos++;
@@ -1175,11 +1173,11 @@ void TextEditor::UpdScreen()
 			}
 			if (InsPage) {
 				// najde konec radku, potrebujeme 1. znak dalsiho radku
-				index = FindCharPosition(_textT, _lenT, 0x0C, index) + 1;
+				index = FindCharPosition(0x0C, index) + 1;
 			}
 			else {
 				// najde konec radku, potrebujeme 1. znak dalsiho radku
-				index = FindCharPosition(_textT, _lenT, __CR, index) + 1;
+				index = FindCharPosition(__CR, index) + 1;
 			}
 			WrEndL((index < _lenT) && (_textT[index] == __LF), r);
 			if (index < _lenT && _textT[index] == __LF) {
@@ -2692,7 +2690,7 @@ label1:
 
 WORD TextEditor::WordNo(WORD I)
 {
-	return (CountChar(_textT, _lenT, 0x13 /* ^S */, 1, MinW(_lenT, I)) + 1) / 2;
+	return (CountChar(0x13 /* ^S */, 1, MinW(_lenT, I)) + 1) / 2;
 }
 
 bool TextEditor::WordExist()
@@ -2715,14 +2713,17 @@ WORD TextEditor::WordNo2()
 	return wNo;
 }
 
-void ClrWord()
+void TextEditor::ClrWord()
 {
-	//WORD k = 0;
-	//k = FindCharPosition(_textT, _lenT, 0x11, k);
-	//while (k < _lenT) {
-	//	_textT[k] = 0x13;
-	//	k = FindCharPosition(_textT, _lenT, 0x11, k) + 1;
-	//}
+	size_t word_begin = FindCharPosition(0x11, 0);
+	if (word_begin < _lenT) {
+		_textT[word_begin] = 0x13;
+	}
+
+	size_t word_end = FindCharPosition(0x11, word_begin + 1);
+	if (word_end < _lenT) {
+		_textT[word_end] = 0x13;
+	}
 }
 
 bool TextEditor::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr)
@@ -2731,10 +2732,10 @@ bool TextEditor::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& 
 	if (i == 0) return result;
 	i = i * 2 - 1;
 
-	word_begin = FindCharPosition(_textT, _lenT, 0x13, i - 1);
+	word_begin = FindCharPosition(0x13, i - 1);
 	if (word_begin >= _lenT) return result;
 
-	word_end = FindCharPosition(_textT, _lenT, 0x13, word_begin + 1);
+	word_end = FindCharPosition(0x13, word_begin + 1);
 	if (word_end >= _lenT) return result;
 
 	line_nr = GetLine(word_begin); // TODO: +1 ?;

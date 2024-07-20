@@ -36,7 +36,6 @@ bool TestLastPos(WORD F, WORD T);
 WORD Position(WORD n);
 WORD Column(WORD p);
 void BlockUDShift(int L1);
-void ClrWord();
 bool ModPage(int RLine);
 int NewL(int RLine);
 
@@ -184,14 +183,15 @@ private:
 	void PreviousLine();
 	void FillBlank();
 	void DeleteLine();
-	size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last);
-	size_t FindCharPosition(char* text, size_t length, char c, size_t from, size_t n = 1);
+	size_t CountChar(char C, size_t first, size_t last);
+	size_t FindCharPosition(char c, size_t from, size_t n = 1);
 	size_t GetLineNumber(size_t Ind);
 	size_t GetLineStartIndex(size_t lineNr);
 	void CopyCurrentLineToArr(size_t Ind);
 	void DekFindLine(int Num);
 	bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr);
 	void SetWord(WORD WB, WORD WE);
+	void ClrWord();
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 	WORD WordNo(WORD I);
