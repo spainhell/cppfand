@@ -1,8 +1,9 @@
 #include "../Drivers/constants.h"
 #include "TextEditorScreen.h"
 
-TextEditorScreen::TextEditorScreen(size_t TextColumns, Blocks* blocks, std::string ctrlKey)
+TextEditorScreen::TextEditorScreen(TextEditor* editor, size_t TextColumns, Blocks* blocks, std::string ctrlKey)
 {
+	_editor = editor;
 	_textColumns = TextColumns;
 	_blocks = blocks;
 	_ctrlKey = ctrlKey;
@@ -27,7 +28,7 @@ void TextEditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BY
 	BYTE nv2;
 	bool IsCtrl = false;
 
-	WORD Line = pred(ScreenFirstLineNr + Row);
+	WORD Line = pred(_editor->ScreenFirstLineNr + Row);
 	if (_blocks->LineInBlock(Line) && (TypeB == TextBlock)) {
 		nv2 = BlockColor;
 	}

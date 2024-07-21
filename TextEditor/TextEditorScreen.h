@@ -7,7 +7,7 @@ typedef std::string ColorOrd;
 class TextEditorScreen
 {
 public:
-	TextEditorScreen(size_t TextColumns, Blocks* blocks, std::string ctrlKey);
+	TextEditorScreen(TextEditor* editor, size_t TextColumns, Blocks* blocks, std::string ctrlKey);
 	~TextEditorScreen();
 	void WriteEditLine(std::string& text_line, size_t row);
 	void WriteScrollLine(std::string& text_line, size_t offset, size_t row);
@@ -17,6 +17,7 @@ public:
 	BYTE Color(ColorOrd CO, BYTE ColKey[], BYTE TxtColor);
 
 private:
+	TextEditor* _editor;
 	size_t _textColumns;
 	Blocks* _blocks;
 	std::string _ctrlKey;

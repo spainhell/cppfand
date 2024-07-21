@@ -40,8 +40,6 @@ std::string CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
 // *** Promenne metody EDIT
 char Arr[SuccLineSize]{ '\0' };  // znaky pro 1 radek
 WORD NextLineStartIndex = 0;     // index prvniho znaku na dalsim radku
-short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
-short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 int RScrL = 0;
 bool UpdatedL = false, CtrlL = false;
 bool HardL = false; // actual line (Arr) ended with CRLF "\r\n" - otherwise only with CR "\r"
@@ -764,7 +762,7 @@ void TextEditor::WrEndT()
 	}
 }
 
-void MoveIdx(int dir)
+void TextEditor::MoveIdx(int dir)
 {
 	WORD mi = -dir; // *Part.MovI;
 	WORD ml = -dir; // *Part.MovL;
@@ -1079,7 +1077,7 @@ ColorOrd SetColorOrd(TextEditor* editor, size_t first, size_t last)
 		else {
 			co += editor->_textT[index];
 		}
-		index = FindCtrlChar(editor->_textT, editor->_lenT, index + 2, last);
+		index = FindCtrlChar(editor->_textT, editor->_lenT, index + 1, last);
 	}
 	return co;
 }
@@ -1092,7 +1090,7 @@ void TextEditor::UpdScreen()
 	pstring PgStr;
 
 	// create screen object
-	std::unique_ptr<TextEditorScreen> eScr = std::make_unique<TextEditorScreen>(TXTCOLS, blocks, CtrlKey);
+	std::unique_ptr<TextEditorScreen> eScr = std::make_unique<TextEditorScreen>(this, TXTCOLS, blocks, CtrlKey);
 
 	InsPage = false;
 	if (ChangeScr) {
@@ -1683,7 +1681,7 @@ void MoveB(WORD& B, WORD& F, WORD& T)
 	else if (B > T) B = T; B = MinW(B, GetArrLineLength() + 1);
 }
 
-bool TestLastPos(WORD F, WORD T)
+bool TextEditor::TestLastPos(WORD F, WORD T)
 {
 	WORD LP = GetArrLineLength();
 	if (F > LP) F = LP + 1;
@@ -1710,7 +1708,7 @@ bool TestLastPos(WORD F, WORD T)
 	else return false;
 }
 
-void DelChar()
+void TextEditor::DelChar()
 {
 	WORD LP = 0;
 	TestLastPos(positionOnActualLine + 1, positionOnActualLine);
@@ -1830,7 +1828,7 @@ WORD TextEditor::SetPredI()
 	else return CurrentLineFirstCharIndex(textIndex - 1);
 }
 
-void WrCharE(char Ch)
+void TextEditor::WrCharE(char Ch)
 {
 	if (Insert) {
 		if (TestLastPos(positionOnActualLine, positionOnActualLine + 1)) {
@@ -1981,7 +1979,7 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 	blocks->BegBLn = 1; blocks->BegBPos = 1; blocks->EndBLn = 1; blocks->EndBPos = 1; TypeB = TextBlock;
 }
 
-void Calculate()
+void TextEditor::Calculate()
 {
 	wwmix ww;
 	FrmlElem* Z = nullptr;
@@ -2013,7 +2011,9 @@ void Calculate()
 				WrLLF10Msg(419);
 				goto label1;
 			}
-			if (positionOnActualLine <= GetArrLineLength()) TestLastPos(positionOnActualLine, positionOnActualLine + txt.length());
+			if (positionOnActualLine <= GetArrLineLength()) {
+				TestLastPos(positionOnActualLine, positionOnActualLine + txt.length());
+			}
 			memcpy(&Arr[positionOnActualLine], txt.c_str(), txt.length());
 			UpdatedL = true;
 			goto label3;
@@ -2465,7 +2465,7 @@ void NewBlock1(WORD& I1, int& L2)
 	}
 }
 
-void BlockLRShift(WORD I1)
+void TextEditor::BlockLRShift(WORD I1)
 {
 	if (!bScroll && (Mode != HelpM) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
 	{
@@ -2505,7 +2505,7 @@ void NewBlock2(int& L1, int& L2)
 	}
 }
 
-void BlockUDShift(int L1)
+void  TextEditor::BlockUDShift(int L1)
 {
 	int L2;
 	if (!bScroll && (Mode != HelpM) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
@@ -2732,7 +2732,7 @@ bool TextEditor::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& 
 	if (i == 0) return result;
 	i = i * 2 - 1;
 
-	word_begin = FindCharPosition(0x13, i - 1);
+	word_begin = FindCharPosition(0x13, 0, i);
 	if (word_begin >= _lenT) return result;
 
 	word_end = FindCharPosition(0x13, word_begin + 1);
@@ -2743,13 +2743,13 @@ bool TextEditor::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& 
 	return result;
 }
 
-void TextEditor::SetWord(WORD WB, WORD WE)
+void TextEditor::SetWord(size_t word_begin, size_t word_end)
 {
-	_textT[WB] = 0x11;
-	_textT[WE] = 0x11;
-	TextLineNr = GetLineNumber(WB);
+	_textT[word_begin] = 0x11;
+	_textT[word_end] = 0x11;
+	TextLineNr = GetLineNumber(word_begin);
 	word_line = TextLineNr;
-	positionOnActualLine = WB - textIndex + 1;
+	positionOnActualLine = word_begin - textIndex + 1;
 	Colu = Column(positionOnActualLine);
 }
 
@@ -2916,14 +2916,18 @@ void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys
 		size_t end_index;
 		size_t line_number;
 		uint16_t i = WordNo2() + 1;
+
 		if (WordFind(i, begin_index, end_index, line_number)) {
 			SetWord(begin_index, end_index);
 		}
+
 		if (!WordExist()) {
 			TextLineNr = GetLineNumber(IndexT);
 			ScreenIndex = 0;
 		}
+
 	}
+
 	FillChar((char*)MargLL, sizeof(MargLL), 0);
 	//ColScr = Part.ColorP;
 	WrStatusLine();

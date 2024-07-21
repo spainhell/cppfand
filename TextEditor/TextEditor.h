@@ -29,13 +29,13 @@ struct stEditorParams
 
 
 FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller);
-void BlockLRShift(WORD I1);
-void WrCharE(char Ch);
 
-bool TestLastPos(WORD F, WORD T);
+
+
+
 WORD Position(WORD n);
 WORD Column(WORD p);
-void BlockUDShift(int L1);
+
 bool ModPage(int RLine);
 int NewL(int RLine);
 
@@ -45,15 +45,12 @@ WORD GetArrLineLength();
 
 
 bool MyPromptLL(WORD n, std::string& s);
-void DelChar();
-
 bool TestOptStr(char c);
 bool BlockExist();
 
 void SetPartLine(int Ln);
 void MyWrLLMsg(std::string s);
 void HMsgExit(std::string s);
-void Calculate();
 stEditorParams SaveParams();
 void RestoreParams(stEditorParams& editorParams);
 void OpenTxtFh(char Mode);
@@ -68,7 +65,6 @@ extern WORD MaxLenT, IndexT, ScrT;
 extern WORD ScreenIndex;
 extern WORD textIndex, positionOnActualLine, BPos;
 extern WORD NextLineStartIndex, PageS, LineS;
-extern short TextLineNr, ScreenFirstLineNr;
 extern int RScrL;
 extern bool Konec;
 extern bool EditT, ChangeScr;
@@ -124,6 +120,7 @@ class TextEditor
 {
 public:
 	friend class TextEditorEvents;
+	friend class TextEditorScreen;
 
 	TextEditor();
 	~TextEditor();
@@ -190,7 +187,7 @@ private:
 	void CopyCurrentLineToArr(size_t Ind);
 	void DekFindLine(int Num);
 	bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr);
-	void SetWord(WORD WB, WORD WE);
+	void SetWord(size_t word_begin, size_t word_end);
 	void ClrWord();
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
@@ -210,5 +207,15 @@ private:
 	void UpdateFile();
 	bool WordExist();
 	std::vector<std::string> GetLinesFromT();
-	size_t word_line;
+	void MoveIdx(int dir);
+	bool TestLastPos(WORD F, WORD T);
+	void DelChar();
+	void WrCharE(char Ch);
+	void Calculate();
+	void BlockLRShift(WORD I1);
+	void BlockUDShift(int L1);
+
+	size_t word_line = 0;
+	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
+	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 };
