@@ -1087,7 +1087,7 @@ void TextEditor::UpdScreen()
 	short r; // row number, starts from 1
 	ColorOrd co1;
 	WORD oldScreenIndex = ScreenIndex;
-	pstring PgStr;
+	std::string PgStr;
 
 	// create screen object
 	std::unique_ptr<TextEditorScreen> eScr = std::make_unique<TextEditorScreen>(this, TXTCOLS, blocks, CtrlKey);
@@ -1113,8 +1113,9 @@ void TextEditor::UpdScreen()
 	}
 	if (bScroll) {
 		// {tisk aktualniho radku}
-		FillChar(&PgStr[0], 255, CharPg);
-		PgStr[0] = 255;
+		PgStr = std::string(255, CharPg);
+		//FillChar(&PgStr[0], 255, CharPg);
+		//PgStr[0] = 255;
 		co1 = ColScr;
 		r = 0;
 		while (Arr[r] == 0x0C) {
@@ -1149,7 +1150,7 @@ void TextEditor::UpdScreen()
 
 		if (bScroll && (index < _lenT)) {
 			if ((InsPg && (ModPage(r - rr + RScrL - 1))) || InsPage) {
-				eScr->EditWrline((char*)&PgStr[1], _lenT, r, ColKey, TxtColor, BlockColor);
+				eScr->EditWrline(PgStr.c_str(), _lenT, r, ColKey, TxtColor, BlockColor);
 				WrEndL(false, r);
 				if (InsPage) rr++;
 				InsPage = false;
