@@ -788,7 +788,7 @@ size_t TextEditor::CountChar(char C, size_t first, size_t last)
 	size_t count = 0;
 	if (first < _lenT) {
 		if (last >= _lenT) last = _lenT - 1;
-		for (size_t i = first; i <= last; i++) {
+		for (size_t i = first; i < last; i++) {
 			if (_textT[i] == C) count++;
 		}
 	}
@@ -1089,9 +1089,6 @@ void TextEditor::UpdScreen()
 	WORD oldScreenIndex = ScreenIndex;
 	std::string PgStr;
 
-	// create screen object
-	std::unique_ptr<TextEditorScreen> eScr = std::make_unique<TextEditorScreen>(this, TXTCOLS, blocks, CtrlKey);
-
 	InsPage = false;
 	if (ChangeScr) {
 		if (ChangePart) {
@@ -1111,6 +1108,7 @@ void TextEditor::UpdScreen()
 			ColScr = SetColorOrd(this, 0, ScreenIndex);
 		}
 	}
+
 	if (bScroll) {
 		// {tisk aktualniho radku}
 		PgStr = std::string(255, CharPg);
@@ -1121,17 +1119,19 @@ void TextEditor::UpdScreen()
 		while (Arr[r] == 0x0C) {
 			r++;
 		}
-		eScr->ScrollWrline(&Arr[r], columnOffset, 1, co1, ColKey, TxtColor, InsPage);
+		_screen->ScrollWrline(&Arr[r], columnOffset, 1, co1, ColKey, TxtColor, InsPage);
 	}
 	else if (Mode == HelpM) {
 		//co1 = Part.ColorP;
 		co1 = SetColorOrd(this, 0, textIndex);
-		eScr->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 1, co1, ColKey, TxtColor, InsPage);
+		_screen->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 1, co1, ColKey, TxtColor, InsPage);
 	}
 	else {
-		eScr->EditWrline(Arr, 255, TextLineNr - ScreenFirstLineNr + 1, ColKey, TxtColor, BlockColor);
+		_screen->EditWrline(Arr, 255, TextLineNr - ScreenFirstLineNr + 1, ColKey, TxtColor, BlockColor);
 	}
+
 	WrEndL(HardL, TextLineNr - ScreenFirstLineNr + 1);
+
 	if (MyTestEvent()) return;
 
 	WORD index = ScreenIndex;
@@ -1140,17 +1140,19 @@ void TextEditor::UpdScreen()
 	WORD w = 1;
 	InsPage = false;
 	ColorOrd co2 = ColScr;
+
 	if (bScroll) {
 		while (_textT[index] == 0x0C) {
 			index++;
 		}
 	}
+
 	do {
 		if (MyTestEvent()) return; // {tisk celeho okna}
 
 		if (bScroll && (index < _lenT)) {
 			if ((InsPg && (ModPage(r - rr + RScrL - 1))) || InsPage) {
-				eScr->EditWrline(PgStr.c_str(), _lenT, r, ColKey, TxtColor, BlockColor);
+				_screen->EditWrline(PgStr.c_str(), _lenT, r, ColKey, TxtColor, BlockColor);
 				WrEndL(false, r);
 				if (InsPage) rr++;
 				InsPage = false;
@@ -1165,10 +1167,10 @@ void TextEditor::UpdScreen()
 		if (index < _lenT) {
 			// index je mensi nez delka textu -> porad je co tisknout
 			if (HelpScroll) {
-				eScr->ScrollWrline(&_textT[index], columnOffset, r, co2, ColKey, TxtColor, InsPage);
+				_screen->ScrollWrline(&_textT[index], columnOffset, r, co2, ColKey, TxtColor, InsPage);
 			}
 			else {
-				eScr->EditWrline(&_textT[index], _lenT, r, ColKey, TxtColor, BlockColor);
+				_screen->EditWrline(&_textT[index], _lenT, r, ColKey, TxtColor, BlockColor);
 			}
 			if (InsPage) {
 				// najde konec radku, potrebujeme 1. znak dalsiho radku
@@ -1184,7 +1186,7 @@ void TextEditor::UpdScreen()
 			}
 		}
 		else {
-			eScr->EditWrline(nullptr, 0, r, ColKey, TxtColor, BlockColor);
+			_screen->EditWrline(nullptr, 0, r, ColKey, TxtColor, BlockColor);
 			WrEndL(false, r);
 		}
 
@@ -2689,9 +2691,11 @@ label1:
 	/* BackGround; */
 }
 
-WORD TextEditor::WordNo(WORD I)
+size_t TextEditor::WordNo(size_t I)
 {
-	return (CountChar(0x13 /* ^S */, 1, MinW(_lenT, I)) + 1) / 2;
+	int32_t last_index = min(_lenT, I - 1);
+	size_t count = CountChar(0x13, 0, last_index); // ^S
+	return (count + 1) / 2;
 }
 
 bool TextEditor::WordExist()
@@ -2807,7 +2811,7 @@ void TextEditor::HelpRD(char dir)
 	if (dir == 'D') {
 		NextLine(false);
 		positionOnActualLine = Position(Colu);
-		while ((positionOnActualLine > 0) && (Arr[positionOnActualLine] != 0x13)) positionOnActualLine--;
+		while ((positionOnActualLine > 0) && (Arr[positionOnActualLine - 1] != 0x13)) positionOnActualLine--;
 		positionOnActualLine++;
 		h2 = MaxW(h1 + 1, WordNo2() + 1);
 	}
@@ -2999,12 +3003,16 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 TextEditor::TextEditor()
 {
 	this->_events = new TextEditorEvents();
+	this->_screen = new TextEditorScreen(this, TXTCOLS, blocks, CtrlKey);
 }
 
 TextEditor::~TextEditor()
 {
 	delete this->_events;
 	this->_events = nullptr;
+
+	delete this->_screen;
+	this->_screen = nullptr;
 }
 
 bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,

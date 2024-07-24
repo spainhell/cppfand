@@ -146,6 +146,7 @@ public:
 private:
 
 	TextEditorEvents* _events = nullptr;
+	TextEditorScreen* _screen = nullptr;
 
 	void Background();
 	void FindReplaceString(int First, int Last);
@@ -191,7 +192,7 @@ private:
 	void ClrWord();
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
-	WORD WordNo(WORD I);
+	size_t WordNo(size_t I);
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void UpdScreen();
 	void PredPart();

@@ -28,13 +28,18 @@ TextEditorEvents::~TextEditorEvents()
 
 void TextEditorEvents::CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 {
-	bool Ctrl = false;  WORD Delta = 0; WORD flgs = 0;
+	bool Ctrl = false;
+	WORD Delta = 0;
+	WORD flgs = 0;
 	//(*MyTestEvent 1; *)
+
 label1:
 	WaitEvent(Delta);
+
 	if (mode != HelpM) {
 		editor->ScrollPress();
 	}
+
 	if (LLKeyFlags != 0) {
 		// mouse
 		flgs = LLKeyFlags;
@@ -59,6 +64,7 @@ label1:
 		editor->WrLLMargMsg(LastS, LastNr);
 		Ctrl = false; Delta = 0;
 	}
+
 	/*      WaitEvent(Delta);*/
 	if (!(Event.What == evKeyDown || Event.What == evMouseDown))
 	{
@@ -66,6 +72,7 @@ label1:
 		if (!IsWrScreen) editor->Background();
 		goto label1;
 	}
+
 	if (flgs != 0) {
 		LLKeyFlags = 0;
 		editor->WrLLMargMsg(LastS, LastNr);
