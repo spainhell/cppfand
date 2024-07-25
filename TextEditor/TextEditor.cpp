@@ -2849,20 +2849,28 @@ void TextEditor::HelpRD(char dir)
 void CursorWord()
 {
 	std::set<char> O;
+	std::string word;
 
-	LexWord = "";
 	WORD pp = positionOnActualLine;
-	if (Mode == HelpM) O.insert(0x11);
+
+	if (Mode == HelpM) {
+		O.insert(0x11);
+	}
 	else {
 		O = Separ;
-		if (O.count(Arr[pp]) > 0) { pp--; }
+		if (O.count(Arr[pp - 1]) > 0) { pp--; }
 	}
-	while ((pp > 0) && !O.count(Arr[pp])) { pp--; }
+
+	while ((pp > 0) && !O.count(Arr[pp - 1])) { pp--; }
+
 	pp++;
-	while ((pp <= GetArrLineLength()) && !O.count(Arr[pp])) {
-		LexWord = LexWord + Arr[pp];
+
+	while ((pp <= GetArrLineLength()) && !O.count(Arr[pp - 1])) {
+		word += Arr[pp - 1];
 		pp++;
 	}
+
+	LexWord = word;
 }
 
 void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
@@ -2970,11 +2978,17 @@ void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys
 
 	IndexT = SetInd(textIndex, positionOnActualLine);
 	ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
+
 	if (Mode != HelpM) {
 		TxtXY = ScrT + ((int)positionOnActualLine << 16);
-		CursorWord();
-		if (Mode == HelpM) { ClrWord(); }
 	}
+
+	CursorWord();
+
+	if (Mode == HelpM) {
+		ClrWord();
+	}
+
 	screen.CrsHide();
 	screen.Window(MinC, MinR, MaxC, MaxR);
 	TestUpdFile();
