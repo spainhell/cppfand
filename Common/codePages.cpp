@@ -75,7 +75,7 @@ void ConvKamenToCurr(std::string& text, bool diacritic)
 
 	for (size_t i = 0; i < text.length(); i++) {
 		short index = (BYTE)text[i] - 0x80;
-		if (index > 0) {
+		if (index >= 0) {
 			BYTE kam = text[i];
 			BYTE lat = tab[kam];
 			text[i] = (char)lat;

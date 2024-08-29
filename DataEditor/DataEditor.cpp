@@ -3819,7 +3819,7 @@ label2:
 	case __ALT_F1: {
 		heslo = file_d_->loadS(ChptTyp, record_);
 	label3:
-		Help((RdbD*)HelpFD, heslo, false);
+		Help(CRdb, heslo, false);
 		goto label4;
 		break;
 	}
@@ -5015,8 +5015,8 @@ label81:
 			switch (Event.Pressed.KeyCombination()) {
 			case __F1: {
 				// index napovedy
-				ReadMessage(7);
-				Help((RdbD*)HelpFD, MsgLine, false);
+				std::string msg = ReadMessage(7);
+				FandHelp(HelpFD, msg, false);
 				break;
 			}
 			case __CTRL_F1: {

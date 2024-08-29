@@ -29,15 +29,13 @@ struct stEditorParams
 
 
 FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller);
-void BlockLRShift(WORD I1);
-void WrCharE(char Ch);
-bool WordExist();
 
-bool TestLastPos(WORD F, WORD T);
+
+
+
 WORD Position(WORD n);
 WORD Column(WORD p);
-void BlockUDShift(int L1);
-void ClrWord();
+
 bool ModPage(int RLine);
 int NewL(int RLine);
 
@@ -47,15 +45,12 @@ WORD GetArrLineLength();
 
 
 bool MyPromptLL(WORD n, std::string& s);
-void DelChar();
-
 bool TestOptStr(char c);
 bool BlockExist();
 
 void SetPartLine(int Ln);
 void MyWrLLMsg(std::string s);
 void HMsgExit(std::string s);
-void Calculate();
 stEditorParams SaveParams();
 void RestoreParams(stEditorParams& editorParams);
 void OpenTxtFh(char Mode);
@@ -70,7 +65,6 @@ extern WORD MaxLenT, IndexT, ScrT;
 extern WORD ScreenIndex;
 extern WORD textIndex, positionOnActualLine, BPos;
 extern WORD NextLineStartIndex, PageS, LineS;
-extern short TextLineNr, ScreenFirstLineNr;
 extern int RScrL;
 extern bool Konec;
 extern bool EditT, ChangeScr;
@@ -85,7 +79,7 @@ extern bool Insert, Indent, Wrap, Just;
 extern short LeftMarg, RightMarg;
 extern WORD columnOffset, Colu, Row;
 extern bool InsPg, ChangePart, TypeB;
-extern WORD WordL, LastC, FirstC, FirstR, LastR;
+extern WORD LastC, FirstC, FirstR, LastR;
 extern bool UpdatedL;
 extern std::string FindStr, ReplaceStr;
 extern bool Replace, FirstEvent;
@@ -126,6 +120,7 @@ class TextEditor
 {
 public:
 	friend class TextEditorEvents;
+	friend class TextEditorScreen;
 
 	TextEditor();
 	~TextEditor();
@@ -147,9 +142,11 @@ public:
 	char* _textT = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
 	size_t _lenT = 0;                     // delka editovaneho textu
 
+
 private:
 
 	TextEditorEvents* _events = nullptr;
+	TextEditorScreen* _screen = nullptr;
 
 	void Background();
 	void FindReplaceString(int First, int Last);
@@ -157,7 +154,7 @@ private:
 	void DisplLL(WORD Flags);
 	void WrLLMargMsg(std::string& s, WORD n);
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
-	WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos);
+	WORD SetInd(WORD Ind, WORD Pos);
 	void SetBlockBound(int& BBPos, int& EBPos);
 	bool BlockHandle(int& fs, HANDLE W1, char Oper);
 	void BlockCopyMove(char Oper, void* P1, LongStr* sp);
@@ -184,23 +181,24 @@ private:
 	void PreviousLine();
 	void FillBlank();
 	void DeleteLine();
-	size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last);
-	size_t FindCharPosition(char* text, size_t length, char c, size_t from, size_t n = 1);
+	size_t CountChar(char C, size_t first, size_t last);
+	size_t FindCharPosition(char c, size_t from, size_t n = 1);
 	size_t GetLineNumber(size_t Ind);
 	size_t GetLineStartIndex(size_t lineNr);
 	void CopyCurrentLineToArr(size_t Ind);
 	void DekFindLine(int Num);
-	bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI);
-	void SetWord(WORD WB, WORD WE);
+	bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr);
+	void SetWord(size_t word_begin, size_t word_end);
+	void ClrWord();
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
-	WORD WordNo(WORD I);
+	size_t WordNo(size_t I);
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void UpdScreen();
 	void PredPart();
 	void MovePart(WORD Ind);
 	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
-	WORD GetLine(WORD idx);
+	size_t GetLine(size_t idx);
 	WORD CurrentLineFirstCharIndex(WORD index);
 	void NextPartDek();
 	void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last);
@@ -208,5 +206,17 @@ private:
 	bool ReadTextFile();
 	void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count);
 	void UpdateFile();
+	bool WordExist();
 	std::vector<std::string> GetLinesFromT();
+	void MoveIdx(int dir);
+	bool TestLastPos(WORD F, WORD T);
+	void DelChar();
+	void WrCharE(char Ch);
+	void Calculate();
+	void BlockLRShift(WORD I1);
+	void BlockUDShift(int L1);
+
+	size_t word_line = 0;
+	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
+	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 };
