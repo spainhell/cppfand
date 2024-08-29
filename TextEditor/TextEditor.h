@@ -39,14 +39,12 @@ WORD Column(WORD p);
 bool ModPage(int RLine);
 int NewL(int RLine);
 
-int NewRL(int Line);
-
 WORD GetArrLineLength();
 
 
 bool MyPromptLL(WORD n, std::string& s);
 bool TestOptStr(char c);
-bool BlockExist();
+
 
 void SetPartLine(int Ln);
 void MyWrLLMsg(std::string s);
@@ -86,7 +84,7 @@ extern bool Replace, FirstEvent;
 extern pstring OptionStr;
 extern WORD MargLL[4];
 
-extern Blocks* blocks;
+//extern Blocks* blocks;
 
 
 extern std::set<char> Separ;
@@ -147,6 +145,7 @@ private:
 
 	TextEditorEvents* _events = nullptr;
 	TextEditorScreen* _screen = nullptr;
+	Blocks* blocks = nullptr;
 
 	void Background();
 	void FindReplaceString(int First, int Last);
@@ -215,6 +214,11 @@ private:
 	void Calculate();
 	void BlockLRShift(WORD I1);
 	void BlockUDShift(int L1);
+	int NewRL(int Line);
+	bool BlockExist();
+	bool ColBlockExist();
+	void NewBlock1(WORD& I1, int& L2);
+	void NewBlock2(int& L1, int& L2);
 
 	size_t word_line = 0;
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)

@@ -1,14 +1,16 @@
 #include "keyboard.h"
 #include <exception>
 
+const int buff_size = 128;
+
 Keyboard::Keyboard()
 {
 	_handle = GetStdHandle(STD_INPUT_HANDLE);
 	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console input handle."); }
-	_kbdBuf = new _INPUT_RECORD[128];
+	_kbdBuf = new _INPUT_RECORD[buff_size];
 	_actualIndex = 0;
 	_inBuffer = 0;
-	DWORD fdwMode = ENABLE_WINDOW_INPUT; // | ENABLE_MOUSE_INPUT;
+	DWORD fdwMode = ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
 	bool scm = SetConsoleMode(_handle, fdwMode);
 	if (!scm) { throw std::exception("Cannot set console input mode."); }
 }
@@ -31,7 +33,7 @@ bool Keyboard::Empty()
 
 size_t Keyboard::BufSize()
 {
-	return 128;
+	return buff_size;
 }
 
 void Keyboard::ClearBuf()
@@ -48,7 +50,7 @@ size_t Keyboard::ActualIndex()
 
 size_t Keyboard::FreeSpace()
 {
-	return 128 - _inBuffer;
+	return buff_size - _inBuffer;
 }
 
 bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
@@ -61,37 +63,70 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 		}
 		return true;
 	}
+
 	// pokud jsme na konci bufferu, nacteme jej znovu
 	if (_inBuffer == 0 || _actualIndex >= _inBuffer) {
 		// pokud nic neprislo, vratime false
 		_read();
 		if (_inBuffer == 0) return false;
 	}
-	// pokud udalost neni z klavesnice, jdeme na dalsi
-	while (_kbdBuf[_actualIndex].EventType != KEY_EVENT && _actualIndex < _inBuffer) {
-		_actualIndex++;
-	}
 
+	// pokud udalost neni z klavesnice, jdeme na dalsi
+	//while (_kbdBuf[_actualIndex].EventType != KEY_EVENT && _actualIndex < _inBuffer) {
+	//	_actualIndex++;
+	//}
+	while (_actualIndex < _inBuffer) {
+		bool key_or_mouse = false;
+
+		switch (_kbdBuf[_actualIndex].EventType) {
+		case KEY_EVENT:
+			key_or_mouse = true;
+			break;
+		case MOUSE_EVENT:
+			key_or_mouse = true;
+			break;
+		case WINDOW_BUFFER_SIZE_EVENT:
+			break;
+		case MENU_EVENT:
+			break;
+		case FOCUS_EVENT:
+			break;
+		default:;
+		}
+
+		if (key_or_mouse) {
+			break;
+		}
+		else {
+			_actualIndex++;
+		}
+	}
 	// narazili jsme na udalost z klavesnice, nebo tam zadna takova neni a jsme na konci?
 	if (_actualIndex == _inBuffer) {
 		return false;
 	}
-		
-	key = _kbdBuf[_actualIndex].Event.KeyEvent;
+
+	PINPUT_RECORD event = &_kbdBuf[_actualIndex];
 	if (!only_check) {
 		_actualIndex++;
 	}
 
+	if (event->EventType == MOUSE_EVENT) {
+		return false;
+	}
+	else {
+		key = event->Event.KeyEvent;
 
 #if _DEBUG
-	auto a = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC);
-	auto b = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK);
-	auto c = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
-	auto d = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK_EX);
-	auto e = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC_EX);
+		auto a = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC);
+		auto b = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK);
+		auto c = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
+		auto d = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK_EX);
+		auto e = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC_EX);
 #endif
-	
-	return true;
+
+		return true;
+	}
 }
 
 void Keyboard::DeleteKeyBuf()
@@ -279,7 +314,7 @@ void Keyboard::_read()
 	DWORD events_count;
 	GetNumberOfConsoleInputEvents(_handle, &events_count);
 	if (events_count > 0) {
-		ReadConsoleInput(_handle, _kbdBuf, 128, &_inBuffer);
+		ReadConsoleInput(_handle, _kbdBuf, buff_size, &_inBuffer);
 		_actualIndex = 0;
 	}
 	else {

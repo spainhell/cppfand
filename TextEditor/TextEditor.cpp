@@ -119,8 +119,6 @@ int AbsLenT = 0;
 bool ChangePart, UpdPHead;
 void RestorePar(int l);
 
-Blocks* blocks = nullptr;
-
 
 std::vector<std::string> TextEditor::GetLinesFromT()
 {
@@ -1287,7 +1285,7 @@ void TextEditor::TestKod()
 	if (UpdatedL) KodLine();
 }
 
-int NewRL(int Line)
+int TextEditor::NewRL(int Line)
 {
 	return blocks->LineAbs(Line);
 }
@@ -2065,7 +2063,7 @@ label3:
 	ReleaseStore(&p);
 }
 
-bool BlockExist()
+bool TextEditor::BlockExist()
 {
 	if (TypeB == TextBlock)
 		return (blocks->BegBLn < blocks->EndBLn) || (blocks->BegBLn == blocks->EndBLn) && (blocks->BegBPos < blocks->EndBPos);
@@ -2451,14 +2449,14 @@ void TextEditor::BlockCopyMove(char Oper, void* P1, LongStr* sp)
 	else if (BlockCGrasp(Oper, P1, sp)) { BlockCDrop(Oper, P1, sp); }
 }
 
-bool ColBlockExist()
+bool TextEditor::ColBlockExist()
 {
 	bool b = false;
 	if ((TypeB == ColBlock) && (blocks->BegBPos == blocks->EndBPos) && (blocks->BegBLn < blocks->EndBLn)) return true;
 	else return BlockExist();
 }
 
-void NewBlock1(WORD& I1, int& L2)
+void TextEditor::NewBlock1(WORD& I1, int& L2)
 {
 	if (I1 != positionOnActualLine) {
 		blocks->BegBLn = L2;
@@ -2500,7 +2498,7 @@ void TextEditor::BlockLRShift(WORD I1)
 	}
 }
 
-void NewBlock2(int& L1, int& L2)
+void TextEditor::NewBlock2(int& L1, int& L2)
 {
 	if (L1 != L2) {
 		blocks->BegBPos = positionOnActualLine; blocks->EndBPos = positionOnActualLine;
@@ -2508,7 +2506,7 @@ void NewBlock2(int& L1, int& L2)
 	}
 }
 
-void  TextEditor::BlockUDShift(int L1)
+void TextEditor::BlockUDShift(int L1)
 {
 	int L2;
 	if (!bScroll && (Mode != HelpM) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
@@ -2875,7 +2873,7 @@ void CursorWord()
 
 void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 {
-	blocks = new Blocks();
+	//blocks = new Blocks();
 	InitScr();
 	IsWrScreen = false;
 	WrEndT();
@@ -2993,8 +2991,8 @@ void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys
 	screen.Window(MinC, MinR, MaxC, MaxR);
 	TestUpdFile();
 
-	delete blocks;
-	blocks = nullptr;
+	//delete blocks;
+	//blocks = nullptr;
 }
 
 void TextEditor::SetEditTxt(Instr_setedittxt* PD)
@@ -3016,12 +3014,16 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 
 TextEditor::TextEditor()
 {
+	this->blocks = new Blocks();
 	this->_events = new TextEditorEvents();
 	this->_screen = new TextEditorScreen(this, TXTCOLS, blocks, CtrlKey);
 }
 
 TextEditor::~TextEditor()
 {
+	delete this->blocks;
+	this->blocks = nullptr;
+
 	delete this->_events;
 	this->_events = nullptr;
 
