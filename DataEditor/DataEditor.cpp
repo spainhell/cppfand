@@ -3428,18 +3428,23 @@ label1:
 		if (!WriteCRec(true, displ)) return result;
 		if (displ) DisplAllWwRecs();
 		else SetRecAttr(IRec);
-		if (params_->Only1Record)
+		if (params_->Only1Record) {
 			if (params_->NoESCPrompt) {
 				EdBreak = 0;
 				return false;
 			}
 			else {
 				params_->Append = false;
-				goto label3;
+				GotoRecFld(CRec(), OldCFld);
+				Beep(); Beep();
+				return result;
 			}
+		}
 		if (params_->OnlySearch) {
 			params_->Append = false;
-			goto label3;
+			GotoRecFld(CRec(), OldCFld);
+			Beep(); Beep();
+			return result;
 		}
 		if (params_->Append) AppendRecord(nullptr);
 		else {
@@ -3463,9 +3468,10 @@ label1:
 					Beep(); Beep();
 					return result;
 				}
-				else GotoRecFld(CRec() + 1, edit_->FirstFld.begin());
+				else {
+					GotoRecFld(CRec() + 1, edit_->FirstFld.begin());
+				}
 			else {
-			label3:
 				GotoRecFld(CRec(), OldCFld);
 				Beep(); Beep();
 				return result;
@@ -3476,6 +3482,8 @@ label2:
 	skip = false;
 	displ = false;
 	if (IsFirstEmptyFld()) {
+		// it's the 1st touch of an empty field -> assign default (implicit) value (#I)
+		// or assign value from previous record in duplicate mode
 		if (((*CFld)->Impl != nullptr) && LockRec(true)) {
 			AssignFld((*CFld)->FldD, (*CFld)->Impl);
 			displ = true;
@@ -3495,8 +3503,13 @@ label2:
 		TextAttr = edit_->dHiLi;
 		DisplFld(*CFld, IRec, TextAttr);
 	}
-	if (Mode == 2 /*bypass all remaining fields of the record */) goto label1;
-	if (skip && ExNotSkipFld() && (NR <= 1)) goto label1;
+	if (Mode == 2) {
+		/* bypass all remaining fields of the record */
+		goto label1;
+	}
+	if (skip && ExNotSkipFld() && (NR <= 1)) {
+		goto label1;
+	}
 	return result;
 }
 
