@@ -961,7 +961,7 @@ void DataEditor::DisplRec(WORD I)
 	//std::vector<EFldD*>::iterator D = edit_->FirstFld;
 	//while (D != nullptr) {
 	for (EFldD* D : edit_->FirstFld) {
-		if (IsCurrNewRec && D == FirstEmptyFld && D->Impl == nullptr) {
+		if (IsCurrNewRec && D == *FirstEmptyFld && D->Impl == nullptr) {
 			NewFlds = true;
 		}
 		TextAttr = a;
@@ -974,7 +974,7 @@ void DataEditor::DisplRec(WORD I)
 				DisplFld(D, I, TextAttr);
 			}
 		}
-		if (IsCurrNewRec && (D == FirstEmptyFld)) {
+		if (IsCurrNewRec && (D == *FirstEmptyFld)) {
 			NewFlds = true;
 		}
 		//D = D->pChain;
@@ -1051,7 +1051,7 @@ void DataEditor::AdjustCRec()
 		if (!IsNewRec) {
 			IsNewRec = true;
 			params_->Append = true;
-			FirstEmptyFld = *CFld;
+			FirstEmptyFld = CFld;
 			file_d_->ZeroAllFlds(record_, false);
 			SetWasUpdated(file_d_->FF, record_);
 			NewRecExit();
@@ -1085,7 +1085,7 @@ void DataEditor::AdjustCRec()
 
 void DataEditor::ReadParamsFromE(const EditD* edit)
 {
-	FirstEmptyFld = edit->FirstEmptyFld;
+	FirstEmptyFld = edit_->GetEFldIter(edit->FirstEmptyFld);
 	VK = edit->VK;
 	WK = edit->WK;
 	BaseRec = edit->BaseRec;
@@ -1151,7 +1151,7 @@ void DataEditor::DuplFld(FileD* file_d1, FileD* file_d2, void* record1, void* re
 
 bool DataEditor::IsFirstEmptyFld()
 {
-	return IsNewRec && (*CFld == FirstEmptyFld);
+	return IsNewRec && (CFld == FirstEmptyFld);
 }
 
 void DataEditor::SetFldAttr(EFldD* D, WORD I, WORD Attr)
@@ -2869,7 +2869,7 @@ void DataEditor::InsertRecProc(void* RP)
 	SetWasUpdated(file_d_->FF, record_);
 	IVoff();
 	MoveDispl(edit_->NRecs - 1, edit_->NRecs, edit_->NRecs - IRec);
-	FirstEmptyFld = *CFld;
+	FirstEmptyFld = CFld;
 	DisplRec(IRec);
 	IVon();
 	NewDisplLL = true;
@@ -2882,7 +2882,7 @@ void DataEditor::AppendRecord(void* RP)
 	IsNewRec = true;
 	WORD Max = edit_->NRecs;
 	CFld = edit_->FirstFld.begin();
-	FirstEmptyFld = *CFld;
+	FirstEmptyFld = CFld;
 	if (IRec < Max) {
 		IRec++;
 		MoveDispl(Max - 1, Max, Max - IRec);
@@ -4846,7 +4846,7 @@ void DataEditor::MouseProc()
 		if (n > CNRecs()) goto label1;
 		std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
 		while (D != edit_->FirstFld.end()) {
-			if (IsNewRec && (i == IRec) && (*D == FirstEmptyFld)) goto label1;
+			if (IsNewRec && (i == IRec) && (D == FirstEmptyFld)) goto label1;
 			if (((*D)->Page == CPage) && MouseInRect((*D)->Col - 1, FldRow(*D, i) - 1, (*D)->L, 1)) {
 				if ((i != IRec) && (IsNewRec || !WriteCRec(true, Displ))) goto label1;
 				GotoRecFld(n, D);
@@ -5162,8 +5162,8 @@ label81:
 				GotoRecFld(CRec(), edit_->FirstFld.begin()); break;
 			case __END: {
 			label4:
-				if (IsNewRec && (FirstEmptyFld != nullptr)) {
-					GotoRecFld(CRec(), edit_->GetEFldIter(FirstEmptyFld));
+				if (IsNewRec && (FirstEmptyFld != edit_->FirstFld.end())) {
+					GotoRecFld(CRec(), FirstEmptyFld);
 				}
 				else {
 					GotoRecFld(CRec(), edit_->GetEFldIter(edit_->LastFld));

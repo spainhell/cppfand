@@ -62,6 +62,8 @@ private:
     std::unique_ptr<DataEditorParams> params_;
     EditD* edit_ = nullptr;
 
+    std::vector<EFldD*>::iterator FirstEmptyFld;
+
     int CNRecs() const;
     int AbsRecNr(int N);
     int LogRecNo(int N);
@@ -197,7 +199,6 @@ private:
     bool TestMask(std::string& S, std::string Mask);
     void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R);
 
-    EFldD* FirstEmptyFld = nullptr;
     XKey* VK = nullptr;
     XWKey* WK = nullptr;
     ERecTxtD* RT = nullptr;
