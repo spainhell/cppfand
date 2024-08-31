@@ -198,17 +198,29 @@ label1:
 			}
 			if (upd) {
 				switch (typ) {
-				case FieldType::NUMERIC: { if (KbdChar < '0' || KbdChar > '9') goto label7; }
+				case FieldType::NUMERIC: {
+					if (KbdChar < '0' || KbdChar > '9') {
+						goto label7;
+					}
+					break;
+				}
 				case FieldType::FIXED: {
-					if (!((KbdChar >= '0' && KbdChar <= '9') || KbdChar == '.' || KbdChar == ','
-						|| KbdChar == '-')) goto label7;
+					if (!((KbdChar >= '0' && KbdChar <= '9')
+						|| KbdChar == '.' || KbdChar == ',' || KbdChar == '-')
+						) {
+						goto label7;
+					}
+					break;
 				}
 				case FieldType::REAL: {
 					if (!((KbdChar >= '0' && KbdChar <= '9') || KbdChar == '.' || KbdChar == ','
-						|| KbdChar == '-' || KbdChar == '+' || KbdChar == 'e' || KbdChar == 'E'))
+						|| KbdChar == '-' || KbdChar == '+' || KbdChar == 'e' || KbdChar == 'E')) {
 						goto label7;
+					}
+					break;
 				}
 				}
+
 			label5:
 				if (pos > maxlen) { Beep(); goto label7; }
 				if (InsMode) {
@@ -1489,12 +1501,12 @@ void DataEditor::BuildWork()
 				if ((K != nullptr) && !K->InWork && (edit_->KIRoot.empty())) K = nullptr;
 			Scan = new XScan(file_d_, K, edit_->KIRoot, false);
 			Scan->Reset(boolP, edit_->SQLFilter, record_);
-		}
+			}
 		file_d_->FF->CreateWIndex(Scan, WK, 'W');
 		Scan->Close();
 		if (wk2 != nullptr) wk2->Close(file_d_);
 		ok = true;
-	}
+			}
 	catch (std::exception& e) {
 		// TODO: log error
 	}
@@ -1509,7 +1521,7 @@ void DataEditor::BuildWork()
 		GoExit();
 	}
 	ReleaseStore(&p);
-}
+		}
 
 void DataEditor::SetStartRec()
 {
@@ -1590,7 +1602,7 @@ bool DataEditor::OpenEditWw()
 		else {
 			goto label3;
 		}
-	}
+		}
 #ifdef FandSQL
 	if (!file_d_->IsSQLFile)
 #endif
@@ -1839,7 +1851,7 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 					else
 #endif
 						LD->FromFD->FF->DeleteXRec(Scan->RecNr, true, p);
-				}
+			}
 				else {
 					Move(p, p2, LD->FromFD->FF->RecLen);
 					//kf = &LD->ToKey->KFlds;
@@ -1855,9 +1867,9 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						LD->FromFD->FF->OverWrXRec(Scan->RecNr, p, p2, p2);
-				}
+					}
 				goto label1;
-			}
+				}
 			Scan->Close();
 			LD->FromFD->ClearRecSpace(p);
 			ReleaseStore(&p);
@@ -2561,7 +2573,7 @@ bool DataEditor::OldRecDiffers()
 			f = f->pChain;
 		}
 		goto label2;
-	}
+}
 	else
 #endif
 
@@ -2578,7 +2590,7 @@ label2:
 	delete[] rec; rec = nullptr;
 
 	return result;
-}
+	}
 
 bool DataEditor::ExitCheck(bool MayDispl)
 {
@@ -4505,7 +4517,7 @@ std::vector<EFldD*>::iterator DataEditor::FrstFldOnPage(WORD Page)
 	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
 	while ((*D)->Page < Page) {
 		++D; //D = D->pChain;
-}
+	}
 	return D;
 }
 
