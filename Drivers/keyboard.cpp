@@ -76,14 +76,29 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 	//	_actualIndex++;
 	//}
 	while (_actualIndex < _inBuffer) {
-		bool key_or_mouse = false;
+		bool key_event = false;
+		bool mouse_event = false;
 
 		switch (_kbdBuf[_actualIndex].EventType) {
 		case KEY_EVENT:
-			key_or_mouse = true;
+			key_event = true;
 			break;
 		case MOUSE_EVENT:
-			key_or_mouse = true;
+			mouse_event = true;
+			MOUSE_EVENT_RECORD m_event = _kbdBuf[_actualIndex].Event.MouseEvent;
+			if (m_event.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
+				printf("");
+			}
+			else if (m_event.dwButtonState == RIGHTMOST_BUTTON_PRESSED) {
+				printf("");
+			}
+			else if (m_event.dwEventFlags == MOUSE_WHEELED && m_event.dwButtonState != 0) {
+				printf("");
+			}
+			else {
+				// mouse moved -> ignore
+				mouse_event = false;
+			}
 			break;
 		case WINDOW_BUFFER_SIZE_EVENT:
 			break;
@@ -94,7 +109,7 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 		default:;
 		}
 
-		if (key_or_mouse) {
+		if (key_event || mouse_event) {
 			break;
 		}
 		else {
