@@ -29,8 +29,8 @@ public:
 private:
 	HANDLE _handle;
 	PINPUT_RECORD _kbdBuf;
-	size_t _actualIndex;
-	DWORD _inBuffer;
+	size_t _actualIndex; // index of the last read event
+	DWORD _inBuffer; // number of events in buffer
 	std::deque<KEY_EVENT_RECORD> _priorBuffer; // used by SetKeyBuf() method
 	void _read();
 };
