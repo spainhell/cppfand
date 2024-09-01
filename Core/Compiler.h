@@ -81,6 +81,7 @@ public:
 	FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp);
 	FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller);
 	FrmlElem* RdFldNameFrmlF(char& FTyp, MergeReportBase* caller);
+	FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller);
 	FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, void* RP);
 	FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp);
 	void TestString(char FTyp);

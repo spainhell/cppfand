@@ -2717,3 +2717,9 @@ FrmlElem* Compiler::RdFldNameFrmlF(char& FTyp, MergeReportBase* caller)
 	if (z == nullptr) Error(8);
 	return z;
 }
+
+FrmlElem* Compiler::RdFldNameFrmlT(char& FTyp, MergeReportBase* caller)
+{
+	g_compiler->Error(8);
+	return nullptr;
+}

@@ -184,11 +184,7 @@ void RestoreParams(stEditorParams& editorParams)
 	NameT = editorParams.NameT;
 }
 
-FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller)
-{
-	g_compiler->Error(8);
-	return nullptr;
-}
+
 
 void MyWrLLMsg(std::string s)
 {
