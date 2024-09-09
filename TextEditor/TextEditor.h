@@ -28,7 +28,7 @@ struct stEditorParams
 };
 
 
-FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller);
+
 
 
 
