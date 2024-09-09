@@ -239,12 +239,23 @@ void GetRedKeyName()
 	// souvisi s mysi
 }
 
-void GetMouseEvent()
+bool GetMouseEvent()
 {
+	MOUSE_EVENT_RECORD mouse;
+	return keyboard.GetMouse(mouse);
 }
 
 void GetMouseKeyEvent()
 {
+	if (GetMouseEvent()) {
+		if (Event.What == evMouseDown) {
+			// if right mouse button is pressed, then create ESC event
+
+			// if left mouse button is pressed on the last line, then read help
+			// -> pro Ctrl, Alt and Del change LLKeyFlags only
+		}
+	}
+	
 }
 
 void TestGlobalKey()
@@ -471,7 +482,7 @@ label1:
 		}
 	}
 	else {
-		if ((spec.ScreenDelay > 0) && (GetTickCount() > t + spec.ScreenDelay)) {
+		if ((spec.ScreenDelay > 0) && (GetTickCount64() > t + spec.ScreenDelay)) {
 			l = TxtCols * TxtRows * 2 + 50;
 			ce = Crs.Enabled;
 			screen.CrsHide();
@@ -481,7 +492,7 @@ label1:
 			vis = MausVisible;
 			HideMouse();
 			l = 555;
-			t1 = GetTickCount() - MoveDelay;
+			t1 = GetTickCount64() - MoveDelay;
 		}
 	}
 	goto label1;

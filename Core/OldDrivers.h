@@ -121,7 +121,7 @@ bool TestEvent();
 WORD AddCtrlAltShift(BYTE Flgs);
 void AddToKbdBuf(WORD KeyCode);
 void ShowMouse();
-void GetMouseEvent();
+bool GetMouseEvent();
 bool KeyPressed();
 WORD ReadKey();
 void SetMouse(WORD X, WORD Y, bool Visible);
