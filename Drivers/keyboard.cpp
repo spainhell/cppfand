@@ -53,7 +53,7 @@ size_t Keyboard::FreeSpace()
 	return buff_size - _inBuffer;
 }
 
-bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
+bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check, bool ignore_other_events)
 {
 	// nejdrive zkontrolujeme primarni buffer
 	if (!_priorBuffer.empty()) {
@@ -85,20 +85,6 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 			break;
 		case MOUSE_EVENT:
 			mouse_event = true;
-			MOUSE_EVENT_RECORD m_event = _kbdBuf[_actualIndex].Event.MouseEvent;
-			if (m_event.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
-				printf("");
-			}
-			else if (m_event.dwButtonState == RIGHTMOST_BUTTON_PRESSED) {
-				printf("");
-			}
-			else if (m_event.dwEventFlags == MOUSE_WHEELED && m_event.dwButtonState != 0) {
-				printf("");
-			}
-			else {
-				// mouse moved -> ignore
-				mouse_event = false;
-			}
 			break;
 		case WINDOW_BUFFER_SIZE_EVENT:
 			break;
@@ -109,7 +95,7 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 		default:;
 		}
 
-		if (key_event || mouse_event) {
+		if (key_event || (mouse_event && !ignore_other_events)) {
 			break;
 		}
 		else {
