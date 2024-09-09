@@ -14,7 +14,7 @@ public:
 	void ClearBuf();
 	size_t ActualIndex();
 	size_t FreeSpace();
-	bool Get(KEY_EVENT_RECORD& key, bool only_check = false);
+	bool Get(KEY_EVENT_RECORD& key, bool only_check = false, bool ignore_other_events = false);
 	bool GetMouse(MOUSE_EVENT_RECORD& mouse, bool only_check = false);
 	void DeleteKeyBuf(); // erase all items in Prior Key Buffer and System Buffer
 	// methods for priority buffer

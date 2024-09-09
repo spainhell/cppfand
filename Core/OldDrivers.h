@@ -29,6 +29,7 @@ struct TEvent
 {
 	EventType What = evNothing;
 	PressedKey Pressed;
+	MOUSE_EVENT_RECORD mouse_event;
 	WORD Buttons = 0;
 	TPoint Where;
 	TPoint WhereG;

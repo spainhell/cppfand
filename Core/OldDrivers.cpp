@@ -123,7 +123,7 @@ WORD ReadKbd()
 	bool exists = false;
 
 	while (true) {
-		exists = keyboard.Get(key);
+		exists = keyboard.Get(key, false, true);
 		if (exists && key.bKeyDown) {
 			PressedKey pressed = PressedKey(key);
 			ClrEvent();
@@ -235,24 +235,39 @@ void ShowMaus()
 
 void GetRedKeyName()
 {
-	// souvisi s mysi
+	printf("Red key name\n");
 }
 
 bool GetMouseEvent()
 {
-	MOUSE_EVENT_RECORD mouse;
-	return keyboard.GetMouse(mouse);
+	return keyboard.GetMouse(Event.mouse_event);
 }
 
 void GetMouseKeyEvent()
 {
 	if (GetMouseEvent()) {
-		if (Event.What == evMouseDown) {
-			// if right mouse button is pressed, then create ESC event
-
-			// if left mouse button is pressed on the last line, then read help
-			// -> pro Ctrl, Alt and Del change LLKeyFlags only
+		Event.What = evMouseDown;
+		if (Event.mouse_event.dwButtonState == RIGHTMOST_BUTTON_PRESSED) {
+			// right mouse button is pressed -> create ESC event
+			Event.What = evKeyDown;
+			Event.Pressed.UpdateKey(__ESC);
 		}
+		else if (Event.mouse_event.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
+			if (Event.mouse_event.dwMousePosition.Y == TxtRows - 1) {
+				// the last line (help line)
+				GetRedKeyName();
+			}
+			else {
+				Event.What = evNothing;
+			}
+		}
+		else {
+			Event.What = evNothing;
+		}
+
+		// if left mouse button is pressed on the last line, then read help
+		// -> pro Ctrl, Alt and Del change LLKeyFlags only
+
 	}
 	
 }
