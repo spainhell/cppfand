@@ -116,8 +116,14 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 			_actualIndex++;
 		}
 	}
-	// narazili jsme na udalost z klavesnice, nebo tam zadna takova neni a jsme na konci?
+
+	// are we on the end of buffer?
 	if (_actualIndex == _inBuffer) {
+		return false;
+	}
+
+	// is it key event?
+	if (_kbdBuf[_actualIndex].EventType != KEY_EVENT) {
 		return false;
 	}
 
@@ -126,22 +132,87 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 		_actualIndex++;
 	}
 
-	if (event->EventType == MOUSE_EVENT) {
-		return false;
-	}
-	else {
-		key = event->Event.KeyEvent;
+	key = event->Event.KeyEvent;
 
 #if _DEBUG
-		auto a = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC);
-		auto b = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK);
-		auto c = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
-		auto d = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK_EX);
-		auto e = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC_EX);
+	auto a = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC);
+	auto b = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK);
+	auto c = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
+	auto d = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK_EX);
+	auto e = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC_EX);
 #endif
 
-		return true;
+	return true;
+}
+
+bool Keyboard::GetMouse(MOUSE_EVENT_RECORD& mouse, bool only_check)
+{
+	// read buffer if we are on the end
+	if (_inBuffer == 0 || _actualIndex >= _inBuffer) {
+		// if buffer is empty, return false
+		_read();
+		if (_inBuffer == 0) return false;
 	}
+
+	while (_actualIndex < _inBuffer) {
+		bool key_event = false;
+		bool mouse_event = false;
+
+		switch (_kbdBuf[_actualIndex].EventType) {
+		case KEY_EVENT:
+			key_event = true;
+			break;
+		case MOUSE_EVENT:
+			mouse_event = true;
+			MOUSE_EVENT_RECORD m_event = _kbdBuf[_actualIndex].Event.MouseEvent;
+			if (m_event.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
+				printf("");
+			}
+			else if (m_event.dwButtonState == RIGHTMOST_BUTTON_PRESSED) {
+				printf("");
+			}
+			else if (m_event.dwEventFlags == MOUSE_WHEELED && m_event.dwButtonState != 0) {
+				printf("");
+			}
+			else {
+				// mouse moved -> ignore
+				mouse_event = false;
+			}
+			break;
+		case WINDOW_BUFFER_SIZE_EVENT:
+			break;
+		case MENU_EVENT:
+			break;
+		case FOCUS_EVENT:
+			break;
+		default:;
+		}
+
+		if (key_event || mouse_event) {
+			break;
+		}
+		else {
+			_actualIndex++;
+		}
+	}
+
+	// are we on the end of buffer?
+	if (_actualIndex == _inBuffer) {
+		return false;
+	}
+
+	// is it mouse event?
+	if (_kbdBuf[_actualIndex].EventType != MOUSE_EVENT) {
+		return false;
+	}
+
+	PINPUT_RECORD event = &_kbdBuf[_actualIndex];
+	if (!only_check) {
+		_actualIndex++;
+	}
+
+	mouse = event->Event.MouseEvent;
+	return true;
 }
 
 void Keyboard::DeleteKeyBuf()
@@ -198,7 +269,7 @@ void Keyboard::SetKeyBuf(std::string input)
 			case 118: key.wVirtualKeyCode = VK_NEXT; key.dwControlKeyState = LEFT_CTRL_PRESSED; break;
 			case 115: key.wVirtualKeyCode = VK_LEFT; key.dwControlKeyState = LEFT_CTRL_PRESSED; break;
 			case 116: key.wVirtualKeyCode = VK_RIGHT; key.dwControlKeyState = LEFT_CTRL_PRESSED; break;
-				
+
 			case 59: key.wVirtualKeyCode = VK_F1; break;
 			case 60: key.wVirtualKeyCode = VK_F2; break;
 			case 61: key.wVirtualKeyCode = VK_F3; break;
@@ -251,7 +322,7 @@ void Keyboard::SetKeyBuf(std::string input)
 
 void Keyboard::AddToKeyBuf(std::string input)
 {
-	
+
 }
 
 void Keyboard::AddToKeyBuf(unsigned short c)
@@ -274,13 +345,13 @@ void Keyboard::AddToKeyBuf(unsigned short c)
 		key.uChar.AsciiChar = c & 0xFF;
 		key.uChar.UnicodeChar = c & 0xFF;
 	}
-	
+
 	_priorBuffer.push_back(key);
 }
 
 void Keyboard::AddToFrontKeyBuf(std::string input)
 {
-	
+
 }
 
 void Keyboard::AddToFrontKeyBuf(unsigned short c)
@@ -390,7 +461,7 @@ unsigned short PressedKey::KeyCombination()
 	if (Alt()) ControlKey += 4;
 	if (Ctrl()) ControlKey += 2;
 	if (Shift()) ControlKey += 1;
-	
+
 	if (Char == 0) {
 		// non printable character
 		ControlKey += 0x80;
