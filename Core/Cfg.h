@@ -60,10 +60,10 @@ struct Fonts // r350
 
 struct Printer {
 	std::string Strg;
-	char Typ, Kod;
-	BYTE Lpti, TmOut;
-	bool OpCls, ToHandle, ToMgr;
-	WORD Handle;
+	char Typ = 0, Kod = 0;
+	BYTE Lpti = 0U, TmOut = 0U;
+	bool OpCls = false, ToHandle = false, ToMgr = false;
+	WORD Handle = 0;
 };
 
 struct wdaystt { BYTE Typ = 0; WORD Nr = 0; };

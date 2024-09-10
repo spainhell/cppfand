@@ -568,13 +568,13 @@ WORD ReadLongH(FILE* handle, int bytes, void* buffer)
 {
 	if (handle == nullptr) RunError(706);
 	if (bytes <= 0) return 0;
-	auto readed = fread_s(buffer, bytes, 1, bytes, handle);
-	if (readed != static_cast<unsigned int>(bytes)) {
+	size_t read = fread_s(buffer, bytes, 1, bytes, handle);
+	if (read != static_cast<unsigned int>(bytes)) {
 		// nebyl nacten pozadovany pocet B
-		auto eofReached = feof(handle);
+		int eofReached = feof(handle);
 		HandleError = ferror(handle);
 	}
-	return WORD(readed);
+	return (WORD)read;
 }
 
 void WriteH(HANDLE handle, size_t length, void* buffer)
