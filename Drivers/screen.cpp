@@ -233,6 +233,14 @@ void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
 	WriteConsoleOutputA(_handle, Buf, BufferSize, { 0, 0 }, &XY);
 }
 
+/// <summary>
+/// Read the screen to CHAR_INFO array
+/// </summary>
+/// <param name="X">column 1..N</param>
+/// <param name="Y">line 1..N</param>
+/// <param name="Buf">pointer to a buffer</param>
+/// <param name="L">buffer length</param>
+/// <returns>true if result is OK, otherwise false</returns>
 bool Screen::ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L)
 {
 	SMALL_RECT rect{ (short)(X - 1), (short)(Y - 1), (short)(X - 1 + L - 1), (short)(Y - 1) };
