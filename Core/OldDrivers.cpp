@@ -233,9 +233,51 @@ void ShowMaus()
 {
 }
 
-void GetRedKeyName()
+std::string GetRedKeyName(int16_t positionX)
 {
-	printf("Red key name\n");
+	std::string result;
+	if (positionX < 0 || positionX >= TxtCols) return result;
+
+	// read last line of the screen
+	std::unique_ptr<CHAR_INFO[]> buf = std::make_unique<CHAR_INFO[]>(TxtCols);
+	screen.ScrRdBuf(1, TxtRows, buf.get(), TxtCols);
+
+	if (buf[positionX].Char.AsciiChar == ' ') {
+		// click in a space
+		return result;
+	}
+
+	std::string line;
+	for (int i = 0; i < TxtCols; i++) {
+		line += buf[i].Char.AsciiChar;
+	}
+
+	uint16_t last = 0;
+	if (buf[positionX].Attributes != screen.colors.lFirst) {
+		// click in a key description
+		// find the last character of the key name
+		last = positionX;
+		while (last > 1 && buf[last].Attributes != screen.colors.lFirst) {
+			last--;
+		}
+	}
+	else
+	{
+		// click in a key name
+		last = positionX;
+		while (last < TxtCols && buf[last + 1].Attributes == screen.colors.lFirst) {
+			last++;
+		}
+	}
+
+	uint16_t first = last;
+	while (first > 1 && buf[first - 1].Attributes == screen.colors.lFirst) {
+		first--;
+	}
+
+	result = line.substr(first, last - first + 1);
+
+	return result;
 }
 
 bool GetMouseEvent()
@@ -255,7 +297,7 @@ void GetMouseKeyEvent()
 		else if (Event.mouse_event.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
 			if (Event.mouse_event.dwMousePosition.Y == TxtRows - 1) {
 				// the last line (help line)
-				GetRedKeyName();
+				std::string red_key_name = GetRedKeyName(Event.mouse_event.dwMousePosition.X);
 			}
 			else {
 				Event.What = evNothing;

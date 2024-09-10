@@ -28,7 +28,7 @@
 Video video;
 Spec spec;
 Fonts fonts;
-Colors colors;
+//Colors colors;
 
 WORD TxtCols = 80;
 WORD TxtRows = 25;
@@ -211,7 +211,7 @@ void WriteMsg(WORD N)
 
 void ClearLL(BYTE attr)
 {
-	screen.ScrClr(1, TxtRows, TxtCols, 1, ' ', colors.uNorm);
+	screen.ScrClr(1, TxtRows, TxtCols, 1, ' ', screen.colors.uNorm);
 }
 
 bool CacheLocked = false; // r510
