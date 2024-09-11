@@ -286,10 +286,21 @@ bool GetMouseEvent()
 	return keyboard.GetMouse(Event.mouse_event);
 }
 
+void SetEventByRedKeyName(const std::string& red_key_name)
+{
+	if (red_key_name.empty()) {
+		Event.What = evNothing;
+		return;
+	}
+
+	if (red_key_name == ">") {
+
+	}
+}
+
 void GetMouseKeyEvent()
 {
 	if (GetMouseEvent()) {
-		Event.What = evMouseDown;
 		if (Event.mouse_event.dwButtonState == RIGHTMOST_BUTTON_PRESSED) {
 			// right mouse button is pressed -> create ESC event
 			Event.What = evKeyDown;
@@ -299,12 +310,19 @@ void GetMouseKeyEvent()
 			if (Event.mouse_event.dwMousePosition.Y == TxtRows - 1) {
 				// the last line (help line)
 				std::string red_key_name = GetRedKeyName(Event.mouse_event.dwMousePosition.X);
+				if (red_key_name.empty()) {
+					Event.What = evNothing;
+				}
+				else {
+					SetEventByRedKeyName(red_key_name);
+				}
 			}
 			else {
 				Event.What = evNothing;
 			}
 		}
 		else {
+			// different button is pressed
 			Event.What = evNothing;
 		}
 
