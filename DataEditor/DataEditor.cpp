@@ -4194,19 +4194,9 @@ void DataEditor::ImbeddEdit()
 
 	R = CRdb;
 	while (R != nullptr) {
-		//FD = R->v_files;
-		//while (FD != nullptr) {
 		for (size_t i = 1; i < R->v_files.size(); i++) {
 			FileD* f = R->v_files[i];
 			if (data_editor2->ForNavigate(f)) {
-				//SL = FD->ViewNames;
-				//do {
-				//	std::string s = data_editor2->GetFileViewName(FD, &SL);
-				//	if (R != CRdb) {
-				//		s = R->v_files->Name + "." + s;
-				//	}
-				//	ww.PutSelect(s);
-				//} while (SL != nullptr);
 				if (f->ViewNames.empty()) {
 					std::string s = f->Name;
 					if (R != CRdb) {
@@ -4215,8 +4205,7 @@ void DataEditor::ImbeddEdit()
 					ww.PutSelect(s);
 				}
 				else {
-					//for (size_t i = 0; i < f->ViewNames.size(); i++
-					for (size_t j = 0; j < f->ViewNames.size(); i++) {
+					for (size_t j = 0; j < f->ViewNames.size(); j++) {
 						std::string s = data_editor2->GetFileViewName(f, f->ViewNames[j]);
 						if (s.empty()) {
 							continue;
@@ -4230,7 +4219,6 @@ void DataEditor::ImbeddEdit()
 					}
 				}
 			}
-			//FD = FD->pChain;
 		}
 		R = R->ChainBack;
 	}
@@ -4249,32 +4237,25 @@ void DataEditor::ImbeddEdit()
 			} while (R->v_files[0]->Name != ss2);
 		}
 
-		//data_editor2->file_d_ = R->v_files[0];
-		//while (!data_editor2->EquFileViewName(file_d_, s1, &EO)) {
-		//	data_editor2->file_d_ = data_editor2->file_d_->pChain;
-		//}
-		for (auto& v_file : R->v_files) {
+		for (FileD* v_file : R->v_files) {
 			if (data_editor2->EquFileViewName(v_file, s1, &EO)) {
 				data_editor2->file_d_ = v_file;
 			}
 		}
 
 		if (data_editor2->SelFldsForEO(EO, nullptr)) {
-			EditReader* reader = new EditReader();
+			std::unique_ptr<EditReader> reader = std::make_unique<EditReader>();
 			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->record_);
 			data_editor2->edit_ = reader->GetEditD();
 			if (data_editor2->OpenEditWw()) {
 				data_editor2->RunEdit(nullptr, Brk);
 			}
 			SaveFiles();
-			//PopEdit();
-			delete reader; reader = nullptr;
 		}
 	}
 
 	PopW(w);
 	ReleaseStore(&p);
-	//ReadParamsFromE(EE);
 	DisplEditWw();
 }
 
