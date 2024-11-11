@@ -1508,12 +1508,12 @@ void DataEditor::BuildWork()
 				if ((K != nullptr) && !K->InWork && (edit_->KIRoot.empty())) K = nullptr;
 			Scan = new XScan(file_d_, K, edit_->KIRoot, false);
 			Scan->Reset(boolP, edit_->SQLFilter, record_);
-			}
+		}
 		file_d_->FF->CreateWIndex(Scan, WK, 'W');
 		Scan->Close();
 		if (wk2 != nullptr) wk2->Close(file_d_);
 		ok = true;
-			}
+	}
 	catch (std::exception& e) {
 		// TODO: log error
 	}
@@ -1528,7 +1528,7 @@ void DataEditor::BuildWork()
 		GoExit();
 	}
 	ReleaseStore(&p);
-		}
+}
 
 void DataEditor::SetStartRec()
 {
@@ -1609,7 +1609,7 @@ bool DataEditor::OpenEditWw()
 		else {
 			goto label3;
 		}
-		}
+	}
 #ifdef FandSQL
 	if (!file_d_->IsSQLFile)
 #endif
@@ -1858,7 +1858,7 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 					else
 #endif
 						LD->FromFD->FF->DeleteXRec(Scan->RecNr, true, p);
-			}
+				}
 				else {
 					Move(p, p2, LD->FromFD->FF->RecLen);
 					//kf = &LD->ToKey->KFlds;
@@ -1874,9 +1874,9 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						LD->FromFD->FF->OverWrXRec(Scan->RecNr, p, p2, p2);
-					}
-				goto label1;
 				}
+				goto label1;
+			}
 			Scan->Close();
 			LD->FromFD->ClearRecSpace(p);
 			ReleaseStore(&p);
@@ -2580,7 +2580,7 @@ bool DataEditor::OldRecDiffers()
 			f = f->pChain;
 		}
 		goto label2;
-}
+	}
 	else
 #endif
 
@@ -2597,7 +2597,7 @@ label2:
 	delete[] rec; rec = nullptr;
 
 	return result;
-	}
+}
 
 bool DataEditor::ExitCheck(bool MayDispl)
 {
@@ -2852,7 +2852,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-	}
+}
 
 void DataEditor::DuplFromPrevRec()
 {
@@ -4708,31 +4708,29 @@ bool DataEditor::StartExit(EdExitD* X, bool Displ)
 
 WORD DataEditor::ExitKeyProc()
 {
-	WORD w = 0;
-	WORD c = Event.Pressed.KeyCombination();
-	for (auto& X : edit_->ExD) {
-		if (TestExitKey(c, X)) {
+	WORD result = 0;
+	WORD key_code = Event.Pressed.KeyCombination();
+	for (EdExitD* X : edit_->ExD) {
+		if (TestExitKey(key_code, X)) {
 			ClrEvent();
 			LastTxtPos = -1;
 			if (X->Typ == 'Q') {
-				w = 1;
+				result = 1;
 			}
 			else {
-				bool ok = EdOk;
+				bool prev_EdOk = EdOk;
 				EdOk = false;
 				StartExit(X, true);
-				if (EdOk) w = 3;
-				else w = 2;
-				EdOk = ok;
+				result = EdOk ? 3 : 2;
+				EdOk = prev_EdOk;
 			}
 		}
 	}
-	if (((w == 0) || (w == 3)) && (c == __SHIFT_F7) && (*CFld)->Ed(IsNewRec)) {
+	if (((result == 0) || (result == 3)) && (key_code == __SHIFT_F7) && (*CFld)->Ed(IsNewRec)) {
 		ShiftF7Proc();
-		w = 2;
+		result = 2;
 	}
-	//Event.Pressed.UpdateKey(c);
-	return w;
+	return result;
 }
 
 void DataEditor::FieldHelp()
@@ -5049,11 +5047,23 @@ label81:
 	}
 	case evKeyDown: {
 		KbdChar = Event.Pressed.KeyCombination();
-		switch (ExitKeyProc())
-		{
-		case 1:/*quit*/ goto label7; break;
-		case 2:/*exit*/ goto label1; break;
+
+		switch (ExitKeyProc()) {
+		case 1: {
+			// quit
+			ClrEvent();
+			goto label7;
+			break;
 		}
+		case 2: {
+			// exit
+			ClrEvent();
+			goto label1;
+			break;
+		}
+		default:;
+		}
+
 		if (Event.Pressed.isChar()) {
 			// jedna se o tisknutelny znak
 			if ((*CFld)->Ed(IsNewRec) && (((*CFld)->FldD->field_type != FieldType::TEXT) || (file_d_->loadT((*CFld)->FldD, record_) == 0))
@@ -5144,7 +5154,7 @@ label81:
 						file_d_->OldLockMode(edit_->OldMd);
 					}
 					return;
-				}
+			}
 				break;
 			}
 			case __ALT_EQUAL: {
@@ -5496,9 +5506,9 @@ label81:
 				}
 				//}
 			}
-			}
-			break;
 		}
+			break;
+	}
 		break;
 	}
 	default: {
@@ -5506,7 +5516,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-	}
+}
 	Event.What = evNothing;
 	goto label1;
 }
