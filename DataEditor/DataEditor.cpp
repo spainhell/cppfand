@@ -706,8 +706,8 @@ int DataEditor::AbsRecNr(int N)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "AbsRecNr(%i), file_d_ 0x%p", N, file_d_->Handle);
-	LockMode md;
 	int result = 0;
+
 	if (params_->EdRecVar
 #ifdef FandSQL
 		|| file_d_->IsSQLFile
@@ -717,20 +717,27 @@ int DataEditor::AbsRecNr(int N)
 		else result = 1;
 		return result;
 	}
+
 	if (IsNewRec) {
 		if ((N == CRec()) && (N == CNRecs())) {
 			result = 0;
 			return result;
 		}
-		if (N > CRec()) N--;
+		if (N > CRec()) {
+			N--;
+		}
 	}
-	if (params_->Subset) N = WK->NrToRecNr(file_d_, N);
+
+	if (params_->Subset) {
+		N = WK->NrToRecNr(file_d_, N);
+	}
 	else if (HasIndex) {
-		md = file_d_->NewLockMode(RdMode);
+		LockMode md = file_d_->NewLockMode(RdMode);
 		file_d_->FF->TestXFExist();
 		N = VK->NrToRecNr(file_d_, N);
 		file_d_->OldLockMode(md);
 	}
+
 	result = N;
 	return result;
 }
@@ -3371,14 +3378,17 @@ bool DataEditor::ExNotSkipFld()
 	return result;
 }
 
-bool DataEditor::CtrlMProc(WORD Mode)
+bool DataEditor::ProcessEnter(uint16_t mode)
 {
 	int i = 0;
 	bool b = false;
 	ChkD* C = nullptr;
 	EdExitD* X = nullptr;
 	WORD Brk = 0, NR = 0;
-	bool displ = false, skip = false, Quit = false, WasNewRec = false;
+	bool displ = false;
+	bool skip = false;
+	bool quit = false;
+	bool was_new_rec = false;
 	LockMode md;
 	char Typ = '\0';
 
@@ -3386,7 +3396,7 @@ bool DataEditor::CtrlMProc(WORD Mode)
 	std::vector<EFldD*>::iterator OldCFld = CFld;
 
 	bool result = true;
-	if (Mode == 0 /*only bypass unrelevant fields*/) {
+	if (mode == 0 /*only bypass unrelevant fields*/) {
 		goto label2;
 	}
 label1:
@@ -3394,19 +3404,27 @@ label1:
 		//FirstEmptyFld =	FirstEmptyFld->pChain;
 		++FirstEmptyFld;
 	}
-	Quit = false;
-	if (!CheckForExit(Quit)) return result;
+	quit = false;
+
+	if (!CheckForExit(quit)) return result;
+
 	TextAttr = edit_->dHiLi;
 	DisplFld(*CFld, IRec, TextAttr);
+
 	if (params_->ChkSwitch) {
-		if (Mode == 1 || Mode == 3) Typ = '?';
-		else Typ = 'F';
+		if (mode == 1 || mode == 3) {
+			Typ = '?';
+		}
+		else {
+			Typ = 'F';
+		}
 		C = CompChk(*CFld, Typ);
 		if (C != nullptr) {
 			DisplChkErr(C);
 			if (!C->Warning) return result;
 		}
 	}
+
 	if (params_->WasUpdated && !params_->EdRecVar && HasIndex) {
 		//KL = CFld->KL;
 		//while (KL != nullptr) {
@@ -3421,25 +3439,38 @@ label1:
 			//KL = KL->pChain;
 		}
 	}
-	if (Quit && !IsNewRec && (Mode == 1 || Mode == 3)) {
+
+	if (quit && !IsNewRec && (mode == 1 || mode == 3)) {
 		EdBreak = 12;
 		result = false;
 		return result;
 	}
 
-	++CFld;
-	if (CFld != edit_->FirstFld.end()) {
-		--CFld;
+	//++CFld;
+
+	if (CFld != edit_->FirstFld.end() - 1) {
+		// this is not the last field
+		//--CFld;
 		GotoNextRecFld(CRec(), CFld);
-		if (Mode == 1 || Mode == 3) Mode = 0;
+		if (mode == 1 || mode == 3) {
+			mode = 0;
+		}
 	}
 	else {
-		--CFld;
-		WasNewRec = IsNewRec;
-		Mode = 0; NR++;
+		// this is the last field
+		//--CFld;
+		was_new_rec = IsNewRec;
+		mode = 0;
+		NR++;
 		if (!WriteCRec(true, displ)) return result;
-		if (displ) DisplAllWwRecs();
-		else SetRecAttr(IRec);
+
+		if (displ) {
+			DisplAllWwRecs();
+		}
+		else {
+			SetRecAttr(IRec);
+		}
+
 		if (params_->Only1Record) {
 			if (params_->NoESCPrompt) {
 				EdBreak = 0;
@@ -3452,15 +3483,22 @@ label1:
 				return result;
 			}
 		}
+
 		if (params_->OnlySearch) {
 			params_->Append = false;
 			GotoRecFld(CRec(), OldCFld);
 			Beep(); Beep();
 			return result;
 		}
-		if (params_->Append) AppendRecord(nullptr);
+
+		if (params_->Append) {
+			AppendRecord(nullptr);
+		}
 		else {
-			if (WasNewRec) NewDisplLL = true;
+			if (was_new_rec) {
+				NewDisplLL = true;
+			}
+
 			if (CRec() < CNRecs())
 				if (params_->Select) {
 					for (i = CRec() + 1; i <= CNRecs(); i++) {
@@ -3502,12 +3540,14 @@ label2:
 		}
 		if ((*CFld)->Dupl && (CRec() > 1) && LockRec(true)) {
 			DuplFromPrevRec();
-			displ = true; skip = true;
+			displ = true;
+			skip = true;
 		}
 	}
 	if (IsDependItem() && LockRec(true)) {
 		SetDependItem();
-		displ = true; skip = true;
+		displ = true;
+		skip = true;
 	}
 	if (IsSkipFld(*CFld)) skip = true;
 	if ((*CFld)->Tab) skip = false;
@@ -3515,7 +3555,7 @@ label2:
 		TextAttr = edit_->dHiLi;
 		DisplFld(*CFld, IRec, TextAttr);
 	}
-	if (Mode == 2) {
+	if (mode == 2) {
 		/* bypass all remaining fields of the record */
 		goto label1;
 	}
@@ -3888,10 +3928,15 @@ label6:
 
 bool DataEditor::EditItemProc(bool del, bool ed, WORD& Brk)
 {
-	std::string Txt;
-	double R = 0; bool b = false; ChkD* C = nullptr;
-	FieldDescr* F = (*CFld)->FldD;
-	auto result = true;
+	double R = 0;
+	bool b = false;
+	ChkD* C = nullptr;
+
+	EFldD* eFld = *CFld;
+	FieldDescr* F = eFld->FldD;
+
+	bool result = true;
+
 	if (F->field_type == FieldType::TEXT) {
 		if (!EditFreeTxt(F, "", ed, Brk)) {
 			return false;
@@ -3899,26 +3944,35 @@ bool DataEditor::EditItemProc(bool del, bool ed, WORD& Brk)
 	}
 	else {
 		TextAttr = edit_->dHiLi;
-		Txt = DecodeField(file_d_, F, (*CFld)->FldD->L, record_);
-		screen.GotoXY((*CFld)->Col, FldRow(*CFld, IRec));
+		std::string text = DecodeField(file_d_, F, F->L, record_);
+		screen.GotoXY(eFld->Col, FldRow(eFld, IRec));
 		unsigned int wd = 0;
+
 		if (file_d_->FF->NotCached()) {
 			wd = edit_->WatchDelay;
 		}
-		FieldEdit(F, (*CFld)->Impl, (*CFld)->L, 1, Txt, R, del, ed, false, wd);
+
+		FieldEdit(F, eFld->Impl, eFld->L, 1, text, R, del, ed, false, wd);
+
 		if (Event.Pressed.KeyCombination() == __ESC || !ed) {
-			DisplFld(*CFld, IRec, TextAttr);
+			DisplFld(eFld, IRec, TextAttr);
 			if (ed && !params_->WasUpdated) UnLockRec(edit_);
 			return result;
 		}
+
 		SetWasUpdated(file_d_->FF, record_);
+
 		switch (F->frml_type) {
-		case 'B': file_d_->saveB(F, toupper(Txt[0]) == AbbrYes, record_); break;
-		case 'S': file_d_->saveS(F, Txt, record_); break;
+		case 'B': file_d_->saveB(F, toupper(text[0]) == AbbrYes, record_); break;
+		case 'S': file_d_->saveS(F, text, record_); break;
 		case 'R': file_d_->saveR(F, R, record_); break;
 		}
 	}
-	if (Brk == 0) result = CtrlMProc(1);
+
+	if (Brk == 0) {
+		result = ProcessEnter(1);
+	}
+
 	return result;
 }
 
@@ -4969,7 +5023,7 @@ void DataEditor::RunEdit(XString* PX, WORD& Brk)
 		goto label1;
 	}
 label0:
-	if (!CtrlMProc(0)) {
+	if (!ProcessEnter(0)) {
 		goto label7;
 	}
 label1:
@@ -5127,7 +5181,7 @@ label81:
 			case VK_OEM_102 + CTRL: // klavesa '\' na RT 102 keyb
 			case VK_OEM_5 + CTRL: { // klavesa '\|' na US keyb
 				// na zacatek dalsi vety
-				if (!CtrlMProc(2)) goto label7;
+				if (!ProcessEnter(2)) goto label7;
 				break;
 			}
 			case __F2: {
@@ -5217,7 +5271,7 @@ label81:
 						}
 					}
 					else {
-						if (!CtrlMProc(3)) {
+						if (!ProcessEnter(3)) {
 							goto label7;
 						}
 					}
@@ -5248,7 +5302,7 @@ label81:
 				// dopln diakriticke znamenko
 				if ((CRec() > 1) && (IsFirstEmptyFld() || PromptYN(121)) && LockRec(true)) {
 					DuplFromPrevRec();
-					if (!CtrlMProc(1)) goto label7;
+					if (!ProcessEnter(1)) goto label7;
 				}
 				break;
 			}
@@ -5281,7 +5335,7 @@ label81:
 									SetEdRecNoEtc(0);
 									goto label71;
 								}
-								if (b && !CtrlMProc(0)) {
+								if (b && !ProcessEnter(0)) {
 									goto label7;
 								}
 							}

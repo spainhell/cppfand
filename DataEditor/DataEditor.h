@@ -147,7 +147,7 @@ private:
     bool FldInModeF3Key(FieldDescr* F);
     bool IsSkipFld(EFldD* D);
     bool ExNotSkipFld();
-    bool CtrlMProc(WORD Mode);
+    bool ProcessEnter(uint16_t mode); // orig. name: CtrlMProc
     bool GoPrevNextRec(short Delta, bool Displ);
     bool GetChpt(pstring Heslo, int& NN);
     void SetCRec(int I);
