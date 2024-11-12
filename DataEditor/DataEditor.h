@@ -112,7 +112,7 @@ private:
     bool CleanUp();
     bool DelIndRec(int I, int N);
     bool DeleteRecProc();
-    ChkD* CompChk(EFldD* D, char Typ);
+    LogicControl* CompChk(EFldD* D, char Typ);
     void FindExistTest(FrmlElem* Z, LinkD** LD);
     bool TestAccRight(const std::string& acc_rights);
     bool ForNavigate(FileD* FD);
@@ -122,7 +122,7 @@ private:
     bool EquRoleName(pstring S, LinkD* LD);
     bool EquFileViewName(FileD* FD, std::string S, EditOpt** EO);
     void UpwEdit(LinkD* LkD);
-    void DisplChkErr(ChkD* C);
+    void DisplChkErr(LogicControl* logic_control);
     bool OldRecDiffers();
     bool ExitCheck(bool MayDispl);
     int UpdateIndexes();

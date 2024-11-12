@@ -10,7 +10,7 @@ class FrmlElem;
 class FrmlElemString;
 class KeyFldD;
 class FrmlElemSum;
-class ChkD;
+class LogicControl;
 
 struct InpD
 {
@@ -27,7 +27,7 @@ struct InpD
 	bool Exist = false;
 	char Op = '\0';
 	double Count = 0.0;
-	std::vector<ChkD*> Chk;
+	std::vector<LogicControl*> Chk;
 	char OpErr = '\0';
 	bool Error = false;
 	char OpWarn = '\0';

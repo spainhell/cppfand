@@ -24,7 +24,7 @@
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
-#include "ChkD.h"
+#include "LogicControl.h"
 #include "KeyFldD.h"
 #include "legacy.h"
 #include "oaccess.h"

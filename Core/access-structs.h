@@ -6,7 +6,7 @@
 
 class Instr;
 class FileD;
-class ChkD;
+class LogicControl;
 class FrmlElem;
 class FrmlElemSum;
 class FieldDescr;
@@ -35,7 +35,7 @@ struct ImplD
 
 struct LiRoots
 {
-	std::vector<ChkD*> Chks;
+	std::vector<LogicControl*> Chks;
 	std::vector<ImplD*> Impls;
 };
 

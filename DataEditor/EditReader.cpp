@@ -1,6 +1,6 @@
 #include "EditReader.h"
 
-#include "../Core/ChkD.h"
+#include "../Core/LogicControl.h"
 #include "../Core/Compiler.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
@@ -829,7 +829,7 @@ void EditReader::RdCheck()
 	size_t Low = CurrPos;
 	g_compiler->RdLex();
 	while (true) {
-		ChkD* C = RdChkD(Low);
+		LogicControl* C = ReadLogicControl(Low);
 		ZeroUsed();
 		SetFrmlFlags(C->Bool);
 		TestedFlagOff();

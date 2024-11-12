@@ -10,7 +10,7 @@
 #include "../Core/FieldDescr.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/ChkD.h"
+#include "../Core/LogicControl.h"
 #include "../Core/KeyFldD.h"
 #include "../Core/oaccess.h"
 #include "../Core/obase.h"
@@ -2011,12 +2011,12 @@ void Report::MoveForwToRec(InpD* ID)
 	CRecPtr = CFile->FF->RecPtr;
 	Move(ID->ForwRecPtr, CRecPtr, CFile->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
-	// ChkD* C = ID->Chk;
+	// LogicControl* C = ID->Chk;
 	if (!ID->Chk.empty()) { //if (C != nullptr) {
 		ID->Error = false;
 		ID->Warning = false;
 		ID->ErrTxtFrml->S = ""; // ID->ErrTxtFrml->S[0] = 0;
-		for (ChkD* C : ID->Chk) { //while (C != nullptr) {
+		for (LogicControl* C : ID->Chk) { //while (C != nullptr) {
 			if (!RunBool(CFile, C->Bool, CRecPtr)) {
 				ID->Warning = true;
 				ID->ErrTxtFrml->S = RunString(CFile, C->TxtZ, CRecPtr);
@@ -2025,7 +2025,7 @@ void Report::MoveForwToRec(InpD* ID)
 					return;
 				}
 			}
-			//C = (ChkD*)C->pChain;
+			//C = (LogicControl*)C->pChain;
 		}
 	}
 }

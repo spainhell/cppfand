@@ -9,9 +9,9 @@
 
 extern bool HasTT;
 FieldDescr* RdFieldDescr(std::string name, bool Stored); // r25
-ChkD* RdChkD(WORD Low);
-void RdChkDChain(std::vector<ChkD*>& C);
-void RdChkDsFromPos(FileD* FD, std::vector<ChkD*>& C); // r98
+LogicControl* ReadLogicControl(WORD Low);
+void RdChkDChain(std::vector<LogicControl*>& C);
+void RdChkDsFromPos(FileD* FD, std::vector<LogicControl*>& C); // r98
 void RdBegViewDcl(EditOpt* EO); // r110
 std::string RdByteList();
 [[nodiscard]] std::set<uint16_t> RdAccRights();

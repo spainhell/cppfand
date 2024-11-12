@@ -6,7 +6,7 @@
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
-#include "ChkD.h"
+#include "LogicControl.h"
 #include "KeyFldD.h"
 #include "rdproc.h"
 #include "runfrml.h"
@@ -197,10 +197,10 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	return F;
 }
 
-ChkD* RdChkD(WORD Low)
+LogicControl* ReadLogicControl(WORD Low)
 {
-	ChkD* C = new ChkD();
-	ChkD* result = C;
+	LogicControl* C = new LogicControl();
+	LogicControl* result = C;
 	C->Bool = g_compiler->RdBool(nullptr);
 	WORD Upper = OldErrPos;
 	if (Lexem == '?') {
@@ -225,21 +225,21 @@ ChkD* RdChkD(WORD Low)
 	return result;
 }
 
-void RdChkDChain(std::vector<ChkD*>& C)
+void RdChkDChain(std::vector<LogicControl*>& C)
 {
 	g_compiler->SkipBlank(false);
 	uint16_t low = CurrPos;
 	g_compiler->RdLex();
 
 	while (true) {
-		ChkD* check = RdChkD(low);
+		LogicControl* check = ReadLogicControl(low);
 		C.push_back(check);
 
 		//if (*CRoot == nullptr) {
-		//	*CRoot = RdChkD(low);
+		//	*CRoot = ReadLogicControl(low);
 		//}
 		//else {
-		//	ChainLast(*CRoot, RdChkD(low));
+		//	ChainLast(*CRoot, ReadLogicControl(low));
 		//}
 
 		if (Lexem == ';') {
@@ -254,7 +254,7 @@ void RdChkDChain(std::vector<ChkD*>& C)
 	}
 }
 
-void RdChkDsFromPos(FileD* FD, std::vector<ChkD*>& C)
+void RdChkDsFromPos(FileD* FD, std::vector<LogicControl*>& C)
 {
 	if (FD->OrigFD != nullptr) {
 		// this v_files was created as 'LIKE'
@@ -1171,7 +1171,7 @@ void RdKumul()
 				g_compiler->RdLex();
 				FileD* previous = g_compiler->processing_F;
 				g_compiler->processing_F = AD->File2;
-				AD->Chk = RdChkD(Low);
+				AD->Chk = ReadLogicControl(Low);
 				g_compiler->processing_F = previous;
 				g_compiler->Accept(')');
 			}

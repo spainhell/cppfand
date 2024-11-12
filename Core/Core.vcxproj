@@ -59,7 +59,7 @@
     <ClCompile Include="base.cpp" />
     <ClCompile Include="Catalog.cpp" />
     <ClCompile Include="CfgFile.cpp" />
-    <ClCompile Include="ChkD.cpp" />
+    <ClCompile Include="LogicControl.cpp" />
     <ClCompile Include="Coding.cpp" />
     <ClCompile Include="Compiler.cpp" />
     <ClCompile Include="DateTime.cpp" />
@@ -99,7 +99,7 @@
     <ClInclude Include="base.h" />
     <ClInclude Include="Catalog.h" />
     <ClInclude Include="CfgFile.h" />
-    <ClInclude Include="ChkD.h" />
+    <ClInclude Include="LogicControl.h" />
     <ClInclude Include="Coding.h" />
     <ClInclude Include="Compiler.h" />
     <ClInclude Include="constants.h" />

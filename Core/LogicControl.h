@@ -1,14 +1,18 @@
 #pragma once
 #include <string>
 
-
 class FrmlElem;
 
-class ChkD
+/// <summary>
+/// Logic control class - chapter #L
+/// </summary>
+class LogicControl
 {
 public:
-	ChkD();
-	ChkD(const ChkD& orig);
+	LogicControl();
+	LogicControl(const LogicControl& orig);
+	~LogicControl();
+
 	FrmlElem* Bool = nullptr;
 	std::string HelpName;
 	FrmlElem* TxtZ = nullptr;

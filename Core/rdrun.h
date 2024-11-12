@@ -72,7 +72,7 @@ struct EFldD
 {
 	//EFldD* ChainBack = nullptr;
 	FieldDescr* FldD = nullptr;
-	std::vector<ChkD*> Chk;
+	std::vector<LogicControl*> Chk;
 	FrmlElem* Impl = nullptr;
 	std::vector<DepD*> Dep;
 	std::vector<XKey*> KL;

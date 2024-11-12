@@ -30,7 +30,7 @@
     <ClCompile Include="CfgFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ChkD.cpp">
+    <ClCompile Include="LogicControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Coding.cpp">
@@ -146,7 +146,7 @@
     <ClInclude Include="CfgFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ChkD.h">
+    <ClInclude Include="LogicControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Coding.h">

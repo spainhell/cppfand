@@ -6,7 +6,7 @@ class FrmlElem;
 class LinkD;
 class FileD;
 class FieldDescr;
-class ChkD;
+class LogicControl;
 
 class AddD // r135
 {
@@ -20,5 +20,5 @@ public:
 	FrmlElem* Frml = nullptr;
 	bool Assign = false;
 	FrmlElem* Bool = nullptr;
-	ChkD* Chk = nullptr;
+	LogicControl* Chk = nullptr;
 };

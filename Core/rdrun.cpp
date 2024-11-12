@@ -1,7 +1,7 @@
 #include "rdrun.h"
 
 #include "AddD.h"
-#include "ChkD.h"
+#include "LogicControl.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"

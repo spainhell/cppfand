@@ -1,6 +1,6 @@
 #include "AddD.h"
 //#include "access-structs.h"
-//#include "ChkD.h"
+//#include "LogicControl.h"
 //#include "FieldDescr.h"
 //#include "FileD.h"
 //#include "models/FrmlElem.h"
@@ -15,5 +15,5 @@
 //	if (orig.Chain != nullptr) Frml = CopyFrmlElem(orig.Frml);
 //	Assign = orig.Assign;
 //	if (orig.Chain != nullptr) Bool = CopyFrmlElem(orig.Bool);
-//	if (orig.Chain != nullptr && orig.Chk != nullptr) Chk = new ChkD(*orig.Chk);
+//	if (orig.Chain != nullptr && orig.Chk != nullptr) Chk = new LogicControl(*orig.Chk);
 //}
