@@ -2699,7 +2699,7 @@ int DataEditor::UpdateIndexes()
 bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 {
 	int N = 0, CNew = 0;
-	ImplD* ID = nullptr;
+	Implicit* ID = nullptr;
 	double time = 0.0;
 	LongStr* s = nullptr;
 	LogicControl* C = nullptr;
@@ -2719,7 +2719,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		//	AssgnFrml(file_d_, record_, ID->FldD, ID->Frml, true, false);
 		//	ID = ID->pChain;
 		//}
-		for (ImplD* id : edit_->Impl) {
+		for (Implicit* id : edit_->Impl) {
 			AssgnFrml(file_d_, record_, id->FldD, id->Frml, true, false);
 		}
 	}

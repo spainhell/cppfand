@@ -6,7 +6,7 @@
 #include "DataEditorParams.h"
 #include "../Core/FileD.h"
 
-struct ImplD;
+struct Implicit;
 struct EFldD;
 struct ERecTxtD;
 struct EdExitD;
@@ -79,7 +79,7 @@ public:
 	std::string ShiftLast;
 	WORD NFlds = 0, NTabsSet = 0, NDuplSet = 0, NEdSet = 0;
 	bool EdUpdated = false;
-	std::vector<ImplD*> Impl;
+	std::vector<Implicit*> Impl;
 	int StartRecNo = 0;
 	std::string StartRecKey;
 	short StartIRec = 0;

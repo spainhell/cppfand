@@ -875,7 +875,7 @@ void EditReader::RdImpl(FileD* file_d)
 			D->Impl = Z;
 		}
 		else {
-			ImplD* ID = new ImplD(F, Z);
+			Implicit* ID = new Implicit(F, Z);
 			edit_->Impl.push_back(ID);
 		}
 
@@ -945,6 +945,7 @@ std::string EditReader::StandardHead(EditD* edit)
 		}
 		case FileType::RDB: s += ".RDB"; break;
 		case FileType::FAND8: s += ".DTA"; break;
+		default:;
 		}
 	}
 	s = s.substr(0, 16); // max. length is 16 chars
@@ -954,31 +955,20 @@ std::string EditReader::StandardHead(EditD* edit)
 
 void EditReader::NewChkKey(FileD* file_d)
 {
-	//XKey* K = file_d_->Keys;
-	//EFldD* D;
-	//KeyListEl* KL = nullptr;
 	for (XKey* K : file_d->Keys) {
 		if (!K->Duplic) {
 			ZeroUsed();
 
-			//KeyFldD* KF = K->KFlds;
-			//while (KF != nullptr) {
 			for (KeyFldD* KF : K->KFlds) {
 				EFldD* D = FindEFld_E(KF->FldD);
-				if (D != nullptr) D->Used = true;
-				//KF = KF->pChain;
+				if (D != nullptr) {
+					D->Used = true;
+				}
 			}
 
 			EFldD* D = LstUsedFld();
+
 			if (D != nullptr) {
-				//KL = new KeyListEl();
-				//if (D->KL == nullptr) {
-				//	D->KL = KL;
-				//}
-				//else {
-				//	ChainLast(D->KL, KL);
-				//}
-				//KL->Key = K;
 				D->KL.push_back(K);
 			}
 		}

@@ -1123,7 +1123,7 @@ label2:
 /// </summary>
 /// <param name="file_d"></param>
 /// <param name="IDRoot"></param>
-void ReadImplicit(FileD* file_d, std::vector<ImplD*>& IDRoot)
+void ReadImplicit(FileD* file_d, std::vector<Implicit*>& IDRoot)
 {
 	char FTyp = '\0';
 	g_compiler->RdLex();
@@ -1142,7 +1142,7 @@ void ReadImplicit(FileD* file_d, std::vector<ImplD*>& IDRoot)
 			g_compiler->OldError(12);
 		}
 
-		ImplD* ID = new ImplD(F, Z);
+		Implicit* ID = new Implicit(F, Z);
 		IDRoot.push_back(ID);
 
 		if (Lexem == ';') {

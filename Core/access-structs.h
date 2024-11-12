@@ -31,7 +31,7 @@ struct structXPath
 struct LiRoots
 {
 	std::vector<LogicControl*> Chks;
-	std::vector<ImplD*> Impls;
+	std::vector<Implicit*> Impls;
 };
 
 struct DBaseFld

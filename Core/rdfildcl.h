@@ -28,7 +28,7 @@ void LookForK(FileD* file_d, pstring* Name, FileD* F);
 XKey* RdFileOrAlias1(FileD* F);
 void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD);
 void TestDepend();
-void ReadImplicit(FileD* file_d, std::vector<ImplD*>& IDRoot);
+void ReadImplicit(FileD* file_d, std::vector<Implicit*>& IDRoot);
 void RdKumul();
 void RdRoleField(Additive* AD);
 void RdImper(Additive* AD);
