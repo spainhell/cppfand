@@ -374,7 +374,7 @@ void Cpy(HANDLE h, int sz, ThFile* F2)
 		F2->WriteBuf(false);
 		RunMsgN(i);
 	}
-	delete F2;
+	//delete F2;
 	RunMsgOff();
 }
 
