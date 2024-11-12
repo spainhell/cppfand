@@ -449,28 +449,15 @@ void TestUserView(FileD* file_d)
 	EditOpt EO;
 	EO.UserSelFlds = true;
 	g_compiler->RdLex();
+
 	while (true) {
 		g_compiler->TestIdentif();
 		TestDupl(file_d);
-
-		//FileD* FD = FileDRoot;
-		//while (FD != nullptr) {
-		//	TestDupl(FD);
-		//	FD = FD->pChain;
-		//}
 
 		for (FileD* f : CRdb->v_files) {
 			TestDupl(f);
 		}
 
-		/*StringListEl* S = new StringListEl();
-		S->S = LexWord;
-		if (file_d->ViewNames == nullptr) {
-			file_d->ViewNames = S;
-		}
-		else {
-			ChainLast(file_d->ViewNames, S);
-		}*/
 		std::string view_name = LexWord;
 		g_compiler->RdLex();
 		std::string view_rights = RdByteList();
@@ -480,34 +467,31 @@ void TestUserView(FileD* file_d)
 		g_compiler->Accept(':');
 
 		XKey* K = g_compiler->RdViewKey(file_d); // nacteni klice, podle ktereho budou polozky setrideny
+
 		if (K != nullptr) {
 			g_compiler->Accept(',');
 			EO.ViewKey = K;
 		}
+
 		RdBegViewDcl(&EO);
+
 		while (Lexem == ',') {
 			if (!RdViewOpt(&EO, file_d)) {
 				g_compiler->Error(44);
 			}
 		}
+
 		if (Lexem == ';') {
 			g_compiler->RdLex();
 			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 		}
+
 		break;
 	}
 }
 
 void TestDupl(FileD* FD)
 {
-	/*StringList S;
-	S = FD->ViewNames;
-	while (S != nullptr) {
-		std::string tmp = LexWord;
-		if (EquUpCase(S->S, tmp)) g_compiler->Error(26);
-		S = (StringList)S->pChain;
-	}*/
-
 	for (std::string& view_name : FD->ViewNames) {
 		size_t i = view_name.find_first_of(':');
 		std::string name_only = view_name.substr(0, i);
@@ -1214,22 +1198,24 @@ void RdRoleField(Additive* AD)
 	g_compiler->Accept('.');
 	FieldDescr* F = g_compiler->RdFldName(AD->File2);
 	AD->Field = F;
-	if ((F->Flg & f_Stored) == 0) g_compiler->OldError(14);
-	if (g_compiler->IsKeyArg(F, AD->File2)) g_compiler->OldError(135);
+	if ((F->Flg & f_Stored) == 0) {
+		g_compiler->OldError(14);
+	}
+	if (g_compiler->IsKeyArg(F, AD->File2)) {
+		g_compiler->OldError(135);
+	}
 }
 
 void RdImper(Additive* AD)
 {
 	if (Lexem == '!') {
-		g_compiler->RdLex(); AD->Create = 1;
+		g_compiler->RdLex();
+		AD->Create = 1;
 		if (AD->LD != nullptr) {
-			//KeyFldD* KF = AD->LD->ToKey->KFlds;
-			//while (KF != nullptr) {
 			for (KeyFldD* KF : AD->LD->ToKey->KFlds) {
 				if ((KF->FldD->Flg & f_Stored) == 0) {
 					g_compiler->OldError(148);
 				}
-				//KF = (KeyFldD*)KF->pChain;
 			}
 		}
 		if (Lexem == '!') {
@@ -1270,10 +1256,13 @@ void SetHCatTyp(FileD* file_d, FileType FDTyp)
 void GetTFileD(FileD* file_d, FileType file_type)
 {
 	if (!HasTT && (file_d->FF->TF == nullptr)) return;
+
 	if (file_d->FF->TF == nullptr) {
 		file_d->FF->TF = new FandTFile(file_d->FF);
 	}
+
 	file_d->FF->TF->Handle = nullptr;
+
 	if (file_type == FileType::DBF) {
 		file_d->FF->TF->Format = FandTFile::DbtFormat;
 	}
@@ -1290,6 +1279,7 @@ void GetXFileD(FileD* file_d)
 		if (file_d->FF->XF == nullptr) {
 			file_d->FF->XF = new FandXFile(file_d->FF);
 		}
+
 		file_d->FF->XF->Handle = nullptr;
 	}
 }
