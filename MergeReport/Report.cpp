@@ -2011,7 +2011,7 @@ void Report::MoveForwToRec(InpD* ID)
 	CRecPtr = CFile->FF->RecPtr;
 	Move(ID->ForwRecPtr, CRecPtr, CFile->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
-	// LogicControl* C = ID->Chk;
+	// LogicControl* C = ID->Checks;
 	if (!ID->Chk.empty()) { //if (C != nullptr) {
 		ID->Error = false;
 		ID->Warning = false;

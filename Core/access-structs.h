@@ -1,5 +1,6 @@
 #pragma once
 #include "base.h"
+#include "Implicit.h"
 #include "Rdb.h"
 #include "../fandio/XKey.h"
 
@@ -25,12 +26,6 @@ struct structXPath
 {
 	int Page = 0;
 	WORD I = 0;
-};
-
-struct ImplD
-{
-	FieldDescr* FldD = nullptr;
-	FrmlElem* Frml = nullptr;
 };
 
 struct LiRoots

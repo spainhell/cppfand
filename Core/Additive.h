@@ -8,11 +8,16 @@ class FileD;
 class FieldDescr;
 class LogicControl;
 
-class AddD // r135
+
+/// <summary>
+/// Additive changes class - #A
+///	Represents an additive change definition in '#A' of chapter F
+/// </summary>
+class Additive
 {
 public:
-	AddD() {}
-	//AddD(const AddD& orig);
+	Additive();
+	//Additive(const Additive& orig);
 	FieldDescr* Field = nullptr;
 	FileD* File2 = nullptr;
 	LinkD* LD = nullptr;

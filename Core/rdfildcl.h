@@ -1,7 +1,7 @@
 #pragma once
 #include <set>
 
-#include "AddD.h"
+#include "Additive.h"
 #include "../Common/pstring.h"
 #include "rdrun.h"
 #include "EditOpt.h"
@@ -28,11 +28,11 @@ void LookForK(FileD* file_d, pstring* Name, FileD* F);
 XKey* RdFileOrAlias1(FileD* F);
 void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD);
 void TestDepend();
-void RdImpl(FileD* file_d, std::vector<ImplD*>& IDRoot);
+void ReadImplicit(FileD* file_d, std::vector<ImplD*>& IDRoot);
 void RdKumul();
-void RdRoleField(AddD* AD);
-void RdImper(AddD* AD);
-void RdAssign(AddD* AD);
+void RdRoleField(Additive* AD);
+void RdImper(Additive* AD);
+void RdAssign(Additive* AD);
 void SetHCatTyp(FileD* file_d, FileType FDTyp);
 void GetTFileD(FileD* file_d, FileType file_type);
 void GetXFileD(FileD* file_d);

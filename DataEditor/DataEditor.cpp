@@ -2209,7 +2209,7 @@ LogicControl* DataEditor::CompChk(EFldD* D, char Typ)
 	bool f = (Typ == 'F' || Typ == '?');
 	LogicControl* result = nullptr;
 
-	for (LogicControl* C : D->Chk) {
+	for (LogicControl* C : D->Checks) {
 		if ((w && C->Warning || f && !C->Warning) 
 			&& !RunBool(file_d_, C->Bool, record_)) {
 			result = C;
@@ -3289,7 +3289,7 @@ void DataEditor::AutoGraph()
 bool DataEditor::IsDependItem()
 {
 	if (!IsNewRec && (edit_->NEdSet == 0)) return false;
-	//DepD* Dp = CFld->Dep;
+	//Dependency* Dp = CFld->Dependencies;
 	//while (Dp != nullptr) {
 	//	if (RunBool(Dp->Bool)) {
 	//		return true;
@@ -3297,7 +3297,7 @@ bool DataEditor::IsDependItem()
 	//	Dp = Dp->pChain;
 	//}
 
-	for (const DepD* dep : (*CFld)->Dep) {
+	for (const Dependency* dep : (*CFld)->Dependencies) {
 		if (RunBool(file_d_, dep->Bool, record_)) {
 			return true;
 		}
@@ -3308,7 +3308,7 @@ bool DataEditor::IsDependItem()
 
 void DataEditor::SetDependItem()
 {
-	for (const DepD* dep : (*CFld)->Dep) {
+	for (const Dependency* dep : (*CFld)->Dependencies) {
 		if (RunBool(file_d_, dep->Bool, record_)) {
 			AssignFld((*CFld)->FldD, dep->Frml);
 			return;

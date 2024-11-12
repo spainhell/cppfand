@@ -4,7 +4,8 @@
 class FrmlElem;
 
 /// <summary>
-/// Logic control class - chapter #L
+/// Logic control class - #L
+///	Represents a logic control definition in '#I' of chapter F
 /// </summary>
 class LogicControl
 {

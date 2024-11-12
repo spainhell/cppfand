@@ -35,7 +35,7 @@ private:
 	EFldD* LstUsedFld();
 	void SetFlag(FieldDescr* F);
 	void SetFrmlFlags(FrmlElem* Z);
-	void RdDep(FileD* file_d);
+	void ReadDependencies(FileD* file_d);
 	void RdCheck();
 	void RdImpl(FileD* file_d);
 	void RdDepChkImpl(EditD* edit);

@@ -2,6 +2,7 @@
 
 #include "../Core/LogicControl.h"
 #include "../Core/Compiler.h"
+#include "../Core/Dependency.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
@@ -558,7 +559,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		}
 		else if (edit_->VK == nullptr) {
 			edit_->VK = edit_->FD->Keys.empty() ? nullptr : edit_->FD->Keys[0];
-	}
+		}
 #ifdef FandSQL
 		if (file_d->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(file_d->Name); RunError(652); }
 #endif
@@ -570,7 +571,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 				RunError(663);
 			}
 		}
-}
+	}
 	if (EO->StartFieldZ != nullptr) {
 		std::string rss = RunString(file_d, EO->StartFieldZ, record);
 		std::string s = TrailChar(rss, ' ');
@@ -789,37 +790,43 @@ void EditReader::SetFlag(FieldDescr* F)
 	}
 }
 
-void EditReader::RdDep(FileD* file_d)
+/// <summary>
+/// Read dependencies - #D
+/// </summary>
+/// <param name="file_d"></param>
+void EditReader::ReadDependencies(FileD* file_d)
 {
-	FrmlElem* Bool = nullptr;
-	FrmlElem* Z = nullptr;
-	EFldD* D = nullptr;
 	char FTyp = '\0';
-	DepD* Dp = nullptr;
 
 	g_compiler->processing_F = file_d;
 	g_compiler->RdLex();
-label1:
+
 	g_compiler->Accept('(');
-	Bool = g_compiler->RdBool(nullptr);
+	FrmlElem* Bool = g_compiler->RdBool(nullptr);
 	g_compiler->Accept(')');
-label2:
-	D = FindEFld_E(g_compiler->RdFldName(file_d));
-	g_compiler->Accept(_assign);
-	Z = g_compiler->RdFrml(FTyp, nullptr);
-	if (D != nullptr) {
-		Dp = new DepD();
-		Dp->Bool = Bool;
-		Dp->Frml = Z;
-		D->Dep.push_back(Dp);
-	}
-	if (Lexem == ';') {
-		g_compiler->RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A))
-		{
-			if (Lexem == '(') goto label1;
-			else goto label2;
+
+	while (true) {
+		EFldD* D = FindEFld_E(g_compiler->RdFldName(file_d));
+		g_compiler->Accept(_assign);
+		FrmlElem* Z = g_compiler->RdFrml(FTyp, nullptr);
+
+		if (D != nullptr) {
+			Dependency* dep = new Dependency(Bool, Z);
+			D->Dependencies.push_back(dep);
 		}
+
+		if (Lexem == ';') {
+			g_compiler->RdLex();
+			if (!(Lexem == '#' || Lexem == 0x1A)) {
+				if (Lexem == '(') {
+					g_compiler->Accept('(');
+					Bool = g_compiler->RdBool(nullptr);
+					g_compiler->Accept(')');
+				}
+				continue;
+			}
+		}
+		break;
 	}
 }
 
@@ -836,13 +843,12 @@ void EditReader::RdCheck()
 		EFldD* D = LstUsedFld();
 
 		if (D != nullptr) {
-			D->Chk.push_back(C);
-			//if (D->Chk == nullptr) D->Chk = C;
-			//else ChainLast(D->Chk, C);
+			D->Checks.push_back(C);
 		}
 		else {
 			delete C; C = nullptr;
 		}
+
 		if (Lexem == ';') {
 			g_compiler->SkipBlank(false);
 			Low = CurrPos;
@@ -869,11 +875,7 @@ void EditReader::RdImpl(FileD* file_d)
 			D->Impl = Z;
 		}
 		else {
-			ImplD* ID = new ImplD();
-			ID->FldD = F;
-			ID->Frml = Z;
-			//if (edit_->Impl == nullptr) edit_->Impl = ID;
-			//else ChainLast(edit_->Impl, ID);
+			ImplD* ID = new ImplD(F, Z);
 			edit_->Impl.push_back(ID);
 		}
 
@@ -899,7 +901,7 @@ void EditReader::RdUDLI(FileD* file_d)
 	}
 	if ((Lexem == '#') && (ForwChar == 'D')) {
 		g_compiler->RdLex();
-		RdDep(file_d);
+		ReadDependencies(file_d);
 	}
 	if ((Lexem == '#') && (ForwChar == 'L')) {
 		g_compiler->RdLex();

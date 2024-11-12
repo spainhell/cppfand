@@ -973,7 +973,7 @@ void Merge::MoveForwToRecM(InpD* ID)
 	CRecPtr = CFile->FF->RecPtr;
 	memcpy(CRecPtr, ID->ForwRecPtr, CFile->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
-	//LogicControl* C = ID->Chk;
+	//LogicControl* C = ID->Checks;
 	//if (C != nullptr) {
 	if (!ID->Chk.empty()) {
 		ID->Error = false;
