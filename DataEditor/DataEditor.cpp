@@ -3,7 +3,7 @@
 #include "../TextEditor/TextEditor.h"
 #include "../TextEditor/EditorHelp.h"
 #include "EditReader.h"
-#include "../Core/ChkD.h"
+#include "../Core/LogicControl.h"
 #include "../Core/Compiler.h"
 #include "../Core/EditOpt.h"
 #include "../Core/FieldDescr.h"
@@ -2203,19 +2203,20 @@ bool DataEditor::DeleteRecProc()
 	return result;
 }
 
-ChkD* DataEditor::CompChk(EFldD* D, char Typ)
+LogicControl* DataEditor::CompChk(EFldD* D, char Typ)
 {
 	bool w = params_->WarnSwitch && (Typ == 'W' || Typ == '?');
 	bool f = (Typ == 'F' || Typ == '?');
-	//ChkD* C = D->Chk;
-	ChkD* result = nullptr;
-	for (ChkD* C : D->Chk) { //while (C != nullptr) {
-		if ((w && C->Warning || f && !C->Warning) && !RunBool(file_d_, C->Bool, record_)) {
+	LogicControl* result = nullptr;
+
+	for (LogicControl* C : D->Checks) {
+		if ((w && C->Warning || f && !C->Warning) 
+			&& !RunBool(file_d_, C->Bool, record_)) {
 			result = C;
 			break;
 		}
-		//C = C->pChain;
 	}
+
 	return result;
 }
 
@@ -2223,6 +2224,7 @@ void DataEditor::FindExistTest(FrmlElem* Z, LinkD** LD)
 {
 	*LD = nullptr;
 	if (Z == nullptr) return;
+
 	switch (Z->Op) {
 	case _field: {
 		auto iZ = (FrmlElem7*)Z;
@@ -2236,7 +2238,10 @@ void DataEditor::FindExistTest(FrmlElem* Z, LinkD** LD)
 	}
 	default: {
 		auto iZ = (FrmlElemFunction*)Z;
-		if (Z->Op >= 0x60 && Z->Op <= 0xAF) /*1-ary*/ { FindExistTest(iZ->P1, LD); break; }
+		if (Z->Op >= 0x60 && Z->Op <= 0xAF) /*1-ary*/ {
+			FindExistTest(iZ->P1, LD);
+			break;
+		}
 		if (Z->Op >= 0xB0 && Z->Op <= 0xEF) /*2-ary*/ {
 			FindExistTest(iZ->P1, LD);
 			if (*LD == nullptr) FindExistTest(iZ->P2, LD);
@@ -2519,12 +2524,12 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	DisplEditWw();
 }
 
-void DataEditor::DisplChkErr(ChkD* C)
+void DataEditor::DisplChkErr(LogicControl* logic_control)
 {
 	LinkD* LD = nullptr;
 
-	FindExistTest(C->Bool, &LD);
-	if (!C->Warning && (LD != nullptr) && ForNavigate(LD->ToFD) && (*CFld)->Ed(IsNewRec)) {
+	FindExistTest(logic_control->Bool, &LD);
+	if (!logic_control->Warning && (LD != nullptr) && ForNavigate(LD->ToFD) && (*CFld)->Ed(IsNewRec)) {
 		FileD* cf = file_d_;
 		uint8_t* cr = record_;
 
@@ -2546,14 +2551,17 @@ void DataEditor::DisplChkErr(ChkD* C)
 			}
 		}
 	}
-	if (!C->HelpName.empty()) {
+
+	if (!logic_control->HelpName.empty()) {
 		if (F10SpecKey == __SHIFT_F7) F10SpecKey = 0xfffe;
 		else F10SpecKey = __F1;
 	}
-	SetMsgPar(RunString(file_d_, C->TxtZ, record_));
+
+	SetMsgPar(RunString(file_d_, logic_control->TxtZ, record_));
 	WrLLF10Msg(110);
+
 	if (Event.Pressed.KeyCombination() == __F1) {
-		Help(file_d_->ChptPos.rdb, C->HelpName, false);
+		Help(file_d_->ChptPos.rdb, logic_control->HelpName, false);
 	}
 	else if (Event.Pressed.KeyCombination() == __SHIFT_F7) {
 		UpwEdit(LD);
@@ -2691,10 +2699,10 @@ int DataEditor::UpdateIndexes()
 bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 {
 	int N = 0, CNew = 0;
-	ImplD* ID = nullptr;
+	Implicit* ID = nullptr;
 	double time = 0.0;
 	LongStr* s = nullptr;
-	ChkD* C = nullptr;
+	LogicControl* C = nullptr;
 	LockMode OldMd = LockMode::NullMode;
 	Displ = false;
 	bool result = false;
@@ -2711,7 +2719,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		//	AssgnFrml(file_d_, record_, ID->FldD, ID->Frml, true, false);
 		//	ID = ID->pChain;
 		//}
-		for (ImplD* id : edit_->Impl) {
+		for (Implicit* id : edit_->Impl) {
 			AssgnFrml(file_d_, record_, id->FldD, id->Frml, true, false);
 		}
 	}
@@ -3168,7 +3176,7 @@ void DataEditor::CheckFromHere()
 	while (true) {
 		if (!file_d_->DeletedFlag(record_))
 			while (D != edit_->FirstFld.end()) {
-				ChkD* C = CompChk(*D, '?');
+				LogicControl* C = CompChk(*D, '?');
 				if (C != nullptr) {
 					if (BaseRec + edit_->NRecs - 1 < N) {
 						BaseRec = N;
@@ -3281,7 +3289,7 @@ void DataEditor::AutoGraph()
 bool DataEditor::IsDependItem()
 {
 	if (!IsNewRec && (edit_->NEdSet == 0)) return false;
-	//DepD* Dp = CFld->Dep;
+	//Dependency* Dp = CFld->Dependencies;
 	//while (Dp != nullptr) {
 	//	if (RunBool(Dp->Bool)) {
 	//		return true;
@@ -3289,7 +3297,7 @@ bool DataEditor::IsDependItem()
 	//	Dp = Dp->pChain;
 	//}
 
-	for (const DepD* dep : (*CFld)->Dep) {
+	for (const Dependency* dep : (*CFld)->Dependencies) {
 		if (RunBool(file_d_, dep->Bool, record_)) {
 			return true;
 		}
@@ -3300,7 +3308,7 @@ bool DataEditor::IsDependItem()
 
 void DataEditor::SetDependItem()
 {
-	for (const DepD* dep : (*CFld)->Dep) {
+	for (const Dependency* dep : (*CFld)->Dependencies) {
 		if (RunBool(file_d_, dep->Bool, record_)) {
 			AssignFld((*CFld)->FldD, dep->Frml);
 			return;
@@ -3382,7 +3390,7 @@ bool DataEditor::ProcessEnter(uint16_t mode)
 {
 	int i = 0;
 	bool b = false;
-	ChkD* C = nullptr;
+	LogicControl* C = nullptr;
 	EdExitD* X = nullptr;
 	WORD Brk = 0, NR = 0;
 	bool displ = false;
@@ -3930,7 +3938,7 @@ bool DataEditor::EditItemProc(bool del, bool ed, WORD& Brk)
 {
 	double R = 0;
 	bool b = false;
-	ChkD* C = nullptr;
+	LogicControl* C = nullptr;
 
 	EFldD* eFld = *CFld;
 	FieldDescr* F = eFld->FldD;

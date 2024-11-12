@@ -61,19 +61,19 @@ const BYTE prDen240 = 30;
 const BYTE prColor = 31;
 const BYTE prClose = 32;
 
-const BYTE RMsgIdx = 0;
-const BYTE BgiEgaVga = 1;
-const BYTE BgiHerc = 2;
-const BYTE ChrLittKam = 3;
-const BYTE ChrTripKam = 4;
-const BYTE Ega8x14K = 5;
-const BYTE Vga8x16K = 6;
-const BYTE Vga8x19K = 7;
-const BYTE Ega8x14L = 8;
-const BYTE Vga8x16L = 9;
-const BYTE Vga8x19L = 10;
-const BYTE ChrLittLat = 11;
-const BYTE ChrTripLat = 12;
+//const BYTE RMsgIdx = 0;
+//const BYTE BgiEgaVga = 1;
+//const BYTE BgiHerc = 2;
+//const BYTE ChrLittKam = 3;
+//const BYTE ChrTripKam = 4;
+//const BYTE Ega8x14K = 5;
+//const BYTE Vga8x16K = 6;
+//const BYTE Vga8x19K = 7;
+//const BYTE Ega8x14L = 8;
+//const BYTE Vga8x16L = 9;
+//const BYTE Vga8x19L = 10;
+//const BYTE ChrLittLat = 11;
+//const BYTE ChrTripLat = 12;
 const BYTE LatToWinCp = 13;
 const BYTE KamToWinCp = 14;
 const BYTE WinCpToLat = 15;
@@ -86,7 +86,9 @@ enum instr_type
 	_gt = 0x4, _ge = 0x5, _ne = 0x6,
 	_subrange = 0x7, _number = 0x8, _assign = 0x9, _identifier = 0xA,
 	_addass = 0xB, _quotedstr = 0xC,
-	_const = 0x10, //{float/string/boolean},             {0-ary instructions}
+
+	// *** 0-ary instructions ***
+	_const = 0x10, //{float/string/boolean},
 	_field = 0x11, _getlocvar = 0x12, // {fieldD}, {BPOfs},
 	_access = 0x13, // {fieldD or nil for exist,newfileD,linkD or nil},
 	_recvarfld = 0x14, // {fieldD,fileD,recptr}
@@ -112,7 +114,9 @@ enum instr_type
 	_testmode = 0x4d,
 	_count = 0x4f, // count of records in file in IDA (FrmlElemInp)
 	_mergegroup = 0x50, // for (FrmlElemMerge)
-	_newfile = 0x60,  // {newfile,newRP},                      // {1-ary instructions}
+
+	// *** 1-ary instructions ***
+	_newfile = 0x60,  // {newfile,newRP},
 	_lneg = 0x61,
 	_inreal = 0x62, _instr = 0x63,  // {precision,constlst}, {tilda,constlst},
 	_isdeleted = 0x64, _setmybp = 0x65,  // {RecFD}
@@ -131,7 +135,9 @@ enum instr_type
 	_accrecno = 0x98,  // {v_files,FldD},    // {rdb,S,B}
 	_promptyn = 0x99,  // {BS}
 	_conv = 0xa0,   // { used in Prolog}
-	_and = 0xb1, _or = 0xb2, _limpl = 0xb3, _lequ = 0xb4,  // {2-ary instructions}
+
+	// *** 2-ary instructions ***
+	_and = 0xb1, _or = 0xb2, _limpl = 0xb3, _lequ = 0xb4,
 	_compreal = 0xb5, _compstr = 0xb6,    // {compop,precision}  // {compop,tilda},     // {B}
 	_concat = 0xc0, // {S}
 	_repeatstr = 0xc2, // {SSR}
@@ -144,7 +150,9 @@ enum instr_type
 	_equmask = 0xd2,   // {BSS}
 	_prompt = 0xd3, // {fieldD},   // {rdb,S,B}
 	_portin = 0xd4, // {RBR}
-	_cond = 0xf0, // {bool or nil,frml,continue or nil},    // {3-ary instructions}
+
+	// *** 3-ary instructions ***
+	_cond = 0xf0, // {bool or nil,frml,continue or nil},
 	_copy = 0xf1, _str = 0xf2, // {S}
 	_selectstr = 0xf3, _copyline = 0xf4,  // {SSRR}
 	_pos = 0xf5, _replace = 0xf6, // {options}, // {options},   // {RSSR}

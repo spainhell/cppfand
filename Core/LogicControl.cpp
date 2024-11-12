@@ -1,11 +1,10 @@
-#include "ChkD.h"
+#include "LogicControl.h"
 #include "models/FrmlElem.h"
 
-ChkD::ChkD()
-{
-}
+LogicControl::LogicControl()
+= default;
 
-ChkD::ChkD(const ChkD& orig)
+LogicControl::LogicControl(const LogicControl& orig)
 {
 	if (orig.Bool != nullptr) {
 		Bool = CopyFrmlElem(orig.Bool);
@@ -16,3 +15,6 @@ ChkD::ChkD(const ChkD& orig)
 	}
 	Warning = orig.Warning;
 }
+
+LogicControl::~LogicControl()
+= default;

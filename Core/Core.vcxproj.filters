@@ -18,7 +18,7 @@
     <ClCompile Include="access.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AddD.cpp">
+    <ClCompile Include="Additive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="base.cpp">
@@ -30,7 +30,7 @@
     <ClCompile Include="CfgFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ChkD.cpp">
+    <ClCompile Include="LogicControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Coding.cpp">
@@ -126,6 +126,12 @@
     <ClCompile Include="Users.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Dependency.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Implicit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="access-structs.h">
@@ -134,7 +140,7 @@
     <ClInclude Include="access.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AddD.h">
+    <ClInclude Include="Additive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="base.h">
@@ -146,7 +152,7 @@
     <ClInclude Include="CfgFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ChkD.h">
+    <ClInclude Include="LogicControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Coding.h">
@@ -255,6 +261,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Users.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependency.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implicit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,7 +6,7 @@
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
-#include "ChkD.h"
+#include "LogicControl.h"
 #include "KeyFldD.h"
 #include "rdproc.h"
 #include "runfrml.h"
@@ -197,10 +197,10 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	return F;
 }
 
-ChkD* RdChkD(WORD Low)
+LogicControl* ReadLogicControl(WORD Low)
 {
-	ChkD* C = new ChkD();
-	ChkD* result = C;
+	LogicControl* C = new LogicControl();
+	LogicControl* result = C;
 	C->Bool = g_compiler->RdBool(nullptr);
 	WORD Upper = OldErrPos;
 	if (Lexem == '?') {
@@ -225,21 +225,21 @@ ChkD* RdChkD(WORD Low)
 	return result;
 }
 
-void RdChkDChain(std::vector<ChkD*>& C)
+void RdChkDChain(std::vector<LogicControl*>& C)
 {
 	g_compiler->SkipBlank(false);
 	uint16_t low = CurrPos;
 	g_compiler->RdLex();
 
 	while (true) {
-		ChkD* check = RdChkD(low);
+		LogicControl* check = ReadLogicControl(low);
 		C.push_back(check);
 
 		//if (*CRoot == nullptr) {
-		//	*CRoot = RdChkD(low);
+		//	*CRoot = ReadLogicControl(low);
 		//}
 		//else {
-		//	ChainLast(*CRoot, RdChkD(low));
+		//	ChainLast(*CRoot, ReadLogicControl(low));
 		//}
 
 		if (Lexem == ';') {
@@ -254,7 +254,7 @@ void RdChkDChain(std::vector<ChkD*>& C)
 	}
 }
 
-void RdChkDsFromPos(FileD* FD, std::vector<ChkD*>& C)
+void RdChkDsFromPos(FileD* FD, std::vector<LogicControl*>& C)
 {
 	if (FD->OrigFD != nullptr) {
 		// this v_files was created as 'LIKE'
@@ -838,7 +838,7 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 			}
 			if ((Lexem == '#') && (ForwChar == 'I')) {
 				g_compiler->RdLex();
-				RdImpl(file_d, li->Impls);
+				ReadImplicit(file_d, li->Impls);
 			}
 
 			// TODO: delete 'li'?
@@ -1118,23 +1118,31 @@ label2:
 	ReleaseStore(&p);
 }
 
-void RdImpl(FileD* file_d, std::vector<ImplD*>& IDRoot)
+/// <summary>
+/// read implicit values - #I
+/// </summary>
+/// <param name="file_d"></param>
+/// <param name="IDRoot"></param>
+void ReadImplicit(FileD* file_d, std::vector<Implicit*>& IDRoot)
 {
-	FrmlElem* Z = nullptr;
-	FieldDescr* F = nullptr;
 	char FTyp = '\0';
-	ImplD* ID = nullptr;
 	g_compiler->RdLex();
 
 	while (true) {
-		F = g_compiler->RdFldName(file_d);
-		if ((F->Flg & f_Stored) == 0) g_compiler->OldError(14);
+		FieldDescr* F = g_compiler->RdFldName(file_d);
+
+		if ((F->Flg & f_Stored) == 0) {
+			g_compiler->OldError(14);
+		}
+
 		g_compiler->Accept(_assign);
-		Z = g_compiler->RdFrml(FTyp, nullptr);
-		if (FTyp != F->frml_type) g_compiler->OldError(12);
-		ID = new ImplD();
-		ID->FldD = F;
-		ID->Frml = Z;
+		FrmlElem* Z = g_compiler->RdFrml(FTyp, nullptr);
+
+		if (FTyp != F->frml_type) {
+			g_compiler->OldError(12);
+		}
+
+		Implicit* ID = new Implicit(F, Z);
 		IDRoot.push_back(ID);
 
 		if (Lexem == ';') {
@@ -1154,7 +1162,7 @@ void RdKumul()
 	g_compiler->RdLex();
 
 	while (true) {
-		AddD* AD = new AddD();
+		Additive* AD = new Additive();
 		g_compiler->processing_F->Add.push_back(AD);
 
 		if (g_compiler->IsKeyWord("IF")) {
@@ -1166,17 +1174,21 @@ void RdKumul()
 		}
 		else {
 			RdRoleField(AD);
+
 			if (Lexem == '(') {
 				Low = CurrPos;
 				g_compiler->RdLex();
 				FileD* previous = g_compiler->processing_F;
 				g_compiler->processing_F = AD->File2;
-				AD->Chk = RdChkD(Low);
+				AD->Chk = ReadLogicControl(Low);
 				g_compiler->processing_F = previous;
 				g_compiler->Accept(')');
 			}
 			RdImper(AD);
-			if ((AD->Chk == nullptr) && (Lexem == _assign)) RdAssign(AD);
+
+			if ((AD->Chk == nullptr) && (Lexem == _assign)) {
+				RdAssign(AD);
+			}
 			else {
 				g_compiler->Accept(_addass);
 				AD->Assign = false;
@@ -1184,15 +1196,17 @@ void RdKumul()
 				AD->Frml = g_compiler->RdRealFrml(nullptr);
 			}
 		}
+
 		if (Lexem == ';') {
 			g_compiler->RdLex();
 			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 		}
+
 		break;
 	}
 }
 
-void RdRoleField(AddD* AD)
+void RdRoleField(Additive* AD)
 {
 	if (!g_compiler->IsRoleName(true, g_compiler->processing_F, &AD->File2, &AD->LD)) {
 		g_compiler->Error(9);
@@ -1204,7 +1218,7 @@ void RdRoleField(AddD* AD)
 	if (g_compiler->IsKeyArg(F, AD->File2)) g_compiler->OldError(135);
 }
 
-void RdImper(AddD* AD)
+void RdImper(Additive* AD)
 {
 	if (Lexem == '!') {
 		g_compiler->RdLex(); AD->Create = 1;
@@ -1229,7 +1243,7 @@ void RdImper(AddD* AD)
 	}
 }
 
-void RdAssign(AddD* AD)
+void RdAssign(Additive* AD)
 {
 	FrmlElem* Z = nullptr; char FTyp = '\0';
 #ifdef FandSQL

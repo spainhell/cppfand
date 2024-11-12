@@ -1,7 +1,7 @@
 #include "rdrun.h"
 
-#include "AddD.h"
-#include "ChkD.h"
+#include "Additive.h"
+#include "LogicControl.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -47,7 +47,7 @@ void ResetLVBD()
 	LVBD.FceName = "";
 }
 
-bool Add(FileD* file_d, AddD* add_d, void* record, double value, bool back)
+bool Add(FileD* file_d, Additive* add_d, void* record, double value, bool back)
 {
 	bool result = true;
 
@@ -67,17 +67,17 @@ bool Add(FileD* file_d, AddD* add_d, void* record, double value, bool back)
 	return result;
 }
 
-bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, AddD* stop_add_d, LinkD* not_link_d, void* record)
+bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, void* record)
 {
 	BYTE* cr2 = nullptr;
 	BYTE* cr2_old = nullptr;
 	bool result = true;
-	AddD* add_d_back = nullptr;
+	Additive* add_d_back = nullptr;
 
 	try {
 		char kind2_old = 0;
 		char kind2 = 0;
-		for (AddD* add : file_d->Add) {
+		for (Additive* add : file_d->Add) {
 			if (add == stop_add_d) {
 				// TODO: tady se nema CFile a CRecPtr vracet zpet, ale asi ma zustat !!!
 				//ReleaseStore(&p);
@@ -184,7 +184,7 @@ void CrIndRec(FileD* file_d, void* record)
 	file_d->RecallRec(file_d->FF->NRecs, record);
 }
 
-bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord)
+bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord)
 {
 	bool result = true;
 	LinkD* ld = add_d->LD;
@@ -229,7 +229,7 @@ bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** 
 	return result;
 }
 
-bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back)
+bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back)
 {
 	if (file_d->Add.empty()) {
 		return true;
@@ -257,7 +257,7 @@ bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, in
 	return result;
 }
 
-void WrUpdRec(FileD* file_d, AddD* add_d, FileD* fd, void* rp, void* new_record, int n)
+void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, void* rp, void* new_record, int n)
 {
 	//XString x;
 	//LinkD* ld;
@@ -274,7 +274,7 @@ void WrUpdRec(FileD* file_d, AddD* add_d, FileD* fd, void* rp, void* new_record,
 		file_d->WriteRec(n, new_record);
 }
 
-bool Assign(FileD* file_d, AddD* add_d, void* record)
+bool Assign(FileD* file_d, Additive* add_d, void* record)
 {
 	double r = 0.0;
 	std::string s;
@@ -345,7 +345,7 @@ bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
 	LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
 	bool result = false;
 
-	for (AddD* add_d : file_d->Add) {
+	for (Additive* add_d : file_d->Add) {
 		if (file_d != add_d->File2) {
 			switch (kind) {
 			case 0: {

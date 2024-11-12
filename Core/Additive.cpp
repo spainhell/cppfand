@@ -1,13 +1,13 @@
-#include "AddD.h"
+#include "Additive.h"
 //#include "access-structs.h"
-//#include "ChkD.h"
+//#include "LogicControl.h"
 //#include "FieldDescr.h"
 //#include "FileD.h"
 //#include "models/FrmlElem.h"
 
-//AddD::AddD(const AddD& orig)
+//Additive::Additive(const Additive& orig)
 //{
-//	if (orig.Chain != nullptr) Chain = new AddD(*orig.Chain);
+//	if (orig.Chain != nullptr) Chain = new Additive(*orig.Chain);
 //	if (orig.Chain != nullptr) Field = new FieldDescr(*orig.Field);
 //	if (orig.Chain != nullptr) File2 = new FileD(*orig.File2);
 //	if (orig.Chain != nullptr && orig.LD != nullptr) { LD = new LinkD(*orig.LD); }
@@ -15,5 +15,8 @@
 //	if (orig.Chain != nullptr) Frml = CopyFrmlElem(orig.Frml);
 //	Assign = orig.Assign;
 //	if (orig.Chain != nullptr) Bool = CopyFrmlElem(orig.Bool);
-//	if (orig.Chain != nullptr && orig.Chk != nullptr) Chk = new ChkD(*orig.Chk);
+//	if (orig.Chain != nullptr && orig.Chk != nullptr) Chk = new LogicControl(*orig.Chk);
 //}
+Additive::Additive()
+{
+}

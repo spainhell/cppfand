@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "access.h"
+#include "Dependency.h"
 #include "FieldDescr.h"
 #include "legacy.h"
 #include "../DataEditor/EditD.h"
@@ -72,9 +73,9 @@ struct EFldD
 {
 	//EFldD* ChainBack = nullptr;
 	FieldDescr* FldD = nullptr;
-	std::vector<ChkD*> Chk;
+	std::vector<LogicControl*> Checks;
 	FrmlElem* Impl = nullptr;
-	std::vector<DepD*> Dep;
+	std::vector<Dependency*> Dependencies;
 	std::vector<XKey*> KL;
 	BYTE Page = 0, Col = 0, Ln = 0, L = 0;
 	WORD ScanNr = 0;
@@ -177,10 +178,10 @@ extern MergOpSt MergOpGroup;
 
 void ResetLVBD();
 void CrIndRec(FileD* file_d, void* record);
-bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord);
-bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back);
-void WrUpdRec(FileD* file_d, AddD* add_d, FileD* fd, void* rp, void* new_record, int n);
-bool Assign(FileD* file_d, AddD* add_d, void* record);
+bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord);
+bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back);
+void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, void* rp, void* new_record, int n);
+bool Assign(FileD* file_d, Additive* add_d, void* record);
 bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md);
 
 bool RunAddUpdate(FileD* file_d, char kind, void* old_record, LinkD* not_link_d, void* record);
@@ -196,6 +197,6 @@ bool RunAddUpdate(FileD* file_d, char kind, void* old_record, LinkD* not_link_d,
  * \param record record
  * \return bool
  */
-bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, AddD* stop_add_d, LinkD* not_link_d, void* record);
+bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, void* record);
 bool TestExitKey(WORD KeyCode, EdExitD* X);
 void SetCompileAll();

@@ -3,7 +3,7 @@
 #include "../fandio/FandFile.h"
 
 class FieldDescr;
-class AddD;
+class Additive;
 
 enum class FType
 {
@@ -44,7 +44,7 @@ public:
 
 	std::vector<FieldDescr*> FldD;
 	std::vector<XKey*> Keys;
-	std::vector<AddD*> Add;
+	std::vector<Additive*> Add;
 	std::vector<std::string> ViewNames;  // after each string BYTE string with user codes 
 
 	WORD GetNrKeys();

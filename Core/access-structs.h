@@ -1,12 +1,13 @@
 #pragma once
 #include "base.h"
+#include "Implicit.h"
 #include "Rdb.h"
 #include "../fandio/XKey.h"
 
 
 class Instr;
 class FileD;
-class ChkD;
+class LogicControl;
 class FrmlElem;
 class FrmlElemSum;
 class FieldDescr;
@@ -27,16 +28,10 @@ struct structXPath
 	WORD I = 0;
 };
 
-struct ImplD
-{
-	FieldDescr* FldD = nullptr;
-	FrmlElem* Frml = nullptr;
-};
-
 struct LiRoots
 {
-	std::vector<ChkD*> Chks;
-	std::vector<ImplD*> Impls;
+	std::vector<LogicControl*> Chks;
+	std::vector<Implicit*> Impls;
 };
 
 struct DBaseFld

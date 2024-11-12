@@ -12,11 +12,6 @@
 
 const WORD Alloc = 2048;
 
-struct DepD
-{
-	FrmlElem* Bool = nullptr;
-	FrmlElem* Frml = nullptr;
-};
 
 struct FuncD
 {
