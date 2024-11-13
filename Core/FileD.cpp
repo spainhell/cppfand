@@ -111,6 +111,10 @@ uint8_t* FileD::GetRecSpace() const
 	return result;
 }
 
+/// <summary>
+/// Deletes all text fields in the record from the TWork file
+/// </summary>
+/// <param name="record">data record pointer</param>
 void FileD::ClearRecSpace(void* record)
 {
 	if (FF->TF != nullptr) {
