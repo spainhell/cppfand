@@ -69,7 +69,7 @@ private:
     int LogRecNo(int N);
     bool IsSelectedRec(WORD I);
     bool EquOldNewRec();
-    void RdRec(int N);
+    void RdRec(int N, uint8_t* buffer);
     bool CheckOwner(EditD* E);
     bool CheckKeyIn(EditD* E);
     bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset);
@@ -87,8 +87,8 @@ private:
     void DisplRecNr(int N);
     void AdjustCRec();
     
-    void DuplFld(FileD* file_d1, FileD* file_d2, void* record1, void* record2, void* RPt, FieldDescr* field_d1,
-                 FieldDescr* field_d2);
+    void DuplFld(FileD* src_file, FileD* dst_file, uint8_t* src_buff, uint8_t* dst_buff, 
+				 void* RPt, FieldDescr* srd_fld, FieldDescr* dst_fld);
     bool IsFirstEmptyFld();
     void SetFldAttr(EFldD* D, WORD I, WORD Attr);
     void IVoff();
@@ -103,7 +103,7 @@ private:
     void WriteSL(std::vector<std::string>& SL);
     void DisplRecTxt();
     
-    void UpdMemberRef(void* POld, void* PNew);
+    void UpdMemberRef(uint8_t* POld, uint8_t* PNew);
     void WrJournal(char Upd, void* RP, double Time);
     bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md);
     bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd);
