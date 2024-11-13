@@ -42,7 +42,7 @@ public:
     void DisplEditWw();
     void GotoPrevRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld);
     void GotoNextRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld);
-    void GotoRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld);
+    void GotoRecFld(int NewRec, const std::vector<EFldD*>::iterator& NewFld);
     void SetNewCRec(int N, bool withRead);
     bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
     bool OpenEditWw();

@@ -1528,12 +1528,12 @@ void DataEditor::BuildWork()
 				if ((K != nullptr) && !K->InWork && (edit_->KIRoot.empty())) K = nullptr;
 			Scan = new XScan(file_d_, K, edit_->KIRoot, false);
 			Scan->Reset(boolP, edit_->SQLFilter, record_);
-			}
+		}
 		file_d_->FF->CreateWIndex(Scan, WK, 'W');
 		Scan->Close();
 		if (wk2 != nullptr) wk2->Close(file_d_);
 		ok = true;
-			}
+	}
 	catch (std::exception& e) {
 		// TODO: log error
 	}
@@ -1548,7 +1548,7 @@ void DataEditor::BuildWork()
 		GoExit();
 	}
 	ReleaseStore(&p);
-		}
+}
 
 void DataEditor::SetStartRec()
 {
@@ -1566,6 +1566,7 @@ void DataEditor::SetStartRec()
 			n = MaxL(1, MinL(n, CNRecs()));
 			IRec = MaxW(1, MinW(edit_->StartIRec, edit_->NRecs));
 			BaseRec = n - IRec + 1;
+
 			if (BaseRec <= 0) {
 				IRec += BaseRec - 1;
 				BaseRec = 1;
@@ -1628,8 +1629,8 @@ bool DataEditor::OpenEditWw()
 		}
 		else {
 			goto label3;
+		}
 	}
-}
 #ifdef FandSQL
 	if (!file_d_->IsSQLFile)
 #endif
@@ -1670,19 +1671,24 @@ bool DataEditor::OpenEditWw()
 		goto label1;
 	}
 	md2 = file_d_->NewLockMode(RdMode);
+
 	if (edit_->DownSet && (edit_->OwnerTyp == 'F')) {
 		md1 = edit_->DownLD->ToFD->NewLockMode(RdMode);
 		n = edit_->OwnerRecNo;
+
 		if ((n == 0) || (n > edit_->DownLD->ToFD->FF->NRecs)) {
 			edit_->DownLD->ToFD->RunErrorM(edit_->OldMd);
 			RunError(611);
 		}
+
 		edit_->DownLD->ToFD->ReadRec(n, edit_->DownRecPtr);
 		edit_->DownLD->ToFD->OldLockMode(md1);
 	}
+
 	if (params_->Subset) {
 		BuildWork();
 	}
+
 	if (!params_->Only1Record && HasIndex && VK->InWork) {
 		if (!params_->Subset) WK = (XWKey*)VK;
 		if (!file_d_->Keys.empty()) {
@@ -1693,13 +1699,15 @@ bool DataEditor::OpenEditWw()
 		}
 		params_->WasWK = true;
 		params_->Subset = true;
-		}
+	}
 #ifdef FandSQL
 	if (file_d_->IsSQLFile) Strm1->DefKeyAcc(WK);
 #endif
+
 	if (!params_->OnlyAppend) {
 		SetStartRec();
 	}
+
 	if (CNRecs() == 0)
 		if (params_->NoCreate) {
 			if (params_->Subset) {
@@ -1708,11 +1716,13 @@ bool DataEditor::OpenEditWw()
 			else {
 				FileMsg(file_d_, 115, '0');
 			}
+
 			EdBreak = 13;
 		label1:
 			if (params_->Subset && !params_->WasWK) {
 				WK->Close(file_d_);
 			}
+
 			file_d_->OldLockMode(edit_->OldMd);
 			result = false;
 			return result;
@@ -1733,18 +1743,27 @@ label3:
 	MarkStore(edit_->AfterE);
 	DisplEditWw();
 	result = true;
-	if (!params_->EdRecVar) file_d_->OldLockMode(md2);
-	if (IsNewRec) NewRecExit();
-	return result;
+
+	if (!params_->EdRecVar) {
+		file_d_->OldLockMode(md2);
 	}
+
+	if (IsNewRec) {
+		NewRecExit();
+	}
+
+	return result;
+}
 
 void DataEditor::RefreshSubset()
 {
 	LockMode md = file_d_->NewLockMode(RdMode);
+
 	if (params_->Subset && !(params_->OnlyAppend || params_->Only1Record || params_->WasWK)) {
 		WK->Close(file_d_);
 		BuildWork();
 	}
+
 	DisplAllWwRecs();
 	file_d_->OldLockMode(md);
 }
@@ -1761,12 +1780,13 @@ void DataEditor::GotoNextRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld
 	GotoRecFld(NewRec, NewFld);
 }
 
-void DataEditor::GotoRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld)
+void DataEditor::GotoRecFld(int NewRec, const std::vector<EFldD*>::iterator& NewFld)
 {
 	int NewIRec = 0, NewBase = 0, D = 0, Delta = 0;
 	WORD i = 0, Max = 0; LockMode md;
 	IVoff();
 	CFld = NewFld;
+
 	if (NewRec == CRec()) {
 		if (CPage != (*CFld)->Page) {
 			DisplWwRecsOrPage(CPage, &RT);
@@ -1776,38 +1796,54 @@ void DataEditor::GotoRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld)
 		}
 		return;
 	}
+
 	if (!params_->EdRecVar) {
 		md = file_d_->NewLockMode(RdMode);
 	}
+
 	if (NewRec > CNRecs()) {
 		NewRec = CNRecs();
 	}
+
 	if (NewRec <= 0) {
 		NewRec = 1;
 	}
+
 	if (params_->Select) {
 		SetRecAttr(IRec);
 	}
+
 	CFld = NewFld;
 	Max = edit_->NRecs;
 	Delta = NewRec - CRec();
 	NewIRec = IRec + Delta;
+
 	if ((NewIRec > 0) && (NewIRec <= Max)) {
 		IRec = NewIRec;
 		RdRec(CRec(), record_);
 		goto label1;
 	}
+
 	NewBase = BaseRec + Delta;
-	if (NewBase + Max - 1 > CNRecs()) NewBase = CNRecs() - pred(Max);
-	if (NewBase <= 0) NewBase = 1;
+
+	if (NewBase + Max - 1 > CNRecs()) {
+		NewBase = CNRecs() - pred(Max);
+	}
+
+	if (NewBase <= 0) {
+		NewBase = 1;
+	}
+
 	IRec = NewRec - NewBase + 1;
 	D = NewBase - BaseRec;
 	BaseRec = NewBase;
 	RdRec(CRec(), record_);
+
 	if (abs(D) >= Max) {
 		DisplWwRecsOrPage(CPage, &RT);
 		goto label2;
 	}
+
 	if (D > 0) {
 		MoveDispl(D + 1, 1, Max - D);
 		for (i = Max - D + 1; i <= Max; i++) DisplRec(i);
@@ -1847,7 +1883,7 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 			if (PNew != nullptr) {
 				xnew.PackKF(cf, LD->ToKey->KFlds, PNew);
 				if (xnew.S == xold.S) continue;
-		}
+			}
 #ifdef FandSQL
 			sql = LD->FromFD->IsSQLFile;
 #endif
@@ -1856,7 +1892,7 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 			p = LD->FromFD->GetRecSpace();
 			if (PNew != nullptr) {
 				p2 = LD->FromFD->GetRecSpace();
-			}
+		}
 			std::vector<KeyInD*> empty;
 			Scan = new XScan(LD->FromFD, k, empty, true);
 			Scan->ResetOwner(&xold, nullptr);
@@ -1878,7 +1914,7 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 					else
 #endif
 						LD->FromFD->FF->DeleteXRec(Scan->RecNr, true, p);
-			}
+				}
 				else {
 					Move(p, p2, LD->FromFD->FF->RecLen);
 					//kf = &LD->ToKey->KFlds;
@@ -1894,15 +1930,15 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						LD->FromFD->FF->OverWrXRec(Scan->RecNr, p, p2, p2);
-					}
-				goto label1;
 				}
+				goto label1;
+			}
 			Scan->Close();
 			LD->FromFD->ClearRecSpace(p);
-			
+
 			delete[] p; p = nullptr;
-			}
-	} // for
+	}
+} // for
 }
 
 void DataEditor::WrJournal(char Upd, void* RP, double Time)
@@ -2610,7 +2646,7 @@ bool DataEditor::OldRecDiffers()
 				(CompArea(Pchar(rec) + Displ, Pchar(edit_->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->pChain;
-	}
+}
 		goto label2;
 }
 	else
@@ -2884,7 +2920,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-	}
+}
 
 void DataEditor::DuplFromPrevRec()
 {
@@ -4783,7 +4819,7 @@ void DataEditor::DisplLL()
 	WORD n;
 	if (!edit_->Last.empty()) {
 		MsgLine = edit_->Last;
-		if (MsgLine.length() > 0) {
+		if (!MsgLine.empty()) {
 			WrLLMsgTxt();
 			DisplLASwitches();
 		}
