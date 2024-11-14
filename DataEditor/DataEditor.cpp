@@ -3776,18 +3776,23 @@ bool DataEditor::EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& B
 	MsgStr TxtMsgS;
 	MsgStr* PTxtMsgS;
 	int TxtXY = 0;
-	WORD R1 = 0, OldTxtPos = 0;
-	WORD TxtPos = 0, CtrlMsgNr = 0;
+	WORD R1 = 0;
+	WORD OldTxtPos = 0;
+	WORD TxtPos = 0; // vychozi pozice zobrazeni textu (index 1. znaku v editoru)
+	WORD CtrlMsgNr = 0;
 	WORD C = 0, LastLen = 0;
 	LongStr* S = nullptr;
-	char Kind = '\0'; LockMode md; void* p = nullptr; int i = 0, w = 0;
+	char Kind = '\0';
+	LockMode md;
+	void* p = nullptr;
+	int i = 0, w = 0;
 	std::vector<EdExitD*> X;
 	WORD iStk = 0;
 	struct { int N = 0; int I = 0; } Stk[maxStk];
 	std::string heslo;
 
 	MarkStore(p);
-	Srch = false; Brk = 0; TxtPos = 1; iStk = 0; TxtXY = 0;
+	Brk = 0;
 	auto result = true;
 	w = 0;
 	if (edit_->Head.empty()) w = PushW(1, 1, TxtCols, 1);
