@@ -1,5 +1,6 @@
 #include "DateTime.h"
 
+#include <chrono>
 #include <ctime>
 #include "base.h"
 #include "legacy.h"
@@ -109,7 +110,7 @@ void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 double Today()
 {
 	std::time_t t = std::time(0);   // get time now
-	struct tm lt;
+	std::tm lt;
 	errno_t err = localtime_s(&lt, &t);
 	return RDate(lt.tm_year + 1900, lt.tm_mon + 1, lt.tm_mday, 0, 0, 0, 0);
 }
@@ -117,7 +118,7 @@ double Today()
 std::string CppToday()
 {
 	std::time_t t = std::time(0);   // get time now
-	struct tm lt;
+	std::tm lt;
 	char buffer[32]{ '\0' };
 	errno_t err = localtime_s(&lt, &t);
 	strftime(buffer, sizeof(buffer), "%d.%m.%Y", &lt);
@@ -126,11 +127,13 @@ std::string CppToday()
 
 double CurrTime()
 {
-	std::time_t t = std::time(0);   // get time now
-	struct tm lt;
+	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();   // get time now
+	long long t = std::chrono::system_clock::to_time_t(now);
+	std::tm lt;
 	errno_t err = localtime_s(&lt, &t);
+	auto milli = (WORD)((std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000).count()/10);
 	//return RDate(1 + 1900, 1, 0, lt.tm_hour, lt.tm_min, lt.tm_sec, 0);
-	return RDate(1, 1, 0, lt.tm_hour, lt.tm_min, lt.tm_sec, 0);
+	return RDate(1, 1, 0, lt.tm_hour, lt.tm_min, lt.tm_sec, milli);
 }
 
 double ValDate(const std::string& text, std::string mask)

@@ -655,6 +655,8 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 	FileD* rdb_file = RdFileD(name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
 	rdb_d->v_files.push_back(rdb_file);
 
+	rdb_d->help_file = HelpFD; // Default help file is UFANDHLP or FANDHLP. It can be changed during compilation.
+
 	return rdb_d;
 }
 
@@ -764,13 +766,13 @@ void CloseChpt()
 	}
 }
 
-FileD* FindFD()
+FileD* FindFD(uint8_t* record)
 {
 	FileD* result = nullptr;
 	std::string d;
 	std::string name;
 	std::string ext;
-	std::string FName = OldTrailChar(' ', Chpt->loadS(ChptName, CRecPtr));
+	std::string FName = OldTrailChar(' ', Chpt->loadS(ChptName, record));
 	FSplit(FName, d, name, ext);
 
 	//FileD* FD = FileDRoot;
@@ -829,7 +831,8 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 		IsCompileErr = false;
 		uw = false;
 		mv = MausVisible;
-		const char STyp = rdb_editor->GetFileD()->loadS(ChptTyp, CRecPtr)[0];
+		uint8_t* rdb_record = rdb_editor->GetRecord();
+		const char STyp = rdb_editor->GetFileD()->loadS(ChptTyp, rdb_record)[0];
 		RP.rdb = CRdb;
 		RP.i_rec = rdb_editor->CRec();
 #ifdef FandSQL
@@ -851,7 +854,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 		else {
 			switch (STyp) {
 			case 'F': {
-				FD = FindFD();
+				FD = FindFD(rdb_record);
 				if (FD != nullptr && CC == __CTRL_F9) {
 					std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>(FD);
 					std::unique_ptr<EditOpt> edit_opt = std::make_unique<EditOpt>();

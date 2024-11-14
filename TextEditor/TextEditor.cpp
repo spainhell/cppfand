@@ -984,6 +984,12 @@ size_t TextEditor::GetLineStartIndex(size_t lineNr)
 		}
 		result = pos;
 	}
+
+	if (_lenT == result) {
+		// jsme na konci textu
+		TextLineNr = GetLineNumber(_lenT);
+	}
+
 	return result;
 }
 
