@@ -20,6 +20,8 @@ void val(pstring s, int& b, short& err);
 double valDouble(std::string& s, short& err);
 pstring copy(pstring source, size_t index, size_t count);
 void str(int input, pstring& output);
+void str(double input, pstring& output);
+void str(double input, std::string& output);
 void str(double input, int total, int right, pstring& output);
 void str(double input, int total, int right, std::string& output);
 void str(double input, int right, pstring& output);

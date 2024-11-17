@@ -152,6 +152,21 @@ void str(int input, pstring& output)
 	output.replace(a.c_str());
 }
 
+void str(double input, pstring& output)
+{
+	char buffer[255];
+	snprintf(buffer, sizeof(buffer), "%f", input);
+	std::string temp = buffer;
+	output = temp;
+}
+
+void str(double input, std::string& output)
+{
+	char buffer[255];
+	snprintf(buffer, sizeof(buffer), "%f", input);
+	output = buffer;
+}
+
 void str(double input, int total, int right, pstring& output)
 {
 	char buffer[255];

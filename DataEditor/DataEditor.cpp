@@ -3893,13 +3893,20 @@ label2:
 	}
 	screen.Window(1, 1, TxtCols, TxtRows);
 
-	if (WasUpd) UpdateEdTFld(S);
-	if ((OldTxtPos != TxtPos) && !Srch) UpdateTxtPos(TxtPos);
+	if (WasUpd) {
+		UpdateEdTFld(S);
+	}
+
+	if ((OldTxtPos != TxtPos) && !Srch) {
+		UpdateTxtPos(TxtPos);
+	}
+
 	delete S; S = nullptr;
 
 	if (Ed && !params_->WasUpdated) {
 		UnLockRec(edit_);
 	}
+
 	if (Srch) {
 		if (WriteCRec(false, Displ)) {
 			goto label31;

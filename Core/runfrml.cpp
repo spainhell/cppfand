@@ -1518,7 +1518,7 @@ XKey* GetFromKey(LinkD* LD)
 	// find key in LD->FromFD->Keys with the same index root as LD->IndexRoot
 	vector<XKey*>::iterator it = ranges::find_if(LD->FromFD->Keys, [LD](XKey* K) {
 		return K->IndexRoot == LD->IndexRoot;
-	});
+		});
 
 	if (it != LD->FromFD->Keys.end()) {
 		return *it;
@@ -1773,7 +1773,7 @@ label1:
 			double r = RunReal(file_d, iZ0->P1, record);
 			WORD l = RunInt(file_d, iZ0->P2, record);
 			BYTE m = RunInt(file_d, iZ0->P3, record);
-			pstring s;
+			std::string s;
 			if (m == 255) {
 				str(r, s);
 			}
@@ -1937,13 +1937,20 @@ void AddToLongStr(LongStr* S, void* P, WORD L)
 
 void StrMask(double R, pstring& Mask)
 {
-	pstring Num; WORD i = 0;
-	WORD sw = 2; WORD l = Mask.length();
-	WORD n = 0; WORD pos = l + 1;
+	pstring Num;
+	WORD i = 0;
+	WORD sw = 2;
+	WORD l = Mask.length();
+	WORD n = 0;
+	WORD pos = l + 1;
 	WORD pos1 = pos;
-	for (i = l; i >= 1; i--)
+
+	for (i = l; i >= 1; i--) {
 		switch (Mask[i]) {
-		case ',': if (sw == 2) sw = 1; break;
+		case ',': {
+			if (sw == 2) sw = 1;
+			break;
+		}
 		case '0':
 		case '*': {
 			pos = i;
@@ -1958,17 +1965,23 @@ void StrMask(double R, pstring& Mask)
 			break;
 		}
 		}
+	}
+
 	if (sw == 2) n = 0;
+
 	R = R * Power10[n];
 	R = RoundReal(R, 0);
 	bool minus = false;
-	if (R == 0) Num[0] = 0;
+
+	if (R == 0.0) Num[0] = 0;
 	else {
 		if (R < 0) { minus = true; R = -R; }
 		str(R, Num); // str(rdb:1:0,Num)
 		pos = MinW(pos, pos1);
 	}
+
 	i = Num.length();
+
 	if ((Num == "INF") || (Num == "NAN")) {
 		Mask = Num;
 		while ((Mask.length() < l))
@@ -1978,6 +1991,7 @@ void StrMask(double R, pstring& Mask)
 		}
 		return;
 	}
+
 	while (l > 0) {
 		switch (Mask[l]) {
 		case '0':
@@ -2004,8 +2018,11 @@ void StrMask(double R, pstring& Mask)
 		}
 		l--;
 	}
+
 	if (i > 0) Mask = copy(Num, 1, i) + Mask;
+
 	pstring tmp = "-";
+
 	if (minus) Mask = tmp + Mask;
 }
 
@@ -2100,10 +2117,8 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record)
 
 void GetRecNoXString(FileD* file_d, FrmlElemRecNo* Z, XString& X, void* record)
 {
-	//WORD i = 0;
 	X.Clear();
-	//KeyFldD* kf = Z->Key->KFlds;
-	//while (kf != nullptr) {
+
 	for (size_t i = 0; i < Z->Key->KFlds.size(); i++) {
 		KeyFldD* kf = Z->Key->KFlds[i];
 		FrmlElem* zz = Z->Arg[i];
@@ -2125,7 +2140,5 @@ void GetRecNoXString(FileD* file_d, FrmlElemRecNo* Z, XString& X, void* record)
 			break;
 		}
 		}
-		//kf = kf->pChain;
-		//i++;
 	}
 }
