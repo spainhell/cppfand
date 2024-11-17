@@ -4059,9 +4059,12 @@ bool DataEditor::EditItemProc(bool del, bool ed, WORD& Brk)
 void DataEditor::SetSwitchProc()
 {
 	bool B; WORD N, iMsg;
-	iMsg = 104; if (params_->EdRecVar) goto label1; iMsg = 101;
+	iMsg = 104;
+	if (params_->EdRecVar) goto label1;
+	iMsg = 101;
 	if (params_->MustCheck) if (params_->MustAdd) goto label1;
 	else { iMsg = 102; goto label1; }
+
 	iMsg = 103;
 	if (params_->MustAdd) goto label1;
 	iMsg = 100;

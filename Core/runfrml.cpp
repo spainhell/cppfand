@@ -1773,14 +1773,15 @@ label1:
 			double r = RunReal(file_d, iZ0->P1, record);
 			WORD l = RunInt(file_d, iZ0->P2, record);
 			BYTE m = RunInt(file_d, iZ0->P3, record);
-			std::string s;
+			
 			if (m == 255) {
-				str(r, s);
+				result = to_string(static_cast<int>(r));
 			}
 			else {
+				std::string s;
 				str(r, l, m, s);
+				result = s;
 			}
-			result = s;
 		}
 		else {
 			pstring s = RunString(file_d, iZ0->P2, record);
@@ -1976,7 +1977,7 @@ void StrMask(double R, pstring& Mask)
 	if (R == 0.0) Num[0] = 0;
 	else {
 		if (R < 0) { minus = true; R = -R; }
-		str(R, Num); // str(rdb:1:0,Num)
+		str(R, 1, 0, Num); // str(rdb:1:0,Num)
 		pos = MinW(pos, pos1);
 	}
 

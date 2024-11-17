@@ -10,7 +10,7 @@
 XWorkFile::XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK): WorkFile(parent)
 {
 	xScan = AScan;
-	xKeys = AK;
+	x_keys_ = AK;
 	xwFile = AK[0]->GetXFile(parent);
 }
 
@@ -22,7 +22,7 @@ void XWorkFile::Main(char Typ, void* record)
 	bool frst = true;
 	// for all keys defined in #K
 	//while (xKey != nullptr) {
-	for (XKey* xKey : xKeys) {
+	for (XKey* xKey : x_keys_) {
 		xxPage = new XXPage();
 		xxPage->Reset(this);
 		xxPage->IsLeaf = true;
@@ -43,7 +43,7 @@ void XWorkFile::Main(char Typ, void* record)
 				xScan->SeekRec(0);
 			}
 			Reset(xKey->KFlds, sizeof(XXPage) * 9, Typ, xScan->NRecs);
-			SortMerge(record);
+			SortMerge(xKey, record);
 		}
 		FinishIndex();
 		delete xxPage; xxPage = nullptr;
@@ -79,7 +79,7 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, void* re
 				s = x->GetKey(s);
 				r->X.S = s;
 			}
-			Output(r, record);
+			Output(K, r, record);
 		}
 		count += p->NItems;
 		RunMsgN(count);
@@ -98,9 +98,9 @@ bool XWorkFile::GetCRec(void* record)
 	return result;
 }
 
-void XWorkFile::Output(WRec* R, void* record)
+void XWorkFile::Output(XKey* xKey, WRec* R, void* record)
 {
-	xxPage->AddToLeaf(_parent, R, xKeys[0], record);
+	xxPage->AddToLeaf(_parent, R, xKey, record);
 }
 
 void XWorkFile::FinishIndex()
@@ -115,7 +115,7 @@ void XWorkFile::FinishIndex()
 		p->GreaterPage = n;
 		XXPage* p1 = p->Chain;
 		if (p1 == nullptr) {
-			n = xKeys[0]->IndexRoot;
+			n = x_keys_[0]->IndexRoot;
 		}
 		else {
 			n = nextXPage;
@@ -132,8 +132,8 @@ void XWorkFile::FinishIndex()
 		break;
 	}
 
-	if (xKeys[0]->InWork) {
-		xKeys[0]->NR = sum;
+	if (x_keys_[0]->InWork) {
+		x_keys_[0]->NR = sum;
 	}
 	else {
 		((FandXFile*)xwFile)->NRecs = sum;

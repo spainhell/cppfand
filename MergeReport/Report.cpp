@@ -33,7 +33,8 @@ void Report::Read(RprtOpt* RO)
 {
 	std::vector<KeyInD*> KI;
 	BlkD* B = nullptr;
-	InpD* ID = nullptr; LvDescr* L = nullptr;
+	InpD* ID = nullptr;
+	LvDescr* L = nullptr;
 	std::string s;
 
 	ResetCompilePars();
@@ -41,10 +42,18 @@ void Report::Read(RprtOpt* RO)
 	CBlkSave = nullptr;
 	PgeSizeZ = nullptr;
 	PgeLimitZ = nullptr;
+
+	bool b_RprtOpt_defined = true;
+
+	if (RO == nullptr) {
+		// if RprtOpt is not defined, create a new one
+		// this will be deleted at the end of this function
+		RO = new RprtOpt();
+		b_RprtOpt_defined = false;
+	}
+
 	std::vector<RprtFDListEl*>::iterator FDL = RO->FDL.begin();
-	//if ((RO != nullptr) && (RO->FDL.FD != nullptr)) {
-	//	FDL = &RO->FDL;
-	//}
+
 	if (FDL != RO->FDL.end() && (*FDL)->FD != nullptr) {
 		++FDL;
 	}
@@ -112,15 +121,12 @@ void Report::Read(RprtOpt* RO)
 			std::unique_ptr<Compiler> report_compiler = std::make_unique<Compiler>(FD);
 			report_compiler->rdFldNameType = FieldNameType::P;
 
-			//CFile = FD;
 			for (int16_t i = 1; i <= Ii - 1; i++) {
 				if (InpFD(i) == FD) {
 					report_compiler->OldError(26);
 				}
 			}
 			if (FDL != RO->FDL.end()) {
-				//CFile = FDL->FD;
-				//FD = CFile;
 				FD = (*FDL)->FD;
 				report_compiler->processing_F = (*FDL)->FD;
 			}
@@ -273,6 +279,11 @@ void Report::Read(RprtOpt* RO)
 		if (ID->ErrTxtFrml != nullptr) {
 			RdChkDsFromPos(ID->Scan->FD, ID->Chk);
 		}
+	}
+
+	if (!b_RprtOpt_defined) {
+		// delete the RprtOpt object if it was created in this function
+		delete RO;
 	}
 }
 
