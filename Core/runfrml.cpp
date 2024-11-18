@@ -1902,6 +1902,7 @@ label1:
 		break;
 	}
 	case _edbool: {
+		// TODO: who is calling this method? Is EditDRoot set?
 		if ((EditDRoot != nullptr) && EditDRoot->params_->Select
 			&& (!EditDRoot->BoolTxt.empty())) {
 			result = EditDRoot->BoolTxt;

@@ -14,14 +14,13 @@ void DbfFile::WrDBaseHd()
 	const char CtrlZ = '\x1a';
 
 	DBaseHd* P = new DBaseHd();
-	char* PA = (char*)&P; // PA:CharArrPtr absolute P;
+	char* PA = (char*)&P;
 	unsigned short n = 0;
-	//FieldDescr* F = CFile->FldD.front();
-	//while (F != nullptr) {
+
 	for (FieldDescr* F : CFile->FldD) {
 		if ((F->Flg & f_Stored) != 0) {
 			n++;
-			{ // with P^.Flds[n]
+			{
 				auto actual = P->Flds[n];
 				switch (F->field_type) {
 				case FieldType::FIXED: { actual.Typ = 'N'; actual.Dec = F->M; break; }
@@ -38,10 +37,10 @@ void DbfFile::WrDBaseHd()
 				for (size_t i = 1; i <= s.length(); i++) {
 					s[i] = toupper(s[i]);
 				}
-				StrLPCopy((char*)&actual.Name[1], s, 11);
+				//StrLPCopy((char*)&actual.Name[1], s, 11);
+				actual.Name = s.substr(0, 11);
 			}
 		}
-		//F = F->pChain;
 	}
 
 	unsigned short y;

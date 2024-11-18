@@ -36,7 +36,7 @@ struct LiRoots
 
 struct DBaseFld
 {
-	pstring Name;
+	std::string Name;
 	char Typ = 0;
 	int Displ = 0;
 	BYTE Len = 0, Dec = 0;

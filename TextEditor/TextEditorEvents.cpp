@@ -471,6 +471,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 					sp = TWork.ReadLongStr(*LocalPPtr);
 				}
 				else {
+					throw("Check implementation! EditDRoot is probably not set.");
 					CRecPtr = EditDRoot->NewRecPtr;
 					sp = CFile->loadLongS((*data_editor->CFld)->FldD, CRecPtr);
 				}

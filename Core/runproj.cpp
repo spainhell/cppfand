@@ -1080,18 +1080,17 @@ void RdUserId(bool check)
 WORD CompileMsgOn(CHAR_INFO* Buf, int& w)
 {
 	pstring s;
-	WORD result = 0;
+	WORD result;
 	ReadMessage(15);
+
 	if (IsTestRun) {
 		w = PushWFramed(0, 0, 30, 4, screen.colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
 		ReadMessage(117);
 		std::string s1 = MsgLine;
 		s = GetNthLine(s1, 1, 1, '/');
-		screen.GotoXY(3, 2);
-		printf("%s", s.c_str());
 		result = s.length();
-		screen.GotoXY(3, 3);
-		printf("%s", GetNthLine(s1, 2, 1, '/').c_str());
+		screen.ScrFormatWrText(3, 2, "%s", s.c_str());
+		screen.ScrFormatWrText(3, 3, "%s", GetNthLine(s1, 2, 1, '/').c_str());
 	}
 	else {
 		screen.ScrRdBuf(1, TxtRows, Buf, 40);
@@ -1100,6 +1099,7 @@ WORD CompileMsgOn(CHAR_INFO* Buf, int& w)
 		screen.ScrClr(1, TxtRows, MsgLine.length() + 2, 1, ' ', screen.colors.zNorm);
 		screen.ScrWrStr(2, TxtRows, MsgLine, screen.colors.zNorm);
 	}
+
 	return result;
 }
 
@@ -1131,7 +1131,7 @@ int MakeDbfDcl(pstring Nm)
 	ReadH(h, 32, &Hd); WORD n = (Hd.HdLen - 1) / 32 - 1; t = new LongStr(2); t->LL = 0;
 	for (i = 1; i <= n; i++) {
 		ReadH(h, 32, &Fd);
-		s = StrPas((char*)Fd.Name.c_str());
+		s = Fd.Name;
 		switch (Fd.Typ)
 		{
 		case 'C': c = 'A'; break;
@@ -1447,10 +1447,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				InpRdbPos = RP;
 				if (IsTestRun) {
 					ClrScr(TextAttr);
-					screen.GotoXY(3 + lmsg, 2);
-					printf("%*i", 4, I);
-					screen.GotoXY(3 + lmsg, 3);
-					printf("%*s%*s", 4, STyp.c_str(), 14, rdb_file->loadS(ChptName, rdb_file->FF->RecPtr).c_str());
+					screen.ScrFormatWrText(3 + lmsg, 2, "%*i", 4, I);
+					screen.ScrFormatWrText(3 + lmsg, 3, "%*s%*s", 4, STyp.c_str(), 14, rdb_file->loadS(ChptName, rdb_file->FF->RecPtr).c_str());
+
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 						for (J = 1; J <= I - 1; J++) {
 							rdb_file->ReadRec(J, rdb_file->FF->RecPtr);
@@ -1960,7 +1959,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 		ChptTF->IRec = data_editor->CRec();
 		SetUpdHandle(ChptTF->Handle);
 
-		printf("");
+		//printf("");
 		//data_editor->PopEdit();
 #endif
 	}

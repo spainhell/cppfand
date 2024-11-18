@@ -20,14 +20,14 @@ void XWorkFile::Main(char Typ, void* record)
 	nextXPage = xwFile->NewPage(xPage);
 	msgWritten = false;
 	bool frst = true;
+
 	// for all keys defined in #K
-	//while (xKey != nullptr) {
 	for (XKey* xKey : x_keys_) {
 		xxPage = new XXPage();
 		xxPage->Reset(this);
 		xxPage->IsLeaf = true;
 		XKey* k = xScan->Key;
-		//KeyFldD* kf = xKey->KFlds;
+
 		if (xScan->Kind == 1 &&
 #ifdef FandSQL
 			!xScan->v_files->IsSQLFile &&
@@ -45,9 +45,9 @@ void XWorkFile::Main(char Typ, void* record)
 			Reset(xKey->KFlds, sizeof(XXPage) * 9, Typ, xScan->NRecs);
 			SortMerge(xKey, record);
 		}
-		FinishIndex();
+
+		FinishIndex(xKey);
 		delete xxPage; xxPage = nullptr;
-		//xKey = xKey->Chain;
 	}
 	xwFile->ReleasePage(xPage, nextXPage);
 	delete xPage; xPage = nullptr;
@@ -103,7 +103,7 @@ void XWorkFile::Output(XKey* xKey, WRec* R, void* record)
 	xxPage->AddToLeaf(_parent, R, xKey, record);
 }
 
-void XWorkFile::FinishIndex()
+void XWorkFile::FinishIndex(XKey* xKey)
 {
 	int sum = 0;
 	int n = 0;
@@ -115,7 +115,7 @@ void XWorkFile::FinishIndex()
 		p->GreaterPage = n;
 		XXPage* p1 = p->Chain;
 		if (p1 == nullptr) {
-			n = x_keys_[0]->IndexRoot;
+			n = xKey->IndexRoot;
 		}
 		else {
 			n = nextXPage;
@@ -132,8 +132,8 @@ void XWorkFile::FinishIndex()
 		break;
 	}
 
-	if (x_keys_[0]->InWork) {
-		x_keys_[0]->NR = sum;
+	if (xKey->InWork) {
+		xKey->NR = sum;
 	}
 	else {
 		((FandXFile*)xwFile)->NRecs = sum;

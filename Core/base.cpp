@@ -207,11 +207,10 @@ std::string ReadMessage(int N)
 
 void WriteMsg(WORD N)
 {
-}
+	std::string s = ReadMessage(N);
+	// TODO: fix ScrWrStr color
+	screen.ScrWrStr(s, 0x07);
 
-void ClearLL(BYTE attr)
-{
-	screen.ScrClr(1, TxtRows, TxtCols, 1, ' ', colors.uNorm);
 }
 
 bool CacheLocked = false; // r510
@@ -235,22 +234,6 @@ void DelBackSlash(std::string& s)
 	if (s[s.length() - 1] == '\\' || s[s.length() - 1] == '/') {
 		s.erase(s.length() - 1, 1);
 	}
-}
-
-pstring StrPas(const char* Src)
-{
-	WORD n = 0;
-	pstring s;
-	while ((n < 255) && (Src[n] != '\0')) { s[n + 1] = Src[n]; n++; }
-	s[0] = (char)n;
-	return s;
-}
-
-void StrLPCopy(char* Dest, pstring s, WORD MaxL)
-{
-	auto sLen = s.length();
-	int len = (sLen < MaxL) ? sLen : MaxL;
-	Move((void*)s.c_str(), Dest, len);
 }
 
 short MinI(short X, short Y)

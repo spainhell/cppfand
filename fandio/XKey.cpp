@@ -389,7 +389,7 @@ void XKey::InsertNonLeafItem(FileD* file_d, XString& XX, XPage* P, XPage* UpP, i
 	UpPage = 0;
 	if (P->Overflow()) {
 		// page is too long -> will be divided
-		printf("XKey::InsertItem overflow");
+		//printf("XKey::InsertItem overflow");
 		UpPage = GetXFile(file_d)->NewPage(UpP);
 		P->SplitPage(UpP, Page);
 		// TODO: NUTNO DORESIT, CO SE TADY DEJE - puvodni kod byl delsi

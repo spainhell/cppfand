@@ -6,7 +6,7 @@
 #include "DataEditorParams.h"
 #include "../Core/FileD.h"
 
-struct Implicit;
+class Implicit;
 struct EFldD;
 struct ERecTxtD;
 struct EdExitD;

@@ -15,8 +15,6 @@ typedef void* PProcedure;
 bool IsLetter(char C); // r4
 void MyMove(void* A1, void* A2, WORD N);
 
-pstring StrPas(const char* Src);
-void StrLPCopy(char* Dest, pstring s, WORD MaxL);
 WORD SLeadEqu(pstring S1, pstring S2);
 WORD SLeadEqu(const std::string& S1, const std::string& S2);
 bool EqualsMask(void* p, WORD l, pstring Mask); // r86 ASM
@@ -91,7 +89,6 @@ void SetMsgPar(const std::string& s1, const std::string& s2, const std::string& 
 void SetMsgPar(const std::string& s1, const std::string& s2, const std::string& s3, const std::string& s4);
 std::string ReadMessage(int N);
 void WriteMsg(WORD N);
-void ClearLL(BYTE attr);
 
 extern Spec spec;
 extern Video video;

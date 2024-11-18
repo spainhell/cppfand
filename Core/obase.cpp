@@ -194,7 +194,7 @@ void TestTxtHError(TextFile* F)
 {
 	pstring s;
 	if (HandleError != 0) {
-		SetMsgPar(StrPas(F->name.c_str()));
+		SetMsgPar(F->name);
 		WrLLF10Msg(700 + HandleError);
 		GoExit();
 	}

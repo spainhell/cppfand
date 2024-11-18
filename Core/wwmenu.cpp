@@ -158,7 +158,9 @@ TMenu::TMenu() : TWindow()
 
 void TMenu::ClearHlp()
 {
-	if (HlpRdb != nullptr) ClearLL(screen.colors.uNorm);
+	if (HlpRdb != nullptr) {
+		screen.ScrClr(1, TxtRows, TxtCols, 1, ' ', screen.colors.uNorm);
+	}
 }
 
 bool TMenu::FindChar(char c1)

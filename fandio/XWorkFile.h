@@ -20,7 +20,7 @@ public:
 	bool msgWritten = false;
 
 private:
-	void FinishIndex();
+	void FinishIndex(XKey* xKey);
 
 	std::vector<XKey*> x_keys_;
 	XXPage* xxPage = nullptr;

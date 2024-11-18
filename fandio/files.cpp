@@ -1,4 +1,8 @@
 #include "files.h"
+
+#include <chrono>
+#include <thread>
+
 #include "../Core/GlobalVariables.h"
 #include "../Core/Coding.h"
 #include "../Core/obaseww.h"
@@ -130,6 +134,11 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 
 bool OpenF2(FileD* file_d, const std::string& path)
 {
+	//if (path == "C:\\PCFAND\\UCTO2023\\{GLOB}\\FIRMY.000")
+	//{
+	//	printf("");
+	//}
+
 	wwmix ww;
 
 	int FS = 0, n = 0, l = 0;
@@ -138,9 +147,14 @@ bool OpenF2(FileD* file_d, const std::string& path)
 	FS = FileSizeH(file_d->FF->Handle);
 	file_d->FF->NRecs = 0;
 	bool result = false;
-	if (FS < file_d->FF->FirstRecPos) goto label1;
+
+	if (FS < file_d->FF->FirstRecPos) {
+		goto label1;
+	}
+
 	rLen = file_d->FF->RdPrefix();
 	n = (FS - file_d->FF->FirstRecPos) / file_d->FF->RecLen;
+
 	if (rLen != 0xffff) {
 		if (file_d->IsDynFile) {
 			CloseClearH(file_d->FF);
@@ -164,6 +178,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 	}
 	else {
 	}
+
 	if (n < file_d->FF->NRecs) {
 		SetPathAndVolume(file_d);
 		SetMsgPar(CPath);
@@ -182,6 +197,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 			CloseGoExit(file_d->FF);
 		}
 	}
+
 label3:
 	if (file_d->FF->TF != nullptr) {
 		if (FS < file_d->FF->FirstRecPos) {
@@ -189,15 +205,16 @@ label3:
 		}
 		else {
 			file_d->FF->TF->RdPrefix(true);
-			if ((file_d->FF->file_type == FileType::RDB) 
-				&& !file_d->IsActiveRdb() 
-				&& !Coding::HasPassword(file_d, 1, "")) 
+			if ((file_d->FF->file_type == FileType::RDB)
+				&& !file_d->IsActiveRdb()
+				&& !Coding::HasPassword(file_d, 1, ""))
 			{
 				FileMsg(file_d, 616, ' ');
 				CloseGoExit(file_d->FF);
 			}
 		}
 	}
+
 	if (file_d->FF->file_type == FileType::INDEX) {
 		if (FS < file_d->FF->FirstRecPos) {
 			file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
@@ -222,6 +239,7 @@ label3:
 			}
 		}
 	}
+
 	file_d->SeekRec(0);
 	return true;
 }
@@ -248,18 +266,28 @@ void CreateF(FileD* file_d)
 
 bool OpenCreateF(FileD* file_d, const std::string& path, FileUseMode UM)
 {
+	//if (file_d->Name == "FIRMY")
+	//{
+	//	printf("");
+	//}
+
 	if (!OpenF(file_d, path, UM)) {
 		CreateF(file_d);
 		if ((UM == Shared) || (UM == RdShared)) {
 			file_d->FF->WrPrefixes();
 			SaveCache(0, file_d->FF->Handle);
 			CloseClearH(&file_d->FF->Handle);
+
 			if (file_d->FF->file_type == FileType::INDEX) {
 				CloseClearH(&file_d->FF->XF->Handle);
 			}
+
 			if (file_d->FF->TF != nullptr) {
 				CloseClearH(&file_d->FF->TF->Handle);
 			}
+
+			// wait 500 ms before re-open
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			OpenF(file_d, path, UM);
 		}
 	}
@@ -374,30 +402,29 @@ label4:
 	if (pathDelim == '\\') ReplaceChar(CDir, '/', '\\');
 	CPath = CDir + CName + CExt;
 	return CPath;
-}
+	}
 
 std::string SetPathForH(HANDLE handle)
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {
-		//FileD* fd = RD->v_files;
-		//while (fd != nullptr) {
-		for(FileD* fd : RD->v_files) {
+		for (FileD* fd : RD->v_files) {
 			if (fd->FF->Handle == handle) {
 				SetPathAndVolume(fd);
 				return CPath;
 			}
+
 			if (fd->FF->XF != nullptr && fd->FF->XF->Handle == handle) {
 				SetPathAndVolume(fd);
 				CPath = CExtToX(CDir, CName, CExt);
 				return CPath;
 			}
+
 			if (fd->FF->TF != nullptr && fd->FF->TF->Handle == handle) {
 				SetPathAndVolume(fd);
 				CPath = CExtToT(fd->FF->TF, CDir, CName, CExt);
 				return CPath;
 			}
-			//fd = fd->pChain;
 		}
 		RD = RD->ChainBack;
 	}

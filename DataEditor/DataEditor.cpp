@@ -4721,6 +4721,9 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	ExitProc->TArg[ExitProc->N - 1].FD = file_d_;
 	ExitProc->TArg[ExitProc->N - 1].RecPtr = record_;
 
+	// some methods use RunString "_edfile" to identify caller
+	EditDRoot = edit_;
+
 	md = file_d_->FF->LMode;
 
 	//EditD* EE = WriteParamsToE();                            /*t = currtime;*/
