@@ -2497,14 +2497,6 @@ FileD* Compiler::FindFileD()
 
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		//FD = R->v_files;
-		//while (FD != nullptr) {
-		//	std::string lw = LexWord;
-		//	if (EquUpCase(FD->Name, lw)) {
-		//		return FD;
-		//	}
-		//	FD = FD->pChain;
-		//}
 		for (FileD* f : R->v_files) {
 			if (EquUpCase(f->Name, LexWord)) {
 				return f;

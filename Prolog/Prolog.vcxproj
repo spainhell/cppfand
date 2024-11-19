@@ -19,17 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Prolog.cpp" />
-    <ClCompile Include="RdProlog.cpp" />
-    <ClCompile Include="RunProlog.cpp" />
-    <ClCompile Include="TMemory.cpp" />
+    <ClInclude Include="ReadProlog.h" />
+    <ClInclude Include="RunProlog.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Chained.h" />
-    <ClInclude Include="Prolog.h" />
-    <ClInclude Include="RdProlog.h" />
-    <ClInclude Include="RunProlog.h" />
-    <ClInclude Include="TMemory.h" />
+    <ClCompile Include="ReadProlog.cpp" />
+    <ClCompile Include="RunProlog.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

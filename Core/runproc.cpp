@@ -1349,7 +1349,8 @@ void RunInstr(const std::vector<Instr*>& instructions)
 		}
 		case PInstrCode::_lproc: {
 			Instr_lproc* iPD = (Instr_lproc*)PD;
-			RunProlog(&iPD->lpPos, iPD->lpName);
+			std::unique_ptr<RunProlog> prolog = std::make_unique<RunProlog>(&iPD->lpPos, iPD->lpName);
+			prolog->Run();
 			break;
 		}
 		case PInstrCode::_report: {
