@@ -30,12 +30,17 @@ void XWFile::TestErr()
 
 int XWFile::UsedFileSize()
 {
-	return int(MaxPage + 1) << XPageShft;
+	return (MaxPage + 1) << XPageShft;
 }
 
 bool XWFile::NotCached()
 {
 	return (this != &XWork) && _parent->NotCached();
+}
+
+bool XWFile::Cached()
+{
+	return !NotCached();
 }
 
 void XWFile::RdPage(XPage* P, int pageNr)

@@ -190,6 +190,14 @@ bool ChptDelFor(EditD* edit, RdbRecVars* X)
 			result = true;
 			break; /*don't delete if the record is new*/
 		}
+		else {
+			// this 'else' was added here, because there is no info in OldTxt about previous file params
+			// (type, name, text) so an extension is incorrect -> causes error
+			// TODO: after this info is added to OldTxt, remove this 'else'
+			result = true;
+			break;
+		}
+
 		SetCompileAll();
 		if (X->isSQL) {
 			result = true;

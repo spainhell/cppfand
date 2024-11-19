@@ -17,6 +17,7 @@ public:
 	void TestErr();
 	int UsedFileSize();
 	bool NotCached();
+	bool Cached();
 	void RdPage(XPage* P, int pageNr);
 	void WrPage(XPage* P, int pageNr, bool serialize = true);
 	void WrPage(XXPage* p, int pageNr);
