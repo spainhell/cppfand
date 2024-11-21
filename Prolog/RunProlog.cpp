@@ -18,8 +18,10 @@ void RunProlog::Run()
 
 	std::vector<std::string> dbf_decl = GetDbfDeclaration(dbf_file);
 
+	std::string result = ConvertStringsVectorToString(dbf_decl);
+
 	// save a result back to TTT
-	SaveParam(param_f, param_fld, "BYL JSEM ZDE! FANTOMAS");
+	SaveParam(param_f, param_fld, result);
 }
 
 FieldDescr* RunProlog::FindField(FileD* file_d, std::string field_name)
@@ -85,36 +87,65 @@ std::vector<std::string> RunProlog::GetDbfDeclaration(FileD* file_d)
 	std::vector<std::string> result;
 
 	for (FieldDescr* field : file_d->FldD) {
-		if (field->isStored()) {
-			std::string s;
-			switch (field->field_type) {
-			case FieldType::ALFANUM: {
-				s = field->Name + ":A," + std::to_string(field->L) + ";";
-				break;
-			}
-			case FieldType::BOOL: {
-				break;
-			}
-			case FieldType::FIXED:
-				break;
-			case FieldType::NUMERIC:
-				break;
-			case FieldType::DATE:
-				break;
-			case FieldType::TEXT:
-				break;
-			case FieldType::REAL:
-				break;
-			case FieldType::UNKNOWN:
-				break;
-			}
-			result.push_back(s);
+		std::string s;
+
+		if (!field->isStored()) {
+			s = "-";
 		}
-		else {
-			// process only stored fields
-			continue;
+
+		switch (field->field_type) {
+		case FieldType::ALFANUM: {
+			s += field->Name + ":A," + std::to_string(field->L) + ";";
+			break;
 		}
+		case FieldType::BOOL: {
+			s += field->Name + ":B;";
+			break;
+		}
+		case FieldType::FIXED: {
+			int l;
+			if (field->M == 0) {
+				l = field->L - 1;
+			}
+			else {
+				l = field->L - field->M - 2;
+			}
+			s += field->Name + ":F," + std::to_string(l + 1) + "." +
+				std::to_string(field->M) + ";";
+			break;
+		}
+		case FieldType::NUMERIC: {
+			s += field->Name + ":A," + std::to_string(field->L) + ";";
+			break;
+		}
+		case FieldType::DATE: {
+			s += field->Name + ":D;";
+			break;
+		}
+		case FieldType::TEXT: {
+			s += field->Name + ":T;";
+			break;
+		}
+		case FieldType::REAL: {
+			s += field->Name + ":F,12.6;";
+			break;
+		}
+		case FieldType::UNKNOWN:
+			break;
+		}
+
+		result.push_back(s);
 	}
 
+	return result;
+}
+
+std::string RunProlog::ConvertStringsVectorToString(const std::vector<std::string>& vector)
+{
+	std::string result;
+	for (const std::string& s : vector) {
+		result += s;
+		result += "\r";
+	}
 	return result;
 }

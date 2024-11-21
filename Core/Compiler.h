@@ -69,7 +69,7 @@ public:
 	bool FindLocVar(LocVarBlkD* LVB, LocVar** LV);
 	//LocVar* FindLocVar(std::vector<LocVar*>& LVRoot);
 	bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP);
-	void RdChptName(char C, RdbPos* Pos, bool TxtExpr);
+	std::string RdChptName(char C, RdbPos* Pos, bool TxtExpr);
 	std::vector<FieldDescr*> AllFldsList(FileD* FD, bool OnlyStored);
 	RprtOpt* GetRprtOpt();
 	FieldDescr* FindFldName(FileD* FD, std::string fieldName = "");

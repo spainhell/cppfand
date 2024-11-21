@@ -55,13 +55,23 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 		break;
 	}
 	case FieldType::FIXED: {
-		if (Lexem == ',') { Flg += f_Comma; g_compiler->RdLex(); }
-		else g_compiler->Accept('.');
+		if (Lexem == ',') {
+			Flg += f_Comma;
+			g_compiler->RdLex();
+		}
+		else {
+			g_compiler->Accept('.');
+		}
+
 		M = g_compiler->RdInteger();
-		if ((M > 15) || (L + M > 18)) g_compiler->OldError(3);
+		if ((M > 15) || (L + M > 18)) {
+			g_compiler->OldError(3);
+		}
 		NBytes = TabF[L + M];
+
 		if (M == 0) L++;
 		else L += (M + 2);
+
 		FrmlTyp = 'R';
 		break;
 	}
@@ -268,8 +278,7 @@ void RdChkDsFromPos(FileD* FD, std::vector<LogicControl*>& C)
 	while (!(ForwChar == 'L' || ForwChar == 0x1A)) {
 		do {
 			g_compiler->RdLex();
-		}
-		while (!(Lexem == 0x1A || Lexem == '#'));
+		} while (!(Lexem == 0x1A || Lexem == '#'));
 	}
 	if (Lexem == 0x1A) return;
 	g_compiler->RdLex();
@@ -601,7 +610,7 @@ FileD* RdFileD_Journal(const std::string& FileName, FileType FDTyp)
 	if (FDTyp != FileType::FAND16) g_compiler->OldError(103);
 	if (Lexem != 0x1A) g_compiler->Error(40);
 #ifdef FandSQL
-		if (isSql || v_files->typSQLFile) OldError(155);
+	if (isSql || v_files->typSQLFile) OldError(155);
 #endif
 
 	//file_d = FakeRdFDSegment(FD);
@@ -682,9 +691,9 @@ FileD* RdFileD_Like(const std::string& FileName, FileType FDTyp)
 
 	like->IsHlpFile = false;
 	if (!(FDTyp == FileType::FAND16
-			|| FDTyp == FileType::INDEX)
+		|| FDTyp == FileType::INDEX)
 		|| !(like->FF->file_type == FileType::FAND16 || like->FF->file_type == FileType::INDEX)
-	) {
+		) {
 		g_compiler->OldError(106);
 	}
 
@@ -723,7 +732,7 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		MarkStore(p);
 		//goto label1;
 	}
-	else if (g_compiler->IsKeyWord("LIKE"))	{
+	else if (g_compiler->IsKeyWord("LIKE")) {
 		file_d = RdFileD_Like(FileName, FDTyp);
 	}
 	else {
@@ -837,7 +846,7 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 			}
 		}
 	}
-//label1:
+	//label1:
 	g_compiler->processing_F = nullptr;
 	return file_d;
 }
@@ -945,7 +954,7 @@ void RdKeyD(FileD* file_d)
 				g_compiler->RdLex();
 				L->MemberRef = 2;
 			}
-		}
+	}
 		//Arg = &L->Args;
 		KF = K->KFlds.begin();
 
@@ -972,7 +981,7 @@ void RdKeyD(FileD* file_d)
 			}
 			break;
 		}
-	}
+}
 
 	if (Lexem == ';') {
 		g_compiler->RdLex();

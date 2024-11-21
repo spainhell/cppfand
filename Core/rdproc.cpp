@@ -3219,11 +3219,11 @@ Instr* RdCallLProc()
 {
 	Instr_lproc* pd = new Instr_lproc();
 	g_compiler->RdLex();
-	g_compiler->RdChptName('L', &pd->lpPos, true);
+	pd->name = g_compiler->RdChptName('L', &pd->lpPos, true);
 	if (Lexem == ',') {
 		g_compiler->RdLex();
 		g_compiler->TestIdentif();
-		pd->lpName = LexWord;
+		//pd->lpName = LexWord;
 		g_compiler->RdLex();
 	}
 	return pd;

@@ -17,5 +17,6 @@ private:
 	std::string ReadParam(FileD* file_d, FieldDescr* field_d);
 	void SaveParam(FileD* file_d, FieldDescr* field_d, std::string value);
 	std::vector<std::string> GetDbfDeclaration(FileD* file_d);
+	std::string ConvertStringsVectorToString(const std::vector<std::string>& vector);
 };
 

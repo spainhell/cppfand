@@ -1130,11 +1130,12 @@ label1:
 	return result;
 }
 
-void Compiler::RdChptName(char C, RdbPos* Pos, bool TxtExpr)
+std::string Compiler::RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 {
 	//if (InpArrLen == 17623 && CurrPos > 4700) {
 	//	printf("");
 	//}
+	std::string result;
 
 	if (TxtExpr && (Lexem == '[')) {
 		RdLex();
@@ -1144,9 +1145,14 @@ void Compiler::RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 	}
 	else {
 		TestLex(_identifier);
-		if (!FindChpt(C, LexWord, false, Pos)) Error(37);
+		if (!FindChpt(C, LexWord, false, Pos)) {
+			Error(37);
+		}
+		result = LexWord;
 		RdLex();
 	}
+
+	return result;
 }
 
 std::vector<FieldDescr*> Compiler::AllFldsList(FileD* FD, bool OnlyStored)

@@ -80,7 +80,8 @@ public:
 	Instr_lproc();
 	~Instr_lproc() override;
 	RdbPos lpPos;
-	std::string lpName;
+	std::string name;	// chapter name
+	std::string lpName; // predicate name - default is 'main'
 };
 
 class Instr_call : public Instr
