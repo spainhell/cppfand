@@ -1,19 +1,41 @@
 #include "RunProlog.h"
+
+#include "ReadProlog.h"
 #include "../Core/GlobalVariables.h"
 #include "../Common/Compare.h"
 #include "../Core/Models/Instr.h"
 
-RunProlog::RunProlog(RdbPos* rdb_pos, std::string chapter_name)
+RunProlog::RunProlog(Instr_lproc* prolog_instr)
 {
+	_rdb_pos = &prolog_instr->lpPos;
+	_procedure_name = prolog_instr->lpName;
+	_chapter_name = prolog_instr->name;
+
+	auto reader = std::make_unique<ReadProlog>();
+	reader->Read(_rdb_pos);
 }
 
 void RunProlog::Run()
+{
+	if (_chapter_name == "DejDeklDBF") {
+		RunDbfExport();
+	}
+	else if (_chapter_name == "Indexy")
+	{
+		RunIndexy();
+	}
+	else {
+		// other chapters
+	}
+}
+
+void RunProlog::RunDbfExport()
 {
 	FileD* param_f = FindFile("PARAM3");
 	FieldDescr* param_fld = FindField(param_f, "TTT");
 
 	// find File by name in TTT
-	std::string file_name = ReadParam(param_f, param_fld);
+	std::string file_name = ReadFromParamFile(param_f, param_fld);
 	FileD* dbf_file = FindFile(file_name);
 
 	std::vector<std::string> dbf_decl = GetDbfDeclaration(dbf_file);
@@ -21,7 +43,11 @@ void RunProlog::Run()
 	std::string result = ConvertStringsVectorToString(dbf_decl);
 
 	// save a result back to TTT
-	SaveParam(param_f, param_fld, result);
+	SaveToParamFile(param_f, param_fld, result);
+}
+
+void RunProlog::RunIndexy()
+{
 }
 
 FieldDescr* RunProlog::FindField(FileD* file_d, std::string field_name)
@@ -50,7 +76,7 @@ FileD* RunProlog::FindFile(std::string file_name)
 	return nullptr;
 }
 
-std::string RunProlog::ReadParam(FileD* file_d, FieldDescr* field_d)
+std::string RunProlog::ReadFromParamFile(FileD* file_d, FieldDescr* field_d)
 {
 	int RecNo = 0;
 
@@ -67,7 +93,7 @@ std::string RunProlog::ReadParam(FileD* file_d, FieldDescr* field_d)
 	return result;
 }
 
-void RunProlog::SaveParam(FileD* file_d, FieldDescr* field_d, std::string value)
+void RunProlog::SaveToParamFile(FileD* file_d, FieldDescr* field_d, std::string value)
 {
 	int n = 0;
 	LockMode md = file_d->NewLockMode(WrMode);
@@ -90,13 +116,13 @@ std::vector<std::string> RunProlog::GetDbfDeclaration(FileD* file_d)
 		std::string s;
 
 		if (!field->isStored()) {
-			s = "-";
+			s += '\xF0'; // NBSP - non-breaking space
 		}
 
 		switch (field->field_type) {
 		case FieldType::ALFANUM: {
 			s += field->Name + ":A," + std::to_string(field->L) + ";";
-			break;
+			break; 
 		}
 		case FieldType::BOOL: {
 			s += field->Name + ":B;";

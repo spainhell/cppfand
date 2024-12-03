@@ -7,11 +7,12 @@
 #include "../TextEditor/EditorHelp.h"
 #include "../TextEditor/TextEditor.h"
 #include "../DataEditor/EditReader.h"
-#include "..\DataEditor\DataEditor.h"
+#include "../DataEditor/DataEditor.h"
 #include "../ExportImport/ExportImport.h"
 #include "../fandio/FandTFile.h"
 #include "../fandio/FandXFile.h"
 #include "../fandio/files.h"
+#include "../fandio/DbfFile.h"
 #include "../Logging/Logging.h"
 #include "../MergeReport/ReportGenerator.h"
 #include "../MergeReport/Merge.h"
@@ -1121,53 +1122,6 @@ void CompileMsgOff(CHAR_INFO* Buf, int& w)
 	}
 }
 
-int MakeDbfDcl(pstring Nm)
-{
-	DBaseHd Hd; DBaseFld Fd;
-	LongStr* t; char c;
-	pstring s(80); pstring s1(10); void* p;
-
-	CPath = FExpand(Nm + ".DBF"); CVol = "";
-	WORD i = catalog->GetCatalogIRec(Nm, true);
-	if (i != 0) {
-		CVol = catalog->GetVolume(i);
-		CPath = FExpand(catalog->GetPathName(i));
-		FSplit(CPath, CDir, CName, CExt);
-	}
-	HANDLE h = OpenH(CPath, _isOldFile, RdOnly);
-	TestCPathError();
-	ReadH(h, 32, &Hd); WORD n = (Hd.HdLen - 1) / 32 - 1; t = new LongStr(2); t->LL = 0;
-	for (i = 1; i <= n; i++) {
-		ReadH(h, 32, &Fd);
-		s = Fd.Name;
-		switch (Fd.Typ)
-		{
-		case 'C': c = 'A'; break;
-		case 'D': c = 'D'; break;
-		case 'L': c = 'B'; break;
-		case 'M': c = 'T'; break;
-		case 'N':
-		case 'F': c = 'F'; break;
-		}
-		s = s + ':' + c;
-		switch (c) {
-		case 'A': { str(Fd.Len, s1); s = s + ',' + s1; break; }
-		case 'F': {
-			Fd.Len -= Fd.Dec;
-			if (Fd.Dec != 0) Fd.Len--;
-			str(Fd.Len, s1); s = s + ',' + s1; str(Fd.Dec, s1); s = s + '.' + s1;
-			break;
-		}
-		}
-		s = s + ';' + 0x0D + 0x0A; // ^M + ^J
-		p = new BYTE[s.length()];
-		Move(&s[1], p, s.length());
-		t->LL += s.length();
-	}
-	CFile->saveLongS(ChptTxt, t, CRecPtr);
-	CloseH(&h);
-	return 0;
-}
 
 FileD* RdF(FileD* file_d, std::string FileName)
 {
@@ -1480,7 +1434,10 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
 							rdb_file->saveT(ChptOldTxt, 0, rdb_file->FF->RecPtr);
 							OldTxt = 0;
-							MakeDbfDcl(nm);
+
+							std::unique_ptr<DbfFile> dbf_file = std::make_unique<DbfFile>();
+							dbf_file->MakeDbfDcl(nm);
+
 							Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
 							rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 						}

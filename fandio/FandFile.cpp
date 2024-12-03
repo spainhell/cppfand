@@ -614,7 +614,7 @@ void FandFile::WrPrefix()
 			break;
 		}
 		case FileType::DBF: {
-			DbfFile::WrDBaseHd(); // TODO: doplnit parametry
+			DbfFile::WrDBaseHd(this->_parent); // TODO: doplnit parametry
 			break;
 		}
 		default: {

@@ -34,24 +34,6 @@ struct LiRoots
 	std::vector<Implicit*> Impls;
 };
 
-struct DBaseFld
-{
-	std::string Name;
-	char Typ = 0;
-	int Displ = 0;
-	BYTE Len = 0, Dec = 0;
-	BYTE x2[14];
-};
-
-struct DBaseHd
-{
-	BYTE Ver = 0;
-	BYTE Date[4]{ 0,0,0,0 };
-	int NRecs = 0;
-	WORD HdLen = 0, RecLen = 0;
-	DBaseFld Flds[1];
-};
-
 class LinkD
 {
 public:
