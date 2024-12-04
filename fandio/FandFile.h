@@ -128,7 +128,7 @@ public:
 
 private:
 	FileD* _parent;
-	double _RforD(FieldDescr* field_d, void* record);
+	double DBF_RforD(FieldDescr* field_d, uint8_t* source);
 	bool is_null_value(FieldDescr* field_d, uint8_t* record);
 
 	std::string _extToT(const std::string& input_path);

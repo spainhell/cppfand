@@ -9,11 +9,12 @@ WORD iBuf = 0;
 
 ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress, ThFile* F) : TcFile(aCompress)
 {
+	mode = AMode;
 	DWORD access_mode = 0;
 	DWORD create_mode = 0;
 	std::string d, Nm, e;
 
-	switch (AMode) {
+	switch (mode) {
 	case InOutMode::_inp: {
 		access_mode = GENERIC_READ;
 		create_mode = OPEN_EXISTING;
@@ -73,9 +74,19 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 ThFile::~ThFile()
 {
 	if (Handle != INVALID_HANDLE_VALUE) {
+		if (mode == InOutMode::_inp) {
+			RunMsgOff();
+		}
+		else {
+			WriteBuf(true);
+			if (!Continued && Size == 0) {
+				DeleteFile(Path.c_str());
+			}
+		}
 		CloseH(&Handle);
+
+		Handle = INVALID_HANDLE_VALUE;
 	}
-	Handle = INVALID_HANDLE_VALUE;
 }
 
 void ThFile::ReadBuf()

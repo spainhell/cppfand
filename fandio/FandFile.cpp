@@ -202,7 +202,7 @@ double FandFile::loadR(FieldDescr* field_d, void* record)
 	double result = 0.0;
 
 	if (file_type == FileType::DBF) {
-		result = _RforD(field_d, source);
+		result = DBF_RforD(field_d, source);
 	}
 	else {
 		switch (field_d->field_type) {
@@ -1489,15 +1489,15 @@ label4:
 }
 
 
-double FandFile::_RforD(FieldDescr* field_d, void* record)
+double FandFile::DBF_RforD(FieldDescr* field_d, uint8_t* source)
 {
-	unsigned char* ptr = (unsigned char*)record;
+	char* ptr = (char*)source;
 	short err;
 	double r = 0;
-	std::string s = std::string((char*)&ptr[1], ptr[0]);
 
 	switch (field_d->field_type) {
 	case FieldType::FIXED: {
+		std::string s = std::string(ptr, field_d->NBytes);
 		ReplaceChar(s, ',', '.');
 		if ((field_d->Flg & f_Comma) != 0) {
 			size_t i = s.find('.');
@@ -1509,6 +1509,7 @@ double FandFile::_RforD(FieldDescr* field_d, void* record)
 		break;
 	}
 	case FieldType::DATE: {
+		std::string s = std::string(ptr, 8); // DBF Date is 8 bytes long 'YYYYMMDD' 
 		r = ValDate(s, "YYYYMMDD");
 		break;
 	}

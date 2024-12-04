@@ -524,7 +524,7 @@ void MakeCopy(CopyD* CD)
 			}
 			default: break;
 			}
-			F2.WriteBuf(false);
+			//F2.WriteBuf(false); //TODO: if this is enabled, export CSV from Ucto is double (save during this object destructing)
 			F1.ReadBuf();
 		}
 		LastExitCode = 0;

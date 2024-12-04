@@ -10,12 +10,12 @@ class ThFile : public TcFile
 {
 public:
 	ThFile(std::string APath, WORD CatIRec, InOutMode AMode, BYTE aCompress, ThFile* F);
-	~ThFile();
+	~ThFile() override;
 
 	HANDLE Handle = INVALID_HANDLE_VALUE;
 	std::string Path;
 	std::string Vol;
-	InOutMode Mode = InOutMode::_inp;
+	
 	bool Floppy = false, IsEOL = false, Continued = false;
 	//BYTE compress = 0;
 	int Size = 0, OrigSize = 0, SpaceOnDisk = 0;
@@ -48,5 +48,8 @@ public:
 	//void WriteBuf2();
 	void WrString(std::string S);
 	void WrLongStr(LongStr* S, bool WithDelim);
+
+private:
+	InOutMode mode = InOutMode::_inp;
 };
 
