@@ -1,5 +1,6 @@
 #include "wwmix.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "Compiler.h"
