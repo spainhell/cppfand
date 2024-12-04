@@ -659,15 +659,15 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 		return;
 	}
 
-	if (operation == WRITE && (CFile != nullptr) && (CFile->FF->UMode == RdOnly)) {
-		// snazime se zapsat do RdOnly souboru
-		// zapisem pouze do cache
-		// TODO: nutno doresit, co s tim dal ...
-		log->log(loglevel::ERR, "RdWrCache() trying to write to RdOnly file 0x%p!", handle);
-		FileCache* c1 = cache.GetCache(handle);
-		c1->Save(position, count, (unsigned char*)buf);
-		return;
-	}
+	//if (operation == WRITE && (CFile != nullptr) && (CFile->FF->UMode == RdOnly)) {
+	//	// snazime se zapsat do RdOnly souboru
+	//	// zapisem pouze do cache
+	//	// TODO: nutno doresit, co s tim dal ...
+	//	log->log(loglevel::ERR, "RdWrCache() trying to write to RdOnly file 0x%p!", handle);
+	//	FileCache* c1 = cache.GetCache(handle);
+	//	c1->Save(position, count, (unsigned char*)buf);
+	//	return;
+	//}
 
 	// writing to the file -> Set Update Flag
 	if (operation == WRITE) {

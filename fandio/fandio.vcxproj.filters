@@ -111,6 +111,12 @@
     <ClInclude Include="FandTFilePrefix.h">
       <Filter>Header Files\FandFiles</Filter>
     </ClInclude>
+    <ClInclude Include="DBaseHeader.h">
+      <Filter>Header Files\DbfFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="DBaseField.h">
+      <Filter>Header Files\DbfFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cache.cpp">
@@ -190,6 +196,12 @@
     </ClCompile>
     <ClCompile Include="FandTFilePrefix.cpp">
       <Filter>Source Files\FandFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="DBaseHeader.cpp">
+      <Filter>Source Files\DbfFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="DBaseField.cpp">
+      <Filter>Source Files\DbfFiles</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

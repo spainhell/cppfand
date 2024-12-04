@@ -160,6 +160,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="cache.h" />
+    <ClInclude Include="DBaseField.h" />
+    <ClInclude Include="DBaseHeader.h" />
     <ClInclude Include="DbfFile.h" />
     <ClInclude Include="directory.h" />
     <ClInclude Include="FandFile.h" />
@@ -188,6 +190,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cache.cpp" />
+    <ClCompile Include="DBaseField.cpp" />
+    <ClCompile Include="DBaseHeader.cpp" />
     <ClCompile Include="DbfFile.cpp" />
     <ClCompile Include="directory.cpp" />
     <ClCompile Include="FandFile.cpp" />

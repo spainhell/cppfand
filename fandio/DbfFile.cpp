@@ -1,4 +1,6 @@
 #include "DbfFile.h"
+
+#include "DBaseHeader.h"
 #include "../Common/FileEnums.h"
 #include "../Core/FieldDescr.h"
 #include "../Core/FileD.h"
@@ -11,77 +13,65 @@ void DbfFile::WrDBaseHd(FileD* file_d)
 {
 	unsigned short m, d, y;
 	const char CtrlZ = '\x1a';
+	const char CtrlD = '\x0d';
 
-	DBaseHeader* P = new DBaseHeader();
+	DBaseHeader* dbf_header = new DBaseHeader();
 	//unsigned short n = 0;
 
 	for (FieldDescr* F : file_d->FldD) {
 		if (F->isStored()) {
 			//n++;
 			DBaseField* actual = new DBaseField();
-			P->flds.push_back(actual);
+			dbf_header->flds.push_back(actual);
 			switch (F->field_type) {
-			case FieldType::FIXED: { actual->Typ = 'N'; actual->Dec = F->M; break; }
-			case FieldType::NUMERIC: { actual->Typ = 'N'; break; }
-			case FieldType::ALFANUM: { actual->Typ = 'C'; break; }
-			case FieldType::DATE: { actual->Typ = 'D'; break; }
-			case FieldType::BOOL: { actual->Typ = 'L'; break; }
-			case FieldType::TEXT: { actual->Typ = 'M'; break; }
+			case FieldType::FIXED: { actual->typ = 'N'; actual->dec = F->M; break; }
+			case FieldType::NUMERIC: { actual->typ = 'N'; break; }
+			case FieldType::ALFANUM: { actual->typ = 'C'; break; }
+			case FieldType::DATE: { actual->typ = 'D'; break; }
+			case FieldType::BOOL: { actual->typ = 'L'; break; }
+			case FieldType::TEXT: { actual->typ = 'M'; break; }
 			default:;
 			}
-			actual->Len = F->NBytes;
-			actual->Displ = F->Displ;
-			actual->Name = upperCaseString(F->Name).substr(0, 11);
+			actual->len = F->NBytes;
+			actual->displ = F->Displ;
+			actual->name = upperCaseString(F->Name).substr(0, 11);
 		}
 	}
 
 	if (file_d->FF->TF != nullptr) {
-		if (file_d->FF->TF->Format == FandTFile::FptFormat) P->Ver = 0xf5;
-		else P->Ver = 0x83;
+		if (file_d->FF->TF->Format == FandTFile::FptFormat) dbf_header->Ver = 0xf5;
+		else dbf_header->Ver = 0x83;
 	}
 	else {
-		P->Ver = 0x03;
+		dbf_header->Ver = 0x03;
 	}
 
-	P->RecLen = file_d->FF->RecLen;
+	dbf_header->RecLen = file_d->FF->RecLen;
 	SplitDate(Today(), d, m, y);
-	P->Date[0] = static_cast<uint8_t>(y - 1900);
-	P->Date[1] = static_cast<uint8_t>(m);
-	P->Date[2] = static_cast<uint8_t>(d);
-	P->NRecs = file_d->FF->NRecs;
-	P->HdLen = file_d->FF->FirstRecPos;
-	//PA[(P->HdLen / 32) * 32 + 1] = m;
+	dbf_header->Date[0] = static_cast<uint8_t>(y - 1900);
+	dbf_header->Date[1] = static_cast<uint8_t>(m);
+	dbf_header->Date[2] = static_cast<uint8_t>(d);
+	dbf_header->NRecs = file_d->FF->NRecs;
+	dbf_header->HdLen = file_d->FF->FirstRecPos;
 
-	bool cached = file_d->FF->NotCached();
+	bool not_cached = file_d->FF->NotCached();
 
-	WriteCache(file_d->FF->Handle, cached, 0, 1, &P->Ver);		// 1 byte
-	WriteCache(file_d->FF->Handle, cached, 1, 3, P->Date);		// 3 bytes
-	WriteCache(file_d->FF->Handle, cached, 4, 4, &P->NRecs);	// 4 bytes
-	WriteCache(file_d->FF->Handle, cached, 8, 2, &P->HdLen);	// 2 bytes
-	WriteCache(file_d->FF->Handle, cached, 10, 2, &P->RecLen);	// 2 bytes
+	WriteCache(file_d->FF->Handle, not_cached, 0, dbf_header->GetDataLength(), dbf_header->GetData());
 
-	size_t index = 12;
-	uint8_t zeros[11]{ 0,0,0,0,0,0,0,0,0,0,0 };
 
-	for (DBaseField* F : P->flds) {
-		size_t name_len = F->Name.length();
-		WriteCache(file_d->FF->Handle, cached, index, name_len, (void*)F->Name.c_str());
-		index += name_len;
-		WriteCache(file_d->FF->Handle, cached, index, 11 - name_len, zeros);	// 11 bytes
-		index += 11 - name_len;
-		WriteCache(file_d->FF->Handle, cached, index, 1, &F->Typ);		// 1 byte
-		index++;
-		WriteCache(file_d->FF->Handle, cached, index, 4, &F->Displ);	// 4 bytes
-		index += 4;
-		WriteCache(file_d->FF->Handle, cached, index, 1, &F->Len);		// 1 byte
-		index++;
-		WriteCache(file_d->FF->Handle, cached, index, 1, &F->Dec);		// 1 byte
-		index++;
+	size_t index = dbf_header->GetDataLength();
+
+	for (DBaseField* F : dbf_header->flds) {
+		WriteCache(file_d->FF->Handle, not_cached, index, F->GetDataLength(), F->GetData());
+		index += F->GetDataLength();
 	}
 
-	WriteCache(file_d->FF->Handle, cached, P->NRecs * P->RecLen + P->HdLen, 1, (void*)&CtrlZ);
+	WriteCache(file_d->FF->Handle, not_cached, index, 1, (void*)&CtrlD);
 
-	delete P; P = nullptr;
+	WriteCache(file_d->FF->Handle, not_cached, dbf_header->NRecs * dbf_header->RecLen + dbf_header->HdLen, 1, (void*)&CtrlZ);
+
+	delete dbf_header;
+	dbf_header = nullptr;
 }
 
 int DbfFile::MakeDbfDcl(pstring Nm)
@@ -109,9 +99,9 @@ int DbfFile::MakeDbfDcl(pstring Nm)
 
 	for (i = 1; i <= n; i++) {
 		ReadH(h, 32, &Fd);
-		s = Fd.Name;
+		s = Fd.name;
 
-		switch (Fd.Typ)
+		switch (Fd.typ)
 		{
 		case 'C': c = 'A'; break;
 		case 'D': c = 'D'; break;
@@ -123,11 +113,11 @@ int DbfFile::MakeDbfDcl(pstring Nm)
 		s = s + ':' + c;
 
 		switch (c) {
-		case 'A': { str(Fd.Len, s1); s = s + ',' + s1; break; }
+		case 'A': { str(Fd.len, s1); s = s + ',' + s1; break; }
 		case 'F': {
-			Fd.Len -= Fd.Dec;
-			if (Fd.Dec != 0) Fd.Len--;
-			str(Fd.Len, s1); s = s + ',' + s1; str(Fd.Dec, s1); s = s + '.' + s1;
+			Fd.len -= Fd.dec;
+			if (Fd.dec != 0) Fd.len--;
+			str(Fd.len, s1); s = s + ',' + s1; str(Fd.dec, s1); s = s + '.' + s1;
 			break;
 		}
 		}

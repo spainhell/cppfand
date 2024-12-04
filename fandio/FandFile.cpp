@@ -349,10 +349,10 @@ void FandFile::saveR(FieldDescr* field_d, double r, void* record)
 		switch (field_d->field_type) {
 		case FieldType::FIXED: {
 			if (file_type == FileType::DBF) {
-				pstring s;
+				std::string s;
 				if ((field_d->Flg & f_Comma) != 0) r = r / Power10[m];
-				str(field_d->NBytes, s);
-				Move(&s[1], pRec, field_d->NBytes);
+				str(r, field_d->NBytes, field_d->M, s);
+				memcpy(pRec, s.c_str(), s.length());
 			}
 			else {
 				if ((field_d->Flg & f_Comma) == 0) r = r * Power10[m];
@@ -368,8 +368,8 @@ void FandFile::saveR(FieldDescr* field_d, double r, void* record)
 				break;
 			}
 			case FileType::DBF: {
-				pstring s = StrDate(r, "YYYYMMDD");
-				Move(&s[1], pRec, 8);
+				std::string s = StrDate(r, "YYYYMMDD");
+				memcpy(pRec, s.c_str(), s.length());
 				break;
 			}
 			default: {
