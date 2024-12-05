@@ -6,6 +6,7 @@
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
+#include "LinkD.h"
 #include "LogicControl.h"
 #include "KeyFldD.h"
 #include "rdproc.h"

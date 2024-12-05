@@ -7,18 +7,18 @@ DataFile::DataFile()
 	state = _closed;
 }
 
-DataFile::DataFile(std::string Name, FileD* CFile, FILE* Handler)
+DataFile::DataFile(const std::string& name, FileD* file_d, FILE* handle)
 {
-	this->Name = Name;
-	this->CFile = CFile;
-	this->Handler = Handler;
-	if (Handler != nullptr) state = _opened;
+	this->name = name;
+	this->file_d = file_d;
+	this->handle = handle;
+	if (handle != nullptr) state = _opened;
 }
 
 void DataFile::SetClose()
 {
 	state = _closed;
-	Handler = nullptr;
+	handle = nullptr;
 }
 
 void DataFile::SetOpen()

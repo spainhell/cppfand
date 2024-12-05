@@ -28,7 +28,9 @@ bool OpenF(FileD* file_d, const std::string& path, FileUseMode UM)
 		result = OpenF2(file_d, path);
 		file_d->OldLockMode(NullMode);
 	}
-	else result = false;
+	else {
+		result = false;
+	}
 	return result;
 }
 
@@ -134,11 +136,6 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 
 bool OpenF2(FileD* file_d, const std::string& path)
 {
-	//if (path == "C:\\PCFAND\\UCTO2023\\{GLOB}\\FIRMY.000")
-	//{
-	//	printf("");
-	//}
-
 	wwmix ww;
 
 	int FS = 0, n = 0, l = 0;
@@ -204,6 +201,9 @@ label3:
 			file_d->FF->TF->SetEmpty();
 		}
 		else {
+			if (file_d->Name == "PARAM2") {
+				printf("");
+			}
 			file_d->FF->TF->RdPrefix(true);
 			if ((file_d->FF->file_type == FileType::RDB)
 				&& !file_d->IsActiveRdb()
@@ -266,11 +266,6 @@ void CreateF(FileD* file_d)
 
 bool OpenCreateF(FileD* file_d, const std::string& path, FileUseMode UM)
 {
-	//if (file_d->Name == "FIRMY")
-	//{
-	//	printf("");
-	//}
-
 	if (!OpenF(file_d, path, UM)) {
 		CreateF(file_d);
 		if ((UM == Shared) || (UM == RdShared)) {

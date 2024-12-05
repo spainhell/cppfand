@@ -10,6 +10,7 @@
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
+#include "../Core/LinkD.h"
 #include "../Core/oaccess.h"
 #include "../Core/obase.h"
 #include "../Core/obaseww.h"

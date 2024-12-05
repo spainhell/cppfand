@@ -20,6 +20,7 @@
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
 #include "legacy.h"
+#include "LinkD.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "olongstr.h"

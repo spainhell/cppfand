@@ -535,12 +535,17 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	vOverHandle.push_back((FILE*)handle);
 
 #ifdef _DEBUG
-	if (filesMap.find(path) != filesMap.end()) {
-		// soubor uz v mape je, budeme aktualizovat
-		filesMap[path] = DataFile(path, nullptr, (FILE*)handle);
+	if (handle != nullptr) {
+		if (filesMap.find(path) != filesMap.end()) {
+			// soubor uz v mape je, budeme aktualizovat
+			filesMap[path] = DataFile(path, nullptr, (FILE*)handle);
+		}
+		else {
+			filesMap.insert(std::pair(path, DataFile(path, nullptr, (FILE*)handle)));
+		}
 	}
 	else {
-		filesMap.insert(std::pair(path, DataFile(path, nullptr, (FILE*)handle)));
+		printf("");
 	}
 #endif
 
@@ -605,7 +610,7 @@ void CloseH(HANDLE* handle)
 	// uzavre soubor
 	bool res = CloseF(*handle, HandleError);
 	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i",
-		*handle, fileForClose == nullptr ? "nullptr" : fileForClose->Name.c_str(), res);
+		*handle, fileForClose == nullptr ? "nullptr" : fileForClose->name.c_str(), res);
 
 	if (!res) {
 		throw std::exception("Cannot close file!");
@@ -615,7 +620,7 @@ void CloseH(HANDLE* handle)
 	// oznaci za uzavreny ve filesMap
 	for (auto& f : filesMap)
 	{
-		if (f.second.Handler == h) {
+		if (f.second.handle == h) {
 			fileForClose = &f.second;
 			f.second.SetClose();
 			break;

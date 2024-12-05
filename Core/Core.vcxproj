@@ -61,6 +61,7 @@
     <ClCompile Include="CfgFile.cpp" />
     <ClCompile Include="Dependency.cpp" />
     <ClCompile Include="Implicit.cpp" />
+    <ClCompile Include="LinkD.cpp" />
     <ClCompile Include="LogicControl.cpp" />
     <ClCompile Include="Coding.cpp" />
     <ClCompile Include="Compiler.cpp" />
@@ -103,6 +104,7 @@
     <ClInclude Include="CfgFile.h" />
     <ClInclude Include="Dependency.h" />
     <ClInclude Include="Implicit.h" />
+    <ClInclude Include="LinkD.h" />
     <ClInclude Include="LogicControl.h" />
     <ClInclude Include="Coding.h" />
     <ClInclude Include="Compiler.h" />

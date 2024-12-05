@@ -4,6 +4,7 @@
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
+#include "LinkD.h"
 #include "rdfildcl.h"
 #include "rdrun.h"
 #include "runfrml.h"

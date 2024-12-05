@@ -6,6 +6,7 @@
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
+#include "LinkD.h"
 #include "obaseww.h"
 #include "runfrml.h"
 #include "../fandio/files.h"

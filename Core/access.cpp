@@ -6,13 +6,13 @@
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
+#include "LinkD.h"
 #include "obaseww.h"
 #include "runfrml.h"
 #include "../fandio/FandFile.h"
 #include "../Logging/Logging.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
-
 
 
 void CloseClearH(FandFile* fand_file)

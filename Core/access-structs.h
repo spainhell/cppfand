@@ -34,29 +34,6 @@ struct LiRoots
 	std::vector<Implicit*> Impls;
 };
 
-class LinkD
-{
-public:
-	LinkD() = default;
-	LinkD(const LinkD& orig)
-	{
-		this->IndexRoot = orig.IndexRoot;
-		this->MemberRef = orig.MemberRef;
-		this->Args = orig.Args;
-		this->FromFD = orig.FromFD;
-		this->ToFD = orig.ToFD;
-		this->ToKey = orig.ToKey;
-		this->RoleName = orig.RoleName;
-	}
-	WORD IndexRoot = 0; // 0 - non index file || to only primary key
-	BYTE MemberRef = 0; // { 0-no, 1-!, 2-!!(no delete)}
-	std::vector<KeyFldD*> Args;
-	FileD* FromFD = nullptr;
-	FileD* ToFD = nullptr;
-	XKey* ToKey = nullptr;
-	std::string RoleName;
-};
-
 struct WRectFrml // r251
 {
 	FrmlElem* C1 = nullptr;
