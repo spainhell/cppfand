@@ -136,7 +136,7 @@ private:
 	FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller);
 	WORD RdPrecision();
 	std::vector<FrmlElem*> RdFL(bool NewMyBP);
-	std::vector<FrmlElem*> RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1);
+	std::vector<FrmlElem*> RdFL(bool NewMyBP, std::vector<FrmlElem*>& left_side_items);
 	LinkD* FindOwnLD(FileD* FD, std::string RoleName);
 	void SetLocVars(FrmlElem* Z, char typ, bool return_param, std::vector<LocVar*>& newVars);
 	void RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vector<LocVar*> newVars);

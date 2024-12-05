@@ -933,6 +933,7 @@ void RdKeyD(FileD* file_d)
 		}
 
 		L = new LinkD();
+
 		L->RoleName = name;
 		L->FromFD = file_d;
 		L->ToFD = FD;
@@ -1072,7 +1073,7 @@ void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD)
 label1:
 	if (k == nullptr) g_compiler->Error(24);
 	g_compiler->RdLex();
-	*FD = found_f;
+	*FD = found_f == nullptr ? file_d : found_f;
 	*KD = k;
 }
 

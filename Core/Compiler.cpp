@@ -1967,7 +1967,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				Z2 = nullptr;
 			label1:
 				Z = new FrmlElemFunction(_cond, 0); // GetOp(_cond, 0);
-				if (!IsKeyWord("ELSE")) 	{
+				if (!IsKeyWord("ELSE")) {
 					((FrmlElemFunction*)Z)->P1 = RdFormula(Typ, caller);
 					TestBool(Typ);
 				}
@@ -2131,7 +2131,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
 				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
 				TestReal(Typ);
-			//label4:
+				//label4:
 				FTyp = 'R';
 				Accept(')');
 			}
@@ -2318,26 +2318,25 @@ std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP)
 	return RdFL(NewMyBP, FL1);
 }
 
-std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1)
+std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& left_side_items)
 {
 	char FTyp = '\0';
 
 	std::vector<KeyFldD*>::iterator it0 = CViewKey->KFlds.begin();
-	//KeyFldD* KF2 = it0->pChain;
-
+	std::vector<FrmlElem*>::iterator fl1 = left_side_items.begin();
+	KeyFldD* second_view_key_field = CViewKey->KFlds.size() > 1 ? *(it0 + 1) : nullptr;
 	std::vector<FrmlElem*> result;
+
 	bool FVA = FileVarsAllowed;
 	FileVarsAllowed = false;
-	bool b = !FL1.empty();
-	if (CViewKey->KFlds.size() > 1) {
+
+	bool b = !left_side_items.empty();
+	if (second_view_key_field != nullptr) {
 		Accept('(');
 	}
 
-	//label1:
 	while (true) {
-		/*FrmlList FL = new FrmlListEl();
-		if (FLRoot == nullptr) FLRoot = FL;
-		else ChainLast(FLRoot, FL);*/
+
 		FrmlElem* frml = RdFrml(FTyp, nullptr);
 		result.push_back(frml);
 
@@ -2345,12 +2344,11 @@ std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1)
 			OldError(12);
 		}
 
-		++it0; // = it0->pChain;
+		++it0;
 
 		if (b) {
-			//FL1 = FL1->pChain;
-			//if (FL1 != nullptr) {
-			if (FL1.size() > 1) {
+			++fl1;
+			if (fl1 != left_side_items.end()) {
 				Accept(',');
 				continue;
 			}
@@ -2363,7 +2361,7 @@ std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1)
 		break;
 	}
 
-	if (CViewKey->KFlds.size() > 1) {
+	if (second_view_key_field != nullptr) {
 		Accept(')');
 	}
 
@@ -2373,8 +2371,9 @@ std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1)
 
 FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller)
 {
-	KeyInD* KI = nullptr; WORD l = 0; char FTyp = '\0';
-	FrmlElem* Z = nullptr; bool FVA = false;
+	WORD l = 0; char FTyp = '\0';
+	FrmlElem* Z = nullptr;
+	bool FVA = false;
 	FrmlElem* result = nullptr;
 	KIRoot.clear();
 	SQLFilter = false;
@@ -2384,34 +2383,43 @@ FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool
 		FileVarsAllowed = true;
 		if ((Lexem == _identifier)
 			&& (ForwChar == '(')
-			&& (EquUpCase("EVALB", LexWord) || EquUpCase("EVALS", LexWord) || EquUpCase("EVALR", LexWord)))
+			&& (EquUpCase("EVALB", LexWord) || EquUpCase("EVALS", LexWord) || EquUpCase("EVALR", LexWord))) {
 			FileVarsAllowed = false;
+		}
 	}
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
+
 		if ((processing_F->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) {
 			OldError(118);
 		}
+
 		if (CViewKey->KFlds.empty()) {
 			OldError(176);
 		}
+
 		Accept('[');
 		l = CViewKey->IndexLen + 1;
-	label1:
-		KI = new KeyInD();
-		//if (*KIRoot == nullptr) *KIRoot = KI;
-		//else ChainLast(*KIRoot, KI);
-		KI->FL1 = RdFL(NewMyBP);
-		KIRoot.push_back(KI);
-		if (Lexem == _subrange) {
-			RdLex();
-			KI->FL2 = RdFL(NewMyBP, KI->FL1);
-		}
-		if (Lexem == ',') {
-			RdLex();
-			goto label1;
+
+		while (true) {
+			KeyInD* KI = new KeyInD();
+			KI->FL1 = RdFL(NewMyBP);
+			KIRoot.push_back(KI);
+
+			if (Lexem == _subrange) {
+				RdLex();
+				KI->FL2 = RdFL(NewMyBP, KI->FL1);
+			}
+
+			if (Lexem == ',') {
+				RdLex();
+				continue;
+			}
+
+			break;
 		}
 		Accept(']');
+
 		if (Lexem == '&') {
 			RdLex();
 			goto label2;
@@ -2421,6 +2429,7 @@ FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool
 	label2:
 		FrmlSumEl = nullptr;
 		Z = RdFormula(FTyp, caller);
+
 		if (processing_F->typSQLFile && (FTyp == 'S')) {
 			SQLFilter = true;
 		}
@@ -2430,11 +2439,14 @@ FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool
 				((FrmlElem21*)Z)->EvalFD = processing_F;
 			}
 		}
+
 		result = Z;
 	}
+
 	if (FromRdProc) {
 		FileVarsAllowed = FVA;
 	}
+
 	return result;
 }
 
