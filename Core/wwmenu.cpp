@@ -1,4 +1,6 @@
 #include "wwmenu.h"
+
+#include <algorithm>
 #include <memory>
 #include "FieldDescr.h"
 #include "FileD.h"

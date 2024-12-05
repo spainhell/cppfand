@@ -23,7 +23,6 @@ class FieldDescr
 {
 public:
 	FieldDescr();
-	FieldDescr(BYTE* inputStr);
 	FieldDescr(const FieldDescr& orig);
 	FieldType field_type = FieldType::UNKNOWN;
 	std::string Name;

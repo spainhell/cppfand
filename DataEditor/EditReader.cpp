@@ -1,5 +1,8 @@
 #include "EditReader.h"
 
+#include <algorithm>
+#include "../Common/textfunc.h"
+#include "../Common/compare.h"
 #include "../Core/LogicControl.h"
 #include "../Core/Compiler.h"
 #include "../Core/Dependency.h"
@@ -9,8 +12,7 @@
 #include "../Core/obaseww.h"
 #include "../Core/rdfildcl.h"
 #include "../Core/rdrun.h"
-#include "../Common/textfunc.h"
-#include "../Common/compare.h"
+#include "../Core/runfrml.h"
 #include "../fandio/XWKey.h"
 
 //std::vector<EditD*> v_edits;
