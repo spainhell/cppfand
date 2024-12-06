@@ -1654,7 +1654,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("PMISTO(@)") != std::string::npos) {
+	if (srcCode.find("#I1_POHLZAV ! DatumVyst,PorDokl1,CisDokl1") != std::string::npos) {
 		printf("");
 	}
 #endif

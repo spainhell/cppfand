@@ -67,7 +67,7 @@ const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
 const WORD TextStore = 0x1000;
 const BYTE TStatL = 35; /*=10(Col Row)+length(InsMsg+IndMsg+WrapMsg+JustMsg+BlockMsg)*/
 
-const BYTE CountC = 7;
+
 
 std::set<char> Separ = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
 26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,58,59,60,61,62,63,64,
@@ -95,7 +95,6 @@ bool EditT;
 
 // od r101
 
-BYTE ColKey[CountC + 1]{ 0 };
 BYTE TxtColor = 0, BlockColor = 0, SysLColor = 0;
 pstring InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
 pstring ViewMsg;
@@ -3019,6 +3018,7 @@ TextEditor::TextEditor()
 	this->blocks = new Blocks();
 	this->_events = new TextEditorEvents();
 	this->_screen = new TextEditorScreen(this, TXTCOLS, blocks, CtrlKey);
+	InitTxtEditor();
 }
 
 TextEditor::~TextEditor()

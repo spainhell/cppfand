@@ -130,16 +130,20 @@ void Report::Read(RprtOpt* RO)
 				FD = (*FDL)->FD;
 				report_compiler->processing_F = (*FDL)->FD;
 			}
+
 			CViewKey = report_compiler->RdViewKey(FD);
+
 			if (FDL != RO->FDL.end()) {
 				if ((*FDL)->ViewKey != nullptr) {
 					CViewKey = (*FDL)->ViewKey;
 				}
 			}
+
 			if (Lexem == '!') {
 				report_compiler->RdLex();
 				ID->AutoSort = true;
 			}
+
 			ID->Op = _const;
 			ID->OpErr = _const;
 			ID->OpWarn = _const;
@@ -174,12 +178,15 @@ void Report::Read(RprtOpt* RO)
 			}
 
 			ID->Scan = new XScan(FD, CViewKey, KI, true);
+
 			if ((FDL != RO->FDL.end()) && ((*FDL)->LVRecPtr != nullptr)) {
 				ID->Scan->ResetLV((*FDL)->LVRecPtr);
 			}
+
 			if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
 				report_compiler->RdKFList(ID->MFld, FD);
 			}
+
 			if (Ii > 1) {
 				if (IDA[Ii - 1]->MFld.empty()) {
 					if (!ID->MFld.empty()) report_compiler->OldError(22);
@@ -191,8 +198,10 @@ void Report::Read(RprtOpt* RO)
 					CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
 				}
 			}
+
 			RdAutoSortSK(ID, report_compiler);
 			report_compiler->TestLex('#');
+
 			if (FDL != RO->FDL.end()) {
 				++FDL;
 			}

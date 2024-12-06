@@ -112,6 +112,8 @@ const WORD _KL_ = 0x0B0C; const WORD _OW_ = 0x0F17; const WORD _OL_ = 0x0F0C;
 const WORD _OR_ = 0x0F12; const WORD _OJ_ = 0x0F0A; const WORD _OC_ = 0x0F03;
 const WORD _KF_ = 0x0B06;
 
+const BYTE CountC = 7;
+
 class TextEditorEvents;
 
 class TextEditor
@@ -223,4 +225,6 @@ private:
 	size_t word_line = 0;
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
+
+	BYTE ColKey[CountC + 1]{ 0 };
 };
