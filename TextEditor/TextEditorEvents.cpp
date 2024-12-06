@@ -836,7 +836,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					if (positionOnActualLine == 0) {
 						I = textIndex;
 						editor->PreviousLine();
-						if ((I > 1) || ChangePart) positionOnActualLine = GetArrLineLength();
+						if (I > 1) {
+							positionOnActualLine = GetArrLineLength();
+						}
 						goto label1;
 					}
 				} while (Separ.count(Arr[positionOnActualLine]) > 0);

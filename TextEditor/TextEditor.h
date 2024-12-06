@@ -197,7 +197,6 @@ private:
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void UpdScreen();
 	void PredPart();
-	void MovePart(WORD Ind);
 	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
 	size_t GetLine(size_t idx);
 	WORD CurrentLineFirstCharIndex(WORD index);

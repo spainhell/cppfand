@@ -317,12 +317,14 @@ label6:
 
 bool TestEvent()
 {
-label1:
-	if (Event.What == 0) GetMouseKeyEvent();
-	if (Event.What == 0) GetKeyEvent();
-	if (Event.What == 0) return false;
-	TestGlobalKey();
-	if (Event.What == 0) goto label1;
+	while (true) {
+		if (Event.What == 0) GetMouseKeyEvent();
+		if (Event.What == 0) GetKeyEvent();
+		if (Event.What == 0) return false;
+		TestGlobalKey();
+		if (Event.What == 0) continue;
+		break;
+	}
 	return true;
 }
 

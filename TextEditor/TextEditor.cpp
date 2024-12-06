@@ -113,10 +113,13 @@ WORD PHNum = 0, PPageS = 0; // {strankovani ve Scroll}
 HANDLE TxtFH = nullptr;
 std::string TxtPath;
 std::string TxtVol;
-//bool AllRd = false;
+
 int AbsLenT = 0;
-bool ChangePart, UpdPHead;
-void RestorePar(int l);
+
+//bool ChangePart;
+bool UpdPHead;
+
+//void RestorePar(int l);
 
 
 std::vector<std::string> TextEditor::GetLinesFromT()
@@ -725,7 +728,7 @@ WORD PColumn(WORD w, char* P)
 bool MyTestEvent()
 {
 	if (FirstEvent) return false;
-	//return TestEvent();
+	return TestEvent();
 }
 
 void TextEditor::TestUpdFile()
@@ -1090,9 +1093,9 @@ void TextEditor::UpdScreen()
 
 	InsPage = false;
 	if (ChangeScr) {
-		if (ChangePart) {
-			DekodLine(textIndex);
-		}
+		//if (ChangePart) {
+		//	DekodLine(textIndex);
+		//}
 		ChangeScr = false;
 
 		if (bScroll) {
@@ -2285,23 +2288,6 @@ void MarkRdClpBd(void* P1, LongStr* sp)
 	sp = TWork.ReadLongStr(ClpBdPos);
 }
 
-void TextEditor::MovePart(WORD Ind)
-{
-	if (TypeT != FileT) return;
-	TestUpdFile();
-	WrEndT();
-	{
-		//Part.MovI = CurrentLineFirstCharIndex(Ind) - 1;
-		//Part.MovL = GetLine(Part.MovI) - 1;
-		//Part.LineP += Part.MovL;
-		//Part.PosP += Part.MovI;
-		//Part.LenP -= Part.MovI;
-		//SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
-		//TestLenText(&_textT, _lenT, Part.MovI + 1, 1);
-		ChangePart = true;
-	}
-}
-
 bool TextEditor::BlockGrasp(char Oper, void* P1, LongStr* sp)
 {
 	int L, L1, L2, ln;
@@ -2313,7 +2299,7 @@ bool TextEditor::BlockGrasp(char Oper, void* P1, LongStr* sp)
 	SetBlockBound(L1, L2);
 	if ((L > L1) and (L < L2) and (Oper != 'G')) return result;
 	L = L2 - L1; if (L > 0x7FFF) { WrLLF10Msg(418); return result; }
-	if (L2 > /*Part.PosP +*/ _lenT) MovePart(L1 /* - Part.PosP*/);
+	//if (L2 > /*Part.PosP +*/ _lenT) MovePart(L1 /* - Part.PosP*/);
 	I1 = L1 /* - Part.PosP*/;
 	MarkStore(P1);
 	sp = new LongStr(L + 2);
@@ -2548,15 +2534,15 @@ bool MyPromptLL(WORD n, std::string& s)
 	return Event.Pressed.KeyCombination() == __ESC;
 }
 
-void ChangeP(WORD& fst)
-{
-	if (ChangePart) {
-		//if (fst <= Part.MovI) fst = 1;
-		//else fst -= Part.MovI;
-		/* if (Last>Part.PosP+_lenT) lst = _lenT-1 else lst = Last-Part.PosP; */
-		//NullChangePart();
-	}
-}
+//void ChangeP(WORD& fst)
+//{
+//	if (ChangePart) {
+//		//if (fst <= Part.MovI) fst = 1;
+//		//else fst -= Part.MovI;
+//		/* if (Last>Part.PosP+_lenT) lst = _lenT-1 else lst = Last-Part.PosP; */
+//		//NullChangePart();
+//	}
+//}
 
 void TextEditor::SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 {
@@ -2597,7 +2583,7 @@ void TextEditor::ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last)
 	size_t f = FindStr.length();
 	//TestLenText(&_textT, _lenT, J, int(J) + r - f);
 	UpdatT = true;
-	ChangeP(fst);
+	//ChangeP(fst);
 	//if (TestLastPos(positionOnActualLine, positionOnActualLine + r - f));
 	if (!ReplaceStr.empty()) Move(&ReplaceStr[1], &_textT[J - f], r);
 	J += r - f;
@@ -2654,7 +2640,7 @@ void TextEditor::FindReplaceString(int First, int Last)
 label1:
 	if (Last > /*Part.PosP +*/ _lenT) lst = _lenT - 1;
 	else lst = Last; // -Part.PosP;
-	ChangeP(fst);            /* Background muze volat NextPart */
+	//ChangeP(fst);            /* Background muze volat NextPart */
 	if (FindString(fst, lst)) {
 		SetScreen(fst, 0, 0);
 		if (Replace) {
