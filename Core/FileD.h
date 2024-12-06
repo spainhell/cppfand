@@ -100,6 +100,8 @@ public:
 	void SetDeletedFlag(void* record);
 
 	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record);
+	bool SerchXKey(XKey* K, XString& X, int& N);
+
 	FileD* OpenDuplicateF(bool createTextFile);
 	void DeleteDuplicateF(FileD* TempFD);
 	void ZeroAllFlds(void* record, bool delTFields);

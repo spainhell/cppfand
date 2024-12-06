@@ -16,7 +16,6 @@
 #include "obase.h"
 #include "obaseww.h"
 #include "RunMessage.h"
-#include "olongstr.h"
 #include "printtxt.h"
 #include "rdfildcl.h"
 #include "rdproc.h"
@@ -526,20 +525,6 @@ void PrintTxtProc(Instr_edittxt* PD)
 	}
 }
 
-bool SrchXKey(XKey* K, XString& X, int& N)
-{
-	if (CFile->FF->file_type == FileType::INDEX) {
-		CFile->FF->TestXFExist();
-		return K->SearchInterval(CFile, X, false, N);
-	}
-	else {
-		BYTE* record = CFile->GetRecSpace();
-		bool result = CFile->SearchKey(X, K, N, record);
-		delete[] record; record = nullptr;
-		return result;
-	}
-}
-
 void DeleteRecProc(Instr_recs* PD)
 {
 	int n;
@@ -554,7 +539,7 @@ void DeleteRecProc(Instr_recs* PD)
 	}
 	LockMode md = CFile->NewLockMode(DelMode);
 	if (PD->ByKey) {
-		if (!SrchXKey(PD->Key, x, n)) {
+		if (!CFile->SerchXKey(PD->Key, x, n)) {
 			CFile->OldLockMode(md);
 			delete[] CRecPtr;
 			return;
@@ -687,7 +672,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			}
 			N = lv->FD->FF->NRecs;
 		}
-		else if (!SrchXKey(k, x, N)) {
+		else if (!lv->FD->SerchXKey(k, x, N)) {
 			if (IsRead) {
 				//CFile->DelTFlds(CRecPtr);
 				lv->FD->ZeroAllFlds(lv->record, true);

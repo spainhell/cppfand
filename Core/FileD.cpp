@@ -412,6 +412,20 @@ bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 	return FF->SearchKey(XX, Key, NN, record);
 }
 
+bool FileD::SerchXKey(XKey* K, XString& X, int& N)
+{
+	if (FF->file_type == FileType::INDEX) {
+		FF->TestXFExist();
+		return K->SearchInterval(this, X, false, N);
+	}
+	else {
+		BYTE* record = GetRecSpace();
+		bool result = SearchKey(X, K, N, record);
+		delete[] record; record = nullptr;
+		return result;
+	}
+}
+
 FileD* FileD::OpenDuplicateF(bool createTextFile)
 {
 	short Len = 0;

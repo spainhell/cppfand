@@ -25,7 +25,6 @@ void EditProc(Instr_edit* PD);
 void EditTxtProc(Instr_edittxt* PD);
 
 void PrintTxtProc(Instr_edittxt* PD);
-bool SrchXKey(XKey* K, XString& X, int& N);
 void DeleteRecProc(Instr_recs* PD);
 void RecallRecProc(Instr_recs* PD);
 void AppendRecProc(FileD* file_d);
