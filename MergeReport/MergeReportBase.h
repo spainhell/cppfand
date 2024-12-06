@@ -26,4 +26,7 @@ protected:
 	WORD Ii, Oi, SumIi;
 	char WhatToRd; /*i=Oi output FDs;O=O outp.FDs*/
 	int NRecsAll;
+
+	InpD* IDA[30];
+	short MaxIi;
 };

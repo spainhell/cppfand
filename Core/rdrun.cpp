@@ -14,8 +14,7 @@
 
 std::vector<ConstListEl> OldMFlds;
 std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/
-InpD* IDA[30];
-short MaxIi;
+
 XString OldMXStr;                  /* Merge */
 std::vector<OutpFD*> OutpFDRoot;
 std::vector<OutpRD*> OutpRDs;

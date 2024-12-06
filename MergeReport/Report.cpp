@@ -54,9 +54,9 @@ void Report::Read(RprtOpt* RO)
 
 	std::vector<RprtFDListEl*>::iterator FDL = RO->FDL.begin();
 
-	if (FDL != RO->FDL.end() && (*FDL)->FD != nullptr) {
-		++FDL;
-	}
+	//if (FDL != RO->FDL.end() && (*FDL)->FD != nullptr) {
+	//	++FDL;
+	//}
 	ResetLVBD();
 	if (g_compiler->IsKeyWord("VAR")) {
 		g_compiler->RdLocDcl(&LVBD, false, false, 'R');

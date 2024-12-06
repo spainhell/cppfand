@@ -153,8 +153,8 @@ struct TypAndFrml
 
 extern std::vector<ConstListEl> OldMFlds;
 extern std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/
-extern InpD* IDA[30];
-extern short MaxIi;
+//extern InpD* IDA[30];
+//extern short MaxIi;
 extern XString OldMXStr;                  /* Merge */
 extern std::vector<OutpFD*> OutpFDRoot;
 extern std::vector<OutpRD*> OutpRDs;
