@@ -35,7 +35,7 @@ struct Character {
 };
 
 ///  { ^s - underline, ^w - italic, ^q - expanded, ^d - double, ^b - bold, ^e - compressed, ^a - ELITE }
-std::string CtrlKey = "\x13\x17\x11\x04\x02\x05\x01"; 
+std::string CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
 
 // *** Promenne metody EDIT
 char Arr[SuccLineSize]{ '\0' };  // znaky pro 1 radek
@@ -96,8 +96,8 @@ bool EditT;
 // od r101
 
 BYTE TxtColor = 0, BlockColor = 0, SysLColor = 0;
-pstring InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
-pstring ViewMsg;
+
+std::string ViewMsg;
 char CharPg = '\0';
 bool InsPg = false;
 WORD ScreenIndex = 0; // index of the first char on the screen 0 .. N
@@ -120,8 +120,13 @@ int AbsLenT = 0;
 bool UpdPHead;
 
 //void RestorePar(int l);
-
-BYTE ColKey[CountC + 1]{ 0 };
+uint8_t TextEditor::ColKey[] = {0,0,0,0,0,0,0};
+std::string TextEditor::InsMsg;
+std::string TextEditor::nInsMsg;
+std::string TextEditor::IndMsg;
+std::string TextEditor::WrapMsg;
+std::string TextEditor::JustMsg;
+std::string TextEditor::BlockMsg;
 
 
 std::vector<std::string> TextEditor::GetLinesFromT()
@@ -151,7 +156,7 @@ char* GetTfromLines(std::vector<std::string>& lines, size_t& len)
 		for (size_t i = 0; i < lines.size(); i++) {
 			txt += lines[i];
 		}
-		
+
 		if (len != txt.length()) {
 			throw std::exception("Bad string size - OldEditor.cpp, method GetT");
 		}
@@ -642,7 +647,9 @@ void TextEditor::WrLLMargMsg(std::string& s, WORD n)
 			else {
 				WrLLMsg(LastNr);
 			}
-			if (Mode == TextM) WriteMargins();
+			if (Mode == TextM) {
+				WriteMargins();
+			}
 		}
 	}
 }
@@ -664,7 +671,7 @@ void InitScr()
 	PageS = LastR - FirstR; LineS = succ(LastC - FirstC);
 }
 
-void UpdStatLine(int Row, int Col, char mode)
+void TextEditor::UpdStatLine(int Row, int Col, char mode)
 {
 	char RowCol[] = "RRRRR:CCCCC";
 	char StatLine[] = "                                   ";
@@ -673,29 +680,56 @@ void UpdStatLine(int Row, int Col, char mode)
 		int lRow = Row; // +Part.LineP;
 		snprintf(RowCol, sizeof(RowCol), "%5i:%-5i", lRow, Col);
 		memcpy(&StatLine[1], RowCol, 11); // 11 znaku ve format 'RRRRR:CCCCC'
+
 		switch (mode) { // uses parameter 'mode', not global variable 'Mode'
 		case TextM: {
-			if (Insert) Move(&InsMsg[1], &StatLine[10], 5);
-			else Move(&nInsMsg[1], &StatLine[10], 5);
-			if (Indent) Move(&IndMsg[1], &StatLine[15], 5);
-			if (Wrap) Move(&WrapMsg[1], &StatLine[20], 5);
-			if (Just) Move(&JustMsg[1], &StatLine[25], 5);
-			if (TypeB == ColBlock) Move(&BlockMsg[1], &StatLine[30], 5);
+			if (Insert) {
+				memcpy(&StatLine[10], InsMsg.c_str(), 5);
+			}
+			else {
+				memcpy(&StatLine[10], nInsMsg.c_str(), 5);
+			}
+			if (Indent) {
+				memcpy(&StatLine[15], IndMsg.c_str(), 5);
+			}
+			if (Wrap) {
+				memcpy(&StatLine[20], WrapMsg.c_str(), 5);
+			}
+			if (Just) {
+				memcpy(&StatLine[25], JustMsg.c_str(), 5);
+			}
+			if (TypeB == ColBlock) {
+				memcpy(&StatLine[30], BlockMsg.c_str(), 5);
+			}
 			break;
 		}
-		case ViewM: { Move(&ViewMsg[1], &StatLine[10], ViewMsg.length()); break; }
-		case SinFM: { StatLine[12] = '-'; break; }
-		case DouFM: { StatLine[12] = '='; break; }
-		case DelFM: { StatLine[12] = '/'; break; }
+		case ViewM: {
+			memcpy(&StatLine[10], ViewMsg.c_str(), ViewMsg.length());
+			break;
+		}
+		case SinFM: {
+			StatLine[12] = '-'; break;
+		}
+		case DouFM: {
+			StatLine[12] = '='; break;
+		}
+		case DelFM: {
+			StatLine[12] = '/'; break;
+		}
 		default: break;
 		}
+
 		short i = 1;
-		if (HeadS.length() > 0) {
+
+		if (!HeadS.empty()) {
 			size_t find = HeadS.find('_');
+
 			if (find == std::string::npos) {
 				find = 0;
 			}
+
 			i = MaxW(1, find);
+
 			if (i > TxtCols - TStatL) {
 				i = MaxI((short)(TxtCols)-TStatL, 1);
 			}
@@ -1796,7 +1830,7 @@ void TextEditor::NewLine(char Mode)
 	// na puvodnim radku zustane vse pred pozici kurzoru a pridame ukonceni radku
 	lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, positionOnActualLine - 1) + EoL;
 
- 	char* newT = GetTfromLines(lines, _lenT);
+	char* newT = GetTfromLines(lines, _lenT);
 	delete[] _textT;
 	_textT = newT;
 
@@ -2788,7 +2822,7 @@ void TextEditor::HelpRD(char dir)
 {
 	size_t I = 0, I1 = 0, I2 = 0;
 	uint16_t h2 = 0;
-	
+
 	ClrWord();
 	uint16_t h1 = WordNo2();
 	if (WordExist()) {
@@ -3022,8 +3056,8 @@ TextEditor::~TextEditor()
 }
 
 bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
-                          WORD& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
-                          WORD pCtrlLastNr, MsgStr* pMsgS)
+	WORD& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
+	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
 	bool oldEdOK = EdOk;
 	EditT = true;
@@ -3359,13 +3393,13 @@ void TextEditor::InitTxtEditor()
 	ColKey[6] = screen.colors.tCompressed;
 	ColKey[7] = screen.colors.tElite;
 
-	ReadMessage(411); InsMsg = MsgLine;
-	ReadMessage(412); nInsMsg = MsgLine;
-	ReadMessage(413); IndMsg = MsgLine;
-	ReadMessage(414); WrapMsg = MsgLine;
-	ReadMessage(415); JustMsg = MsgLine;
-	ReadMessage(417); BlockMsg = MsgLine;
-	ReadMessage(416); ViewMsg = MsgLine;
+	InsMsg = ReadMessage(411); 
+	nInsMsg = ReadMessage(412);
+	IndMsg = ReadMessage(413); 
+	WrapMsg = ReadMessage(414);
+	JustMsg = ReadMessage(415);
+	BlockMsg = ReadMessage(417);
+	ViewMsg = ReadMessage(416);
 	Insert = true; Indent = true; Wrap = false; Just = false; TypeB = false;
 	LeftMarg = 1; RightMarg = 78;
 	CharPg = /*char(250)*/ spec.TxtCharPg;

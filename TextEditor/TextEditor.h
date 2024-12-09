@@ -126,7 +126,7 @@ public:
 	void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
 		WORD MaxLen, WORD& Ind, bool& Updat);
 	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
-	void InitTxtEditor();
+	static void InitTxtEditor();
 	void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
 		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 	void ViewPrinterTxt();
@@ -135,6 +135,8 @@ public:
 
 	char* _textT = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
 	size_t _lenT = 0;                     // delka editovaneho textu;
+	static uint8_t ColKey[CountC + 1];
+	static std::string InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
 
 private:
 
@@ -147,6 +149,7 @@ private:
 	void ScrollPress();
 	void DisplLL(WORD Flags);
 	void WrLLMargMsg(std::string& s, WORD n);
+	void UpdStatLine(int Row, int Col, char mode);
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	WORD SetInd(WORD Ind, WORD Pos);
 	void SetBlockBound(int& BBPos, int& EBPos);
@@ -217,5 +220,7 @@ private:
 	size_t word_line = 0;
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
+
+	
 
 };
