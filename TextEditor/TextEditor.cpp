@@ -121,6 +121,8 @@ bool UpdPHead;
 
 //void RestorePar(int l);
 
+BYTE ColKey[CountC + 1]{ 0 };
+
 
 std::vector<std::string> TextEditor::GetLinesFromT()
 {
@@ -3004,7 +3006,7 @@ TextEditor::TextEditor()
 	this->blocks = new Blocks();
 	this->_events = new TextEditorEvents();
 	this->_screen = new TextEditorScreen(this, TXTCOLS, blocks, CtrlKey);
-	InitTxtEditor();
+	//InitTxtEditor();
 }
 
 TextEditor::~TextEditor()

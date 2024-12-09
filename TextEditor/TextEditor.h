@@ -28,11 +28,6 @@ struct stEditorParams
 };
 
 
-
-
-
-
-
 WORD Position(WORD n);
 WORD Column(WORD p);
 
@@ -85,7 +80,6 @@ extern pstring OptionStr;
 extern WORD MargLL[4];
 
 //extern Blocks* blocks;
-
 
 extern std::set<char> Separ;
 
@@ -140,8 +134,7 @@ public:
 	void ViewHelpText(std::string& S, WORD& TxtPos);
 
 	char* _textT = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
-	size_t _lenT = 0;                     // delka editovaneho textu
-
+	size_t _lenT = 0;                     // delka editovaneho textu;
 
 private:
 
@@ -225,5 +218,4 @@ private:
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 
-	BYTE ColKey[CountC + 1]{ 0 };
 };
