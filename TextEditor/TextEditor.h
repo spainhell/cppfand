@@ -125,12 +125,13 @@ public:
 		WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS);
 	void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
 		WORD MaxLen, WORD& Ind, bool& Updat);
-	static void InitTxtEditor();
 	void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
 		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 	void ViewPrinterTxt();
 	void SetEditTxt(Instr_setedittxt* PD);
 	void ViewHelpText(std::string& S, WORD& TxtPos);
+
+	static void InitTxtEditor();
 
 	char* _textT = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
 	size_t _lenT = 0;                     // delka editovaneho textu;

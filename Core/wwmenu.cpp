@@ -322,11 +322,10 @@ bool TMenu::ParentsContain(TPoint* T)
 
 void TMenu::Prev()
 {
-	do
-	{
+	do {
 		if (iTxt > 1) iTxt--;
 		else iTxt = nTxt;
-	} while (!(Enabled(iTxt) && (GetText(iTxt) != "")));
+	} while (!(Enabled(iTxt) && !GetText(iTxt).empty()));
 }
 
 bool TMenu::UnderMenuBar()
@@ -347,7 +346,8 @@ void TMenu::WrText(WORD I)
 		return;
 	}
 	GetItemRect(I, &r);
-	x = r.A.X; y = r.A.Y; x2 = x + r.Size.X;
+	x = r.A.X; y = r.A.Y;
+	x2 = x + r.Size.X;
 	ena = Enabled(I);
 
 	if (I == iTxt) attr = Palette[1];
@@ -363,7 +363,7 @@ void TMenu::WrText(WORD I)
 				if (red) { attr = Palette[0]; red = false; }
 				else { attr = Palette[2]; red = true; }
 			}
-		if (s[j] != 0x17) { screen.ScrWrChar(x, y, s[j], attr); x++; };
+		if (s[j] != 0x17) { screen.ScrWrChar(x, y, s[j], attr); x++; }
 	}
 	while (x < x2) { screen.ScrWrChar(x, y, ' ', attr); x++; }
 }

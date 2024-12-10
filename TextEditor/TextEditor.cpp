@@ -119,7 +119,7 @@ int AbsLenT = 0;
 //bool ChangePart;
 bool UpdPHead;
 
-//void RestorePar(int l);
+// initialize static class members
 uint8_t TextEditor::ColKey[] = {0,0,0,0,0,0,0};
 std::string TextEditor::InsMsg;
 std::string TextEditor::nInsMsg;
@@ -127,7 +127,7 @@ std::string TextEditor::IndMsg;
 std::string TextEditor::WrapMsg;
 std::string TextEditor::JustMsg;
 std::string TextEditor::BlockMsg;
-
+// initialization end
 
 std::vector<std::string> TextEditor::GetLinesFromT()
 {
@@ -3391,6 +3391,7 @@ void TextEditor::InitTxtEditor()
 	TxtColor = screen.colors.tNorm;
 	BlockColor = screen.colors.tBlock;
 	SysLColor = screen.colors.fNorm;
+
 	ColKey[0] = screen.colors.tCtrl;
 	ColKey[1] = screen.colors.tUnderline;
 	ColKey[2] = screen.colors.tItalic;
@@ -3407,6 +3408,7 @@ void TextEditor::InitTxtEditor()
 	JustMsg = ReadMessage(415);
 	BlockMsg = ReadMessage(417);
 	ViewMsg = ReadMessage(416);
+
 	Insert = true; Indent = true; Wrap = false; Just = false; TypeB = false;
 	LeftMarg = 1; RightMarg = 78;
 	CharPg = /*char(250)*/ spec.TxtCharPg;
