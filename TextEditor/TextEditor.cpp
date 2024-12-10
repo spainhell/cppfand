@@ -368,21 +368,21 @@ void SimplePrintHead()
 	PPageS = 0x7FFF;
 }
 
-void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
-{
-	WORD length = Count;
-	Count = 0;
-	Ind = from;
-	for (int i = from; i < length; i++) {
-		if (input[i] == __ENTER) {
-			Ind = from + i;
-			Count++;
-		}
-	}
-	if (Count > 0 && input[Ind] == __LF) {
-		Ind++; // LF
-	}
-}
+//void LastLine(char* input, size_t from, size_t num, size_t& Ind, size_t& Count)
+//{
+//	size_t length = Count;
+//	Count = 0;
+//	Ind = from;
+//	for (int i = from; i < length; i++) {
+//		if (input[i] == __ENTER) {
+//			Ind = from + i;
+//			Count++;
+//		}
+//	}
+//	if (Count > 0 && input[Ind] == __LF) {
+//		Ind++; // LF
+//	}
+//}
 
 bool TextEditor::ReadTextFile()
 {
@@ -407,20 +407,20 @@ bool TextEditor::ReadTextFile()
 	return false; // return ChangePart
 }
 
-void TextEditor::FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count)
-{
-	char* C = nullptr;
-	WORD* COfs = (WORD*)C;
-	Count = 0; Ind = from - 1; C = &_textT[from];
-	for (WORD i = 0; i < num - 1; i++) {
-		COfs--;
-		if (*C == __ENTER) {
-			Count++;
-			Ind = from - i;
-		}
-	}
-	if ((Count > 0) && (_textT[Ind + 1] == __LF)) Ind++;
-}
+//void TextEditor::FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count)
+//{
+//	char* C = nullptr;
+//	WORD* COfs = (WORD*)C;
+//	Count = 0; Ind = from - 1; C = &_textT[from];
+//	for (WORD i = 0; i < num - 1; i++) {
+//		COfs--;
+//		if (*C == __ENTER) {
+//			Count++;
+//			Ind = from - i;
+//		}
+//	}
+//	if ((Count > 0) && (_textT[Ind + 1] == __LF)) Ind++;
+//}
 
 //bool RdPredPart()
 //{
@@ -662,13 +662,20 @@ void InitScr()
 	LastR = WindMax.Y;
 	LastC = WindMax.X;
 
-	if ((FirstR == 1) && (Mode != HelpM)) FirstR++;
-	if (LastR == TxtRows) LastR--;
+	if ((FirstR == 1) && (Mode != HelpM)) {
+		FirstR++;
+	}
+	if (LastR == TxtRows) {
+		LastR--;
+	}
 	MinC = FirstC; MinR = FirstR; MaxC = LastC; MaxR = LastR;
 	screen.Window(FirstC, FirstR, LastC, LastR);
 	FirstR--;
-	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) LastC--;
-	PageS = LastR - FirstR; LineS = succ(LastC - FirstC);
+	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
+		LastC--;
+	}
+	PageS = LastR - FirstR;
+	LineS = succ(LastC - FirstC);
 }
 
 void TextEditor::UpdStatLine(int Row, int Col, char mode)

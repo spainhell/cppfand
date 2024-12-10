@@ -125,7 +125,6 @@ public:
 		WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS);
 	void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
 		WORD MaxLen, WORD& Ind, bool& Updat);
-	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
 	static void InitTxtEditor();
 	void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
 		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
@@ -200,7 +199,7 @@ private:
 	void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last);
 	bool FindString(WORD& I, WORD Len);
 	bool ReadTextFile();
-	void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count);
+	//void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count);
 	void UpdateFile();
 	bool WordExist();
 	std::vector<std::string> GetLinesFromT();
@@ -216,6 +215,7 @@ private:
 	bool ColBlockExist();
 	void NewBlock1(WORD& I1, int& L2);
 	void NewBlock2(int& L1, int& L2);
+	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
 
 	size_t word_line = 0;
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
