@@ -93,20 +93,12 @@ std::string LastS, CtrlLastS, ShiftLastS, AltLastS, HeadS;
 int* LocalPPtr;
 bool EditT;
 
-// od r101
-
-BYTE TxtColor = 0, BlockColor = 0, SysLColor = 0;
-
-std::string ViewMsg;
 char CharPg = '\0';
 bool InsPg = false;
 WORD ScreenIndex = 0; // index of the first char on the screen 0 .. N
 WORD textIndex = 0;
 WORD positionOnActualLine = 0; // position of the cursor on the actual line (1 .. 255)
 WORD BPos = 0; // {screen status}
-std::string FindStr, ReplaceStr;
-bool Replace = false;
-pstring OptionStr;
 bool FirstEvent = false;
 WORD PHNum = 0, PPageS = 0; // {strankovani ve Scroll}
 
@@ -118,16 +110,6 @@ int AbsLenT = 0;
 
 //bool ChangePart;
 bool UpdPHead;
-
-// initialize static class members
-uint8_t TextEditor::ColKey[] = {0,0,0,0,0,0,0};
-std::string TextEditor::InsMsg;
-std::string TextEditor::nInsMsg;
-std::string TextEditor::IndMsg;
-std::string TextEditor::WrapMsg;
-std::string TextEditor::JustMsg;
-std::string TextEditor::BlockMsg;
-// initialization end
 
 std::vector<std::string> TextEditor::GetLinesFromT()
 {
@@ -167,33 +149,6 @@ char* GetTfromLines(std::vector<std::string>& lines, size_t& len)
 	}
 	return output;
 }
-
-stEditorParams SaveParams()
-{
-	stEditorParams save_params;
-	save_params.Insert = Insert;
-	save_params.Indent = Indent;
-	save_params.Wrap = Wrap;
-	save_params.Just = Just;
-	save_params.Mode = Mode;
-	save_params.TypeT = TypeT;
-	save_params.NameT = NameT;
-
-	return save_params;
-}
-
-void RestoreParams(stEditorParams& editorParams)
-{
-	Insert = editorParams.Insert;
-	Indent = editorParams.Indent;
-	Wrap = editorParams.Wrap;
-	Just = editorParams.Just;
-	Mode = editorParams.Mode;
-	TypeT = editorParams.TypeT;
-	NameT = editorParams.NameT;
-}
-
-
 
 void MyWrLLMsg(std::string s)
 {
@@ -253,7 +208,7 @@ size_t TextEditor::FindCharPosition(char c, size_t idx_from, size_t n)
 	return result == std::string::npos ? _lenT : result;
 }
 
-bool TestOptStr(char c)
+bool TextEditor::TestOptStr(char c)
 {
 	return (OptionStr.first(c) != 0) || (OptionStr.first(toupper(c)) != 0);
 }
@@ -571,7 +526,7 @@ pstring ShortName(pstring Name)
 	return s;
 }
 
-void WrStatusLine()
+void TextEditor::WrStatusLine()
 {
 	std::string Blanks;
 	if (Mode != HelpM) {
@@ -1078,7 +1033,7 @@ void TextEditor::PosDekFindLine(int Num, WORD Pos, bool ChScr)
 	ChangeScr = ChangeScr || ChScr;
 }
 
-void WrEndL(bool Hard, int Row)
+void TextEditor::WrEndL(bool Hard, int Row)
 {
 	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
 		WORD w;
@@ -1454,7 +1409,7 @@ void direction(BYTE x, BYTE& zn2)
 	}
 }
 
-void MyWriteln()
+void TextEditor::MyWriteln()
 {
 	TextAttr = TxtColor;
 	printf("\n");
@@ -3044,10 +2999,10 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 
 TextEditor::TextEditor()
 {
+	InitTxtEditor();
 	this->blocks = new Blocks();
 	this->_events = new TextEditorEvents();
 	this->_screen = new TextEditorScreen(this, TXTCOLS, blocks, CtrlKey);
-	//InitTxtEditor();
 }
 
 TextEditor::~TextEditor()
@@ -3347,18 +3302,11 @@ void TextEditor::ViewHelpText(std::string& s, WORD& TxtPos)
 	memcpy(helpText, s.c_str(), s.length());
 	auto S = std::make_unique<LongStr>(helpText, s.length());
 
-	stEditorParams ep;
-
 	try {
-		ep = SaveParams();
-		TxtColor = screen.colors.hNorm;
-		FillChar(ColKey, 8, screen.colors.tCtrl);
-		ColKey[5] = screen.colors.hSpec;
-		ColKey[3] = screen.colors.hHili;
-		ColKey[1] = screen.colors.hMenu;
 		bool Srch = false;
 		bool Upd = false;
 		int Scr = 0;
+
 		while (true) {
 			std::vector<WORD> brkKeys;
 			brkKeys.push_back(__F1);
@@ -3367,20 +3315,21 @@ void TextEditor::ViewHelpText(std::string& s, WORD& TxtPos)
 			brkKeys.push_back(__CTRL_HOME);
 			brkKeys.push_back(__CTRL_END);
 			std::vector<EdExitD*> emptyExitD;
+
 			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+			editor->InitHelpViewEditor(); // set colors
 			editor->EditText(HelpM, MemoT, "", "", S.get(), 0xFFF0, TxtPos, Scr,
 				brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
+
 			if (Event.Pressed.KeyCombination() == __F6) {
 				PrintArray(&S->A, S->LL, true);
 				continue;
 			}
 			break;
 		}
-		RestoreParams(ep);
 	}
 	catch (std::exception& e)
 	{
-		RestoreParams(ep);
 	}
 }
 
@@ -3388,6 +3337,7 @@ void TextEditor::InitTxtEditor()
 {
 	FindStr = ""; ReplaceStr = "";
 	OptionStr[0] = 0; Replace = false;
+
 	TxtColor = screen.colors.tNorm;
 	BlockColor = screen.colors.tBlock;
 	SysLColor = screen.colors.fNorm;
@@ -3413,4 +3363,13 @@ void TextEditor::InitTxtEditor()
 	LeftMarg = 1; RightMarg = 78;
 	CharPg = /*char(250)*/ spec.TxtCharPg;
 	InsPg = /*true*/ spec.TxtInsPg;
+}
+
+void TextEditor::InitHelpViewEditor()
+{
+	TxtColor = screen.colors.hNorm;
+	FillChar(ColKey, 8, screen.colors.tCtrl);
+	ColKey[5] = screen.colors.hSpec;
+	ColKey[3] = screen.colors.hHili;
+	ColKey[1] = screen.colors.hMenu;
 }

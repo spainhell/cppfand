@@ -19,14 +19,6 @@ struct MsgStr
 	std::string Head, Last, CtrlLast, AltLast, ShiftLast;
 };
 
-struct stEditorParams
-{
-	bool Insert = false, Indent = false, Wrap = false, Just = false;
-	char Mode = '\0';
-	char TypeT = '\0';
-	std::string NameT;
-};
-
 
 WORD Position(WORD n);
 WORD Column(WORD p);
@@ -38,14 +30,10 @@ WORD GetArrLineLength();
 
 
 bool MyPromptLL(WORD n, std::string& s);
-bool TestOptStr(char c);
-
 
 void SetPartLine(int Ln);
 void MyWrLLMsg(std::string s);
 void HMsgExit(std::string s);
-stEditorParams SaveParams();
-void RestoreParams(stEditorParams& editorParams);
 void OpenTxtFh(char Mode);
 void SimplePrintHead();
 
@@ -74,9 +62,7 @@ extern WORD columnOffset, Colu, Row;
 extern bool InsPg, ChangePart, TypeB;
 extern WORD LastC, FirstC, FirstR, LastR;
 extern bool UpdatedL;
-extern std::string FindStr, ReplaceStr;
-extern bool Replace, FirstEvent;
-extern pstring OptionStr;
+extern bool FirstEvent;
 extern WORD MargLL[4];
 
 //extern Blocks* blocks;
@@ -131,12 +117,13 @@ public:
 	void SetEditTxt(Instr_setedittxt* PD);
 	void ViewHelpText(std::string& S, WORD& TxtPos);
 
-	static void InitTxtEditor();
+	void InitTxtEditor();
+	void InitHelpViewEditor();
 
 	char* _textT = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
 	size_t _lenT = 0;                     // delka editovaneho textu;
-	static uint8_t ColKey[CountC + 1];
-	static std::string InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
+	uint8_t ColKey[CountC + 1]{ 0 };
+	std::string InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
 
 private:
 
@@ -148,6 +135,7 @@ private:
 	void FindReplaceString(int First, int Last);
 	void ScrollPress();
 	void DisplLL(WORD Flags);
+	void WrStatusLine();
 	void WrLLMargMsg(std::string& s, WORD n);
 	void UpdStatLine(int Row, int Col, char mode);
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
@@ -175,11 +163,13 @@ private:
 	void RollNext();
 	void RollPred();
 	void TestKod();
+	void MyWriteln();
 	void PreviousLine();
 	void FillBlank();
 	void DeleteLine();
 	size_t CountChar(char C, size_t first, size_t last);
 	size_t FindCharPosition(char c, size_t from, size_t n = 1);
+	bool TestOptStr(char c);
 	size_t GetLineNumber(size_t Ind);
 	size_t GetLineStartIndex(size_t lineNr);
 	void CopyCurrentLineToArr(size_t Ind);
@@ -188,6 +178,7 @@ private:
 	void SetWord(size_t word_begin, size_t word_end);
 	void ClrWord();
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
+	void WrEndL(bool Hard, int Row);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 	size_t WordNo(size_t I);
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
@@ -222,6 +213,9 @@ private:
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 
-	
-
+	pstring OptionStr;
+	std::string FindStr, ReplaceStr;
+	BYTE TxtColor = 0, BlockColor = 0, SysLColor = 0;
+	bool Replace = false;
+	std::string ViewMsg;
 };

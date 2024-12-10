@@ -396,7 +396,7 @@ void InitRunFand()
 	// Editor
 	//std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
 	//editor->InitTxtEditor();
-	TextEditor::InitTxtEditor();
+	//TextEditor::InitTxtEditor();
 
 	WasInitPgm = true;
 

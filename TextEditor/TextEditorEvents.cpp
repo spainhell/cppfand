@@ -393,7 +393,7 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 	return result;
 }
 
-bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<EdExitD*>& ExitD, int& fs, stEditorParams& ep, LongStr*& sp, WORD key)
+bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<EdExitD*>& ExitD, int& fs, LongStr*& sp, WORD key)
 {
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 	for (auto& X : ExitD) {
@@ -440,7 +440,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 				break;
 			}
 			}
-			ep = SaveParams();
+			//ep = SaveParams();
 			screen.CrsHide();
 			if (TypeT == MemoT) {
 				data_editor->StartExit(X, false);
@@ -453,7 +453,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 			if (!bScroll) {
 				screen.CrsShow();
 			}
-			RestoreParams(ep);
+			//RestoreParams(ep);
 			switch (TypeT) {
 			case FileT: {
 				fs = IndexT; // Part.PosP + IndexT;
@@ -508,7 +508,6 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 	HANDLE F1 = nullptr;
 	size_t W1 = 0, W2 = 0;
 	int L1 = 0, L2 = 0, fs = 0;
-	stEditorParams ep;
 	std::string ss;
 	int j = 0;
 	CHAR_INFO LastL[161];
@@ -590,7 +589,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 		ClrEvent();
 		//X = ExitD; // Exit-procedure
 
-		if (TestExitKeys(editor, mode, ExitD, fs, ep, sp, key)) {
+		if (TestExitKeys(editor, mode, ExitD, fs, sp, key)) {
 			goto Nic;
 		}
 
@@ -1039,22 +1038,21 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			}
 			case _QF_:
 			case _QA_: {
-				Replace = false;
-				if (MyPromptLL(405, FindStr)) goto Nic;
-				if (key == _QA_)
-				{
-					if (MyPromptLL(407, ReplaceStr)) goto Nic;
-					Replace = true;
+				editor->Replace = false;
+				if (MyPromptLL(405, editor->FindStr)) goto Nic;
+				if (key == _QA_) {
+					if (MyPromptLL(407, editor->ReplaceStr)) goto Nic;
+					editor->Replace = true;
 				}
-				ss = OptionStr;
+				ss = editor->OptionStr;
 				if (MyPromptLL(406, ss)) goto Nic;
-				OptionStr = ss;
+				editor->OptionStr = ss;
 				editor->TestKod();
-				if (TestOptStr('l') && (!editor->BlockExist() || (TypeB == ColBlock))) goto Nic;
-				if (TestOptStr('l')) editor->SetBlockBound(L1, L2);
+				if (editor->TestOptStr('l') && (!editor->BlockExist() || (TypeB == ColBlock))) goto Nic;
+				if (editor->TestOptStr('l')) editor->SetBlockBound(L1, L2);
 				else {
 					L2 = AbsLenT /* - Part.LenP */ + editor->_lenT;
-					if (TestOptStr('g') || TestOptStr('e'))  L1 = 1;
+					if (editor->TestOptStr('g') || editor->TestOptStr('e'))  L1 = 1;
 					else L1 = /* Part.PosP + */ editor->SetInd(textIndex, positionOnActualLine);
 				}
 				editor->FindReplaceString(L1, L2);
@@ -1063,12 +1061,12 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case 'L': {
-				if (!FindStr.empty()) {
+				if (!editor->FindStr.empty()) {
 					editor->TestKod();
-					if (TestOptStr('l') && (!editor->BlockExist() || (TypeB == ColBlock))) goto Nic;
+					if (editor->TestOptStr('l') && (!editor->BlockExist() || (TypeB == ColBlock))) goto Nic;
 					fs = 1;
 					L1 = /* Part.PosP + */ editor->SetInd(textIndex, positionOnActualLine);
-					if (TestOptStr('l')) editor->SetBlockBound(fs, L2);
+					if (editor->TestOptStr('l')) editor->SetBlockBound(fs, L2);
 					else L2 = AbsLenT /* - Part.LenP */ + editor->_lenT;
 					if (L1 < fs)  L1 = fs;  // { if L1>=L2  goto Nic;}
 					editor->FindReplaceString(L1, L2);
@@ -1374,12 +1372,10 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __ALT_F8: {
-				ep = SaveParams();
 				W1 = Menu(45, spec.KbdTyp + 1);
 				if (W1 != 0) {
 					spec.KbdTyp = TKbdConv(W1 - 1);
 				}
-				RestoreParams(ep);
 				break;
 			}
 			case 0x1000: {

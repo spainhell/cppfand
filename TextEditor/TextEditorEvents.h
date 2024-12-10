@@ -29,7 +29,7 @@ private:
 	bool ScrollEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	bool ViewEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	bool MyGetEvent(TextEditor* editor, char& Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
-	bool TestExitKeys(TextEditor* editor, char& mode, std::vector<EdExitD*>& ExitD, int& fs, stEditorParams& ep,
+	bool TestExitKeys(TextEditor* editor, char& mode, std::vector<EdExitD*>& ExitD, int& fs,
 	                  LongStr*& sp, WORD key);
 };
 
