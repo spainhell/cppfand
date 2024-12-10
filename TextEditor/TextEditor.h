@@ -56,10 +56,8 @@ extern HANDLE TxtFH;
 //extern bool AllRd;
 extern int AbsLenT;
 extern BYTE FrameDir;
-extern bool Insert, Indent, Wrap, Just;
-extern short LeftMarg, RightMarg;
 extern WORD columnOffset, Colu, Row;
-extern bool InsPg, ChangePart, TypeB;
+extern bool ChangePart, TypeB;
 extern WORD LastC, FirstC, FirstR, LastR;
 extern bool UpdatedL;
 extern bool FirstEvent;
@@ -115,6 +113,8 @@ public:
 		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 	void ViewPrinterTxt();
 	void SetEditTxt(Instr_setedittxt* PD);
+	void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg,
+	                short& pRightMarg);
 	void ViewHelpText(std::string& S, WORD& TxtPos);
 
 	void InitTxtEditor();
@@ -136,7 +136,9 @@ private:
 	void ScrollPress();
 	void DisplLL(WORD Flags);
 	void WrStatusLine();
+	void WriteMargins();
 	void WrLLMargMsg(std::string& s, WORD n);
+	void InitScr();
 	void UpdStatLine(int Row, int Col, char mode);
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	WORD SetInd(WORD Ind, WORD Pos);
@@ -213,9 +215,13 @@ private:
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 
+	bool Insert, Indent, Wrap, Just;
 	pstring OptionStr;
 	std::string FindStr, ReplaceStr;
 	BYTE TxtColor = 0, BlockColor = 0, SysLColor = 0;
 	bool Replace = false;
 	std::string ViewMsg;
+	short LeftMarg, RightMarg;
+	char CharPg = '\0';
+	bool InsPg = false;
 };

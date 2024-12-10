@@ -109,7 +109,7 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 		else {
 			if (_ctrlKey.find(cc) != std::string::npos) IsCtrl = true;
 			else {
-				if (bScroll && (cc == 0x0C)) { InsPage = InsPg; I++; }
+				if (bScroll && (cc == 0x0C)) { InsPage = _editor->InsPg; I++; }
 			}
 		}
 		I++;

@@ -24,7 +24,6 @@
 
 const int TXTCOLS = 80;
 int Timer = 0;
-bool Insert, Indent, Wrap, Just;
 
 // PROMENNE
 bool InsPage;
@@ -87,14 +86,12 @@ WORD ScrT = 0;
 
 bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;
-short LeftMarg, RightMarg;
+
 bool TypeB;
 std::string LastS, CtrlLastS, ShiftLastS, AltLastS, HeadS;
 int* LocalPPtr;
 bool EditT;
 
-char CharPg = '\0';
-bool InsPg = false;
 WORD ScreenIndex = 0; // index of the first char on the screen 0 .. N
 WORD textIndex = 0;
 WORD positionOnActualLine = 0; // position of the cursor on the actual line (1 .. 255)
@@ -559,7 +556,7 @@ void TextEditor::WrStatusLine()
 	}
 }
 
-void WriteMargins()
+void TextEditor::WriteMargins()
 {
 	CHAR_INFO LastL[201];
 
@@ -610,7 +607,7 @@ void TextEditor::WrLLMargMsg(std::string& s, WORD n)
 }
 
 /// Inicializuje obrazovku - sirku, vysku editoru
-void InitScr()
+void TextEditor::InitScr()
 {
 	FirstR = WindMin.Y;
 	FirstC = WindMin.X;
@@ -2991,7 +2988,7 @@ void TextEditor::SetEditTxt(Instr_setedittxt* PD)
 	if (PD->Right != nullptr) RightMarg = MaxI(LeftMarg, MinI(255, RunInt(CFile, PD->Right, CRecPtr)));
 }
 
-void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg, short& pRightMarg)
+void TextEditor::GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg, short& pRightMarg)
 {
 	pInsert = Insert; pIndent = Indent; pWrap = Wrap; pJust = Just; pColBlk = TypeB;
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
