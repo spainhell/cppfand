@@ -3319,7 +3319,7 @@ void TextEditor::ViewHelpText(std::string& s, WORD& TxtPos)
 				brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
 
 			if (Event.Pressed.KeyCombination() == __F6) {
-				PrintArray(&S->A, S->LL, true);
+				PrintArray(S->A, S->LL, true);
 				continue;
 			}
 			break;

@@ -169,7 +169,7 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 		FrmlElemDateMask* iX = (FrmlElemDateMask*)X;
 		std::string s = RunString(file_d, iX->P1, record);
 		if (s.empty()) result = 0;
-		else result = s[0];
+		else result = (uint8_t)s[0];
 		break;
 	}
 	case _prompt: {
