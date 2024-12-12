@@ -173,7 +173,7 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _prompt: {
-		FrmlElem11* iX = (FrmlElem11*)X;
+		FrmlElemPrompt* iX = (FrmlElemPrompt*)X;
 		std::string s = RunString(file_d, iX->P1, record);
 		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 		result = data_editor->PromptR(s, iX->P2, iX->FldD);
@@ -742,7 +742,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _prompt: {
-		FrmlElem11* iX = (FrmlElem11*)X;
+		FrmlElemPrompt* iX = (FrmlElemPrompt*)X;
 		auto s = RunString(file_d, iX->P1, record);
 		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 		result = data_editor->PromptB(s, iX->P2, iX->FldD);
@@ -1800,7 +1800,7 @@ label1:
 		break;
 	}
 	case _prompt: {
-		FrmlElem11* iZ = (FrmlElem11*)X;
+		FrmlElemPrompt* iZ = (FrmlElemPrompt*)X;
 		std::string s0 = RunString(file_d, iZ->P1, record);
 		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 		result = data_editor->PromptS(s0, iZ->P2, iZ->FldD);

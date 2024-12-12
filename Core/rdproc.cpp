@@ -419,15 +419,15 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	}
 	else if (g_compiler->IsKeyWord("PROMPT")) {
 		g_compiler->RdLex();
-		Z = new FrmlElem11(_prompt, 4);
-		((FrmlElem11*)Z)->P1 = g_compiler->RdStrFrml(nullptr);
+		Z = new FrmlElemPrompt(_prompt, 4);
+		((FrmlElemPrompt*)Z)->P1 = g_compiler->RdStrFrml(nullptr);
 		FieldDescr* F = RdFieldDescr("", true);
-		((FrmlElem11*)Z)->FldD = F;
+		((FrmlElemPrompt*)Z)->FldD = F;
 		FTyp = F->frml_type;
 		if (F->field_type == FieldType::TEXT) g_compiler->OldError(65);
 		if (Lexem == _assign) {
 			g_compiler->RdLex();
-			((FrmlElem11*)Z)->P2 = g_compiler->RdFrml(Typ, nullptr);
+			((FrmlElemPrompt*)Z)->P2 = g_compiler->RdFrml(Typ, nullptr);
 			if (Typ != FTyp) g_compiler->OldError(12);
 		}
 	}

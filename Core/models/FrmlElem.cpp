@@ -55,7 +55,7 @@ FrmlElemCatalogField::FrmlElemCatalogField(instr_type Op, size_t buff_size) : Fr
 {
 }
 
-FrmlElem11::FrmlElem11(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemPrompt::FrmlElem11(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 

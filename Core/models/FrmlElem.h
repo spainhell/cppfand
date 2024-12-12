@@ -116,10 +116,10 @@ public:
 	FieldDescr* CatFld = nullptr; // 10 {_catfield}
 };
 
-class FrmlElem11 : public FrmlElem
+class FrmlElemPrompt : public FrmlElem
 {
 public:
-	FrmlElem11(instr_type Op, size_t buff_size);
+	FrmlElemPrompt(instr_type Op, size_t buff_size);
 	FrmlElem* P1 = nullptr;
 	FrmlElem* P2 = nullptr;
 	FieldDescr* FldD = nullptr; // 11 {_prompt}
