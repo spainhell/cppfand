@@ -184,7 +184,7 @@ public:
 	FrmlElemLocVar(instr_type Op, size_t buff_size);
 	FrmlElemLocVar(instr_type Op, LocVar* lv);
 	LocVar* locvar = nullptr;
-	BYTE buff[64]{ 0 };
+	//BYTE buff[64]{ 0 };
 };
 
 class FrmlElemUserFunc : public FrmlElem

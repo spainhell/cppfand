@@ -80,7 +80,7 @@ public:
 	void DelTFlds(void* record);
 	void DelDifTFld(FieldDescr* field_d, void* record, void* comp_record);
 
-	unsigned short RdPrefix();
+	uint16_t RdPrefix();
 	int RdPrefixes();
 	void WrPrefix();
 	void WrPrefixes();

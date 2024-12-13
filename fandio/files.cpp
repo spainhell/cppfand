@@ -137,13 +137,14 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 bool OpenF2(FileD* file_d, const std::string& path)
 {
 	wwmix ww;
-
-	int FS = 0, n = 0, l = 0;
-	WORD Signum = 0, rLen = 0;
+	
 	LockMode md = NullMode;
-	FS = FileSizeH(file_d->FF->Handle);
+	int FS = FileSizeH(file_d->FF->Handle);
 	file_d->FF->NRecs = 0;
+
 	bool result = false;
+	int n;
+	WORD rLen;
 
 	if (FS < file_d->FF->FirstRecPos) {
 		goto label1;
@@ -151,6 +152,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 
 	rLen = file_d->FF->RdPrefix();
 	n = (FS - file_d->FF->FirstRecPos) / file_d->FF->RecLen;
+	
 
 	if (rLen != 0xffff) {
 		if (file_d->IsDynFile) {
@@ -162,7 +164,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 				goto label3;
 			}
 			FileMsg(file_d, 883, ' ');
-			l = file_d->FF->NRecs * rLen + file_d->FF->FirstRecPos;
+			int l = file_d->FF->NRecs * rLen + file_d->FF->FirstRecPos;
 			if (l == FS || !PromptYN(885)) {
 				CloseGoExit(file_d->FF);
 			}
@@ -201,9 +203,6 @@ label3:
 			file_d->FF->TF->SetEmpty();
 		}
 		else {
-			if (file_d->Name == "PARAM2") {
-				printf("");
-			}
 			file_d->FF->TF->RdPrefix(true);
 			if ((file_d->FF->file_type == FileType::RDB)
 				&& !file_d->IsActiveRdb()
@@ -220,22 +219,29 @@ label3:
 			file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
 		}
 		else {
+			WORD Signum = 0;
 			RdWrCache(READ, file_d->FF->XF->Handle, file_d->FF->XF->NotCached(), 0, 2, &Signum);
 			file_d->FF->XF->RdPrefix();
+
+			FandFile* ff = file_d->FF;
 			if (
-				!file_d->FF->XF->NotValid && ((Signum != 0x04FF) || (file_d->FF->XF->NRecsAbs != file_d->FF->NRecs)
-					|| (file_d->FF->XF->FreeRoot > file_d->FF->XF->MaxPage)
-					|| (((file_d->FF->XF->MaxPage + 1) << XPageShft) > FileSizeH(file_d->FF->XF->Handle)))
-				|| (file_d->FF->XF->NrKeys != 0) && (file_d->FF->XF->NrKeys != file_d->GetNrKeys()))
+				!ff->XF->NotValid && ((Signum != 0x04FF) 
+					|| (ff->XF->NRecsAbs != ff->NRecs)
+					|| (ff->XF->FreeRoot > ff->XF->MaxPage)
+					|| ((ff->XF->MaxPage + 1) << XPageShft) > FileSizeH(ff->XF->Handle))
+					|| (ff->XF->NrKeys != 0) && (ff->XF->NrKeys != file_d->GetNrKeys()))
 			{
+
 				if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
 					FileMsg(file_d, 830, 'X');
 				}
-				if (file_d->FF->IsShared() && (file_d->FF->LMode < ExclMode)) {
+
+				if (ff->IsShared() && (ff->LMode < ExclMode)) {
 					file_d->ChangeLockMode(ExclMode, 0, false);
 				}
-				file_d->FF->LMode = ExclMode;
-				file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
+
+				ff->LMode = ExclMode;
+				ff->XF->SetNotValid(ff->NRecs, file_d->GetNrKeys());
 			}
 		}
 	}
@@ -250,16 +256,19 @@ void CreateF(FileD* file_d)
 	file_d->FF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
 	TestCFileError(file_d);
 	file_d->FF->NRecs = 0;
+
 	if (file_d->FF->TF != nullptr) {
 		path = CExtToT(file_d->FF->TF, CDir, CName, CExt);
 		file_d->FF->TF->Create(path);
 	}
+
 	if (file_d->FF->file_type == FileType::INDEX) {
 		path = CExtToX(CDir, CName, CExt);
 		file_d->FF->XF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
 		file_d->FF->XF->TestErr(); /*SetNotValid*/
 		file_d->FF->XF->SetEmpty(file_d->FF->NRecs, file_d->GetNrKeys());
 	}
+
 	file_d->SeekRec(0);
 	SetUpdHandle(file_d->FF->Handle);
 }

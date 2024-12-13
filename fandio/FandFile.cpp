@@ -535,7 +535,7 @@ void FandFile::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
 	}
 }
 
-unsigned short FandFile::RdPrefix()
+uint16_t FandFile::RdPrefix()
 {
 	// NRs - celkovy pocet zaznamu v souboru;
 	// RLen - delka 1 zaznamu
@@ -546,7 +546,7 @@ unsigned short FandFile::RdPrefix()
 		int NRecs = 0;
 		unsigned short HdLen = 0; unsigned short RecLen = 0;
 	} XD;
-	auto result = 0xffff;
+	uint16_t result = 0xffff;
 	const bool not_cached = NotCached();
 	switch (file_type) {
 	case FileType::FAND8: {
