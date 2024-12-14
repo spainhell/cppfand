@@ -173,7 +173,7 @@ void Merge::Read()
 
 void Merge::Run()
 {
-	short MinIi = 0, res = 0, NEof = 0;      /*RunMerge - body*/
+	short MinIi = 0, res = 0, NEof = 0;      /* RunMerge - body */
 	bool EmptyGroup = false, b = false;
 	//PushProcStk();
 	OpenInpM();

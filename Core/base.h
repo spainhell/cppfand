@@ -27,9 +27,7 @@ WORD MaxW(WORD X, WORD Y);
 int MinL(int X, int Y);
 int MaxL(int X, int Y);
 bool OverlapByteStr(void* p1, void* p2); // ASM
-WORD FindCtrlM(LongStr* s, WORD i, WORD n); // r152
 WORD FindCtrlM(std::string& s, WORD i, WORD n);
-WORD SkipCtrlMJ(LongStr* s, WORD i); // r158
 WORD SkipCtrlMJ(std::string& s, WORD i);
 void AddBackSlash(std::string& s);
 void DelBackSlash(std::string& s);

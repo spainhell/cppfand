@@ -69,11 +69,10 @@ std::string MsgPar[4];
 WORD OldNumH; // r1 
 void* OldHTPtr = nullptr;
 
-Cache cache;
+//Cache cache;
 //std::map<FILE*, FileCache*> Cache::cacheMap;
-WORD CachePageSize;
 void* AfterCatFD; // r108
-WORD BPBound; // r212
+//WORD BPBound; // r212
 bool ExitP, BreakP;
 int LastExitCode = 0; // r215
 bool WasLPTCancel;
@@ -638,7 +637,7 @@ void ClearCacheH(HANDLE h)
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ClearCacheH() 0x%p", h);
 	// smazeme cache
-	cache.SaveRemoveCache(h);
+	//cache.SaveRemoveCache(h);
 }
 
 void CloseClearH(HANDLE* h)
@@ -646,7 +645,7 @@ void CloseClearH(HANDLE* h)
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "CloseClearH() 0x%p", h);
 	if (h == nullptr) return;
-	ClearCacheH(*h);
+	//ClearCacheH(*h);
 	CloseH(h);
 }
 
@@ -654,7 +653,8 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 {
 	Logging* log = Logging::getInstance();
 
-	const bool cached = !not_cached;
+	//const bool cached = !not_cached;
+	const bool cached = false;
 	short PgeIdx = 0, PgeRest = 0;
 	WORD err = 0; int PgeNo = 0;
 	//CachePage* Z = nullptr;
@@ -680,16 +680,16 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 	}
 
 	if (cached) {
-		//log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", handle);
-		FileCache* c1 = cache.GetCache(handle);
-		if (operation == READ) {
-			const BYTE* src = c1->Load(position);
-			if (src == nullptr) return;
-			memcpy(buf, src, count);
-		}
-		else {
-			c1->Save(position, count, static_cast<BYTE*>(buf));
-		}
+		////log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", handle);
+		//FileCache* c1 = cache.GetCache(handle);
+		//if (operation == READ) {
+		//	const BYTE* src = c1->Load(position);
+		//	if (src == nullptr) return;
+		//	memcpy(buf, src, count);
+		//}
+		//else {
+		//	c1->Save(position, count, static_cast<BYTE*>(buf));
+		//}
 	}
 	else {
 		// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
@@ -731,19 +731,6 @@ void WriteCache(HANDLE handle, bool not_cached, size_t position, size_t count, v
 //	//CloseH(handle);
 //}
 
-WORD FindCtrlM(LongStr* s, WORD i, WORD n)
-{
-	WORD l = s->LL;
-	while (i <= l - 1) {
-		if (s->A[i] == '\r') {
-			if (n > 1) n--;
-			else return i;
-		}
-		i++;
-	}
-	return l + 1;
-}
-
 WORD FindCtrlM(std::string& s, WORD i, WORD n)
 {
 	size_t l = s.length();
@@ -755,16 +742,6 @@ WORD FindCtrlM(std::string& s, WORD i, WORD n)
 		i++;
 	}
 	return l + 1;
-}
-
-WORD SkipCtrlMJ(LongStr* s, WORD i)
-{
-	WORD l = s->LL;
-	if (i <= l - 1) {
-		i++;
-		if (i <= l - 1 && s->A[i] == '\n') i++;
-	}
-	return i;
 }
 
 WORD SkipCtrlMJ(std::string& s, WORD i)
@@ -779,10 +756,10 @@ WORD SkipCtrlMJ(std::string& s, WORD i)
 
 void FlushHandles()
 {
-	for (auto handle : UpdHandles)	{
+	for (HANDLE handle : UpdHandles)	{
 		FlushF(handle, HandleError);
 	}
-	for (auto handle : FlshHandles) {
+	for (HANDLE handle : FlshHandles) {
 		FlushF(handle, HandleError);
 	}
 	ClearUpdHandles();
@@ -873,7 +850,7 @@ void UnLockCache()
 bool SaveCache(WORD ErrH, HANDLE f)
 {
 	// saves cache to the file
-	cache.SaveRemoveCache(f);
+	//cache.SaveRemoveCache(f);
 	return true;
 }
 

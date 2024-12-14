@@ -290,8 +290,9 @@ bool OpenCreateF(FileD* file_d, const std::string& path, FileUseMode UM)
 				CloseClearH(&file_d->FF->TF->Handle);
 			}
 
-			// wait 500 ms before re-open
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			// TODO: here is probably an issue with file caching
+			// wait 100 ms before re-open
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			OpenF(file_d, path, UM);
 		}
 	}

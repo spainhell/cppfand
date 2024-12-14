@@ -97,9 +97,8 @@ extern WORD SwitchLevel;
 
 // ***** BASE.H *****
 extern char Version[5];
-extern WORD CachePageSize;
 extern void* AfterCatFD; // r108
-extern WORD BPBound; // r212
+//extern WORD BPBound; // r212
 extern bool ExitP, BreakP;
 extern int LastExitCode; // r215
 extern unsigned long HandleError; // r229
