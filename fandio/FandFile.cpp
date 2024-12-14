@@ -708,6 +708,9 @@ void FandFile::SaveFile()
 	//}
 }
 
+/// <summary>
+/// Close file with saving changes (prefixes, ...)
+/// </summary>
 void FandFile::CloseFile()
 {
 	if (IsShared()) {
@@ -746,6 +749,20 @@ void FandFile::CloseFile()
 			path = CExtToT(TF, CDir, CName, CExt);
 			SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
 		}
+	}
+}
+
+/// <summary>
+/// Plain close file handle (main, index, text)
+/// </summary>
+void FandFile::Close()
+{
+	CloseH(&Handle);
+	if (file_type == FileType::INDEX) {
+		CloseH(&XF->Handle);
+	}
+	if (TF != nullptr) {
+		CloseH(&TF->Handle);
 	}
 }
 

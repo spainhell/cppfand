@@ -89,6 +89,7 @@ public:
 	LockMode RewriteFile(bool append);
 	void SaveFile();
 	void CloseFile();
+	void Close();
 
 	void SetTWorkFlag(void* record);
 	bool HasTWorkFlag(void* record);

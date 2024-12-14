@@ -11,24 +11,12 @@
 #include "runfrml.h"
 #include "../fandio/FandFile.h"
 #include "../Logging/Logging.h"
-#include "../Common/textfunc.h"
 #include "../Common/compare.h"
 
 
-void CloseClearH(FandFile* fand_file)
-{
-	CloseClearH(&fand_file->Handle);
-	if (fand_file->file_type == FileType::INDEX) {
-		CloseClearH(&fand_file->XF->Handle);
-	}
-	if (fand_file->TF != nullptr) {
-		CloseClearH(&fand_file->TF->Handle);
-	}
-}
-
 void CloseGoExit(FandFile* fand_file)
 {
-	CloseClearH(fand_file);
+	fand_file->Close(); //CloseClearH(fand_file);
 	GoExit();
 }
 
@@ -40,9 +28,8 @@ void CloseGoExit(FandFile* fand_file)
 
 void TestCPathError()
 {
-	WORD n;
 	if (HandleError != 0) {
-		n = 700 + HandleError;
+		WORD n = 700 + HandleError;
 		if ((n == 705) && (CPath[CPath.length()] == '\\')) n = 840;
 		SetMsgPar(CPath);
 		RunError(n);

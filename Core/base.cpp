@@ -617,14 +617,14 @@ void CloseH(HANDLE* handle)
 
 #ifdef _DEBUG
 	// oznaci za uzavreny ve filesMap
-	for (auto& f : filesMap)
-	{
+	for (auto& f : filesMap) {
 		if (f.second.handle == h) {
 			fileForClose = &f.second;
 			f.second.SetClose();
 			break;
 		}
 	}
+
 	if (fileForClose == nullptr) {
 		// soubor ve filesMap nebyl
 		log->log(loglevel::WARN, "closing file 0x%p, but file wasn't in filesMap!", h);
@@ -695,17 +695,23 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 		// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
 		//log->log(loglevel::DEBUG, "RdWrCache() non cached file 0x%p operation.", handle);
 		SeekH(handle, position);
+
 		if (operation == READ) {
 			ReadH(handle, count, buf);
 		}
 		else {
 			WriteH(handle, count, buf);
 		}
-		if (HandleError == 0) return;
-		err = HandleError;
-		SetPathForH(handle);
-		SetMsgPar(CPath);
-		RunError(700 + err);
+
+		if (HandleError == 0) {
+			return;
+		}
+		else {
+			err = HandleError;
+			SetPathForH(handle);
+			SetMsgPar(CPath);
+			RunError(700 + err);
+		}
 	}
 }
 

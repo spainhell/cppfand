@@ -977,7 +977,7 @@ void WithLockedProc(Instr_withshared* PD)
 					CFile->OldLockMode(NullMode);
 				}
 				else {
-					CloseClearH(CFile->FF);
+					CFile->FF->Close(); //CloseClearH(CFile->FF);
 					goto label2;
 				}
 			}
@@ -1058,7 +1058,8 @@ HANDLE OpenHForPutTxt(Instr_puttxt* PD)
 void PutTxt(Instr_puttxt* PD)
 {
 	HANDLE h = nullptr;
-	FrmlElem* z = nullptr; pstring pth;
+	FrmlElem* z = nullptr;
+	std::string path;
 	z = PD->Txt;
 
 	FileD* TFD02;
@@ -1071,25 +1072,28 @@ void PutTxt(Instr_puttxt* PD)
 
 	if (canCopyT) {
 		h = OpenHForPutTxt(PD);
-		pth = CPath;
+		path = CPath;
 		FandFile::CopyTFStringToH(CFile, h, TF02, TFD02, TF02Pos);
-		CPath = pth;
+		CPath = path;
 	}
 	else {
 		std::string s = RunString(CFile, z, CRecPtr);
 		h = OpenHForPutTxt(PD);
 		WriteH(h, s.length(), (void*)s.c_str());
 	}
-	CPath = pth;
+
+	CPath = path;
 	TestCPathError();
-	WriteH(h, 0, h)/*trunc*/;
+	WriteH(h, 0, h); /*trunc*/
 	CloseH(&h);
 }
 
 // ulozi do katalogu hodnotu promenne
 void AssgnCatFld(Instr_assign* PD, void* record)
 {
-	if (PD->FD3 != nullptr) PD->FD3->CloseFile();
+	if (PD->FD3 != nullptr) {
+		PD->FD3->CloseFile();
+	}
 	std::string data = RunString(PD->FD3, PD->Frml3, record);
 	catalog->SetField(PD->CatIRec, PD->CatFld, data);
 }
@@ -1107,11 +1111,20 @@ void AssgnUserName(Instr_assign* PD)
 void ReleaseDriveProc(FrmlElem* Z)
 {
 	SaveFiles();
-	pstring s = RunString(CFile, Z, CRecPtr);
-	char c = (char)toupper((char)s[1]);
-	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives);
-	else
-		if ((c == 'A') || (c == 'B')) ReleaseDrive(c - '@');
+	std::string s = RunString(CFile, Z, CRecPtr);
+
+	if (!s.empty()) {
+		char c = toupper(s[0]);
+
+		if (c == spec.CPMdrive) {
+			ReleaseDrive(FloppyDrives);
+		}
+		else if ((c == 'A') || (c == 'B')) {
+			ReleaseDrive(c - '@');
+		}
+	}
+	else {
+	}
 }
 
 void WithGraphicsProc(std::vector<Instr*>& PD)

@@ -94,7 +94,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 		}
 		if (HandleError != 0) {
 			n = HandleError;
-			CloseClearH(file_d->FF);
+			file_d->FF->Close(); //CloseClearH(file_d->FF);
 			HandleError = n;
 			TestCPathError();
 			return result;
@@ -110,7 +110,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 				file_d->FF->XF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
 				if (HandleError != 0) {
 					n = HandleError;
-					CloseClearH(file_d->FF);
+					file_d->FF->Close(); //CloseClearH(file_d->FF);
 					HandleError = n;
 					TestCPathError();
 					return result;
@@ -121,7 +121,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 			}
 			if (HandleError != 0) {
 				n = HandleError;
-				CloseClearH(file_d->FF);
+				file_d->FF->Close(); //CloseClearH(file_d->FF);
 				HandleError = n;
 				TestCPathError();
 			}
@@ -156,7 +156,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 
 	if (rLen != 0xffff) {
 		if (file_d->IsDynFile) {
-			CloseClearH(file_d->FF);
+			file_d->FF->Close(); //CloseClearH(file_d->FF);
 			return result;
 		}
 		else {
