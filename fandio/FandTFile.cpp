@@ -612,7 +612,7 @@ int FandTFile::Store(const std::string& s)
 void FandTFile::CloseFile()
 {
 	if (Handle != nullptr) {
-		CloseClearH(&Handle);
+		CloseH(&Handle);
 		if (HandleError == 0) Handle = nullptr;
 		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FileType::DBF)) {
 			SetPathAndVolume(_parent->GetFileD());

@@ -79,7 +79,7 @@ void FandXFile::SetNotValid(int recs, unsigned char keys)
 	NotValid = true;
 	MaxPage = 0;
 	WrPrefix(recs, keys);
-	SaveCache(0, _parent->Handle);
+	//SaveCache(0, _parent->Handle);
 }
 
 void FandXFile::ClearUpdLock()
@@ -102,7 +102,7 @@ int FandXFile::XFNotValid(int recs, unsigned char keys)
 void FandXFile::CloseFile()
 {
 	if (Handle != nullptr) {
-		CloseClearH(&Handle);
+		CloseH(&Handle);
 		if (!_parent->IsShared()) {
 			if (NotValid) {
 				SetPathAndVolume(_parent->GetFileD());

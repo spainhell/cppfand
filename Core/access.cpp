@@ -15,20 +15,20 @@
 #include "../Common/compare.h"
 
 
-void CloseClearH(FandFile* fand_file)
+void CloseH(FandFile* fand_file)
 {
-	CloseClearH(&fand_file->Handle);
+	CloseH(&fand_file->Handle);
 	if (fand_file->file_type == FileType::INDEX) {
-		CloseClearH(&fand_file->XF->Handle);
+		CloseH(&fand_file->XF->Handle);
 	}
 	if (fand_file->TF != nullptr) {
-		CloseClearH(&fand_file->TF->Handle);
+		CloseH(&fand_file->TF->Handle);
 	}
 }
 
 void CloseGoExit(FandFile* fand_file)
 {
-	CloseClearH(fand_file);
+	CloseH(fand_file);
 	GoExit();
 }
 

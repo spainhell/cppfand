@@ -57,8 +57,6 @@ bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_m
 
 // ***  VIRTUAL HANDLES  ***
 bool IsNetCVol();
-bool CacheExist();
-bool SaveCache(WORD ErrH, HANDLE f);
 void SetUpdHandle(HANDLE H);
 void ResetUpdHandle(HANDLE H);
 bool IsUpdHandle(HANDLE H);
@@ -69,7 +67,7 @@ size_t ReadH(HANDLE handle, size_t length, void* buffer);
 void WriteH(HANDLE handle, size_t length, void* buffer);
 void FlushHandles();
 void CloseH(HANDLE* handle);
-void CloseClearH(HANDLE* h);
+//void CloseClearH(HANDLE* h);
 void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);
 void ReadCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);
 void WriteCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);

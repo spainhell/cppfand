@@ -85,7 +85,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 					continue;
 				}
 				if (file_d->IsDynFile) {
-					CloseClearH(&file_d->FF->Handle);
+					CloseH(&file_d->FF->Handle);
 					result = false;
 					return result;
 				}
@@ -94,7 +94,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 		}
 		if (HandleError != 0) {
 			n = HandleError;
-			CloseClearH(file_d->FF);
+			file_d->CloseFile(); //CloseClearH(file_d->FF);
 			HandleError = n;
 			TestCPathError();
 			return result;
@@ -110,7 +110,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 				file_d->FF->XF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
 				if (HandleError != 0) {
 					n = HandleError;
-					CloseClearH(file_d->FF);
+					file_d->FF->CloseFile(); //CloseClearH(file_d->FF);
 					HandleError = n;
 					TestCPathError();
 					return result;
@@ -121,7 +121,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 			}
 			if (HandleError != 0) {
 				n = HandleError;
-				CloseClearH(file_d->FF);
+				file_d->FF->CloseFile(); //CloseClearH(file_d->FF);
 				HandleError = n;
 				TestCPathError();
 			}
@@ -156,7 +156,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 
 	if (rLen != 0xffff) {
 		if (file_d->IsDynFile) {
-			CloseClearH(file_d->FF);
+			file_d->FF->CloseFile(); //CloseClearH(file_d->FF);
 			return result;
 		}
 		else {
@@ -279,15 +279,15 @@ bool OpenCreateF(FileD* file_d, const std::string& path, FileUseMode UM)
 		CreateF(file_d);
 		if ((UM == Shared) || (UM == RdShared)) {
 			file_d->FF->WrPrefixes();
-			SaveCache(0, file_d->FF->Handle);
-			CloseClearH(&file_d->FF->Handle);
+			//SaveCache(0, file_d->FF->Handle);
+			CloseH(&file_d->FF->Handle);
 
 			if (file_d->FF->file_type == FileType::INDEX) {
-				CloseClearH(&file_d->FF->XF->Handle);
+				CloseH(&file_d->FF->XF->Handle);
 			}
 
 			if (file_d->FF->TF != nullptr) {
-				CloseClearH(&file_d->FF->TF->Handle);
+				CloseH(&file_d->FF->TF->Handle);
 			}
 
 			// TODO: here is probably an issue with file caching

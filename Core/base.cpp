@@ -640,14 +640,14 @@ void ClearCacheH(HANDLE h)
 	//cache.SaveRemoveCache(h);
 }
 
-void CloseClearH(HANDLE* h)
-{
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "CloseClearH() 0x%p", h);
-	if (h == nullptr) return;
-	//ClearCacheH(*h);
-	CloseH(h);
-}
+//void CloseClearH(HANDLE* h)
+//{
+//	Logging* log = Logging::getInstance();
+//	//log->log(loglevel::DEBUG, "CloseClearH() 0x%p", h);
+//	if (h == nullptr) return;
+//	//ClearCacheH(*h);
+//	CloseH(h);
+//}
 
 void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t position, size_t count, void* buf)
 {
@@ -695,17 +695,23 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 		// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
 		//log->log(loglevel::DEBUG, "RdWrCache() non cached file 0x%p operation.", handle);
 		SeekH(handle, position);
+
 		if (operation == READ) {
 			ReadH(handle, count, buf);
 		}
 		else {
 			WriteH(handle, count, buf);
 		}
-		if (HandleError == 0) return;
-		err = HandleError;
-		SetPathForH(handle);
-		SetMsgPar(CPath);
-		RunError(700 + err);
+
+		if (HandleError == 0) {
+			return;
+		}
+		else {
+			err = HandleError;
+			SetPathForH(handle);
+			SetMsgPar(CPath);
+			RunError(700 + err);
+		}
 	}
 }
 
@@ -826,12 +832,6 @@ WORD LogToAbsLenStyleStr(pstring s, WORD l)
 	return i - 1;
 }
 
-bool CacheExist()
-{
-	return true;
-	//return !cache.Empty();
-}
-
 bool WrCPage(FILE* Handle, int N, void* Buf, WORD ErrH)
 {
 	return true;
@@ -845,13 +845,6 @@ void LockCache()
 void UnLockCache()
 {
 	// implementation is empty in the file MEMORY.PAS too
-}
-
-bool SaveCache(WORD ErrH, HANDLE f)
-{
-	// saves cache to the file
-	//cache.SaveRemoveCache(f);
-	return true;
 }
 
 short HeapErrFun(WORD Size)

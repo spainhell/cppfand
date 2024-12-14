@@ -42,18 +42,20 @@ void OpenTWorkH()
 
 void SaveFiles()
 {
-	if (!CacheExist()) return;
+	// cache is not used anymore -> code is commented
 
-	// save catalog
-	FileD* catalog_file = catalog->GetCatalogFile();
-	catalog_file->FF->WrPrefixes();
+	//if (!CacheExist()) return;
 
-	ForAllFDs(ForAllFilesOperation::save);
+	//// save catalog
+	//FileD* catalog_file = catalog->GetCatalogFile();
+	//catalog_file->FF->WrPrefixes();
 
-	bool b = SaveCache(0, catalog_file->FF->Handle);
-	FlushHandles();
+	//ForAllFDs(ForAllFilesOperation::save);
 
-	if (!b) GoExit();
+	//bool b = SaveCache(0, catalog_file->FF->Handle);
+	//FlushHandles();
+
+	//if (!b) GoExit();
 }
 
 void CloseFANDFiles(bool FromDML)

@@ -218,11 +218,11 @@ label1:
 		IDA[i]->Exist = false;
 	}
 	if (NEof == MaxIi) {
-		b = SaveCache(0, CFile->FF->Handle);
+		//b = SaveCache(0, CFile->FF->Handle);
 		RunMsgOff();
-		if (!b) {
-			GoExit();
-		}
+		//if (!b) {
+		//	GoExit();
+		//}
 		CloseInpOutp();
 		return;
 	}

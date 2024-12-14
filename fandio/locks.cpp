@@ -104,10 +104,10 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 		if (Mode < WrMode) {
 			fileD->FF->WrPrefixes();
 		}
-		if (oldmode == ExclMode) {
-			SaveCache(0, fileD->FF->Handle);
-			// ClearCacheCFile(); - this method does not exist anymore (we don't use a cache)
-		}
+		//if (oldmode == ExclMode) {
+		//	SaveCache(0, fileD->FF->Handle);
+		//	// ClearCacheCFile(); - this method does not exist anymore (we don't use a cache)
+		//}
 		if (Mode < WrMode) {
 			ResetFileUpdH(fileD);
 		}

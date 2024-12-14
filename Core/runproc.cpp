@@ -977,7 +977,7 @@ void WithLockedProc(Instr_withshared* PD)
 					CFile->OldLockMode(NullMode);
 				}
 				else {
-					CloseClearH(CFile->FF);
+					CFile->FF->CloseFile(); //CloseClearH(CFile->FF);
 					goto label2;
 				}
 			}

@@ -716,7 +716,7 @@ void FandFile::CloseFile()
 	else {
 		WrPrefixes();
 	}
-	SaveCache(0, Handle);
+	//SaveCache(0, Handle);
 	TruncFile();
 
 	// close index file
@@ -729,7 +729,7 @@ void FandFile::CloseFile()
 		TF->CloseFile();
 	}
 
-	CloseClearH(&Handle);
+	CloseH(&Handle);  //CloseClearH(&Handle);
 	if (HandleError == 0) Handle = nullptr;
 	LMode = NullMode;
 
@@ -861,7 +861,7 @@ int FandFile::CreateIndexFile()
 			delete XW; XW = nullptr;
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
-			if (!SaveCache(0, Handle)) GoExit();
+			//if (!SaveCache(0, Handle)) GoExit();
 			/*FlushHandles; */
 		}
 		fail = false;
@@ -1192,8 +1192,8 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	}
 
 	// close and delete this FandFile physical file
-	SaveCache(0, Handle);
-	CloseClearH(&Handle);
+	//SaveCache(0, Handle);
+	CloseH(&Handle);
 	MyDeleteFile(orig_path);
 	TestDelErr(orig_path);
 
@@ -1205,8 +1205,8 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 
 	// rename temp file to regular
 	std::string temp_path = SetTempCExt(_parent, '0', false);
-	SaveCache(0, TempFD->FF->Handle);
-	CloseClearH(&TempFD->FF->Handle);
+	//SaveCache(0, TempFD->FF->Handle);
+	CloseH(&TempFD->FF->Handle);
 	RenameFile56(temp_path, orig_path, true);
 	Handle = OpenH(orig_path, _isOldFile, UMode);
 	_parent->FullPath = orig_path;
@@ -1225,12 +1225,12 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	//}
 
 	if ((TempFD->FF->TF != nullptr) && DelTF) {
-		CloseClearH(&TF->Handle);
+		CloseH(&TF->Handle);
 		MyDeleteFile(orig_path_T);
 		TestDelErr(orig_path_T);
 		//*parent_tf = *ref_to_parent->FF->TF;
 		//ref_to_parent->FF->TF = parent_tf;
-		CloseClearH(&TempFD->FF->TF->Handle);
+		CloseH(&TempFD->FF->TF->Handle);
 		std::string temp_path_t = SetTempCExt(_parent, 'T', false);
 		RenameFile56(temp_path_t, orig_path_T, true);
 		TF->Handle = OpenH(orig_path_T, _isOldFile, UMode);
@@ -1242,7 +1242,7 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 void FandFile::CopyDuplF(FileD* TempFD, bool DelTF)
 {
 	TempFD->FF->WrPrefixes();
-	SaveCache(0, Handle);
+	//SaveCache(0, Handle);
 	SetTempCExt(_parent, '0', true);
 	CopyH(TempFD->FF->Handle, Handle);
 
@@ -1281,9 +1281,9 @@ void FandFile::IndexFileProc(bool Compress)
 				FD2->PutRec(record);
 			}
 		}
-		if (!SaveCache(0, Handle)) {
-			GoExit();
-		}
+		//if (!SaveCache(0, Handle)) {
+		//	GoExit();
+		//}
 		SubstDuplF(FD2, false);
 		delete FD2; FD2 = nullptr;
 	}
