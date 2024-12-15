@@ -630,7 +630,9 @@ void FandFile::WrPrefix()
 
 void FandFile::WrPrefixes()
 {
-	WrPrefix();
+	if (IsUpdHandle(Handle)) {
+		WrPrefix();
+	}
 	if (TF != nullptr && IsUpdHandle(TF->Handle)) {
 		TF->WrPrefix();
 	}

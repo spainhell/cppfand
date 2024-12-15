@@ -34,7 +34,7 @@ public:
 	size_t TxtPosUDLI = 0;    // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
 	FileD* OrigFD = nullptr;  // like orig. or nil
 
-	int CatIRec = 0;          // cislo zaznamu v katalogu
+	int32_t CatIRec = 0;          // cislo zaznamu v katalogu
 	bool IsParFile = false;
 	bool IsJournal = false;
 	bool IsHlpFile = false;

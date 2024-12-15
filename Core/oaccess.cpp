@@ -42,12 +42,16 @@ void OpenTWorkH()
 
 void SaveFiles()
 {
+	Logging* log = Logging::getInstance();
+	
 	if (!CacheExist()) return;
 
 	// save catalog
 	FileD* catalog_file = catalog->GetCatalogFile();
+	log->log(loglevel::DEBUG, "SaveFiles() Catalog: 0x%p, %s ", catalog_file->FF->Handle, catalog_file->Name.c_str());
 	catalog_file->FF->WrPrefixes();
 
+	log->log(loglevel::DEBUG, "SaveFiles() calling ForAllFDs(::save)");
 	ForAllFDs(ForAllFilesOperation::save);
 
 	bool b = SaveCache(0, catalog_file->FF->Handle);

@@ -528,7 +528,7 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	}
 
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "opening file  0x%p '%s', error %i", handle, path.c_str(), HandleError);
+	log->log(loglevel::DEBUG, "opening file 0x%p '%s', error %i", handle, path.c_str(), HandleError);
 
 	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back((FILE*)handle);
@@ -599,17 +599,15 @@ long FileSizeH(HANDLE handle)
 
 void CloseH(HANDLE* handle)
 {
-#ifdef _DEBUG
 	HANDLE h = *handle;
-#endif
-
 	Logging* log = Logging::getInstance();
 	DataFile* fileForClose = nullptr;
+
 	if (*handle == nullptr) return;
+
 	// uzavre soubor
 	bool res = CloseF(*handle, HandleError);
-	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i",
-		*handle, fileForClose == nullptr ? "nullptr" : fileForClose->name.c_str(), res);
+	log->log(loglevel::DEBUG, "closing file 0x%p, error %i", h, HandleError);
 
 	if (!res) {
 		throw std::exception("Cannot close file!");
@@ -707,6 +705,13 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 			return;
 		}
 		else {
+			if (operation == READ) {
+				log->log(loglevel::DEBUG, "RdWrCache(READ) non cached file 0x%p operation error: %i.", handle, HandleError);
+			}
+			else {
+				log->log(loglevel::DEBUG, "RdWrCache(WRITE) non cached file 0x%p operation error: %i.", handle, HandleError);
+			}
+
 			err = HandleError;
 			SetPathForH(handle);
 			SetMsgPar(CPath);
