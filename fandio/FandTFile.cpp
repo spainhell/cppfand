@@ -628,7 +628,10 @@ void FandTFile::CloseFile()
 {
 	if (Handle != nullptr) {
 		CloseClearH(&Handle);
-		if (HandleError == 0) Handle = nullptr;
+		if (HandleError == 0) {
+			Handle = nullptr;
+			ClearUpdateFlag();
+		}
 		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FileType::DBF)) {
 			SetPathAndVolume(_parent->GetFileD());
 			CPath = CExtToT(this, CDir, CName, CExt);

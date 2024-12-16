@@ -140,6 +140,7 @@ void FandFile::Reset()
 	WasWrRec = false; WasRdOnly = false; Eof = false;
 	file_type = FileType::UNKNOWN;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
 	Handle = nullptr;
+	ClearUpdateFlag();
 	TF = nullptr;
 	Drive = 0;         // 1=A, 2=B, else 0
 	UMode = FileUseMode::Closed;
@@ -764,7 +765,10 @@ void FandFile::CloseFile()
 	}
 
 	CloseClearH(&Handle);
-	if (HandleError == 0) Handle = nullptr;
+	if (HandleError == 0) {
+		Handle = nullptr;
+		ClearUpdateFlag();
+	}
 	LMode = NullMode;
 
 	if (!IsShared() && (NRecs == 0) && (file_type != FileType::DBF)) {
@@ -1296,6 +1300,7 @@ void FandFile::CopyDuplF(FileD* TempFD, bool DelTF)
 
 	// TempFD has been deleted in CopyH -> set Handle to nullptr
 	TempFD->FF->Handle = nullptr;
+	TempFD->FF->ClearUpdateFlag();
 
 	if ((TF != nullptr) && DelTF) {
 		HANDLE h1 = TempFD->FF->TF->Handle;

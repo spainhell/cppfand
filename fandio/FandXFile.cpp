@@ -118,6 +118,7 @@ void FandXFile::CloseFile()
 {
 	if (Handle != nullptr) {
 		CloseClearH(&Handle);
+		ClearUpdateFlag();
 		if (!_parent->IsShared()) {
 			if (NotValid) {
 				SetPathAndVolume(_parent->GetFileD());

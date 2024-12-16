@@ -795,8 +795,8 @@ WORD SkipCtrlMJ(std::string& s, WORD i)
 	return i;
 }
 
-void FlushHandles()
-{
+//void FlushHandles()
+//{
 	//TODO: HANDLE
 
 	//for (HANDLE handle : UpdHandles)	{
@@ -807,7 +807,7 @@ void FlushHandles()
 	//}
 	//ClearUpdHandles();
 	//ClearFlshHandles();
-}
+//}
 
 int GetDateTimeH(FILE* handle)
 {
