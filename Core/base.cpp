@@ -92,9 +92,9 @@ __int32 UserLicNr = 0;
 
 typedef FILE* filePtr;
 
-std::set<HANDLE> Handles;
-std::set<HANDLE> UpdHandles;
-std::set<HANDLE> FlshHandles;
+//std::set<HANDLE> Handles;
+//std::set<HANDLE> UpdHandles;
+//std::set<HANDLE> FlshHandles;
 
 //map<WORD, FILE*> fileMap;
 // nahrada za 'WORD OvrHandle = h - 1' - zjisteni predchoziho otevreneho souboru;
@@ -304,36 +304,77 @@ HANDLE GetOverHandle(HANDLE fptr, int diff)
 	return nullptr;
 }
 
-bool IsHandle(HANDLE H)
-{
-	if (H == nullptr) return false;
-	return Handles.count(H) > 0;
-}
+//bool IsHandle(HANDLE H)
+//{
+//	if (H == nullptr) return false;
+//	return Handles.count(H) > 0;
+//}
+//
+//bool IsUpdHandle(HANDLE H)
+//{
+//	if (H == nullptr) return false;
+//	return UpdHandles.count(H) > 0;
+//}
+//
+//bool IsFlshHandle(HANDLE H)
+//{
+//	if (H == nullptr) return false;
+//	return FlshHandles.count(H) > 0;
+//}
+//
+//void SetHandle(HANDLE H)
+//{
+//	if (H == nullptr) return;
+//	Handles.insert(H);
+//	//CardHandles++;
+//}
+//
+//void SetUpdHandle(HANDLE H)
+//{
+//	if (H == nullptr) return;
+//	UpdHandles.insert(H);
+//}
 
-bool IsUpdHandle(HANDLE H)
-{
-	if (H == nullptr) return false;
-	return UpdHandles.count(H) > 0;
-}
-
-bool IsFlshHandle(HANDLE H)
-{
-	if (H == nullptr) return false;
-	return FlshHandles.count(H) > 0;
-}
-
-void SetHandle(HANDLE H)
-{
-	if (H == nullptr) return;
-	Handles.insert(H);
-	//CardHandles++;
-}
-
-void SetUpdHandle(HANDLE H)
-{
-	if (H == nullptr) return;
-	UpdHandles.insert(H);
-}
+//void SetFlshHandle(HANDLE H)
+//{
+//	if (H == nullptr) return;
+//	FlshHandles.insert(H);
+//}
+//
+//void ResetHandle(HANDLE H)
+//{
+//	if (H == nullptr) return;
+//	Handles.erase(H);
+//	//CardHandles--;
+//}
+//
+//void ResetUpdHandle(HANDLE H)
+//{
+//	if (H == nullptr) return;
+//	UpdHandles.erase(H);
+//}
+//
+//void ResetFlshHandle(HANDLE H)
+//{
+//	if (H == nullptr) return;
+//	FlshHandles.erase(H);
+//}
+//
+//void ClearHandles()
+//{
+//	Handles.clear();
+//	//CardHandles = 0;
+//}
+//
+//void ClearUpdHandles()
+//{
+//	UpdHandles.clear();
+//}
+//
+//void ClearFlshHandles()
+//{
+//	FlshHandles.clear();
+//}
 
 /// vrati pocet stejnych znaku na zacatku retezce
 WORD SLeadEqu(pstring S1, pstring S2)
@@ -360,51 +401,10 @@ WORD SLeadEqu(const std::string& s1, const std::string& s2)
 		if (s1[i] == s2[i]) {
 			count++;
 			continue;
-		}
+}
 		break;
 	}
 	return count;
-}
-
-void SetFlshHandle(HANDLE H)
-{
-	if (H == nullptr) return;
-	FlshHandles.insert(H);
-}
-
-void ResetHandle(HANDLE H)
-{
-	if (H == nullptr) return;
-	Handles.erase(H);
-	//CardHandles--;
-}
-
-void ResetUpdHandle(HANDLE H)
-{
-	if (H == nullptr) return;
-	UpdHandles.erase(H);
-}
-
-void ResetFlshHandle(HANDLE H)
-{
-	if (H == nullptr) return;
-	FlshHandles.erase(H);
-}
-
-void ClearHandles()
-{
-	Handles.clear();
-	//CardHandles = 0;
-}
-
-void ClearUpdHandles()
-{
-	UpdHandles.clear();
-}
-
-void ClearFlshHandles()
-{
-	FlshHandles.clear();
 }
 
 bool IsNetCVol()
@@ -511,8 +511,9 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 
 		if (HandleError == 0)
 		{
-			SetHandle(handle);
-			if (Mode != _isOldFile) SetUpdHandle(handle);
+			// TODO: HANDLE
+			//SetHandle(handle);
+			//if (Mode != _isOldFile) SetUpdHandle(handle);
 		}
 
 		else if (HandleError == ENOENT) {
@@ -672,11 +673,6 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 	//	return;
 	//}
 
-	// writing to the file -> Set Update Flag
-	if (operation == WRITE) {
-		SetUpdHandle(handle);
-	}
-
 	if (cached) {
 		////log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", handle);
 		//FileCache* c1 = cache.GetCache(handle);
@@ -720,14 +716,48 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 	}
 }
 
-void ReadCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf)
+void ReadCache(FandFile* fand_file, bool not_cached, size_t position, size_t count, void* buf)
 {
-	RdWrCache(READ, handle, not_cached, position, count, buf);
+	RdWrCache(READ, fand_file->Handle, not_cached, position, count, buf);
 }
 
-void WriteCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf)
+void ReadCache(FandXFile* fand_Xfile, bool not_cached, size_t position, size_t count, void* buf)
 {
-	RdWrCache(WRITE, handle, not_cached, position, count, buf);
+	RdWrCache(READ, fand_Xfile->Handle, not_cached, position, count, buf);
+}
+
+void ReadCache(FandTFile* fand_Tfile, bool not_cached, size_t position, size_t count, void* buf)
+{
+	RdWrCache(READ, fand_Tfile->Handle, not_cached, position, count, buf);
+}
+
+void ReadCache(XWFile* xw_file, bool not_cached, size_t position, size_t count, void* buf)
+{
+	RdWrCache(READ, xw_file->Handle, not_cached, position, count, buf);
+}
+
+void WriteCache(FandFile* fand_file, bool not_cached, size_t position, size_t count, void* buf)
+{
+	fand_file->SetUpdateFlag();
+	RdWrCache(WRITE, fand_file->Handle, not_cached, position, count, buf);
+}
+
+void WriteCache(FandXFile* fand_Xfile, bool not_cached, size_t position, size_t count, void* buf)
+{
+	fand_Xfile->SetUpdateFlag();
+	RdWrCache(WRITE, fand_Xfile->Handle, not_cached, position, count, buf);
+}
+
+void WriteCache(FandTFile* fand_Tfile, bool not_cached, size_t position, size_t count, void* buf)
+{
+	fand_Tfile->SetUpdateFlag();
+	RdWrCache(WRITE, fand_Tfile->Handle, not_cached, position, count, buf);
+}
+
+void WriteCache(XWFile* xw_file, bool not_cached, size_t position, size_t count, void* buf)
+{
+	xw_file->SetUpdateFlag();
+	RdWrCache(WRITE, xw_file->Handle, not_cached, position, count, buf);
 }
 
 //void FlushH(FILE* handle)
@@ -765,17 +795,19 @@ WORD SkipCtrlMJ(std::string& s, WORD i)
 	return i;
 }
 
-void FlushHandles()
-{
-	for (HANDLE handle : UpdHandles)	{
-		FlushF(handle, HandleError);
-	}
-	for (HANDLE handle : FlshHandles) {
-		FlushF(handle, HandleError);
-	}
-	ClearUpdHandles();
-	ClearFlshHandles();
-}
+//void FlushHandles()
+//{
+	//TODO: HANDLE
+
+	//for (HANDLE handle : UpdHandles)	{
+	//	FlushF(handle, HandleError);
+	//}
+	//for (HANDLE handle : FlshHandles) {
+	//	FlushF(handle, HandleError);
+	//}
+	//ClearUpdHandles();
+	//ClearFlshHandles();
+//}
 
 int GetDateTimeH(FILE* handle)
 {

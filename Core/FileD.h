@@ -79,6 +79,7 @@ public:
 	void saveLongS(FieldDescr* field_d, LongStr* ls, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
+	void SetUpdateFlag();
 	void CloseFile();
 	void Save();
 
@@ -92,9 +93,11 @@ public:
 
 	void SetTWorkFlag(void* record);
 	bool HasTWorkFlag(void* record);
-	void SetUpdFlag(void* record);
-	void ClearUpdFlag(void* record);
-	bool HasUpdFlag(void* record);
+
+	void SetRecordUpdateFlag(void* record);
+	void ClearRecordUpdateFlag(void* record);
+	bool HasRecordUpdateFlag(void* record);
+
 	bool DeletedFlag(void* record);
 	void ClearDeletedFlag(void* record);
 	void SetDeletedFlag(void* record);

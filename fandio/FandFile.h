@@ -87,15 +87,21 @@ public:
 
 	void TruncFile();
 	LockMode RewriteFile(bool append);
+	void SetUpdateFlag();
+	void ClearUpdateFlag();
+	bool HasUpdateFlag();
+
 	void SaveFile();
 	void CloseFile();
 	void Close();
 
 	void SetTWorkFlag(void* record);
 	bool HasTWorkFlag(void* record);
-	void SetUpdFlag(void* record);
-	void ClearUpdFlag(void* record);
-	bool HasUpdFlag(void* record);
+
+	void SetRecordUpdateFlag(void* record);
+	void ClearRecordUpdateFlag(void* record);
+	bool HasRecordUpdateFlag(void* record);
+
 	bool DeletedFlag(void* record);
 	void ClearDeletedFlag(void* record);
 	void SetDeletedFlag(void* record);
@@ -131,6 +137,7 @@ private:
 	FileD* _parent;
 	double DBF_RforD(FieldDescr* field_d, uint8_t* source);
 	bool is_null_value(FieldDescr* field_d, uint8_t* record);
+	bool _updateFlag = false;
 
 	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);

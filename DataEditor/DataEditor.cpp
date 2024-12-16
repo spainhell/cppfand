@@ -433,7 +433,7 @@ void DataEditor::SetWasUpdated(FandFile* fand_file, void* record)
 {
 	if (!params_->WasUpdated) {
 		if (params_->EdRecVar) {
-			fand_file->SetUpdFlag(record);
+			fand_file->SetRecordUpdateFlag(record);
 		}
 		memcpy(edit_->OldRecPtr, edit_->NewRecPtr, fand_file->RecordSize());
 		params_->WasUpdated = true;
@@ -2140,8 +2140,10 @@ bool DataEditor::DelIndRec(int I, int N)
 	bool result = false;
 	if (CleanUp()) {
 		file_d_->FF->DeleteXRec(N, true, record_);
-		SetUpdHandle(file_d_->FF->Handle); // navic
-		SetUpdHandle(file_d_->FF->XF->Handle); // navic
+		//SetUpdHandle(file_d_->FF->Handle); // navic
+		file_d_->FF->SetUpdateFlag(); // -''- navic
+		//SetUpdHandle(file_d_->FF->XF->Handle); // navic
+		file_d_->FF->XF->SetUpdateFlag(); // -''- navic
 		if ((edit_->SelKey != nullptr) && edit_->SelKey->Delete(file_d_, N, record_)) edit_->SelKey->NR--;
 		if (params_->Subset) WK->DeleteAtNr(file_d_, I);
 		result = true;
@@ -4478,7 +4480,7 @@ bool DataEditor::ShiftF7Duplicate()
 		}
 	}
 
-	file_d_->SetUpdFlag(record_);
+	file_d_->SetRecordUpdateFlag(record_);
 	file_d_ = edit_->FD;
 	record_ = edit_->NewRecPtr;
 	result = true;
@@ -4511,7 +4513,7 @@ bool DataEditor::DuplToPrevEdit()
 		params_->WasUpdated = true;
 	}
 	DuplFld(edit_->FD, file_d_, edit_->NewRecPtr, record_, ee->OldRecPtr, f1, f2);
-	file_d_->SetUpdFlag(record_);
+	file_d_->SetRecordUpdateFlag(record_);
 
 	file_d_ = edit_->FD; record_ = edit_->NewRecPtr;
 	result = true;
@@ -4714,9 +4716,9 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	if (!lkd && !LockRec(false)) return result;
 	b = params_->WasUpdated;
 	EdUpdated = b;
-	b2 = file_d_->HasUpdFlag(record_);
+	b2 = file_d_->HasRecordUpdateFlag(record_);
 	SetWasUpdated(file_d_->FF, record_);
-	file_d_->ClearUpdFlag(record_);
+	file_d_->ClearRecordUpdateFlag(record_);
 
 	// upravime argumenty exit procedury
 	ExitProc->TArg[ExitProc->N - 1].FD = file_d_;
@@ -4735,12 +4737,12 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 
 	file_d_->NewLockMode(md);
 	upd = file_d_->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
-	if (file_d_->HasUpdFlag(record_)) {
+	if (file_d_->HasRecordUpdateFlag(record_)) {
 		b = true;
 		upd = true;
 	}
 	params_->WasUpdated = b;
-	if (b2) file_d_->SetUpdFlag(record_);
+	if (b2) file_d_->SetRecordUpdateFlag(record_);
 	if (!params_->WasUpdated && !lkd) UnLockRec(edit_);
 	if (Displ && upd) DisplAllWwRecs();
 	if (Displ) NewDisplLL = true;

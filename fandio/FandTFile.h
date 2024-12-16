@@ -39,7 +39,7 @@ public:
 	bool NotCached() const;
 	bool Cached() const;
 	void RdPrefix(bool check);
-	void WrPrefix() const;
+	void WrPrefix();
 	void SetEmpty();
 	void Create(const std::string& path);
 	int NewPage(bool NegL);
@@ -49,11 +49,16 @@ public:
 	std::string Read(int pos);
 	int Store(char* s, size_t l);
 	int Store(const std::string& s);
+	void SetUpdateFlag();
+	void ClearUpdateFlag();
+	bool HasUpdateFlag();
 	void CloseFile();
 
 private:
 	FandFile* _parent;
-	void RdWr(FileOperation operation, size_t position, size_t count, char* buffer);
+	void Read(size_t position, size_t count, char* buffer);
+	void Write(size_t position, size_t count, char* buffer);
 	void GetMLen();
 	long eofPos = 0;
+	bool _updateFlag = false;
 };

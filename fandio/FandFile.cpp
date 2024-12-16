@@ -61,14 +61,14 @@ void FandFile::ReadRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	RdWrCache(READ, Handle, NotCached(), (rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+	ReadCache(this, NotCached(), (rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
 void FandFile::WriteRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
-	RdWrCache(WRITE, Handle, NotCached(),
+	WriteCache(this, NotCached(),
 		(rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 	WasWrRec = true;
 }
@@ -140,6 +140,7 @@ void FandFile::Reset()
 	WasWrRec = false; WasRdOnly = false; Eof = false;
 	file_type = FileType::UNKNOWN;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
 	Handle = nullptr;
+	ClearUpdateFlag();
 	TF = nullptr;
 	Drive = 0;         // 1=A, 2=B, else 0
 	UMode = FileUseMode::Closed;
@@ -153,24 +154,26 @@ void FandFile::IncNRecs(int n)
 	if (NRecs > 100) RunError(884);
 #endif
 	NRecs += n;
-	SetUpdHandle(Handle);
+	SetUpdateFlag(); //SetUpdHandle(Handle);
 	if (file_type == FileType::INDEX) {
-		SetUpdHandle(XF->Handle);
+		XF->SetUpdateFlag(); //SetUpdHandle(XF->Handle);
 	}
 }
 
 void FandFile::DecNRecs(int n)
 {
 	NRecs -= n;
-	SetUpdHandle(Handle);
-	if (file_type == FileType::INDEX) SetUpdHandle(XF->Handle);
+	SetUpdateFlag(); //SetUpdHandle(Handle);
+	if (file_type == FileType::INDEX) {
+		XF->SetUpdateFlag(); //SetUpdHandle(XF->Handle);
+	}
 	WasWrRec = true;
 }
 
 void FandFile::PutRec(void* record, int& i_rec)
 {
 	NRecs++;
-	RdWrCache(WRITE, Handle, NotCached(), i_rec * RecLen + FirstRecPos, RecLen, record);
+	WriteCache(this, NotCached(), i_rec * RecLen + FirstRecPos, RecLen, record);
 	i_rec++;
 	Eof = true;
 }
@@ -550,28 +553,28 @@ uint16_t FandFile::RdPrefix()
 	const bool not_cached = NotCached();
 	switch (file_type) {
 	case FileType::FAND8: {
-		RdWrCache(READ, Handle, not_cached, 0, 2, &X8.NRs);
-		RdWrCache(READ, Handle, not_cached, 2, 2, &X8.RLen);
+		ReadCache(this, not_cached, 0, 2, &X8.NRs);
+		ReadCache(this, not_cached, 2, 2, &X8.RLen);
 		NRecs = X8.NRs;
 		if (RecLen != X8.RLen) { return X8.RLen; }
 		break;
 	}
 	case FileType::DBF: {
-		RdWrCache(READ, Handle, not_cached, 0, 1, &XD.Ver);
-		RdWrCache(READ, Handle, not_cached, 1, 1, &XD.Date[0]);
-		RdWrCache(READ, Handle, not_cached, 2, 1, &XD.Date[1]);
-		RdWrCache(READ, Handle, not_cached, 3, 1, &XD.Date[2]);
-		RdWrCache(READ, Handle, not_cached, 4, 4, &XD.NRecs);
-		RdWrCache(READ, Handle, not_cached, 8, 2, &XD.HdLen);
-		RdWrCache(READ, Handle, not_cached, 10, 2, &XD.RecLen);
+		ReadCache(this, not_cached, 0, 1, &XD.Ver);
+		ReadCache(this, not_cached, 1, 1, &XD.Date[0]);
+		ReadCache(this, not_cached, 2, 1, &XD.Date[1]);
+		ReadCache(this, not_cached, 3, 1, &XD.Date[2]);
+		ReadCache(this, not_cached, 4, 4, &XD.NRecs);
+		ReadCache(this, not_cached, 8, 2, &XD.HdLen);
+		ReadCache(this, not_cached, 10, 2, &XD.RecLen);
 		NRecs = XD.NRecs;
 		if ((RecLen != XD.RecLen)) { return XD.RecLen; }
 		FirstRecPos = XD.HdLen;
 		break;
 	}
 	default: {
-		RdWrCache(READ, Handle, not_cached, 0, 4, &X6.NRs);
-		RdWrCache(READ, Handle, not_cached, 4, 2, &X6.RLen);
+		ReadCache(this, not_cached, 0, 4, &X6.NRs);
+		ReadCache(this, not_cached, 4, 2, &X6.RLen);
 		NRecs = abs(X6.NRs);
 		if ((X6.NRs < 0) && (file_type != FileType::INDEX) || (X6.NRs > 0) && (file_type == FileType::INDEX)
 			|| (RecLen != X6.RLen)) {
@@ -603,14 +606,14 @@ void FandFile::WrPrefix()
 	struct { int NRs; unsigned short RLen; } Pfx6 = { 0, 0 };
 	struct { unsigned short NRs; unsigned short RLen; } Pfx8 = { 0, 0 };
 
-	if (IsUpdHandle(Handle)) {
+	if (_updateFlag) {
 		const bool not_cached = NotCached();
 		switch (file_type) {
 		case FileType::FAND8: {
 			Pfx8.RLen = RecLen;
 			Pfx8.NRs = static_cast<unsigned short>(NRecs);
-			RdWrCache(WRITE, Handle, not_cached, 0, 2, &Pfx8.NRs);
-			RdWrCache(WRITE, Handle, not_cached, 2, 2, &Pfx8.RLen);
+			WriteCache(this, not_cached, 0, 2, &Pfx8.NRs);
+			WriteCache(this, not_cached, 2, 2, &Pfx8.RLen);
 			break;
 		}
 		case FileType::DBF: {
@@ -621,8 +624,8 @@ void FandFile::WrPrefix()
 			Pfx6.RLen = RecLen;
 			if (file_type == FileType::INDEX) Pfx6.NRs = -NRecs;
 			else Pfx6.NRs = NRecs;
-			RdWrCache(WRITE, Handle, not_cached, 0, 4, &Pfx6.NRs);
-			RdWrCache(WRITE, Handle, not_cached, 4, 2, &Pfx6.RLen);
+			WriteCache(this, not_cached, 0, 4, &Pfx6.NRs);
+			WriteCache(this, not_cached, 4, 2, &Pfx6.RLen);
 		}
 		}
 	}
@@ -630,14 +633,18 @@ void FandFile::WrPrefix()
 
 void FandFile::WrPrefixes()
 {
-	if (IsUpdHandle(Handle)) {
+	if (_updateFlag) {
 		WrPrefix();
 	}
-	if (TF != nullptr && IsUpdHandle(TF->Handle)) {
+
+	if (TF != nullptr && TF->HasUpdateFlag()) {
 		TF->WrPrefix();
 	}
-	if (file_type == FileType::INDEX && XF->Handle != nullptr
-		&& /*{ call from CopyDuplF }*/ (IsUpdHandle(XF->Handle) || IsUpdHandle(Handle))) {
+
+	if (file_type == FileType::INDEX 
+		&& XF->Handle != nullptr
+		/*{ call from CopyDuplF }*/
+		&& (XF->HasUpdateFlag() || _updateFlag)) {
 		XF->WrPrefix(NRecs, _parent->GetNrKeys());
 	}
 }
@@ -678,7 +685,7 @@ LockMode FandFile::RewriteFile(bool append)
 	result = _parent->NewLockMode(ExclMode);
 	NRecs = 0;
 	_parent->SeekRec(0);
-	SetUpdHandle(Handle);
+	SetUpdateFlag(); //SetUpdHandle(Handle);
 
 	int notValid = XFNotValid();
 	if (notValid != 0) {
@@ -688,6 +695,29 @@ LockMode FandFile::RewriteFile(bool append)
 	if (file_type == FileType::INDEX) XF->NoCreate = true;
 	if (TF != nullptr) TF->SetEmpty();
 	return result;
+}
+
+void FandFile::SetUpdateFlag()
+{
+	_updateFlag = true;
+}
+
+void FandFile::ClearUpdateFlag()
+{
+	_updateFlag = false;
+
+	if (file_type == FileType::INDEX) {
+		XF->ClearUpdateFlag();
+	}
+
+	if (TF != nullptr) {
+		TF->ClearUpdateFlag();
+	}
+}
+
+bool FandFile::HasUpdateFlag()
+{
+	return _updateFlag;
 }
 
 void FandFile::SaveFile()
@@ -735,7 +765,10 @@ void FandFile::CloseFile()
 	}
 
 	CloseClearH(&Handle);
-	if (HandleError == 0) Handle = nullptr;
+	if (HandleError == 0) {
+		Handle = nullptr;
+		ClearUpdateFlag();
+	}
 	LMode = NullMode;
 
 	if (!IsShared() && (NRecs == 0) && (file_type != FileType::DBF)) {
@@ -781,19 +814,19 @@ bool FandFile::HasTWorkFlag(void* record)
 	return workFlag;
 }
 
-void FandFile::SetUpdFlag(void* record)
+void FandFile::SetRecordUpdateFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen + 1] = 1;
 }
 
-void FandFile::ClearUpdFlag(void* record)
+void FandFile::ClearRecordUpdateFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen + 1] = 0;
 }
 
-bool FandFile::HasUpdFlag(void* record)
+bool FandFile::HasRecordUpdateFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	return p[RecLen + 1] == 1;
@@ -1229,7 +1262,7 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	RenameFile56(temp_path, orig_path, true);
 	Handle = OpenH(orig_path, _isOldFile, UMode);
 	_parent->FullPath = orig_path;
-	SetUpdHandle(Handle);
+	SetUpdateFlag(); //SetUpdHandle(Handle);
 
 	//// copy Index File
 	//delete XF; XF = nullptr;
@@ -1253,7 +1286,7 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 		std::string temp_path_t = SetTempCExt(_parent, 'T', false);
 		RenameFile56(temp_path_t, orig_path_T, true);
 		TF->Handle = OpenH(orig_path_T, _isOldFile, UMode);
-		SetUpdHandle(TF->Handle);
+		SetUpdateFlag(); //SetUpdHandle(TF->Handle);
 		//if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
 	}
 }
@@ -1267,6 +1300,7 @@ void FandFile::CopyDuplF(FileD* TempFD, bool DelTF)
 
 	// TempFD has been deleted in CopyH -> set Handle to nullptr
 	TempFD->FF->Handle = nullptr;
+	TempFD->FF->ClearUpdateFlag();
 
 	if ((TF != nullptr) && DelTF) {
 		HANDLE h1 = TempFD->FF->TF->Handle;
@@ -1333,14 +1367,14 @@ int FandFile::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos
 	}
 
 	// read length of text
-	ReadCache(srcT00File->Handle, srcT00File->NotCached(), srcT00Pos, 2, &l);
+	ReadCache(srcT00File, srcT00File->NotCached(), srcT00Pos, 2, &l);
 	if (l <= MPageSize - 2) { // short text
 		if (l == 0) {
 			return 0; // mark
 		}
 
 		// read text from source T file
-		ReadCache(srcT00File->Handle, srcT00File->NotCached(), srcT00Pos + 2, l, page_buffer);
+		ReadCache(srcT00File, srcT00File->NotCached(), srcT00Pos + 2, l, page_buffer);
 		int16_t rest = static_cast<int16_t>(MPageSize - destT00File->FreePart % MPageSize);
 
 		// find place for new short text
@@ -1361,12 +1395,12 @@ int FandFile::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos
 		else {
 			destT00File->FreePart += l + 2;
 			rest = l + 4 - rest;
-			WriteCache(destT00File->Handle, destT00File->NotCached(), destT00File->FreePart, 2, &rest);
+			WriteCache(destT00File, destT00File->NotCached(), destT00File->FreePart, 2, &rest);
 		}
 
 		// write length and text to destination T file
-		WriteCache(destT00File->Handle, destT00File->NotCached(), pos, 2, &l);
-		WriteCache(destT00File->Handle, destT00File->NotCached(), pos + 2, l, page_buffer);
+		WriteCache(destT00File, destT00File->NotCached(), pos, 2, &l);
+		WriteCache(destT00File, destT00File->NotCached(), pos + 2, l, page_buffer);
 		// return position of new text in destination T file
 		result = pos;
 		return result;
@@ -1380,7 +1414,7 @@ int FandFile::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos
 	}
 
 	// process long text
-	ReadCache(srcT00File->Handle, srcT00File->NotCached(), srcT00Pos, MPageSize, page_buffer);
+	ReadCache(srcT00File, srcT00File->NotCached(), srcT00Pos, MPageSize, page_buffer);
 	bool first = true;
 	bool end = false;
 
@@ -1415,7 +1449,7 @@ int FandFile::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos
 				// write position of next page to the end of current page in destination T file
 				*reinterpret_cast<int*>(&page_buffer[MPageSize - 4]) = next_pos;
 				// write current page to destination T file
-				WriteCache(destT00File->Handle, destT00File->NotCached(), pos, MPageSize, page_buffer);
+				WriteCache(destT00File, destT00File->NotCached(), pos, MPageSize, page_buffer);
 				pos = next_pos;
 
 				if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > srcT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
@@ -1425,7 +1459,7 @@ int FandFile::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos
 				}
 
 				// read next part of long text from source T file
-				ReadCache(srcT00File->Handle, srcT00File->NotCached(), srcT00Pos, MPageSize, page_buffer);
+				ReadCache(srcT00File, srcT00File->NotCached(), srcT00Pos, MPageSize, page_buffer);
 				if ((l <= MPageSize)) {
 					// last part of long text, page is not full
 					l = *ll;
@@ -1443,7 +1477,7 @@ int FandFile::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos
 	}
 
 	// write last part of long text
-	WriteCache(destT00File->Handle, destT00File->NotCached(), pos, MPageSize, page_buffer);
+	WriteCache(destT00File, destT00File->NotCached(), pos, MPageSize, page_buffer);
 
 	return result;
 }
@@ -1465,14 +1499,14 @@ void FandFile::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* 
 	FandTFile* tf = TF02;
 	if (!tf->IsWork) md2 = TFD02->NewLockMode(RdMode);
 	size_t l = 0;
-	RdWrCache(READ, tf->Handle, tf->NotCached(), pos, 2, &l);
+	ReadCache(tf, tf->NotCached(), pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
-		RdWrCache(READ, tf->Handle, tf->NotCached(), pos + 2, l, X);
+		ReadCache(tf, tf->NotCached(), pos + 2, l, X);
 		WriteH(h, l, X);
 		goto label4;
 	}
 	if ((pos % MPageSize) != 0) goto label2;
-	RdWrCache(READ, tf->Handle, tf->NotCached(), pos, MPageSize, X);
+	ReadCache(tf, tf->NotCached(), pos, MPageSize, X);
 label1:
 	if (l > MaxLStrLen + 1) {
 	label2:
@@ -1492,7 +1526,7 @@ label3:
 			tf->Err(888, false);
 			goto label4;
 		}
-		RdWrCache(READ, tf->Handle, tf->NotCached(), pos, MPageSize, X);
+		ReadCache(tf, tf->NotCached(), pos, MPageSize, X);
 		if ((l <= MPageSize - i)) {
 			l = *ll;
 			goto label1;

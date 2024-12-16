@@ -189,7 +189,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 			}
 			file_d->FF->LMode = ExclMode;
 		label2:
-			SetUpdHandle(file_d->FF->Handle);
+			file_d->FF->SetUpdateFlag(); //SetUpdHandle(file_d->FF->Handle);
 			file_d->FF->WrPrefix();
 		}
 		else {
@@ -220,7 +220,7 @@ label3:
 		}
 		else {
 			WORD Signum = 0;
-			RdWrCache(READ, file_d->FF->XF->Handle, file_d->FF->XF->NotCached(), 0, 2, &Signum);
+			ReadCache(file_d->FF->XF, file_d->FF->XF->NotCached(), 0, 2, &Signum);
 			file_d->FF->XF->RdPrefix();
 
 			FandFile* ff = file_d->FF;
@@ -270,7 +270,7 @@ void CreateF(FileD* file_d)
 	}
 
 	file_d->SeekRec(0);
-	SetUpdHandle(file_d->FF->Handle);
+	file_d->FF->SetUpdateFlag(); //SetUpdHandle(file_d->FF->Handle);
 }
 
 bool OpenCreateF(FileD* file_d, const std::string& path, FileUseMode UM)

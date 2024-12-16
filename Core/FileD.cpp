@@ -203,7 +203,7 @@ void FileD::AssignNRecs(bool Add, int N)
 	if (FF->file_type == FileType::INDEX) {
 		if (N == 0) {
 			FF->NRecs = 0;
-			SetUpdHandle(FF->Handle);
+			FF->SetUpdateFlag(); //SetUpdHandle(FF->Handle);
 			int result = FF->XFNotValid();
 			if (result != 0) {
 				RunError(result);
@@ -317,6 +317,11 @@ int FileD::saveT(FieldDescr* field_d, int pos, void* record)
 	return FF->saveT(field_d, pos, record);
 }
 
+void FileD::SetUpdateFlag()
+{
+	FF->SetUpdateFlag();
+}
+
 void FileD::CloseFile()
 {
 	if (FF->Handle == nullptr) return;
@@ -377,19 +382,19 @@ bool FileD::HasTWorkFlag(void* record)
 	return FF->HasTWorkFlag(record);
 }
 
-void FileD::SetUpdFlag(void* record)
+void FileD::SetRecordUpdateFlag(void* record)
 {
-	FF->SetUpdFlag(record);
+	FF->SetRecordUpdateFlag(record);
 }
 
-void FileD::ClearUpdFlag(void* record)
+void FileD::ClearRecordUpdateFlag(void* record)
 {
-	FF->ClearUpdFlag(record);
+	FF->ClearRecordUpdateFlag(record);
 }
 
-bool FileD::HasUpdFlag(void* record)
+bool FileD::HasRecordUpdateFlag(void* record)
 {
-	return FF->HasUpdFlag(record);
+	return FF->HasRecordUpdateFlag(record);
 }
 
 bool FileD::DeletedFlag(void* record)

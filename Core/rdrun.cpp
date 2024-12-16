@@ -421,5 +421,5 @@ void SetCompileAll()
 {
 	ChptTF->CompileAll = true;
 	ChptTF->TimeStmp = Today() + CurrTime();
-	SetUpdHandle(ChptTF->Handle);
+	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 }

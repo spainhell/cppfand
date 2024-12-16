@@ -79,13 +79,7 @@ void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len)
 
 void ResetFileUpdH(FileD* file_d)
 {
-	ResetUpdHandle(file_d->FF->Handle);
-	if (file_d->FF->file_type == FileType::INDEX) {
-		ResetUpdHandle(file_d->FF->XF->Handle);
-	}
-	if (file_d->FF->TF != nullptr) {
-		ResetUpdHandle(file_d->FF->TF->Handle);
-	}
+	file_d->FF->ClearUpdateFlag(); //ResetUpdHandle(file_d->FF->Handle);
 }
 
 bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)

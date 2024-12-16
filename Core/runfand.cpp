@@ -604,6 +604,7 @@ void DeleteFandFiles()
 		}
 		catch (std::exception&) {}
 		XWork.Handle = nullptr;
+		XWork.ClearUpdateFlag();
 	}
 
 	if (TWork.Handle != nullptr) {
@@ -613,6 +614,7 @@ void DeleteFandFiles()
 		}
 		catch (std::exception&) {}
 		TWork.Handle = nullptr;
+		TWork.ClearUpdateFlag();
 	}
 }
 
