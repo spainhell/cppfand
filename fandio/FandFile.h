@@ -87,15 +87,19 @@ public:
 
 	void TruncFile();
 	LockMode RewriteFile(bool append);
+	void SetFileUpdateFlag();
+
 	void SaveFile();
 	void CloseFile();
 	void Close();
 
 	void SetTWorkFlag(void* record);
 	bool HasTWorkFlag(void* record);
-	void SetUpdFlag(void* record);
-	void ClearUpdFlag(void* record);
-	bool HasUpdFlag(void* record);
+
+	void SetRecordUpdateFlag(void* record);
+	void ClearRecordUpdateFlag(void* record);
+	bool HasRecordUpdateFlag(void* record);
+
 	bool DeletedFlag(void* record);
 	void ClearDeletedFlag(void* record);
 	void SetDeletedFlag(void* record);

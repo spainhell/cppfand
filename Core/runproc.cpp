@@ -212,7 +212,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 		//A = A->pChain;
 	}
 	CFile = FD1; CRecPtr = RP1;
-	CFile->SetUpdFlag(CRecPtr);
+	CFile->SetRecordUpdateFlag(CRecPtr);
 }
 
 void AssignRecFld(Instr_assign* PD)
@@ -221,7 +221,7 @@ void AssignRecFld(Instr_assign* PD)
 	FileD* file_d = PD->AssLV->FD;
 	void* record = PD->AssLV->record;
 
-	file_d->SetUpdFlag(record);
+	file_d->SetRecordUpdateFlag(record);
 	AssgnFrml(file_d, record, field_d, PD->Frml, file_d->HasTWorkFlag(record), PD->Add);
 }
 
@@ -859,7 +859,7 @@ label1:
 #endif
 			if (LVr != nullptr) {
 				CRecPtr = lr;
-				CFile->ClearUpdFlag(lr);
+				CFile->ClearRecordUpdateFlag(lr);
 				//CFile->DelTFlds(lr);
 				CFile->CopyRec(cr, lr, true);
 			}
@@ -880,7 +880,7 @@ label1:
 #endif
 		{
 			OpenCreateF(CFile, CPath, Shared);
-			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasUpdFlag(CRecPtr)) {
+			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasRecordUpdateFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
 				CFile->CopyRec(lr, cr, false);
 				UpdRec(CFile, xScan->RecNr, true, cr);

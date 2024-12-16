@@ -59,15 +59,17 @@ bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_m
 bool IsNetCVol();
 bool CacheExist();
 bool SaveCache(WORD ErrH, HANDLE f);
-void SetUpdHandle(HANDLE H);
-void ResetUpdHandle(HANDLE H);
-bool IsUpdHandle(HANDLE H);
+
+//void SetUpdHandle(HANDLE H);
+//void ResetUpdHandle(HANDLE H);
+//bool IsUpdHandle(HANDLE H);
+//void FlushHandles();
+
 long SeekH(HANDLE handle, size_t pos);
 long FileSizeH(HANDLE handle);
 HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM);
 size_t ReadH(HANDLE handle, size_t length, void* buffer);
 void WriteH(HANDLE handle, size_t length, void* buffer);
-void FlushHandles();
 void CloseH(HANDLE* handle);
 void CloseClearH(HANDLE* h);
 void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);

@@ -690,6 +690,11 @@ LockMode FandFile::RewriteFile(bool append)
 	return result;
 }
 
+void FandFile::SetFileUpdateFlag()
+{
+	// TODO: HANDLE
+}
+
 void FandFile::SaveFile()
 {
 	WrPrefixes();
@@ -781,19 +786,19 @@ bool FandFile::HasTWorkFlag(void* record)
 	return workFlag;
 }
 
-void FandFile::SetUpdFlag(void* record)
+void FandFile::SetRecordUpdateFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen + 1] = 1;
 }
 
-void FandFile::ClearUpdFlag(void* record)
+void FandFile::ClearRecordUpdateFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen + 1] = 0;
 }
 
-bool FandFile::HasUpdFlag(void* record)
+bool FandFile::HasRecordUpdateFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	return p[RecLen + 1] == 1;

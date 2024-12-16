@@ -317,6 +317,11 @@ int FileD::saveT(FieldDescr* field_d, int pos, void* record)
 	return FF->saveT(field_d, pos, record);
 }
 
+void FileD::SetFileUpdateFlag()
+{
+	FF->SetFileUpdateFlag();
+}
+
 void FileD::CloseFile()
 {
 	if (FF->Handle == nullptr) return;
@@ -377,19 +382,19 @@ bool FileD::HasTWorkFlag(void* record)
 	return FF->HasTWorkFlag(record);
 }
 
-void FileD::SetUpdFlag(void* record)
+void FileD::SetRecordUpdateFlag(void* record)
 {
-	FF->SetUpdFlag(record);
+	FF->SetRecordUpdateFlag(record);
 }
 
-void FileD::ClearUpdFlag(void* record)
+void FileD::ClearRecordUpdateFlag(void* record)
 {
-	FF->ClearUpdFlag(record);
+	FF->ClearRecordUpdateFlag(record);
 }
 
-bool FileD::HasUpdFlag(void* record)
+bool FileD::HasRecordUpdateFlag(void* record)
 {
-	return FF->HasUpdFlag(record);
+	return FF->HasRecordUpdateFlag(record);
 }
 
 bool FileD::DeletedFlag(void* record)
