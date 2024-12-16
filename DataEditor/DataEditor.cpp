@@ -2140,8 +2140,10 @@ bool DataEditor::DelIndRec(int I, int N)
 	bool result = false;
 	if (CleanUp()) {
 		file_d_->FF->DeleteXRec(N, true, record_);
-		SetUpdHandle(file_d_->FF->Handle); // navic
-		SetUpdHandle(file_d_->FF->XF->Handle); // navic
+		//SetUpdHandle(file_d_->FF->Handle); // navic
+		file_d_->FF->SetUpdateFlag(); // -''- navic
+		//SetUpdHandle(file_d_->FF->XF->Handle); // navic
+		file_d_->FF->XF->SetUpdateFlag(); // -''- navic
 		if ((edit_->SelKey != nullptr) && edit_->SelKey->Delete(file_d_, N, record_)) edit_->SelKey->NR--;
 		if (params_->Subset) WK->DeleteAtNr(file_d_, I);
 		result = true;

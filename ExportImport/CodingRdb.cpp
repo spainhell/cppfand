@@ -284,5 +284,5 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 
 	ChptTF->CompileAll = false;
 	ChptTF->CompileProc = false;
-	SetUpdHandle(ChptTF->Handle);
+	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 }

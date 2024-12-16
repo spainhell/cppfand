@@ -49,12 +49,12 @@ void FandXFile::RdPrefix()
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "FandXFile::RdPrefix() 0x%p reading 18 Bytes", Handle);
-	RdWrCache(READ, Handle, NotCached(), 2, 4, &FreeRoot);
-	RdWrCache(READ, Handle, NotCached(), 6, 4, &MaxPage);
-	RdWrCache(READ, Handle, NotCached(), 10, 4, &NRecs);
-	RdWrCache(READ, Handle, NotCached(), 14, 4, &NRecsAbs);
-	RdWrCache(READ, Handle, NotCached(), 18, 1, &NotValid);
-	RdWrCache(READ, Handle, NotCached(), 19, 1, &NrKeys);
+	ReadCache(this, NotCached(), 2, 4, &FreeRoot);
+	ReadCache(this, NotCached(), 6, 4, &MaxPage);
+	ReadCache(this, NotCached(), 10, 4, &NRecs);
+	ReadCache(this, NotCached(), 14, 4, &NRecsAbs);
+	ReadCache(this, NotCached(), 18, 1, &NotValid);
+	ReadCache(this, NotCached(), 19, 1, &NrKeys);
 }
 
 void FandXFile::WrPrefix(int recs, unsigned char keys)
@@ -63,15 +63,15 @@ void FandXFile::WrPrefix(int recs, unsigned char keys)
 	//log->log(loglevel::DEBUG, "FandXFile::WrPrefix() 0x%p writing 20 Bytes, NRecsAbs = %i, NrKeys = %i",
 	//	Handle, CFile->NRecs, CFile->GetNrKeys());
 	unsigned short Signum = 0x04FF;
-	RdWrCache(WRITE, Handle, NotCached(), 0, 2, &Signum);
+	WriteCache(this, NotCached(), 0, 2, &Signum);
 	NRecsAbs = recs;
 	NrKeys = keys;
-	RdWrCache(WRITE, Handle, NotCached(), 2, 4, &FreeRoot);
-	RdWrCache(WRITE, Handle, NotCached(), 6, 4, &MaxPage);
-	RdWrCache(WRITE, Handle, NotCached(), 10, 4, &NRecs);
-	RdWrCache(WRITE, Handle, NotCached(), 14, 4, &NRecsAbs);
-	RdWrCache(WRITE, Handle, NotCached(), 18, 1, &NotValid);
-	RdWrCache(WRITE, Handle, NotCached(), 19, 1, &NrKeys);
+	WriteCache(this, NotCached(), 2, 4, &FreeRoot);
+	WriteCache(this, NotCached(), 6, 4, &MaxPage);
+	WriteCache(this, NotCached(), 10, 4, &NRecs);
+	WriteCache(this, NotCached(), 14, 4, &NRecsAbs);
+	WriteCache(this, NotCached(), 18, 1, &NotValid);
+	WriteCache(this, NotCached(), 19, 1, &NrKeys);
 }
 
 void FandXFile::SetNotValid(int recs, unsigned char keys)
@@ -97,6 +97,21 @@ int FandXFile::XFNotValid(int recs, unsigned char keys)
 		SetNotValid(recs, keys);
 		return 0;
 	}
+}
+
+void FandXFile::SetUpdateFlag()
+{
+	_updateFlag = true;
+}
+
+void FandXFile::ClearUpdateFlag()
+{
+	_updateFlag = false;
+}
+
+bool FandXFile::HasUpdateFlag()
+{
+	return _updateFlag;
 }
 
 void FandXFile::CloseFile()

@@ -174,7 +174,7 @@ void GetRdbRecVars(const EditD* edit, void* record, RdbRecVars* X)
 bool ChptDelFor(EditD* edit, RdbRecVars* X)
 {
 	bool result = true;
-	SetUpdHandle(ChptTF->Handle);
+	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 	ReleaseFilesAndLinksAfterChapter(edit);
 	switch (X->Typ) {
 	case ' ': {
@@ -398,7 +398,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 label2:
 	edit->FD->saveB(ChptVerif, true, edit->NewRecPtr);
 	result = 0;
-	SetUpdHandle(ChptTF->Handle);
+	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 	return result;
 }
 
@@ -1611,7 +1611,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
 			ChptTF->CompileAll = false;
 			ChptTF->CompileProc = false;
-			SetUpdHandle(ChptTF->Handle);
+			ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 		}
 		CompileFD = false;
 		result = true;
@@ -1848,7 +1848,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 				ReleaseStore(&edit->AfterE);
 			}
 			if (cc == __CTRL_F10) {
-				SetUpdHandle(ChptTF->Handle);
+				ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 				if (!CompileRdb(Chpt, true, false, true)) {
 					if (IsCompileErr) {
 						GotoErrPos(Brk, data_editor);
@@ -1922,7 +1922,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 		} // while
 
 		ChptTF->IRec = data_editor->CRec();
-		SetUpdHandle(ChptTF->Handle);
+		ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 
 		//printf("");
 		//data_editor->PopEdit();
@@ -2076,6 +2076,6 @@ void InstallRdb(std::string n)
 		}
 		default:;
 		}
-		SetUpdHandle(ChptTF->Handle);
+		ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 	}
 }

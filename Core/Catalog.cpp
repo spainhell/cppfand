@@ -133,18 +133,18 @@ bool Catalog::OldToNewCat(int& FilSz)
 	auto result = false;
 	bool cached = cat_file_->FF->NotCached();
 	if (cat_file_->FF->file_type != FileType::CAT) return result;
-	RdWrCache(READ, cat_file_->FF->Handle, cached, 0, 6, &x);
+	ReadCache(cat_file_->FF, cached, 0, 6, &x);
 	if (x.RecLen != 106) return result;
 	x.RecLen = 107;
-	RdWrCache(WRITE, cat_file_->FF->Handle, cached, 0, 6, &x);
+	WriteCache(cat_file_->FF, cached, 0, 6, &x);
 	for (int i = x.NRecs; i >= 1; i--) {
 		off = 6 + (i - 1) * 106;
 		offNew = off + (i - 1);
-		RdWrCache(READ, cat_file_->FF->Handle, cached, off + 16, 90, a);
-		RdWrCache(WRITE, cat_file_->FF->Handle, cached, offNew + 17, 90, a);
+		ReadCache(cat_file_->FF, cached, off + 16, 90, a);
+		WriteCache(cat_file_->FF, cached, offNew + 17, 90, a);
 		a[17] = 0;
-		RdWrCache(READ, cat_file_->FF->Handle, cached, off, 16, a);
-		RdWrCache(WRITE, cat_file_->FF->Handle, cached, offNew, 17, a);
+		ReadCache(cat_file_->FF, cached, off, 16, a);
+		WriteCache(cat_file_->FF, cached, offNew, 17, a);
 	}
 	cat_file_->FF->NRecs = x.NRecs;
 	FilSz = x.NRecs * 107 + 6;

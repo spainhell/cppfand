@@ -132,7 +132,7 @@ void FandTFile::RdPrefix(bool check)
 		}
 	}
 	unsigned char header512[512];
-	RdWrCache(READ, Handle, NotCached(), 0, 512, header512);
+	ReadCache(this, NotCached(), 0, 512, header512);
 	srand(RS);
 	LicenseNr = 0;
 	if (Format == DbtFormat) {
@@ -225,13 +225,13 @@ void FandTFile::RdPrefix(bool check)
 		FreeRoot = 0;
 		GetMLen();
 		FreePart = NewPage(true);
-		SetUpdHandle(Handle);
+		SetUpdateFlag(); //SetUpdHandle(Handle);
 	}
 	eofPos = (MaxPage + 1) * MPageSize;
 	srand(RS);
 }
 
-void FandTFile::WrPrefix() const
+void FandTFile::WrPrefix()
 {
 	FandTFilePrefix T;
 
@@ -314,7 +314,7 @@ void FandTFile::WrPrefix() const
 
 	unsigned char header512[512]{ 0 };
 	T.Save(header512);
-	RdWrCache(WRITE, Handle, NotCached(), 0, 512, header512);
+	WriteCache(this, NotCached(), 0, 512, header512);
 }
 
 void FandTFile::SetEmpty()
@@ -337,7 +337,7 @@ void FandTFile::SetEmpty()
 		WrPrefix();
 		memset(X, 0, MPageSize); //FillChar(X, MPageSize, 0); 
 		*XL = -510;
-		RdWrCache(WRITE, Handle, NotCached(), MPageSize, MPageSize, X);
+		WriteCache(this, NotCached(), MPageSize, MPageSize, X);
 		break;
 	}
 	default: break;
@@ -370,7 +370,7 @@ int FandTFile::NewPage(bool NegL)
 	int* L = (int*)&X;
 	if (FreeRoot != 0) {
 		PosPg = FreeRoot << MPageShft;
-		RdWrCache(READ, Handle, NotCached(), PosPg, 4, &FreeRoot);
+		ReadCache(this, NotCached(), PosPg, 4, &FreeRoot);
 		if (FreeRoot > MaxPage) {
 			Err(888, false);
 			FreeRoot = 0;
@@ -388,7 +388,7 @@ int FandTFile::NewPage(bool NegL)
 	}
 	//FillChar(X, MPageSize, 0); 
 	if (NegL) *L = -510;
-	RdWrCache(WRITE, Handle, NotCached(), PosPg, MPageSize, X);
+	WriteCache(this, NotCached(), PosPg, MPageSize, X);
 	return PosPg;
 }
 
@@ -396,7 +396,7 @@ void FandTFile::ReleasePage(int PosPg)
 {
 	unsigned char X[MPageSize]{ 0 };
 	*(__int32*)X = FreeRoot;
-	RdWrCache(WRITE, Handle, NotCached(), PosPg, MPageSize, X);
+	WriteCache(this, NotCached(), PosPg, MPageSize, X);
 	FreeRoot = PosPg >> MPageShft;
 }
 
@@ -420,7 +420,7 @@ LongStr* FandTFile::ReadLongStr(int Pos)
 				Err(891, false);
 				return s;
 			}
-			RdWrCache(READ, Handle, NotCached(), Pos, 2, &l);
+			ReadCache(this, NotCached(), Pos, 2, &l);
 			if (l > MaxLStrLen + 1) {
 				Err(891, false);
 				s = new LongStr(l);
@@ -430,7 +430,7 @@ LongStr* FandTFile::ReadLongStr(int Pos)
 			if (l == MaxLStrLen + 1) { l--; } // 65001
 			s = new LongStr(l + 2);
 			s->LL = l;
-			RdWr(READ, Pos + 2, l, s->A);
+			Read(Pos + 2, l, s->A);
 			break;
 		}
 		case DbtFormat: {
@@ -439,7 +439,7 @@ LongStr* FandTFile::ReadLongStr(int Pos)
 			p = s->A;
 			l = 0;
 			while (l <= 32768 - MPageSize) {
-				RdWrCache(READ, Handle, NotCached(), Pos, MPageSize, &p[offset]);
+				ReadCache(this, NotCached(), Pos, MPageSize, &p[offset]);
 				for (i = 1; i <= MPageSize; i++) {
 					if (p[offset + i] == 0x1A) {
 						s->LL = l;
@@ -458,7 +458,7 @@ LongStr* FandTFile::ReadLongStr(int Pos)
 		}
 		case FptFormat: {
 			Pos = Pos * FptFormatBlockSize;
-			RdWrCache(READ, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
+			ReadCache(this, NotCached(), Pos, sizeof(FptD), &FptD);
 			//if (SwapLong(FptD.Typ) != 1/*text*/) {
 			//	s = new LongStr(l);
 			//	s->LL = 0;
@@ -468,7 +468,7 @@ LongStr* FandTFile::ReadLongStr(int Pos)
 			//	l = SwapLong(FptD.Len) & 0x7FFF;
 			//	s = new LongStr(l);
 			//	s->LL = l;
-			//	RdWrCache(READ, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
+			//	ReadCache(Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
 			//}
 			break;
 		}
@@ -494,7 +494,7 @@ std::string FandTFile::Read(int pos)
 			}
 			else {
 				unsigned short len; // length of data
-				RdWrCache(READ, Handle, NotCached(), pos, 2, &len);
+				ReadCache(this, NotCached(), pos, 2, &len);
 				if (len > MaxLStrLen + 1) {
 					// max length has been exceeded
 					Err(891, false);
@@ -505,7 +505,7 @@ std::string FandTFile::Read(int pos)
 						len--;
 					}
 					const std::unique_ptr<char[]> data = std::make_unique_for_overwrite<char[]>(len);
-					RdWr(READ, pos + 2, len, data.get());
+					Read(pos + 2, len, data.get());
 					s = std::string(data.get(), len);
 				}
 			}
@@ -535,7 +535,7 @@ int FandTFile::Store(char* s, size_t l)
 		return pos;
 	}
 
-	SetUpdHandle(Handle);
+	SetUpdateFlag(); //SetUpdHandle(Handle);
 
 	switch (Format) {
 	case T00Format: {
@@ -561,22 +561,22 @@ int FandTFile::Store(char* s, size_t l)
 			else {
 				FreePart += l + 2;
 				rest = l + 4 - rest;
-				RdWrCache(WRITE, Handle, NotCached(), FreePart, 2, &rest);
+				WriteCache(this, NotCached(), FreePart, 2, &rest);
 			}
 		}
-		RdWrCache(WRITE, Handle, NotCached(), pos, 2, &l);
-		RdWr(WRITE, pos + 2, l, s);
+		WriteCache(this, NotCached(), pos, 2, &l);
+		Write(pos + 2, l, s);
 		break;
 	}
 	case DbtFormat: {
 		pos = MaxPage + 1;
 		int N = pos << MPageShft;
 		if (l > 0x7fff) l = 0x7fff;
-		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
+		WriteCache(this, NotCached(), N, l, s);
 		FillChar(X, MPageSize, ' ');
 		X[0] = 0x1A; X[1] = 0x1A;
 		int rest = MPageSize - (l + 2) % MPageSize;
-		RdWrCache(WRITE, Handle, NotCached(), N + l, rest + 2, X);
+		WriteCache(this, NotCached(), N + l, rest + 2, X);
 		MaxPage += (l + 2 + rest) / MPageSize;
 		break;
 	}
@@ -586,15 +586,15 @@ int FandTFile::Store(char* s, size_t l)
 		if (l > 0x7fff) l = 0x7fff;
 		FreePart = FreePart + (sizeof(FptD) + l - 1) / FptFormatBlockSize + 1;
 		//FptD.Len = SwapLong(l);
-		RdWrCache(WRITE, Handle, NotCached(), N, sizeof(FptD), &FptD);
+		WriteCache(this, NotCached(), N, sizeof(FptD), &FptD);
 		N += sizeof(FptD);
-		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
+		WriteCache(this, NotCached(), N, l, s);
 		N += l;
 		l = FreePart * FptFormatBlockSize - N;
 		if (l > 0) {
 			unsigned char* p = new unsigned char[l];
 			FillChar(p, l, ' ');
-			RdWrCache(WRITE, Handle, NotCached(), N, l, p);
+			WriteCache(this, NotCached(), N, l, p);
 			delete[] p; p = nullptr;
 		}
 		break;
@@ -607,6 +607,21 @@ int FandTFile::Store(char* s, size_t l)
 int FandTFile::Store(const std::string& s)
 {
 	return Store(const_cast<char*>(s.c_str()), s.length());
+}
+
+void FandTFile::SetUpdateFlag()
+{
+	_updateFlag = true;
+}
+
+void FandTFile::ClearUpdateFlag()
+{
+	_updateFlag = false;
+}
+
+bool FandTFile::HasUpdateFlag()
+{
+	return _updateFlag;
 }
 
 void FandTFile::CloseFile()
@@ -646,7 +661,7 @@ void FandTFile::Delete(int pos)
 		return;
 	}
 
-	SetUpdHandle(Handle);
+	SetUpdateFlag(); //SetUpdHandle(Handle);
 	if (pos < MPageSize || pos >= eofPos)
 		return;								// mimo datovou oblast souboru
 
@@ -654,7 +669,7 @@ void FandTFile::Delete(int pos)
 	__int32 posPg = (__int32)pos & (0xFFFFFFFF << MPageShft);
 	__int32 PosI = (__int32)pos & (MPageSize - 1);
 
-	RdWrCache(READ, Handle, NotCached(), posPg, MPageSize, X);
+	ReadCache(this, NotCached(), posPg, MPageSize, X);
 	void* wp = (unsigned short*)&X[PosI];
 	__int32 l = *(unsigned short*)wp;
 
@@ -676,7 +691,7 @@ void FandTFile::Delete(int pos)
 			*(short*)X = -510;
 			FreePart = posPg;
 		label1:
-			RdWrCache(WRITE, Handle, NotCached(), posPg, MPageSize, X);
+			WriteCache(this, NotCached(), posPg, MPageSize, X);
 		}
 		else {
 			ReleasePage(posPg);
@@ -705,7 +720,7 @@ void FandTFile::Delete(int pos)
 				Err(888, false);
 				return;
 			}
-			RdWrCache(READ, Handle, NotCached(), posPg, MPageSize, X);
+			ReadCache(this, NotCached(), posPg, MPageSize, X);
 			if (l <= MPageSize) {
 				goto label2;
 			}
@@ -715,7 +730,7 @@ void FandTFile::Delete(int pos)
 	}
 }
 
-void FandTFile::RdWr(FileOperation operation, size_t position, size_t count, char* buffer)
+void FandTFile::Read(size_t position, size_t count, char* buffer)
 {
 	Logging* log = Logging::getInstance();
 	// log->log(loglevel::DEBUG, "FandTFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", position, count);
@@ -725,22 +740,41 @@ void FandTFile::RdWr(FileOperation operation, size_t position, size_t count, cha
 	unsigned short Rest = MPageSize - (unsigned short(position) & (MPageSize - 1));
 	while (count > Rest) {
 		L = Rest - 4;
-		RdWrCache(operation, Handle, NotCached(), position, L, &buffer[offset]);
+		ReadCache(this, NotCached(), position, L, &buffer[offset]);
 		offset += L;
 		count -= L;
-		if (operation == WRITE) {
-			NxtPg = NewPage(false);
-		}
-		RdWrCache(operation, Handle, NotCached(), position + L, 4, &NxtPg);
+		ReadCache(this, NotCached(), position + L, 4, &NxtPg);
 		position = NxtPg;
-		if ((operation == READ) && ((position < MPageSize) || (position + MPageSize > MLen))) {
+
+		if ((position < MPageSize) || (position + MPageSize > MLen)) {
 			Err(890, false);
 			memset(&buffer[offset], ' ', count);
 			return;
 		}
 		Rest = MPageSize;
 	}
-	RdWrCache(operation, Handle, NotCached(), position, count, &buffer[offset]);
+	ReadCache(this, NotCached(), position, count, &buffer[offset]);
+}
+
+void FandTFile::Write(size_t position, size_t count, char* buffer)
+{
+	Logging* log = Logging::getInstance();
+	// log->log(loglevel::DEBUG, "FandTFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", position, count);
+	unsigned short L = 0;
+	int NxtPg = 0;
+	int offset = 0;
+	unsigned short Rest = MPageSize - (unsigned short(position) & (MPageSize - 1));
+	while (count > Rest) {
+		L = Rest - 4;
+		WriteCache(this, NotCached(), position, L, &buffer[offset]);
+		offset += L;
+		count -= L;
+		NxtPg = NewPage(false);
+		WriteCache(this, NotCached(), position + L, 4, &NxtPg);
+		position = NxtPg;
+		Rest = MPageSize;
+	}
+	WriteCache(this, NotCached(), position, count, &buffer[offset]);
 }
 
 void FandTFile::GetMLen()

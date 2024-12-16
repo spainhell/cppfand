@@ -79,7 +79,7 @@ public:
 	void saveLongS(FieldDescr* field_d, LongStr* ls, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
-	void SetFileUpdateFlag();
+	void SetUpdateFlag();
 	void CloseFile();
 	void Save();
 

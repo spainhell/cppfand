@@ -24,6 +24,11 @@ public:
 	int NewPage(XPage* P);
 	void ReleasePage(XPage* P, int N);
 
+	void SetUpdateFlag();
+	void ClearUpdateFlag();
+	bool HasUpdateFlag();
+
 protected:
 	FandFile* _parent;
+	bool _updateFlag;
 };

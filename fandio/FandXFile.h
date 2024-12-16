@@ -21,6 +21,12 @@ public:
 	void SetNotValid(int recs, unsigned char keys);
 	void ClearUpdLock();
 	int XFNotValid(int recs, unsigned char keys);
+	void SetUpdateFlag();
+	void ClearUpdateFlag();
+	bool HasUpdateFlag();
 	void CloseFile();
+
+private:
+	bool _updateFlag = false;
 };
 

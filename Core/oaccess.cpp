@@ -55,7 +55,7 @@ void SaveFiles()
 	ForAllFDs(ForAllFilesOperation::save);
 
 	bool b = SaveCache(0, catalog_file->FF->Handle);
-	FlushHandles();
+	// TODO: HANDLE: FlushHandles();
 
 	if (!b) GoExit();
 }

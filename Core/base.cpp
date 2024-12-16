@@ -511,8 +511,9 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 
 		if (HandleError == 0)
 		{
-			SetHandle(handle);
-			if (Mode != _isOldFile) SetUpdHandle(handle);
+			// TODO: HANDLE
+			//SetHandle(handle);
+			//if (Mode != _isOldFile) SetUpdHandle(handle);
 		}
 
 		else if (HandleError == ENOENT) {
@@ -672,11 +673,6 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 	//	return;
 	//}
 
-	// writing to the file -> Set Update Flag
-	if (operation == WRITE) {
-		SetUpdHandle(handle);
-	}
-
 	if (cached) {
 		////log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", handle);
 		//FileCache* c1 = cache.GetCache(handle);
@@ -720,14 +716,48 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 	}
 }
 
-void ReadCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf)
+void ReadCache(FandFile* fand_file, bool not_cached, size_t position, size_t count, void* buf)
 {
-	RdWrCache(READ, handle, not_cached, position, count, buf);
+	RdWrCache(READ, fand_file->Handle, not_cached, position, count, buf);
 }
 
-void WriteCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf)
+void ReadCache(FandXFile* fand_Xfile, bool not_cached, size_t position, size_t count, void* buf)
 {
-	RdWrCache(WRITE, handle, not_cached, position, count, buf);
+	RdWrCache(READ, fand_Xfile->Handle, not_cached, position, count, buf);
+}
+
+void ReadCache(FandTFile* fand_Tfile, bool not_cached, size_t position, size_t count, void* buf)
+{
+	RdWrCache(READ, fand_Tfile->Handle, not_cached, position, count, buf);
+}
+
+void ReadCache(XWFile* xw_file, bool not_cached, size_t position, size_t count, void* buf)
+{
+	RdWrCache(READ, xw_file->Handle, not_cached, position, count, buf);
+}
+
+void WriteCache(FandFile* fand_file, bool not_cached, size_t position, size_t count, void* buf)
+{
+	fand_file->SetUpdateFlag();
+	RdWrCache(WRITE, fand_file->Handle, not_cached, position, count, buf);
+}
+
+void WriteCache(FandXFile* fand_Xfile, bool not_cached, size_t position, size_t count, void* buf)
+{
+	fand_Xfile->SetUpdateFlag();
+	RdWrCache(WRITE, fand_Xfile->Handle, not_cached, position, count, buf);
+}
+
+void WriteCache(FandTFile* fand_Tfile, bool not_cached, size_t position, size_t count, void* buf)
+{
+	fand_Tfile->SetUpdateFlag();
+	RdWrCache(WRITE, fand_Tfile->Handle, not_cached, position, count, buf);
+}
+
+void WriteCache(XWFile* xw_file, bool not_cached, size_t position, size_t count, void* buf)
+{
+	xw_file->SetUpdateFlag();
+	RdWrCache(WRITE, xw_file->Handle, not_cached, position, count, buf);
 }
 
 //void FlushH(FILE* handle)
