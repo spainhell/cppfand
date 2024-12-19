@@ -669,17 +669,17 @@ void FandTFile::Delete(int pos)
 		return;								// mimo datovou oblast souboru
 
 	unsigned char X[MPageSize]{ 0 };
-	__int32 posPg = (__int32)pos & (0xFFFFFFFF << MPageShft);
-	__int32 PosI = (__int32)pos & (MPageSize - 1);
+	int32_t posPg = pos & (0xFFFFFFFF << MPageShft);
+	int32_t PosI = pos & (MPageSize - 1);
 
 	ReadCache(this, NotCached(), posPg, MPageSize, X);
 	void* wp = (unsigned short*)&X[PosI];
-	__int32 l = *(unsigned short*)wp;
+	int32_t l = *(unsigned short*)wp;
 
 	if (l <= MPageSize - 2) {
 		// small text on 1 page
 		*(short*)&X[PosI] = (short)(-l);
-		__int32 N = 0;
+		int32_t N = 0;
 		wp = (short*)X;
 		while (N < MPageSize - 2) {
 			if (*(short*)wp > 0) {

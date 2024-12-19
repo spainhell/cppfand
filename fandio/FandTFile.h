@@ -23,8 +23,8 @@ public:
 	int FreePart = 0;
 	bool Reserved = false, CompileProc = false, CompileAll = false;
 	unsigned short IRec = 0;
-	__int32 FreeRoot = 0;
-	__int32 MaxPage = 0;
+	int32_t FreeRoot = 0;
+	int32_t MaxPage = 0;
 	double TimeStmp = 0.0;
 	int LicenseNr = 0;
 	int MLen = 0;
