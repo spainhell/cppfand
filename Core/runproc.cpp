@@ -1674,6 +1674,7 @@ void CallProcedure(Instr_proc* PD)
 
 	// save LVBD
 	LocVarBlkD oldLVDB = LVBD;
+	Compiler::ProcStack.push_front(&oldLVDB);
 
 	ReadProcHead("");
 	PD->variables = LVBD;
@@ -1829,6 +1830,7 @@ void CallProcedure(Instr_proc* PD)
 	}
 	//PopProcStk();
 	//ProcMyBP = (ProcStkD*)oldprocbp;
+	Compiler::ProcStack.pop_front();
 
 	LVBD = oldLVDB;
 	LinkDRoot = ld;

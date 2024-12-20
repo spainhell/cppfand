@@ -3088,6 +3088,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 	LocVarBlkD oldLVBD = LVBD;
 	//oldbp = MyBP;
 	//SetMyBP(ProcMyBP);
+	LVBD = *Compiler::ProcStack.front();
 	FrmlElem* z = nullptr;
 	FileD* cf = CFile;
 	cr = CRecPtr;

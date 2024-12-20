@@ -114,7 +114,7 @@ public:
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);
 
 	FileD* processing_F = nullptr; // actually compiled file
-
+	static std::deque<LocVarBlkD*> ProcStack;
 
 private:
 	double ValofS(pstring& S);

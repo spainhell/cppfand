@@ -36,6 +36,9 @@ BYTE CurrChar; // { Compile }
 BYTE ForwChar, ExpChar, Lexem;
 pstring LexWord;
 
+// init Compiler static variable
+std::deque<LocVarBlkD*> Compiler::ProcStack;
+
 Compiler::Compiler()
 {
 }
