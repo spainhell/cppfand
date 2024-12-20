@@ -175,7 +175,7 @@ void Merge::Run()
 {
 	short MinIi = 0, res = 0, NEof = 0;      /* RunMerge - body */
 	bool EmptyGroup = false, b = false;
-	//PushProcStk();
+	Compiler::ProcStack.push_front(&LVBD); //PushProcStk();
 	OpenInpM();
 	OpenOutp();
 	MergOpGroup.Group = 1.0;
@@ -224,6 +224,7 @@ label1:
 			GoExit();
 		}
 		CloseInpOutp();
+		LVBD = *Compiler::ProcStack.front(); Compiler::ProcStack.pop_front(); //PopProcStk();
 		return;
 	}
 	EmptyGroup = false;
