@@ -968,7 +968,7 @@ int StoreAvail()
 	return 512 * 1024;
 }
 
-void GoExit()
+[[noreturn]] void GoExit()
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::WARN, "GoExit(): '%s'", MsgLine.c_str());
