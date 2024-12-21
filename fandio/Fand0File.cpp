@@ -61,15 +61,14 @@ void Fand0File::ReadRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	ReadCache(this, NotCached(), (rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+	ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
 void Fand0File::WriteRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
-	WriteCache(this, NotCached(),
-		(rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+	WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 	WasWrRec = true;
 }
 
@@ -173,7 +172,7 @@ void Fand0File::DecNRecs(int n)
 void Fand0File::PutRec(void* record, int& i_rec)
 {
 	NRecs++;
-	WriteCache(this, NotCached(), i_rec * RecLen + FirstRecPos, RecLen, record);
+	WriteData(i_rec * RecLen + FirstRecPos, RecLen, record);
 	i_rec++;
 	Eof = true;
 }
@@ -549,32 +548,33 @@ uint16_t Fand0File::RdPrefix()
 		int NRecs = 0;
 		unsigned short HdLen = 0; unsigned short RecLen = 0;
 	} XD;
+
 	uint16_t result = 0xffff;
-	const bool not_cached = NotCached();
+
 	switch (file_type) {
 	case FileType::FAND8: {
-		ReadCache(this, not_cached, 0, 2, &X8.NRs);
-		ReadCache(this, not_cached, 2, 2, &X8.RLen);
+		ReadData(0, 2, &X8.NRs);
+		ReadData(2, 2, &X8.RLen);
 		NRecs = X8.NRs;
 		if (RecLen != X8.RLen) { return X8.RLen; }
 		break;
 	}
 	case FileType::DBF: {
-		ReadCache(this, not_cached, 0, 1, &XD.Ver);
-		ReadCache(this, not_cached, 1, 1, &XD.Date[0]);
-		ReadCache(this, not_cached, 2, 1, &XD.Date[1]);
-		ReadCache(this, not_cached, 3, 1, &XD.Date[2]);
-		ReadCache(this, not_cached, 4, 4, &XD.NRecs);
-		ReadCache(this, not_cached, 8, 2, &XD.HdLen);
-		ReadCache(this, not_cached, 10, 2, &XD.RecLen);
+		ReadData(0, 1, &XD.Ver);
+		ReadData(1, 1, &XD.Date[0]);
+		ReadData(2, 1, &XD.Date[1]);
+		ReadData(3, 1, &XD.Date[2]);
+		ReadData(4, 4, &XD.NRecs);
+		ReadData(8, 2, &XD.HdLen);
+		ReadData(10, 2, &XD.RecLen);
 		NRecs = XD.NRecs;
 		if ((RecLen != XD.RecLen)) { return XD.RecLen; }
 		FirstRecPos = XD.HdLen;
 		break;
 	}
 	default: {
-		ReadCache(this, not_cached, 0, 4, &X6.NRs);
-		ReadCache(this, not_cached, 4, 2, &X6.RLen);
+		ReadData(0, 4, &X6.NRs);
+		ReadData(4, 2, &X6.RLen);
 		NRecs = abs(X6.NRs);
 		if ((X6.NRs < 0) && (file_type != FileType::INDEX) || (X6.NRs > 0) && (file_type == FileType::INDEX)
 			|| (RecLen != X6.RLen)) {
@@ -612,8 +612,8 @@ void Fand0File::WrPrefix()
 		case FileType::FAND8: {
 			Pfx8.RLen = RecLen;
 			Pfx8.NRs = static_cast<unsigned short>(NRecs);
-			WriteCache(this, not_cached, 0, 2, &Pfx8.NRs);
-			WriteCache(this, not_cached, 2, 2, &Pfx8.RLen);
+			WriteData(0, 2, &Pfx8.NRs);
+			WriteData(2, 2, &Pfx8.RLen);
 			break;
 		}
 		case FileType::DBF: {
@@ -624,8 +624,8 @@ void Fand0File::WrPrefix()
 			Pfx6.RLen = RecLen;
 			if (file_type == FileType::INDEX) Pfx6.NRs = -NRecs;
 			else Pfx6.NRs = NRecs;
-			WriteCache(this, not_cached, 0, 4, &Pfx6.NRs);
-			WriteCache(this, not_cached, 4, 2, &Pfx6.RLen);
+			WriteData(0, 4, &Pfx6.NRs);
+			WriteData(4, 2, &Pfx6.RLen);
 		}
 		}
 	}
@@ -1367,14 +1367,14 @@ int Fand0File::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Po
 	}
 
 	// read length of text
-	ReadCache(srcT00File, srcT00File->NotCached(), srcT00Pos, 2, &l);
+	srcT00File->ReadData(srcT00Pos, 2, &l);
 	if (l <= MPageSize - 2) { // short text
 		if (l == 0) {
 			return 0; // mark
 		}
 
 		// read text from source T file
-		ReadCache(srcT00File, srcT00File->NotCached(), srcT00Pos + 2, l, page_buffer);
+		srcT00File->ReadData(srcT00Pos + 2, l, page_buffer);
 		int16_t rest = static_cast<int16_t>(MPageSize - destT00File->FreePart % MPageSize);
 
 		// find place for new short text
@@ -1395,12 +1395,12 @@ int Fand0File::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Po
 		else {
 			destT00File->FreePart += l + 2;
 			rest = l + 4 - rest;
-			WriteCache(destT00File, destT00File->NotCached(), destT00File->FreePart, 2, &rest);
+			destT00File->WriteData(destT00File->FreePart, 2, & rest);
 		}
 
 		// write length and text to destination T file
-		WriteCache(destT00File, destT00File->NotCached(), pos, 2, &l);
-		WriteCache(destT00File, destT00File->NotCached(), pos + 2, l, page_buffer);
+		destT00File->WriteData(pos, 2, &l);
+		destT00File->WriteData(pos + 2, l, page_buffer);
 		// return position of new text in destination T file
 		result = pos;
 		return result;
@@ -1414,7 +1414,7 @@ int Fand0File::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Po
 	}
 
 	// process long text
-	ReadCache(srcT00File, srcT00File->NotCached(), srcT00Pos, MPageSize, page_buffer);
+	srcT00File->ReadData(srcT00Pos, MPageSize, page_buffer);
 	bool first = true;
 	bool end = false;
 
@@ -1449,7 +1449,7 @@ int Fand0File::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Po
 				// write position of next page to the end of current page in destination T file
 				*reinterpret_cast<int*>(&page_buffer[MPageSize - 4]) = next_pos;
 				// write current page to destination T file
-				WriteCache(destT00File, destT00File->NotCached(), pos, MPageSize, page_buffer);
+				destT00File->WriteData(pos, MPageSize, page_buffer);
 				pos = next_pos;
 
 				if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > srcT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
@@ -1459,7 +1459,7 @@ int Fand0File::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Po
 				}
 
 				// read next part of long text from source T file
-				ReadCache(srcT00File, srcT00File->NotCached(), srcT00Pos, MPageSize, page_buffer);
+				srcT00File->ReadData(srcT00Pos, MPageSize, page_buffer);
 				if ((l <= MPageSize)) {
 					// last part of long text, page is not full
 					l = *ll;
@@ -1477,7 +1477,7 @@ int Fand0File::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Po
 	}
 
 	// write last part of long text
-	WriteCache(destT00File, destT00File->NotCached(), pos, MPageSize, page_buffer);
+	destT00File->WriteData(pos, MPageSize, page_buffer);
 
 	return result;
 }
@@ -1499,14 +1499,14 @@ void Fand0File::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD*
 	FandTFile* tf = TF02;
 	if (!tf->IsWork) md2 = TFD02->NewLockMode(RdMode);
 	size_t l = 0;
-	ReadCache(tf, tf->NotCached(), pos, 2, &l);
+	tf->ReadData(pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
-		ReadCache(tf, tf->NotCached(), pos + 2, l, X);
+		tf->ReadData(pos + 2, l, X);
 		WriteH(h, l, X);
 		goto label4;
 	}
 	if ((pos % MPageSize) != 0) goto label2;
-	ReadCache(tf, tf->NotCached(), pos, MPageSize, X);
+	tf->ReadData(pos, MPageSize, X);
 label1:
 	if (l > MaxLStrLen + 1) {
 	label2:
@@ -1526,7 +1526,7 @@ label3:
 			tf->Err(888, false);
 			goto label4;
 		}
-		ReadCache(tf, tf->NotCached(), pos, MPageSize, X);
+		tf->ReadData(pos, MPageSize, X);
 		if ((l <= MPageSize - i)) {
 			l = *ll;
 			goto label1;

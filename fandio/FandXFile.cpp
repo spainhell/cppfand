@@ -49,12 +49,12 @@ void FandXFile::RdPrefix()
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "FandXFile::RdPrefix() 0x%p reading 18 Bytes", Handle);
-	ReadCache(this, NotCached(), 2, 4, &FreeRoot);
-	ReadCache(this, NotCached(), 6, 4, &MaxPage);
-	ReadCache(this, NotCached(), 10, 4, &NRecs);
-	ReadCache(this, NotCached(), 14, 4, &NRecsAbs);
-	ReadCache(this, NotCached(), 18, 1, &NotValid);
-	ReadCache(this, NotCached(), 19, 1, &NrKeys);
+	ReadData(2, 4, &FreeRoot);
+	ReadData(6, 4, &MaxPage);
+	ReadData(10, 4, &NRecs);
+	ReadData(14, 4, &NRecsAbs);
+	ReadData(18, 1, &NotValid);
+	ReadData(19, 1, &NrKeys);
 }
 
 void FandXFile::WrPrefix(int recs, unsigned char keys)
@@ -63,15 +63,15 @@ void FandXFile::WrPrefix(int recs, unsigned char keys)
 	//log->log(loglevel::DEBUG, "FandXFile::WrPrefix() 0x%p writing 20 Bytes, NRecsAbs = %i, NrKeys = %i",
 	//	Handle, CFile->NRecs, CFile->GetNrKeys());
 	unsigned short Signum = 0x04FF;
-	WriteCache(this, NotCached(), 0, 2, &Signum);
+	WriteData(0, 2, &Signum);
 	NRecsAbs = recs;
 	NrKeys = keys;
-	WriteCache(this, NotCached(), 2, 4, &FreeRoot);
-	WriteCache(this, NotCached(), 6, 4, &MaxPage);
-	WriteCache(this, NotCached(), 10, 4, &NRecs);
-	WriteCache(this, NotCached(), 14, 4, &NRecsAbs);
-	WriteCache(this, NotCached(), 18, 1, &NotValid);
-	WriteCache(this, NotCached(), 19, 1, &NrKeys);
+	WriteData(2, 4, &FreeRoot);
+	WriteData(6, 4, &MaxPage);
+	WriteData(10, 4, &NRecs);
+	WriteData(14, 4, &NRecsAbs);
+	WriteData(18, 1, &NotValid);
+	WriteData(19, 1, &NrKeys);
 }
 
 void FandXFile::SetNotValid(int recs, unsigned char keys)

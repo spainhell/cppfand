@@ -220,7 +220,7 @@ label3:
 		}
 		else {
 			WORD Signum = 0;
-			ReadCache(file_d->FF->XF, file_d->FF->XF->NotCached(), 0, 2, &Signum);
+			file_d->FF->XF->ReadData(0, 2, &Signum);
 			file_d->FF->XF->RdPrefix();
 
 			Fand0File* ff = file_d->FF;

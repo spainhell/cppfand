@@ -54,21 +54,19 @@ void DbfFile::WrDBaseHd(FileD* file_d)
 	dbf_header->NRecs = file_d->FF->NRecs;
 	dbf_header->HdLen = file_d->FF->FirstRecPos;
 
-	bool not_cached = file_d->FF->NotCached();
-
-	WriteCache(file_d->FF, not_cached, 0, dbf_header->GetDataLength(), dbf_header->GetData());
+	file_d->FF->WriteData(0, dbf_header->GetDataLength(), dbf_header->GetData());
 
 
 	size_t index = dbf_header->GetDataLength();
 
 	for (DBaseField* F : dbf_header->flds) {
-		WriteCache(file_d->FF, not_cached, index, F->GetDataLength(), F->GetData());
+		file_d->FF->WriteData(index, F->GetDataLength(), F->GetData());
 		index += F->GetDataLength();
 	}
 
-	WriteCache(file_d->FF, not_cached, index, 1, (void*)&CtrlD);
+	file_d->FF->WriteData(index, 1, (void*)&CtrlD);
 
-	WriteCache(file_d->FF, not_cached, dbf_header->NRecs * dbf_header->RecLen + dbf_header->HdLen, 1, (void*)&CtrlZ);
+	file_d->FF->WriteData(dbf_header->NRecs * dbf_header->RecLen + dbf_header->HdLen, 1, (void*)&CtrlZ);
 
 	delete dbf_header;
 	dbf_header = nullptr;
