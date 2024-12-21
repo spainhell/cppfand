@@ -27,7 +27,7 @@ public:
 	Fand0File(FileD* parent);
 	Fand0File(const Fand0File& orig) = delete;
 	Fand0File(const Fand0File& orig, FileD* parent);
-	~Fand0File();
+	~Fand0File() override;
 
 	unsigned short RecLen = 0;
 	void* RecPtr = nullptr;
@@ -86,10 +86,8 @@ public:
 
 	void TruncFile();
 	LockMode RewriteFile(bool append);
-	void SetUpdateFlag();
-	void ClearUpdateFlag();
-	bool HasUpdateFlag();
 
+	void ClearUpdateFlag() override;
 	void SaveFile();
 	void CloseFile();
 	void Close();
@@ -136,7 +134,6 @@ private:
 	FileD* _parent;
 	double DBF_RforD(FieldDescr* field_d, uint8_t* source);
 	bool is_null_value(FieldDescr* field_d, uint8_t* record);
-	bool _updateFlag = false;
 
 	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);

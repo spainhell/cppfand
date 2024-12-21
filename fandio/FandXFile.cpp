@@ -99,21 +99,6 @@ int FandXFile::XFNotValid(int recs, unsigned char keys)
 	}
 }
 
-void FandXFile::SetUpdateFlag()
-{
-	_updateFlag = true;
-}
-
-void FandXFile::ClearUpdateFlag()
-{
-	_updateFlag = false;
-}
-
-bool FandXFile::HasUpdateFlag()
-{
-	return _updateFlag;
-}
-
 void FandXFile::CloseFile()
 {
 	if (Handle != nullptr) {

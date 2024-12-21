@@ -697,11 +697,6 @@ LockMode Fand0File::RewriteFile(bool append)
 	return result;
 }
 
-void Fand0File::SetUpdateFlag()
-{
-	_updateFlag = true;
-}
-
 void Fand0File::ClearUpdateFlag()
 {
 	_updateFlag = false;
@@ -713,11 +708,6 @@ void Fand0File::ClearUpdateFlag()
 	if (TF != nullptr) {
 		TF->ClearUpdateFlag();
 	}
-}
-
-bool Fand0File::HasUpdateFlag()
-{
-	return _updateFlag;
 }
 
 void Fand0File::SaveFile()

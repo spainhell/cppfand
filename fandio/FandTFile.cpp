@@ -609,21 +609,6 @@ int FandTFile::Store(const std::string& s)
 	return Store(const_cast<char*>(s.c_str()), s.length());
 }
 
-void FandTFile::SetUpdateFlag()
-{
-	_updateFlag = true;
-}
-
-void FandTFile::ClearUpdateFlag()
-{
-	_updateFlag = false;
-}
-
-bool FandTFile::HasUpdateFlag()
-{
-	return _updateFlag;
-}
-
 void FandTFile::CloseFile()
 {
 	if (Handle != nullptr) {

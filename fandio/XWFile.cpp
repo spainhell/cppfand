@@ -110,18 +110,3 @@ void XWFile::ReleasePage(XPage* P, int N)
 	//FreeRoot = N;
 	//WrPage(P, N);
 }
-
-void XWFile::SetUpdateFlag()
-{
-	_updateFlag = true;
-}
-
-void XWFile::ClearUpdateFlag()
-{
-	_updateFlag = false;
-}
-
-bool XWFile::HasUpdateFlag()
-{
-	return _updateFlag;
-}

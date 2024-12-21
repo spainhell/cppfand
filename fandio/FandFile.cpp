@@ -7,23 +7,39 @@
 FandFile::FandFile()
 {
 	Handle = nullptr;
+	_updateFlag = false;
 }
 
 FandFile::~FandFile()
-{
-}
+= default;
 
-void FandFile::ReadData(size_t position, size_t count, void* buf)
+void FandFile::ReadData(size_t position, size_t count, void* buf) const
 {
 	ReadWriteData(READ, position, count, buf);
 }
 
 void FandFile::WriteData(size_t position, size_t count, void* buf)
 {
-	ReadWriteData(READ, position, count, buf);
+	SetUpdateFlag();
+	ReadWriteData(WRITE, position, count, buf);
 }
 
-void FandFile::ReadWriteData(FileOperation operation, size_t position, size_t count, void* buf)
+void FandFile::SetUpdateFlag()
+{
+	_updateFlag = true;
+}
+
+void FandFile::ClearUpdateFlag()
+{
+	_updateFlag = false;
+}
+
+bool FandFile::HasUpdateFlag() const
+{
+	return _updateFlag;
+}
+
+void FandFile::ReadWriteData(FileOperation operation, size_t position, size_t count, void* buf) const
 {
 	Logging* log = Logging::getInstance();
 

@@ -19,7 +19,7 @@ public:
 	FandTFile(Fand0File* parent);
 	FandTFile(const FandTFile& orig) = delete;
 	FandTFile(const FandTFile& orig, Fand0File* parent);
-	~FandTFile();
+	~FandTFile() override;
 
 	int FreePart = 0;
 	bool Reserved = false, CompileProc = false, CompileAll = false;
@@ -50,9 +50,6 @@ public:
 	std::string Read(int pos);
 	int Store(char* s, size_t l);
 	int Store(const std::string& s);
-	void SetUpdateFlag();
-	void ClearUpdateFlag();
-	bool HasUpdateFlag();
 	void CloseFile();
 
 private:
@@ -61,5 +58,4 @@ private:
 	void Write(size_t position, size_t count, char* buffer);
 	void GetMLen();
 	long eofPos = 0;
-	bool _updateFlag = false;
 };

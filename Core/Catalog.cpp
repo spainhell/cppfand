@@ -184,6 +184,11 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 
 void Catalog::GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std::string& volume) const
 {
+	if (file_d->Name == "PARAM3")
+	{
+		printf("");
+	}
+
 	bool isRdb;
 
 	std::string dir;
