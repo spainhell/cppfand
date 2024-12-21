@@ -164,7 +164,7 @@
     <ClInclude Include="DBaseHeader.h" />
     <ClInclude Include="DbfFile.h" />
     <ClInclude Include="directory.h" />
-    <ClInclude Include="FandFile.h" />
+    <ClInclude Include="Fand0File.h" />
     <ClInclude Include="fandio.h" />
     <ClInclude Include="FandTFile.h" />
     <ClInclude Include="FandTFilePrefix.h" />
@@ -194,7 +194,7 @@
     <ClCompile Include="DBaseHeader.cpp" />
     <ClCompile Include="DbfFile.cpp" />
     <ClCompile Include="directory.cpp" />
-    <ClCompile Include="FandFile.cpp" />
+    <ClCompile Include="Fand0File.cpp" />
     <ClCompile Include="fandio.cpp" />
     <ClCompile Include="FandTFile.cpp" />
     <ClCompile Include="FandTFilePrefix.cpp" />

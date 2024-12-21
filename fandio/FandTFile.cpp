@@ -55,12 +55,12 @@ void RandArrayByBytes(void* arr, size_t len)
 	}
 }
 
-FandTFile::FandTFile(FandFile* parent)
+FandTFile::FandTFile(Fand0File* parent)
 {
 	_parent = parent;
 }
 
-FandTFile::FandTFile(const FandTFile& orig, FandFile* parent)
+FandTFile::FandTFile(const FandTFile& orig, Fand0File* parent)
 {
 	_parent = parent;
 	Format = orig.Format;

@@ -10,7 +10,7 @@
 class XWFile;
 class FandTFile;
 class FandXFile;
-class FandFile;
+class Fand0File;
 
 struct WRect { BYTE C1 = 0, R1 = 0, C2 = 0, R2 = 0; }; // r34
 struct WordRec { BYTE Lo = 0, Hi = 0; };
@@ -78,12 +78,12 @@ void WriteH(HANDLE handle, size_t length, void* buffer);
 void CloseH(HANDLE* handle);
 void CloseClearH(HANDLE* h);
 
-void ReadCache(FandFile* fand_file, bool not_cached, size_t position, size_t count, void* buf);
+void ReadCache(Fand0File* fand_file, bool not_cached, size_t position, size_t count, void* buf);
 void ReadCache(FandXFile* fand_Xfile, bool not_cached, size_t position, size_t count, void* buf);
 void ReadCache(FandTFile* fand_Tfile, bool not_cached, size_t position, size_t count, void* buf);
 void ReadCache(XWFile* xw_file, bool not_cached, size_t position, size_t count, void* buf);
 
-void WriteCache(FandFile* fand_file, bool not_cached, size_t position, size_t count, void* buf);
+void WriteCache(Fand0File* fand_file, bool not_cached, size_t position, size_t count, void* buf);
 void WriteCache(FandXFile* fand_Xfile, bool not_cached, size_t position, size_t count, void* buf);
 void WriteCache(FandTFile* fand_Tfile, bool not_cached, size_t position, size_t count, void* buf);
 void WriteCache(XWFile* xw_file, bool not_cached, size_t position, size_t count, void* buf);

@@ -4,7 +4,7 @@
 #include "../Common/LongStr.h"
 
 typedef void* HANDLE;
-class FandFile;
+class Fand0File;
 typedef char PwCodeArr[20];
 
 const unsigned short MPageSize = 512;
@@ -14,9 +14,9 @@ const unsigned char MPageShft = 9;
 class FandTFile
 {
 public:
-	FandTFile(FandFile* parent);
+	FandTFile(Fand0File* parent);
 	FandTFile(const FandTFile& orig) = delete;
-	FandTFile(const FandTFile& orig, FandFile* parent);
+	FandTFile(const FandTFile& orig, Fand0File* parent);
 	~FandTFile();
 
 	HANDLE Handle = nullptr;
@@ -55,7 +55,7 @@ public:
 	void CloseFile();
 
 private:
-	FandFile* _parent;
+	Fand0File* _parent;
 	void Read(size_t position, size_t count, char* buffer);
 	void Write(size_t position, size_t count, char* buffer);
 	void GetMLen();

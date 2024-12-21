@@ -1306,7 +1306,7 @@ bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z
 		LockMode md1 = NullMode, md2 = NullMode;
 		if (!TF02->IsWork) md2 = TFD02->NewLockMode(RdMode);
 		if (!TF->IsWork) md1 = file_d->NewLockMode(WrMode);
-		pos = FandFile::CopyT(TF, TF02, TF02Pos);
+		pos = Fand0File::CopyT(TF, TF02, TF02Pos);
 		if (!TF02->IsWork) TFD02->OldLockMode(md2);
 		if (!TF->IsWork) file_d->OldLockMode(md1);
 		result = true;

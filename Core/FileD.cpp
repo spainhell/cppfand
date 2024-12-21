@@ -15,7 +15,7 @@ FileD::FileD(FType f_type)
 	this->FileType = f_type;
 	switch (f_type) {
 	case FType::FandFile: {
-		this->FF = new FandFile(this);
+		this->FF = new Fand0File(this);
 		break;
 	}
 	default:;
@@ -40,7 +40,7 @@ FileD::FileD(const FileD& orig)
 	}
 
 	if (orig.FF != nullptr) {
-		FF = new FandFile(*orig.FF, this);
+		FF = new Fand0File(*orig.FF, this);
 	}
 
 	if (!orig.Keys.empty()) {
@@ -532,7 +532,7 @@ void FileD::CopyRec(void* record1, void* record2, bool delTFields)
 				if (!tf1->IsWork) md1 = NewLockMode(RdMode);
 				if (!tf2->IsWork) md2 = NewLockMode(WrMode);
 
-				pos = FandFile::CopyT(tf2, tf1, pos);
+				pos = Fand0File::CopyT(tf2, tf1, pos);
 
 				if (!tf2->IsWork) OldLockMode(md2);
 				if (!tf1->IsWork) OldLockMode(md1);

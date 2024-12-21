@@ -21,13 +21,13 @@ enum class FileType
 	DBF
 };
 
-class FandFile
+class Fand0File
 {
 public:
-	FandFile(FileD* parent);
-	FandFile(const FandFile& orig) = delete;
-	FandFile(const FandFile& orig, FileD* parent);
-	~FandFile();
+	Fand0File(FileD* parent);
+	Fand0File(const Fand0File& orig) = delete;
+	Fand0File(const Fand0File& orig, FileD* parent);
+	~Fand0File();
 
 	unsigned short RecLen = 0;
 	void* RecPtr = nullptr;

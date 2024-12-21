@@ -5,7 +5,7 @@
 #include "../Core/obaseww.h"
 #include "../fandio/FandXFile.h"
 
-XWFile::XWFile(FandFile* parent)
+XWFile::XWFile(Fand0File* parent)
 {
 	_parent = parent;
 	_updateFlag = false;

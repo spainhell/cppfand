@@ -9,12 +9,12 @@
 #include "LinkD.h"
 #include "obaseww.h"
 #include "runfrml.h"
-#include "../fandio/FandFile.h"
+#include "../fandio/Fand0File.h"
 #include "../Logging/Logging.h"
 #include "../Common/compare.h"
 
 
-void CloseGoExit(FandFile* fand_file)
+void CloseGoExit(Fand0File* fand_file)
 {
 	fand_file->Close(); //CloseClearH(fand_file);
 	GoExit();

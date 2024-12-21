@@ -9,11 +9,11 @@
 #include "XWorkFile.h"
 
 
-FandXFile::FandXFile(FandFile* parent): XWFile(parent)
+FandXFile::FandXFile(Fand0File* parent): XWFile(parent)
 {
 }
 
-FandXFile::FandXFile(const FandXFile& orig, FandFile* parent): XWFile(parent)
+FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent): XWFile(parent)
 {
 	NRecs = orig.NRecs;
 	NRecsAbs = orig.NRecsAbs;

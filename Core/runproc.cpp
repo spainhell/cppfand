@@ -1073,7 +1073,7 @@ void PutTxt(Instr_puttxt* PD)
 	if (canCopyT) {
 		h = OpenHForPutTxt(PD);
 		path = CPath;
-		FandFile::CopyTFStringToH(CFile, h, TF02, TFD02, TF02Pos);
+		Fand0File::CopyTFStringToH(CFile, h, TF02, TFD02, TF02Pos);
 		CPath = path;
 	}
 	else {

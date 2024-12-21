@@ -223,7 +223,7 @@ label3:
 			ReadCache(file_d->FF->XF, file_d->FF->XF->NotCached(), 0, 2, &Signum);
 			file_d->FF->XF->RdPrefix();
 
-			FandFile* ff = file_d->FF;
+			Fand0File* ff = file_d->FF;
 			if (
 				!ff->XF->NotValid && ((Signum != 0x04FF) 
 					|| (ff->XF->NRecsAbs != ff->NRecs)

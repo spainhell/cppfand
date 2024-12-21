@@ -429,7 +429,7 @@ label4:
 	return result;
 }
 
-void DataEditor::SetWasUpdated(FandFile* fand_file, void* record)
+void DataEditor::SetWasUpdated(Fand0File* fand_file, void* record)
 {
 	if (!params_->WasUpdated) {
 		if (params_->EdRecVar) {

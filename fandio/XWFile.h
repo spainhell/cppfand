@@ -3,12 +3,12 @@
 #include "XXPage.h"
 
 typedef void* HANDLE;
-class FandFile;
+class Fand0File;
 
 class XWFile
 {
 public:
-	XWFile(FandFile* parent);
+	XWFile(Fand0File* parent);
 	unsigned short UpdLockCnt = 0;
 	HANDLE Handle = nullptr;
 	int FreeRoot = 0;
@@ -29,6 +29,6 @@ public:
 	bool HasUpdateFlag();
 
 protected:
-	FandFile* _parent;
+	Fand0File* _parent;
 	bool _updateFlag;
 };

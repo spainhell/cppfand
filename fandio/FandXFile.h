@@ -4,9 +4,9 @@
 class FandXFile : public XWFile
 {
 public:
-	FandXFile(FandFile* parent);
+	FandXFile(Fand0File* parent);
 	FandXFile(const FandXFile& orig) = delete;
-	FandXFile(const FandXFile& orig, FandFile* parent);
+	FandXFile(const FandXFile& orig, Fand0File* parent);
 	~FandXFile();
 
 	int NRecs = 0;     // valid records count

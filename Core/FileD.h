@@ -1,6 +1,6 @@
 #pragma once
 #include "Rdb.h"
-#include "../fandio/FandFile.h"
+#include "../fandio/Fand0File.h"
 
 class FieldDescr;
 class Additive;
@@ -27,7 +27,7 @@ public:
 
 	FType FileType;
 
-	FandFile* FF = nullptr;   // FandFile reference
+	Fand0File* FF = nullptr;   // FandFile reference
 
 	int IRec = 0;
 	RdbPos ChptPos;           // zero for Rdb and v_files translated from string 

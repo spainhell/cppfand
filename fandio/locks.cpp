@@ -212,7 +212,7 @@ LockMode NewLMode(FileD* fileD, LockMode Mode)
 	return md;
 }
 
-bool TryLockN(FandFile* fand_file, int N, WORD Kind)
+bool TryLockN(Fand0File* fand_file, int N, WORD Kind)
 {
 	int w1;
 	WORD m;
@@ -259,7 +259,7 @@ bool TryLockN(FandFile* fand_file, int N, WORD Kind)
 	return result;
 }
 
-void UnLockN(FandFile* fand_file, int N)
+void UnLockN(Fand0File* fand_file, int N)
 {
 #ifdef FandSQL
 	if (fand_file->GetFileD()->IsSQLFile) return;

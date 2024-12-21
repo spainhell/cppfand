@@ -1,4 +1,4 @@
-#include "FandFile.h"
+#include "Fand0File.h"
 
 #include "DbfFile.h"
 #include "files.h"
@@ -21,12 +21,12 @@
 //const double FirstDate = 6.97248E+5;
 // ***************************************************************************
 
-FandFile::FandFile(FileD* parent)
+Fand0File::Fand0File(FileD* parent)
 {
 	_parent = parent;
 }
 
-FandFile::FandFile(const FandFile& orig, FileD* parent)
+Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 {
 	RecLen = orig.RecLen;
 	file_type = orig.file_type;
@@ -39,7 +39,7 @@ FandFile::FandFile(const FandFile& orig, FileD* parent)
 	if (orig.XF != nullptr) XF = new FandXFile(*orig.XF, this);
 }
 
-FandFile::~FandFile()
+Fand0File::~Fand0File()
 {
 	if (Handle != nullptr) {
 		CloseH(&Handle);
@@ -57,14 +57,14 @@ FandFile::~FandFile()
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-void FandFile::ReadRec(size_t rec_nr, void* record)
+void Fand0File::ReadRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
 	ReadCache(this, NotCached(), (rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
-void FandFile::WriteRec(size_t rec_nr, void* record)
+void Fand0File::WriteRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
@@ -73,7 +73,7 @@ void FandFile::WriteRec(size_t rec_nr, void* record)
 	WasWrRec = true;
 }
 
-void FandFile::CreateRec(int n, void* record)
+void Fand0File::CreateRec(int n, void* record)
 {
 	IncNRecs(1);
 	BYTE* tmp = _parent->GetRecSpace();
@@ -86,7 +86,7 @@ void FandFile::CreateRec(int n, void* record)
 	WriteRec(n, record);
 }
 
-void FandFile::DeleteRec(int n, void* record)
+void Fand0File::DeleteRec(int n, void* record)
 {
 	DelAllDifTFlds(record, nullptr);
 	for (int i = n; i <= NRecs - 1; i++) {
@@ -96,7 +96,7 @@ void FandFile::DeleteRec(int n, void* record)
 	DecNRecs(1);
 }
 
-void FandFile::DelAllDifTFlds(void* record, void* comp_record)
+void Fand0File::DelAllDifTFlds(void* record, void* comp_record)
 {
 	for (auto& F : _parent->FldD) {
 		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
@@ -105,19 +105,19 @@ void FandFile::DelAllDifTFlds(void* record, void* comp_record)
 	}
 }
 
-int FandFile::UsedFileSize()
+int Fand0File::UsedFileSize()
 {
 	int n = NRecs * RecLen + FirstRecPos;
 	if (file_type == FileType::DBF) n++;
 	return n;
 }
 
-bool FandFile::IsShared()
+bool Fand0File::IsShared()
 {
 	return (UMode == Shared) || (UMode == RdShared);
 }
 
-bool FandFile::NotCached()
+bool Fand0File::NotCached()
 {
 	if (UMode == Shared) goto label1;
 	if (UMode != RdShared) return false;
@@ -126,12 +126,12 @@ label1:
 	return true;
 }
 
-bool FandFile::Cached()
+bool Fand0File::Cached()
 {
 	return !NotCached();
 }
 
-void FandFile::Reset()
+void Fand0File::Reset()
 {
 	RecLen = 0;
 	RecPtr = nullptr;
@@ -148,7 +148,7 @@ void FandFile::Reset()
 	XF = nullptr;
 }
 
-void FandFile::IncNRecs(int n)
+void Fand0File::IncNRecs(int n)
 {
 #ifdef FandDemo
 	if (NRecs > 100) RunError(884);
@@ -160,7 +160,7 @@ void FandFile::IncNRecs(int n)
 	}
 }
 
-void FandFile::DecNRecs(int n)
+void Fand0File::DecNRecs(int n)
 {
 	NRecs -= n;
 	SetUpdateFlag(); //SetUpdHandle(Handle);
@@ -170,7 +170,7 @@ void FandFile::DecNRecs(int n)
 	WasWrRec = true;
 }
 
-void FandFile::PutRec(void* record, int& i_rec)
+void Fand0File::PutRec(void* record, int& i_rec)
 {
 	NRecs++;
 	WriteCache(this, NotCached(), i_rec * RecLen + FirstRecPos, RecLen, record);
@@ -178,12 +178,12 @@ void FandFile::PutRec(void* record, int& i_rec)
 	Eof = true;
 }
 
-size_t FandFile::RecordSize()
+size_t Fand0File::RecordSize()
 {
 	return RecLen;
 }
 
-bool FandFile::loadB(FieldDescr* field_d, void* record)
+bool Fand0File::loadB(FieldDescr* field_d, void* record)
 {
 	bool result = false;
 	unsigned char* CP = (unsigned char*)record + field_d->Displ;
@@ -199,7 +199,7 @@ bool FandFile::loadB(FieldDescr* field_d, void* record)
 	return result;
 }
 
-double FandFile::loadR(FieldDescr* field_d, void* record)
+double Fand0File::loadR(FieldDescr* field_d, void* record)
 {
 	uint8_t* source = static_cast<uint8_t*>(record) + field_d->Displ;
 	double result = 0.0;
@@ -256,7 +256,7 @@ double FandFile::loadR(FieldDescr* field_d, void* record)
 	return result;
 }
 
-std::string FandFile::loadS(FieldDescr* field_d, void* record)
+std::string Fand0File::loadS(FieldDescr* field_d, void* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	std::string S;
@@ -312,7 +312,7 @@ std::string FandFile::loadS(FieldDescr* field_d, void* record)
 	return S;
 }
 
-int FandFile::loadT(FieldDescr* F, void* record)
+int Fand0File::loadT(FieldDescr* F, void* record)
 {
 	//int n = 0;
 	//short err = 0;
@@ -331,7 +331,7 @@ int FandFile::loadT(FieldDescr* F, void* record)
 	}
 }
 
-void FandFile::saveB(FieldDescr* field_d, bool b, void* record)
+void Fand0File::saveB(FieldDescr* field_d, bool b, void* record)
 {
 	char* pB = (char*)record + field_d->Displ;
 	if ((field_d->field_type == FieldType::BOOL) && ((field_d->Flg & f_Stored) != 0)) {
@@ -343,7 +343,7 @@ void FandFile::saveB(FieldDescr* field_d, bool b, void* record)
 	}
 }
 
-void FandFile::saveR(FieldDescr* field_d, double r, void* record)
+void Fand0File::saveR(FieldDescr* field_d, double r, void* record)
 {
 	BYTE* pRec = (BYTE*)record + field_d->Displ;
 	int l = 0;
@@ -396,7 +396,7 @@ void FandFile::saveR(FieldDescr* field_d, double r, void* record)
 	}
 }
 
-void FandFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record)
+void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record)
 {
 	const BYTE LeftJust = 1;
 	BYTE* pRec = (BYTE*)record + field_d->Displ;
@@ -474,7 +474,7 @@ void FandFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* re
 	}
 }
 
-int FandFile::saveT(FieldDescr* field_d, int pos, void* record)
+int Fand0File::saveT(FieldDescr* field_d, int pos, void* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	int* LP = (int*)source;
@@ -500,7 +500,7 @@ int FandFile::saveT(FieldDescr* field_d, int pos, void* record)
 	}
 }
 
-void FandFile::DelTFld(FieldDescr* field_d, void* record)
+void Fand0File::DelTFld(FieldDescr* field_d, void* record)
 {
 	int n = loadT(field_d, record);
 	if (HasTWorkFlag(record)) {
@@ -514,7 +514,7 @@ void FandFile::DelTFld(FieldDescr* field_d, void* record)
 	saveT(field_d, 0, record);
 }
 
-void FandFile::DelTFlds(void* record)
+void Fand0File::DelTFlds(void* record)
 {
 	for (auto& field : _parent->FldD) {
 		if (((field->Flg & f_Stored) != 0) && (field->field_type == FieldType::TEXT)) {
@@ -529,7 +529,7 @@ void FandFile::DelTFlds(void* record)
  * \param record 1. zaznam (ktery je pripadne smazan)
  * \param comp_record 2. zaznam
  */
-void FandFile::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
+void Fand0File::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
 {
 	const int n1 = loadT(field_d, comp_record);
 	const int n2 = loadT(field_d, record);
@@ -538,7 +538,7 @@ void FandFile::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
 	}
 }
 
-uint16_t FandFile::RdPrefix()
+uint16_t Fand0File::RdPrefix()
 {
 	// NRs - celkovy pocet zaznamu v souboru;
 	// RLen - delka 1 zaznamu
@@ -586,7 +586,7 @@ uint16_t FandFile::RdPrefix()
 	return result;
 }
 
-int FandFile::RdPrefixes()
+int Fand0File::RdPrefixes()
 {
 	if (RdPrefix() != 0xffff) {
 		//CFileError(CFile, 883);
@@ -601,7 +601,7 @@ int FandFile::RdPrefixes()
 	return 0;
 }
 
-void FandFile::WrPrefix()
+void Fand0File::WrPrefix()
 {
 	struct { int NRs; unsigned short RLen; } Pfx6 = { 0, 0 };
 	struct { unsigned short NRs; unsigned short RLen; } Pfx8 = { 0, 0 };
@@ -631,7 +631,7 @@ void FandFile::WrPrefix()
 	}
 }
 
-void FandFile::WrPrefixes()
+void Fand0File::WrPrefixes()
 {
 	if (_updateFlag) {
 		WrPrefix();
@@ -649,7 +649,7 @@ void FandFile::WrPrefixes()
 	}
 }
 
-void FandFile::TruncFile()
+void Fand0File::TruncFile()
 {
 	if (UMode == RdOnly) return;
 	LockMode md = _parent->NewLockMode(RdMode);
@@ -670,7 +670,7 @@ void FandFile::TruncFile()
 	_parent->OldLockMode(md);
 }
 
-LockMode FandFile::RewriteFile(bool append)
+LockMode Fand0File::RewriteFile(bool append)
 {
 	LockMode result;
 	if (append) {
@@ -697,12 +697,12 @@ LockMode FandFile::RewriteFile(bool append)
 	return result;
 }
 
-void FandFile::SetUpdateFlag()
+void Fand0File::SetUpdateFlag()
 {
 	_updateFlag = true;
 }
 
-void FandFile::ClearUpdateFlag()
+void Fand0File::ClearUpdateFlag()
 {
 	_updateFlag = false;
 
@@ -715,12 +715,12 @@ void FandFile::ClearUpdateFlag()
 	}
 }
 
-bool FandFile::HasUpdateFlag()
+bool Fand0File::HasUpdateFlag()
 {
 	return _updateFlag;
 }
 
-void FandFile::SaveFile()
+void Fand0File::SaveFile()
 {
 	WrPrefixes();
 	if (file_type == FileType::INDEX) {
@@ -743,7 +743,7 @@ void FandFile::SaveFile()
 /// <summary>
 /// Close file with saving changes (prefixes, ...)
 /// </summary>
-void FandFile::CloseFile()
+void Fand0File::CloseFile()
 {
 	if (IsShared()) {
 		_parent->OldLockMode(NullMode);
@@ -790,7 +790,7 @@ void FandFile::CloseFile()
 /// <summary>
 /// Plain close file handle (main, index, text)
 /// </summary>
-void FandFile::Close()
+void Fand0File::Close()
 {
 	CloseH(&Handle);
 	if (file_type == FileType::INDEX) {
@@ -801,38 +801,38 @@ void FandFile::Close()
 	}
 }
 
-void FandFile::SetTWorkFlag(void* record)
+void Fand0File::SetTWorkFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen] = 1;
 }
 
-bool FandFile::HasTWorkFlag(void* record)
+bool Fand0File::HasTWorkFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	const bool workFlag = p[RecLen] == 1;
 	return workFlag;
 }
 
-void FandFile::SetRecordUpdateFlag(void* record)
+void Fand0File::SetRecordUpdateFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen + 1] = 1;
 }
 
-void FandFile::ClearRecordUpdateFlag(void* record)
+void Fand0File::ClearRecordUpdateFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen + 1] = 0;
 }
 
-bool FandFile::HasRecordUpdateFlag(void* record)
+bool Fand0File::HasRecordUpdateFlag(void* record)
 {
 	BYTE* p = (BYTE*)record;
 	return p[RecLen + 1] == 1;
 }
 
-bool FandFile::DeletedFlag(void* record)
+bool Fand0File::DeletedFlag(void* record)
 {
 	if (file_type == FileType::INDEX) {
 		if (((BYTE*)record)[0] == 0) return false;
@@ -847,7 +847,7 @@ bool FandFile::DeletedFlag(void* record)
 	return false;
 }
 
-void FandFile::ClearDeletedFlag(void* record)
+void Fand0File::ClearDeletedFlag(void* record)
 {
 	BYTE* ptr = (BYTE*)record;
 	switch (file_type) {
@@ -856,7 +856,7 @@ void FandFile::ClearDeletedFlag(void* record)
 	}
 }
 
-void FandFile::SetDeletedFlag(void* record)
+void Fand0File::SetDeletedFlag(void* record)
 {
 	BYTE* ptr = (BYTE*)record;
 	switch (file_type) {
@@ -865,14 +865,14 @@ void FandFile::SetDeletedFlag(void* record)
 	}
 }
 
-void FandFile::ClearXFUpdLock()
+void Fand0File::ClearXFUpdLock()
 {
 	if (XF != nullptr) {
 		XF->ClearUpdLock();
 	}
 }
 
-int FandFile::XFNotValid()
+int Fand0File::XFNotValid()
 {
 	if (XF == nullptr) {
 		return 0;
@@ -882,7 +882,7 @@ int FandFile::XFNotValid()
 	}
 }
 
-int FandFile::CreateIndexFile()
+int Fand0File::CreateIndexFile()
 {
 	Logging* log = Logging::getInstance();
 
@@ -933,7 +933,7 @@ int FandFile::CreateIndexFile()
 	return 0;
 }
 
-int FandFile::TestXFExist()
+int Fand0File::TestXFExist()
 {
 	if ((XF != nullptr) && XF->NotValid) {
 		if (XF->NoCreate) {
@@ -949,12 +949,12 @@ int FandFile::TestXFExist()
 	return 0;
 }
 
-FileD* FandFile::GetFileD()
+FileD* Fand0File::GetFileD()
 {
 	return _parent;
 }
 
-bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
+bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 {
 	int R = 0;
 	XString x;
@@ -1005,7 +1005,7 @@ bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 	return bResult;
 }
 
-int FandFile::XNRecs(std::vector<XKey*>& K)
+int Fand0File::XNRecs(std::vector<XKey*>& K)
 {
 	if (file_type == FileType::INDEX && !K.empty()) {
 		TestXFExist();
@@ -1016,7 +1016,7 @@ int FandFile::XNRecs(std::vector<XKey*>& K)
 	}
 }
 
-void FandFile::TryInsertAllIndexes(int RecNr, void* record)
+void Fand0File::TryInsertAllIndexes(int RecNr, void* record)
 {
 	TestXFExist();
 	XKey* lastK = nullptr;
@@ -1046,7 +1046,7 @@ label1:
 	}
 }
 
-void FandFile::DeleteAllIndexes(int RecNr, void* record)
+void Fand0File::DeleteAllIndexes(int RecNr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
@@ -1056,7 +1056,7 @@ void FandFile::DeleteAllIndexes(int RecNr, void* record)
 	}
 }
 
-void FandFile::DeleteXRec(int RecNr, bool DelT, void* record)
+void Fand0File::DeleteXRec(int RecNr, bool DelT, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
@@ -1070,7 +1070,7 @@ void FandFile::DeleteXRec(int RecNr, bool DelT, void* record)
 	XF->NRecs--;
 }
 
-void FandFile::OverWrXRec(int RecNr, void* P2, void* P, void* record)
+void Fand0File::OverWrXRec(int RecNr, void* P2, void* P, void* record)
 {
 	XString x, x2;
 	record = P2;
@@ -1097,7 +1097,7 @@ void FandFile::OverWrXRec(int RecNr, void* P2, void* P, void* record)
 	_parent->WriteRec(RecNr, record);
 }
 
-void FandFile::GenerateNew000File(XScan* x, void* record)
+void Fand0File::GenerateNew000File(XScan* x, void* record)
 {
 	// vytvorime si novy buffer pro data,
 	// ten pak zapiseme do souboru naprimo (bez cache)
@@ -1128,7 +1128,7 @@ void FandFile::GenerateNew000File(XScan* x, void* record)
 	delete[] buffer; buffer = nullptr;
 }
 
-void FandFile::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
+void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 {
 	BYTE* record = _parent->GetRecSpace();
 	std::vector<XKey*> xw_keys;
@@ -1139,7 +1139,7 @@ void FandFile::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 	delete[] record; record = nullptr;
 }
 
-void FandFile::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ)
+void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ)
 {
 	unsigned short n = 0;
 	XWKey* k2 = new XWKey(_parent);
@@ -1189,7 +1189,7 @@ void FandFile::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ)
 	Scan->SubstWIndex(k2);
 }
 
-void FandFile::SortAndSubst(std::vector<KeyFldD*>& SK)
+void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 {
 	BYTE* record = _parent->GetRecSpace();
 
@@ -1212,7 +1212,7 @@ void FandFile::SortAndSubst(std::vector<KeyFldD*>& SK)
 	delete[] record; record = nullptr;
 }
 
-void FandFile::CopyIndex(XWKey* K, XKey* FromK)
+void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
 {
 	BYTE* record = _parent->GetRecSpace();
 
@@ -1227,7 +1227,7 @@ void FandFile::CopyIndex(XWKey* K, XKey* FromK)
 	delete[] record; record = nullptr;
 }
 
-void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
+void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 {
 	//bool net;
 	int result = XFNotValid();
@@ -1291,7 +1291,7 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	}
 }
 
-void FandFile::CopyDuplF(FileD* TempFD, bool DelTF)
+void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 {
 	TempFD->FF->WrPrefixes();
 	SaveCache(0, Handle);
@@ -1316,7 +1316,7 @@ void FandFile::CopyDuplF(FileD* TempFD, bool DelTF)
 	}
 }
 
-void FandFile::IndexFileProc(bool Compress)
+void Fand0File::IndexFileProc(bool Compress)
 {
 	LockMode md = _parent->NewLockMode(ExclMode);
 
@@ -1352,7 +1352,7 @@ void FandFile::IndexFileProc(bool Compress)
 /// \param srcT00File source T file - should be locked in RdMode
 /// \param srcT00Pos position of T in source T file
 /// \return position of T in destination T file
-int FandFile::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos)
+int Fand0File::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos)
 {
 	WORD l = 0;
 	int pos = 0;
@@ -1482,7 +1482,7 @@ int FandFile::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos
 	return result;
 }
 
-void FandFile::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
+void Fand0File::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 {
 	CFile = file_d;
 
@@ -1542,7 +1542,7 @@ label4:
 }
 
 
-double FandFile::DBF_RforD(FieldDescr* field_d, uint8_t* source)
+double Fand0File::DBF_RforD(FieldDescr* field_d, uint8_t* source)
 {
 	char* ptr = (char*)source;
 	short err;
@@ -1570,7 +1570,7 @@ double FandFile::DBF_RforD(FieldDescr* field_d, uint8_t* source)
 	return r;
 }
 
-bool FandFile::is_null_value(FieldDescr* field_d, uint8_t* record)
+bool Fand0File::is_null_value(FieldDescr* field_d, uint8_t* record)
 {
 	if (field_d->field_type == FieldType::FIXED) {
 		if (field_d->NBytes == 1 && record[0] == 0x80) {
@@ -1597,7 +1597,7 @@ bool FandFile::is_null_value(FieldDescr* field_d, uint8_t* record)
 	return true;
 }
 
-std::string FandFile::_extToT(const std::string& input_path)
+std::string Fand0File::_extToT(const std::string& input_path)
 {
 	std::string dir, name, ext;
 	FSplit(input_path, dir, name, ext);
@@ -1620,7 +1620,7 @@ std::string FandFile::_extToT(const std::string& input_path)
 	return dir + name + ext;
 }
 
-std::string FandFile::_extToX(const std::string& dir, const std::string& name, std::string ext)
+std::string Fand0File::_extToX(const std::string& dir, const std::string& name, std::string ext)
 {
 	ext[1] = 'X';
 	return dir + name + ext;
