@@ -89,10 +89,10 @@ int CopyTFFromGetTxt(FileD* file_d, FandTFile* TF, FrmlElem16* Z, void* record)
 		else {
 			TF->FreePart += l + 2;
 			rest = l + 4 - rest;
-			WriteCache(TF, TF->NotCached(), TF->FreePart, 2, &rest);
+			TF->WriteData(TF->FreePart, 2, &rest); //WriteCache(TF, TF->NotCached(), TF->FreePart, 2, &rest);
 		}
-		WriteCache(TF, TF->NotCached(), pos, 2, &l);
-		WriteCache(TF, TF->NotCached(), pos + 2, l, X);
+		TF->WriteData(pos, 2, &l); //WriteCache(TF, TF->NotCached(), pos, 2, &l);
+		TF->WriteData(pos + 2, l, X); //WriteCache(TF, TF->NotCached(), pos + 2, l, X);
 		result = pos;
 		goto label4;
 	}
@@ -120,14 +120,14 @@ label3:
 		i = 0;
 		nxtpos = TF->NewPage(false);
 		*(int*)&X[MPageSize - 4] = nxtpos;
-		WriteCache(TF, TF->NotCached(), pos, MPageSize, X);
+		TF->WriteData(pos, MPageSize, X); //WriteCache(TF, TF->NotCached(), pos, MPageSize, X);
 		pos = nxtpos;
 		l -= n;
 		if (continued && (l == 0)) goto label1;
 		goto label3;
 	}
 	ReadH(h, l, &X[i]);
-	WriteCache(TF, TF->NotCached(), pos, MPageSize, X);
+	TF->WriteData(pos, MPageSize, X); //WriteCache(TF, TF->NotCached(), pos, MPageSize, X);
 label4:
 	if (!TF->IsWork) file_d->OldLockMode(md);
 	CloseH(&h);

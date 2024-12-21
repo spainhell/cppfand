@@ -117,6 +117,9 @@
     <ClInclude Include="DBaseField.h">
       <Filter>Header Files\DbfFiles</Filter>
     </ClInclude>
+    <ClInclude Include="FandFile.h">
+      <Filter>Header Files\FandFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cache.cpp">
@@ -202,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="DBaseField.cpp">
       <Filter>Source Files\DbfFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="FandFile.cpp">
+      <Filter>Source Files\FandFiles</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -78,16 +78,6 @@ void WriteH(HANDLE handle, size_t length, void* buffer);
 void CloseH(HANDLE* handle);
 void CloseClearH(HANDLE* h);
 
-void ReadCache(Fand0File* fand_file, bool not_cached, size_t position, size_t count, void* buf);
-void ReadCache(FandXFile* fand_Xfile, bool not_cached, size_t position, size_t count, void* buf);
-void ReadCache(FandTFile* fand_Tfile, bool not_cached, size_t position, size_t count, void* buf);
-void ReadCache(XWFile* xw_file, bool not_cached, size_t position, size_t count, void* buf);
-
-void WriteCache(Fand0File* fand_file, bool not_cached, size_t position, size_t count, void* buf);
-void WriteCache(FandXFile* fand_Xfile, bool not_cached, size_t position, size_t count, void* buf);
-void WriteCache(FandTFile* fand_Tfile, bool not_cached, size_t position, size_t count, void* buf);
-void WriteCache(XWFile* xw_file, bool not_cached, size_t position, size_t count, void* buf);
-
 void MyDeleteFile(const std::string& path);
 void RenameFile56(const std::string& OldPath, const std::string& NewPath, bool Msg);
 std::string MyFExpand(std::string Nm, std::string EnvName);

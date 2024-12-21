@@ -1,16 +1,16 @@
 #pragma once
+#include "FandFile.h"
 #include "XPage.h"
 #include "XXPage.h"
 
-typedef void* HANDLE;
+
 class Fand0File;
 
-class XWFile
+class XWFile : public FandFile
 {
 public:
 	XWFile(Fand0File* parent);
 	unsigned short UpdLockCnt = 0;
-	HANDLE Handle = nullptr;
 	int FreeRoot = 0;
 	int MaxPage = 0;
 	void Err(unsigned short N);

@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+
+#include "FandFile.h"
 #include "../Common/FileEnums.h"
 #include "../Common/LongStr.h"
 
@@ -11,7 +13,7 @@ const unsigned short MPageSize = 512;
 const unsigned char XPageShft = 10;
 const unsigned char MPageShft = 9;
 
-class FandTFile
+class FandTFile : public FandFile
 {
 public:
 	FandTFile(Fand0File* parent);
@@ -19,7 +21,6 @@ public:
 	FandTFile(const FandTFile& orig, Fand0File* parent);
 	~FandTFile();
 
-	HANDLE Handle = nullptr;
 	int FreePart = 0;
 	bool Reserved = false, CompileProc = false, CompileAll = false;
 	unsigned short IRec = 0;

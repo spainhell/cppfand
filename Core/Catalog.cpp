@@ -128,23 +128,23 @@ bool Catalog::OldToNewCat(int& FilSz)
 {
 	struct stX { int NRecs; WORD  RecLen; } x;
 	int off, offNew;
-	BYTE a[91]; // budeme cislovat od 1, jako v Pascalu (a:array[1..90] of byte;)
+	uint8_t a[91]; // budeme cislovat od 1, jako v Pascalu (a:array[1..90] of byte;)
 
 	auto result = false;
 	bool cached = cat_file_->FF->NotCached();
 	if (cat_file_->FF->file_type != FileType::CAT) return result;
-	ReadCache(cat_file_->FF, cached, 0, 6, &x);
+	cat_file_->FF->ReadData(0, 6, &x); //ReadCache(cat_file_->FF, cached, 0, 6, &x);
 	if (x.RecLen != 106) return result;
 	x.RecLen = 107;
-	WriteCache(cat_file_->FF, cached, 0, 6, &x);
+	cat_file_->FF->WriteData(0, 6, &x); //WriteCache(cat_file_->FF, cached, 0, 6, &x);
 	for (int i = x.NRecs; i >= 1; i--) {
 		off = 6 + (i - 1) * 106;
 		offNew = off + (i - 1);
-		ReadCache(cat_file_->FF, cached, off + 16, 90, a);
-		WriteCache(cat_file_->FF, cached, offNew + 17, 90, a);
+		cat_file_->FF->ReadData(off + 16, 90, a); //ReadCache(cat_file_->FF, cached, off + 16, 90, a);
+		cat_file_->FF->WriteData(offNew + 17, 90, a); //WriteCache(cat_file_->FF, cached, offNew + 17, 90, a);
 		a[17] = 0;
-		ReadCache(cat_file_->FF, cached, off, 16, a);
-		WriteCache(cat_file_->FF, cached, offNew, 17, a);
+		cat_file_->FF->ReadData(off, 16, a); //ReadCache(cat_file_->FF, cached, off, 16, a);
+		cat_file_->FF->WriteData(offNew, 17, a); //WriteCache(cat_file_->FF, cached, offNew, 17, a);
 	}
 	cat_file_->FF->NRecs = x.NRecs;
 	FilSz = x.NRecs * 107 + 6;
