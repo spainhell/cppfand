@@ -1706,6 +1706,10 @@ std::string Report::NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 		TD.Ln = Ln;
 		//if (Y.TD == nullptr) Y.TD = TD;
 		//else ChainLast(Y.TD, TD);
+		if (Y.TD.size() > 0) {
+			printf("");
+		}
+
 		Y.TD.push_back(TD);
 
 		if (Ln > Y.TLn) Y.TLn = Ln;
@@ -1728,42 +1732,56 @@ void Report::CheckPgeLimit(std::string& text)
 
 void Report::PendingTT(std::string& text)
 {
-	WORD lll = LineLenLst;
-	WORD Col = LineLenLst + 1;
+	size_t lll = LineLenLst;
+	size_t Col = LineLenLst + 1;
 
-	if (Y.TLn > 0) {
-		std::vector<std::string>::iterator it0 = Y.TD[0].SL.begin();
+	for (size_t i = 0; i < Y.TLn; i++) {
+		NewLine(text);
+		CheckPgeLimit(text);
+		Col = 1;
 
-		while (Y.TLn > 0) {
-			NewLine(text);
-			CheckPgeLimit(text);
-			Col = 1;
-
-			//TTD* TD = Y.TD;
-			//while (TD != nullptr) {
-			for (TTD& TD : Y.TD) {
-				if (TD.Ln > 0) {
-					WriteNBlks(text, TD.Col - Col);
-					text += *it0;
-					Col = TD.Col + GetLengthOfStyledString(*it0);
-					TD.Ln--;
-					++it0;
-				}
-				//TD = TD->pChain;
+		for (TTD& TD : Y.TD) {
+			if (TD.Ln > 0) {
+				WriteNBlks(text, TD.Col - Col);
+				text += Y.TD[0].SL.at(i);
+				Col = TD.Col + GetLengthOfStyledString(Y.TD[0].SL.at(i));
+				TD.Ln--;
+				//i++;
 			}
-
-			Y.TLn--;
-			LineLenLst = lll;
 		}
+
+		//Y.TLn--;
+		LineLenLst = lll;
 	}
+
+	//if (Y.TLn > 0) {
+	//	std::vector<std::string>::iterator it0 = Y.TD[0].SL.begin();
+	//	size_t j = 0;
+
+	//	while (Y.TLn > 0) {
+	//		NewLine(text);
+	//		CheckPgeLimit(text);
+	//		Col = 1;
+
+	//		for (TTD& TD : Y.TD) {
+	//			if (TD.Ln > 0) {
+	//				WriteNBlks(text, TD.Col - Col);
+	//				text += Y.TD[0].SL.at(j);
+	//				Col = TD.Col + GetLengthOfStyledString(Y.TD[0].SL.at(j));
+	//				TD.Ln--;
+	//				j++;
+	//			}
+	//		}
+
+	//		Y.TLn--;
+	//		LineLenLst = lll;
+	//	}
+	//}
 
 	WriteNBlks(text, LineLenLst + 1 - Col);
 
-	//if (Y.TD != nullptr) {
-	//	ReleaseStore(&Store2Ptr);
 	Y.TD.clear();
 	Y.TLn = 0;
-	//}
 }
 
 void Report::PrintBlock(std::vector<BlkD*>& block, std::string& text, std::vector<BlkD*>& dh)

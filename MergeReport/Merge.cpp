@@ -963,8 +963,10 @@ void Merge::CloseInpOutp()
 
 	for (short i = 1; i <= MaxIi; i++) {
 		IDA[i]->Scan->Close();
-		f->ClearRecSpace(IDA[i]->ForwRecPtr);
-		f->OldLockMode(IDA[i]->Md);
+		if (f != nullptr) {
+			f->ClearRecSpace(IDA[i]->ForwRecPtr);
+			f->OldLockMode(IDA[i]->Md);
+		}
 	}
 }
 
