@@ -23,10 +23,13 @@
 
 Report::Report()
 {
+	Compiler::ProcStack.push_front(LVBD);
 }
 
 Report::~Report()
 {
+	LVBD = Compiler::ProcStack.front();
+	Compiler::ProcStack.pop_front();
 }
 
 void Report::Read(RprtOpt* RO)
@@ -335,7 +338,7 @@ void Report::Run(RprtOpt* RO)
 	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru
 	//MarkStore(Store2Ptr);
 	ex = true;
-	Compiler::ProcStack.push_front(&LVBD); //PushProcStk();
+	//Compiler::ProcStack.push_front(&LVBD); //PushProcStk();
 	//NewExit(Ovr(), er);
 	//goto label3;
 	OpenInp();
@@ -407,7 +410,7 @@ label1:
 		Rprt.Close(ReportString.c_str());
 		// if (isLPT1) ClosePrinter(0);
 		CloseInp();
-		LVBD = *Compiler::ProcStack.front(); Compiler::ProcStack.pop_front(); //PopProcStk();
+		//LVBD = *Compiler::ProcStack.front(); Compiler::ProcStack.pop_front(); //PopProcStk();
 		if (ex) {
 			RunMsgOff();
 			if (!WasLPTCancel) GoExit();

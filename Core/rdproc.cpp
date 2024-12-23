@@ -3078,68 +3078,65 @@ void ReadDeclChpt()
 
 FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 {
-	stSaveState* p = nullptr;
-	void* cr = nullptr;
-	char fTyp;
-	WORD cpos = 0;
-	//ExitRecord er = ExitRecord();
-	//ProcStkD* oldbp;
+	FileD* cf = CFile;
+	CFile = file_d;
+	void* cr = CRecPtr;
+	CRecPtr = record;
 
 	LocVarBlkD oldLVBD = LVBD;
-	//oldbp = MyBP;
-	//SetMyBP(ProcMyBP);
-	LVBD = *Compiler::ProcStack.front();
-	FrmlElem* z = nullptr;
-	FileD* cf = CFile;
-	cr = CRecPtr;
-	std::string s = RunString(CFile, X->EvalP1, CRecPtr);
+	LVBD = Compiler::ProcStack.front();
+
+	FrmlElem* result = nullptr;
+
+	std::string s = RunString(file_d, X->EvalP1, record);
 	if (s.empty()) {
 		LastExitCode = 0;
 	}
 	else {
+		std::unique_ptr<Compiler> local_compiler = std::make_unique<Compiler>();
 		LastExitCode = 1;
-		p = g_compiler->SaveCompState();
-		ResetCompilePars();
-		g_compiler->rdFldNameType = FieldNameType::P;
-		//ptrRdFldNameFrml = RdFldNameFrmlP;
+		local_compiler->rdFldNameType = FieldNameType::P;
 		RdFunction = RdFunctionP;
 
 		if (X->EvalFD == nullptr) {
 			FileVarsAllowed = false;
 		}
 		else {
-			CFile = X->EvalFD;
+			local_compiler->processing_F = X->EvalFD;
 			FileVarsAllowed = true;
 		}
 
 		try {
-			g_compiler->SetInpStdStr(s, false);
-			g_compiler->RdLex();
-			z = g_compiler->RdFrml(fTyp, nullptr);
-			if ((fTyp != X->EvalTyp) || (Lexem != 0x1A)) z = nullptr;
-			else LastExitCode = 0;
+			char fTyp = '\0';
+			local_compiler->SetInpStdStr(s, false);
+			local_compiler->RdLex();
+			result = local_compiler->RdFrml(fTyp, nullptr);
+			if ((fTyp != X->EvalTyp) || (Lexem != 0x1A)) {
+				result = nullptr;
+			}
+			else {
+				LastExitCode = 0;
+			}
 		}
 		catch (const std::exception& e) {
 			// std::string err_msg = "GetEvalFrml exception: " + std::string(e.what());
 			// throw std::exception(err_msg.c_str());
 		}
 
-		cpos = CurrPos;
+		WORD cpos = CurrPos;
 
-		g_compiler->RestoreCompState(p);
 		if (LastExitCode != 0) {
 			LastTxtPos = cpos;
 			if (X->EvalTyp == 'B') {
-				z = new FrmlElemBool(_const, 0, false);
+				result = new FrmlElemBool(_const, 0, false);
 				// z->B = false;
 			}
 		}
 	}
 
-	auto result = z;
 	CFile = cf; CRecPtr = cr;
-	//SetMyBP(oldbp);
 	LVBD = oldLVBD; /*for cond before cycle called when PushProcStk is !ready*/
+
 	return result;
 }
 

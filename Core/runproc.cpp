@@ -237,6 +237,7 @@ void MergeProc(Instr_merge_display* PD)
 {
 	void* p = nullptr; void* p2 = nullptr;
 	MarkBoth(p, p2);
+
 	g_compiler->SetInpTT(&PD->Pos, true);
 
 	const std::unique_ptr merge = std::make_unique<Merge>();
@@ -244,6 +245,7 @@ void MergeProc(Instr_merge_display* PD)
 	merge->Run();
 
 	SaveFiles();
+
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
 }
@@ -1673,15 +1675,16 @@ void CallProcedure(Instr_proc* PD)
 #endif
 
 	// save LVBD
-	LocVarBlkD oldLVDB = LVBD;
-	Compiler::ProcStack.push_front(&oldLVDB);
+	//LocVarBlkD oldLVDB = LVBD;
+	Compiler::ProcStack.push_front(LVBD);
 
 	ReadProcHead("");
 	PD->variables = LVBD;
 	WORD params_count = PD->variables.NParam;
 	LocVar* lvroot = PD->variables.GetRoot();
 	//oldbp = MyBP;
-	//PushProcStk();
+	//Compiler::ProcStack.push_front(&LVBD); //PushProcStk();
+
 	if ((params_count != PD->N) && !((params_count == PD->N - 1) && PD->ExPar)) {
 		CurrPos = 0;
 		g_compiler->Error(119);
@@ -1830,9 +1833,10 @@ void CallProcedure(Instr_proc* PD)
 	}
 	//PopProcStk();
 	//ProcMyBP = (ProcStkD*)oldprocbp;
+
+	LVBD = Compiler::ProcStack.front();
 	Compiler::ProcStack.pop_front();
 
-	LVBD = oldLVDB;
 	LinkDRoot = ld;
 
 	//CFile = lstFD->pChain;

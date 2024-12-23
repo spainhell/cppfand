@@ -37,7 +37,7 @@ BYTE ForwChar, ExpChar, Lexem;
 pstring LexWord;
 
 // init Compiler static variable
-std::deque<LocVarBlkD*> Compiler::ProcStack;
+std::deque<LocVarBlkD> Compiler::ProcStack;
 
 Compiler::Compiler()
 {
@@ -765,7 +765,7 @@ stSaveState* Compiler::SaveCompState()
 	state->ForwChar = ForwChar;
 	state->ExpChar = ExpChar;
 	state->Lexem = Lexem;
-	state->LexWord = LexWord;
+	state->lex_word = LexWord;
 	state->SpecFDNameAllowed = SpecFDNameAllowed;
 	state->IdxLocVarAllowed = IdxLocVarAllowed;
 	state->FDLocVarAllowed = FDLocVarAllowed;
@@ -781,6 +781,7 @@ stSaveState* Compiler::SaveCompState()
 	state->FileVarsAllowed = FileVarsAllowed;
 	state->RdFldNameType = rdFldNameType;
 	state->RdFunction = RdFunction;
+	state->processed_file = processing_F;
 	return state;
 }
 
@@ -790,7 +791,7 @@ void Compiler::RestoreCompState(stSaveState* p)
 	ForwChar = p->ForwChar;
 	ExpChar = p->ExpChar;
 	Lexem = p->Lexem;
-	LexWord = p->LexWord;
+	LexWord = p->lex_word;
 	SpecFDNameAllowed = p->SpecFDNameAllowed;
 	IdxLocVarAllowed = p->IdxLocVarAllowed;
 	FDLocVarAllowed = p->FDLocVarAllowed;
@@ -806,6 +807,7 @@ void Compiler::RestoreCompState(stSaveState* p)
 	FileVarsAllowed = p->FileVarsAllowed;
 	rdFldNameType = p->RdFldNameType;
 	RdFunction = p->RdFunction;
+	processing_F = p->processed_file;
 	delete p;
 }
 

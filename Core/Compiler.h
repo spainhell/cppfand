@@ -15,7 +15,7 @@ struct stSaveState
 {
 	BYTE CurrChar = 0;
 	BYTE ForwChar = 0; BYTE ExpChar = 0; BYTE Lexem = 0;
-	pstring LexWord;
+	std::string lex_word;
 	bool SpecFDNameAllowed = false, IdxLocVarAllowed = false, FDLocVarAllowed = false, IsCompileErr = false;
 	std::deque<CompInpD> PrevCompInp;
 	BYTE* InpArrPtr = nullptr; RdbPos InpRdbPos;
@@ -27,6 +27,7 @@ struct stSaveState
 	//FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*) = nullptr; // ukazatel na funkci
 	FieldNameType RdFldNameType = FieldNameType::none;
 	FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
+	FileD* processed_file = nullptr;
 };
 
 class Compiler {
@@ -114,7 +115,7 @@ public:
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);
 
 	FileD* processing_F = nullptr; // actually compiled file
-	static std::deque<LocVarBlkD*> ProcStack;
+	static std::deque<LocVarBlkD> ProcStack;
 
 private:
 	double ValofS(pstring& S);

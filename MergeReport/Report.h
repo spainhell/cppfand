@@ -33,20 +33,24 @@ public:
 	void ChainSumEl() override;
 
 private:
-	WORD PrintDH;
+	WORD PrintDH = 0;
 	YRec Y;
-	bool FrstBlk, NoFF, WasFF2, SetPage, WasOutput;
-	short LineLenLst, PageNo, PgeSize;
+	bool FrstBlk = false;
+	bool NoFF = false;
+	bool WasFF2 = false;
+	bool SetPage = false;
+	bool WasOutput = false;
+	short LineLenLst = 0, PageNo = 0, PgeSize = 0;
 	//void* Store2Ptr;
-	int RecCount;
-	WORD NEof;
-	InpD* MinID;
-	bool FirstLines, WasDot;
-	int NLinesOutp;
-	BlkD* CBlk;
-	std::vector<FrmlElemSum*>* CZeroLst;
-	LvDescr* LvToRd;           /*all used while translating frml*/
-	BlkD* CBlkSave;
+	int RecCount = 0;
+	WORD NEof = 0;
+	InpD* MinID = nullptr;
+	bool FirstLines = false, WasDot = false;
+	int NLinesOutp = 0;
+	BlkD* CBlk = nullptr;
+	std::vector<FrmlElemSum*>* CZeroLst = nullptr;
+	LvDescr* LvToRd = nullptr;           /*all used while translating frml*/
+	BlkD* CBlkSave = nullptr;
 
 	bool FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF);
 	FrmlElem* FindIiandFldFrml(FileD** FD, char& FTyp);
