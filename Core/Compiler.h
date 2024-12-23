@@ -10,6 +10,7 @@ extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 extern Compiler* g_compiler; // global g_compiler instance
 
 enum class FieldNameType { none, F, P, T };
+enum class ReadFuncType { none, P };
 
 struct stSaveState
 {
@@ -26,7 +27,7 @@ struct stSaveState
 	bool FrstSumVar = false, FileVarsAllowed = false;
 	//FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*) = nullptr; // ukazatel na funkci
 	FieldNameType RdFldNameType = FieldNameType::none;
-	FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
+	ReadFuncType RdFuncType = ReadFuncType::none;
 	FileD* processed_file = nullptr;
 };
 
@@ -112,6 +113,7 @@ public:
 	void GoCompileErr(int i_rec, WORD n);
 
 	FieldNameType rdFldNameType = FieldNameType::none;
+	ReadFuncType rdFuncType = ReadFuncType::none;
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);
 
 	FileD* processing_F = nullptr; // actually compiled file
@@ -141,4 +143,7 @@ private:
 	LinkD* FindOwnLD(FileD* FD, std::string RoleName);
 	void SetLocVars(FrmlElem* Z, char typ, bool return_param, std::vector<LocVar*>& newVars);
 	void RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vector<LocVar*> newVars);
+
+	std::string input_string_;
+	size_t input_pos_ = 0;
 };

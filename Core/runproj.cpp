@@ -926,8 +926,8 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 					lstFDindex = CRdb->v_files.size() - 1;
 					std::deque<LinkD*> ld = LinkDRoot;
 					g_compiler->SetInpTT(&RP, true);
-					ReadProcHead("");
-					ReadProcBody();
+					ReadProcHead(g_compiler, "");
+					ReadProcBody(g_compiler);
 					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
 					//lstFD->pChain = nullptr;
 					LinkDRoot = ld;
@@ -1550,8 +1550,8 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					}
 					std::deque<LinkD*> ld = LinkDRoot;
 					g_compiler->SetInpTTPos(rdb_file, Txt, Encryp);
-					ReadProcHead(Name);
-					ReadProcBody();
+					ReadProcHead(g_compiler, Name);
+					ReadProcBody(g_compiler);
 					//lstFD->pChain = nullptr;
 					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
 					LinkDRoot = ld;
@@ -1584,7 +1584,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				case 'D': {
 					ResetCompilePars();
 					g_compiler->SetInpTTPos(rdb_file, Txt, Encryp);
-					ReadDeclChpt();
+					ReadDeclChpt(g_compiler);
 					MarkStore(p1);
 					break;
 				}

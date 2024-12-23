@@ -1669,7 +1669,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("h:=TxtHead(h);") != std::string::npos) {
+	if (srcCode.find("var d,c:string; begin proc(Clr);") != std::string::npos) {
 		printf("");
 	}
 #endif
@@ -1678,7 +1678,7 @@ void CallProcedure(Instr_proc* PD)
 	//LocVarBlkD oldLVDB = LVBD;
 	Compiler::ProcStack.push_front(LVBD);
 
-	ReadProcHead("");
+	ReadProcHead(g_compiler, "");
 	PD->variables = LVBD;
 	WORD params_count = PD->variables.NParam;
 	LocVar* lvroot = PD->variables.GetRoot();
@@ -1764,7 +1764,7 @@ void CallProcedure(Instr_proc* PD)
 	}
 
 	// ****** READ PROCEDURE BODY ****** //
-	std::vector<Instr*> instructions = ReadProcBody();
+	std::vector<Instr*> instructions = ReadProcBody(g_compiler);
 	// ********************************* //
 
 	FDLocVarAllowed = false;

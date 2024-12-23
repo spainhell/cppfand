@@ -589,7 +589,7 @@ FrmlElem* Compiler::RdFldNameFrml(char& FTyp, MergeReportBase* caller)
 		result = RdFldNameFrmlF(FTyp, caller);
 		break;
 	case FieldNameType::P:
-		result = RdFldNameFrmlP(FTyp, caller);
+		result = RdFldNameFrmlP(this, FTyp, caller);
 		break;
 	case FieldNameType::T:
 		result = RdFldNameFrmlT(FTyp, caller);
@@ -780,7 +780,7 @@ stSaveState* Compiler::SaveCompState()
 	state->FrstSumVar = FrstSumVar;
 	state->FileVarsAllowed = FileVarsAllowed;
 	state->RdFldNameType = rdFldNameType;
-	state->RdFunction = RdFunction;
+	state->RdFuncType = rdFuncType;
 	state->processed_file = processing_F;
 	return state;
 }
@@ -806,7 +806,7 @@ void Compiler::RestoreCompState(stSaveState* p)
 	FrstSumVar = p->FrstSumVar;
 	FileVarsAllowed = p->FileVarsAllowed;
 	rdFldNameType = p->RdFldNameType;
-	RdFunction = p->RdFunction;
+	rdFuncType = p->RdFuncType;
 	processing_F = p->processed_file;
 	delete p;
 }
@@ -2228,20 +2228,24 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				TestString(Typ);
 				Accept(')');
 			}
-			else if (RdFunction != nullptr) {
-				Z = RdFunction(FTyp);
-			}
 			else {
-				Error(75);
+				switch (rdFuncType) {
+				case ReadFuncType::P:
+					Z = RdFunctionP(this, FTyp);
+					break;
+				case ReadFuncType::none:
+					Error(75);
+					break;
+				}
 			}
 		}
 		else {
-			if (g_compiler->rdFldNameType == FieldNameType::none && caller == nullptr) {
+			if (rdFldNameType == FieldNameType::none && caller == nullptr) {
 				Error(110);
 			}
 			else {
 				if (rdFldNameType != FieldNameType::none) {
-					Z = g_compiler->RdFldNameFrml(FTyp, caller); // volani ukazatele na funkci
+					Z = RdFldNameFrml(FTyp, caller); // volani ukazatele na funkci
 				}
 				else {
 					Z = caller->RdFldNameFrml(FTyp); // volani ukazatele na funkci
@@ -2736,6 +2740,6 @@ FrmlElem* Compiler::RdFldNameFrmlF(char& FTyp, MergeReportBase* caller)
 
 FrmlElem* Compiler::RdFldNameFrmlT(char& FTyp, MergeReportBase* caller)
 {
-	g_compiler->Error(8);
+	Error(8);
 	return nullptr;
 }
