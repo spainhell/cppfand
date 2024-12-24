@@ -59,7 +59,7 @@ private:
 	void FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix);
 	void Rd_Oi();
 	LvDescr* MakeOldMLvD();
-	void RdAutoSortSK(InpD* ID, std::unique_ptr<Compiler>& compiler);
+	void RdAutoSortSK(InpD* ID);
 	LvDescr* NewLvS(LvDescr* L, InpD* ID);
 	void RdAssignBlk(std::vector<AssignD*>* ARoot);
 	void RdBeginEnd(std::vector<AssignD*>* ARoot);

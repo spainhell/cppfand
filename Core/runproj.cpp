@@ -894,8 +894,8 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 				break;
 			}
 			case 'M': {
-				gc->SetInpTT(&RP, true);
 				const std::unique_ptr merge = std::make_unique<Merge>();
+				merge->SetInput(&RP, true);
 				merge->Read();
 				if (CC == __CTRL_F9) {
 					merge->Run();
@@ -903,8 +903,8 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 				break;
 			}
 			case 'R': {
-				gc->SetInpTT(&RP, true);
 				const std::unique_ptr report = std::make_unique<Report>();
+				report->SetInput(&RP, true);
 				report->Read(nullptr);
 				if (CC == __CTRL_F9) {
 					report->Run(nullptr);
@@ -1214,10 +1214,10 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 	try {
 		std::string s = "#I1_";
 		s += fd_old->Name + " #O1_@";
-		gc->SetInpStr(s);
 
 		SpecFDNameAllowed = true;
 		const std::unique_ptr merge = std::make_unique<Merge>();
+		merge->SetInput(s);
 		merge->Read();
 		SpecFDNameAllowed = false;
 		merge->Run();
@@ -1512,8 +1512,8 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					break;
 				}
 				case 'M': {
-					gc->SetInpTTPos(rdb_file, Txt, Encryp);
 					const std::unique_ptr merge = std::make_unique<Merge>();
+					merge->SetInput(rdb_file, Txt, Encryp);
 					merge->Read();
 					break;
 				}
@@ -1529,8 +1529,8 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 					}
 					else {
-						gc->SetInpTTPos(rdb_file, Txt, Encryp);
 						const std::unique_ptr report = std::make_unique<Report>();
+						report->SetInput(rdb_file, Txt, Encryp);
 						report->Read(nullptr);
 					}
 					break;
@@ -1574,7 +1574,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						gc->GoCompileErr(I, 623);
 					}
 					if (Txt != 0) {
-						ResetCompilePars();
+						gc->ResetCompilePars();
 						gc->SetInpTTPos(rdb_file, Txt, Encryp);
 						RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0));
 						MarkStore(p1);
@@ -1582,7 +1582,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					break;
 				}
 				case 'D': {
-					ResetCompilePars();
+					gc->ResetCompilePars();
 					gc->SetInpTTPos(rdb_file, Txt, Encryp);
 					ReadDeclChpt(gc);
 					MarkStore(p1);

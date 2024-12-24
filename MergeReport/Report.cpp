@@ -40,8 +40,8 @@ void Report::Read(RprtOpt* RO)
 	LvDescr* L = nullptr;
 	std::string s;
 
-	ResetCompilePars();
-	gc->RdLex();
+	base_compiler->ResetCompilePars();
+	base_compiler->RdLex();
 	CBlkSave = nullptr;
 	PgeSizeZ = nullptr;
 	PgeLimitZ = nullptr;
@@ -61,28 +61,28 @@ void Report::Read(RprtOpt* RO)
 	//	++FDL;
 	//}
 	ResetLVBD();
-	if (gc->IsKeyWord("VAR")) {
-		gc->RdLocDcl(&LVBD, false, false, 'R');
+	if (base_compiler->IsKeyWord("VAR")) {
+		base_compiler->RdLocDcl(&LVBD, false, false, 'R');
 	}
 
 	// process .dot commands
 	while (true) {
-		if (gc->Lexem == '.') {
-			gc->RdLex();
-			gc->TestIdentif();
-			if (gc->IsKeyWord("PAGESIZE")) {
-				gc->Accept(_assign);
-				PgeSizeZ = gc->RdRealFrml(this);
+		if (base_compiler->Lexem == '.') {
+			base_compiler->RdLex();
+			base_compiler->TestIdentif();
+			if (base_compiler->IsKeyWord("PAGESIZE")) {
+				base_compiler->Accept(_assign);
+				PgeSizeZ = base_compiler->RdRealFrml(this);
 			}
-			else if (gc->IsKeyWord("PAGELIMIT")) {
-				gc->Accept(_assign);
-				PgeLimitZ = gc->RdRealFrml(this);
+			else if (base_compiler->IsKeyWord("PAGELIMIT")) {
+				base_compiler->Accept(_assign);
+				PgeLimitZ = base_compiler->RdRealFrml(this);
 			}
 			else {
-				gc->Error(56);
+				base_compiler->Error(56);
 			}
-			if (gc->Lexem == ';') {
-				gc->RdLex();
+			if (base_compiler->Lexem == ';') {
+				base_compiler->RdLex();
 				continue;
 			}
 		}
@@ -91,20 +91,20 @@ void Report::Read(RprtOpt* RO)
 
 	SelQuest = false;
 	Ii = 0;
-	gc->TestLex('#');
+	base_compiler->TestLex('#');
 
 	do {
 		Ii++;
-		gc->ReadChar();
+		base_compiler->ReadChar();
 		bool err = true;
-		if (gc->CurrChar == 'I') {
-			gc->ReadChar();
-			if (isdigit(gc->CurrChar)) {
-				if (Ii != gc->CurrChar - '0') {
-					gc->Error(61);
+		if (base_compiler->CurrChar == 'I') {
+			base_compiler->ReadChar();
+			if (isdigit(base_compiler->CurrChar)) {
+				if (Ii != base_compiler->CurrChar - '0') {
+					base_compiler->Error(61);
 				}
-				gc->ReadChar();
-				if (gc->CurrChar == '_') {
+				base_compiler->ReadChar();
+				if (base_compiler->CurrChar == '_') {
 					err = false;
 				}
 			}
@@ -113,28 +113,28 @@ void Report::Read(RprtOpt* RO)
 			}
 		}
 		if (err) {
-			gc->Error(89);
+			base_compiler->Error(89);
 		}
 		else {
 			ID = new InpD();
 			IDA[Ii] = ID;
-			gc->RdLex();
-			FileD* FD = gc->RdFileName();
+			base_compiler->RdLex();
+			FileD* FD = base_compiler->RdFileName();
 
-			std::unique_ptr<Compiler> report_compiler = std::make_unique<Compiler>(FD);
-			report_compiler->rdFldNameType = FieldNameType::P;
+			base_compiler->processing_F = FD;
+			base_compiler->rdFldNameType = FieldNameType::P;
 
 			for (int16_t i = 1; i <= Ii - 1; i++) {
 				if (InpFD(i) == FD) {
-					report_compiler->OldError(26);
+					base_compiler->OldError(26);
 				}
 			}
 			if (FDL != RO->FDL.end()) {
 				FD = (*FDL)->FD;
-				report_compiler->processing_F = (*FDL)->FD;
+				base_compiler->processing_F = (*FDL)->FD;
 			}
 
-			CViewKey = report_compiler->RdViewKey(FD);
+			CViewKey = base_compiler->RdViewKey(FD);
 
 			if (FDL != RO->FDL.end()) {
 				if ((*FDL)->ViewKey != nullptr) {
@@ -142,8 +142,8 @@ void Report::Read(RprtOpt* RO)
 				}
 			}
 
-			if (gc->Lexem == '!') {
-				report_compiler->RdLex();
+			if (base_compiler->Lexem == '!') {
+				base_compiler->RdLex();
 				ID->AutoSort = true;
 			}
 
@@ -151,20 +151,20 @@ void Report::Read(RprtOpt* RO)
 			ID->OpErr = _const;
 			ID->OpWarn = _const;
 			KI.clear();
-			ID->ForwRecPtr = report_compiler->processing_F->GetRecSpace();
-			FD->FF->RecPtr = report_compiler->processing_F->GetRecSpace();
+			ID->ForwRecPtr = base_compiler->processing_F->GetRecSpace();
+			FD->FF->RecPtr = base_compiler->processing_F->GetRecSpace();
 
-			if (gc->Lexem == '(') {
-				report_compiler->RdLex();
-				if ((Ii == 1) && (gc->Lexem == '?')) {
+			if (base_compiler->Lexem == '(') {
+				base_compiler->RdLex();
+				if ((Ii == 1) && (base_compiler->Lexem == '?')) {
 					SelQuest = true;
-					report_compiler->RdLex();
+					base_compiler->RdLex();
 				}
 				else {
-					gc->processing_F = report_compiler->processing_F;
-					ID->Bool = report_compiler->RdKeyInBool(KI, false, false, ID->SQLFilter, this);
+					base_compiler->processing_F = base_compiler->processing_F;
+					ID->Bool = base_compiler->RdKeyInBool(KI, false, false, ID->SQLFilter, this);
 				}
-				report_compiler->Accept(')');
+				base_compiler->Accept(')');
 			}
 
 			if ((FDL != RO->FDL.end())
@@ -186,13 +186,13 @@ void Report::Read(RprtOpt* RO)
 				ID->Scan->ResetLV((*FDL)->LVRecPtr);
 			}
 
-			if (!(gc->Lexem == ';' || gc->Lexem == '#' || gc->Lexem == 0x1A)) {
-				report_compiler->RdKFList(ID->MFld, FD);
+			if (!(base_compiler->Lexem == ';' || base_compiler->Lexem == '#' || base_compiler->Lexem == 0x1A)) {
+				base_compiler->RdKFList(ID->MFld, FD);
 			}
 
 			if (Ii > 1) {
 				if (IDA[Ii - 1]->MFld.empty()) {
-					if (!ID->MFld.empty()) report_compiler->OldError(22);
+					if (!ID->MFld.empty()) base_compiler->OldError(22);
 				}
 				else if (ID->MFld.empty()) {
 					CopyPrevMFlds();
@@ -202,15 +202,15 @@ void Report::Read(RprtOpt* RO)
 				}
 			}
 
-			RdAutoSortSK(ID, report_compiler);
-			report_compiler->TestLex('#');
+			RdAutoSortSK(ID);
+			base_compiler->TestLex('#');
 
 			if (FDL != RO->FDL.end()) {
 				++FDL;
 			}
 			// report_compiler destroys itself here
 		}
-	} while (gc->ForwChar == 'I');
+	} while (base_compiler->ForwChar == 'I');
 
 	MaxIi = Ii;
 	FrstLvM = MakeOldMLvD();
@@ -221,31 +221,31 @@ void Report::Read(RprtOpt* RO)
 	PFZeroLst.clear();
 
 	while (true) {
-		gc->ReadChar();
-		s = toupper(gc->CurrChar);
-		gc->ReadChar();
-		s += toupper(gc->CurrChar);
+		base_compiler->ReadChar();
+		s = toupper(base_compiler->CurrChar);
+		base_compiler->ReadChar();
+		s += toupper(base_compiler->CurrChar);
 		ChainSum = false;
 		//ptrRdFldNameFrml = nullptr; // RdFldNameFrml;
-		gc->rdFldNameType = FieldNameType::none;
+		base_compiler->rdFldNameType = FieldNameType::none;
 		WhatToRd = 'O';
 		if (s == "DE") { // detailni vystup
 			Rd_Oi();
-			gc->RdLex();
+			base_compiler->RdLex();
 			WhatToRd = 'i';
 			RdBlock(IDA[Oi]->FrstLvS->Ft);
 		}
 		else if (s == "RH") { // hlavicka sestavy
-			gc->RdLex();
+			base_compiler->RdLex();
 			RdBlock(RprtHd);
 		}
 		else if (s == "PH") { // hlavicka stranky
-			gc->RdLex();
+			base_compiler->RdLex();
 			RdBlock(PageHd);
 		}
 		else if (s == "DH") { // hlavicka detailu
 			Rd_Oi();
-			gc->RdLex();
+			base_compiler->RdLex();
 			WhatToRd = 'i';
 			RdBlock(IDA[Oi]->FrstLvS->Hd);
 		}
@@ -256,7 +256,7 @@ void Report::Read(RprtOpt* RO)
 		}
 		else if (s == "RF") { // paticka sestavy
 			ChainSum = true;
-			gc->RdLex();
+			base_compiler->RdLex();
 			LvToRd = LstLvM;
 			CZeroLst = &LvToRd->ZeroLst;
 			RdBlock(LvToRd->Ft);
@@ -270,17 +270,17 @@ void Report::Read(RprtOpt* RO)
 		}
 		else if (s == "PF") { // paticka stranky
 			ChainSum = true;
-			gc->RdLex();
+			base_compiler->RdLex();
 			LvToRd = LstLvM;
 			CZeroLst = &PFZeroLst;
 			RdBlock(PageFt);
 		}
 		else {
-			gc->Error(57);
+			base_compiler->Error(57);
 		}
 
-		if (gc->Lexem != 0x1A) {
-			gc->TestLex('#');
+		if (base_compiler->Lexem != 0x1A) {
+			base_compiler->TestLex('#');
 			continue;
 		}
 		break;
@@ -437,34 +437,34 @@ FrmlElem* Report::RdFldNameFrml(char& FTyp)
 	if ((FrmlSumEl != nullptr) && FrstSumVar && (CBlk != nullptr)) {
 		SumIi = 0; CBlkSave = CBlk; CBlk = nullptr;
 	}
-	if (gc->IsForwPoint()) {
+	if (base_compiler->IsForwPoint()) {
 		RdDirFilVar(FTyp, &result, WasIiPrefix);
 		return result;
 	}
-	if (!WasIiPrefix && gc->FindLocVar(&LVBD, &LV)) {
-		gc->RdLex();
+	if (!WasIiPrefix && base_compiler->FindLocVar(&LVBD, &LV)) {
+		base_compiler->RdLex();
 		TestNotSum();
 		result = new FrmlElemLocVar(_getlocvar, LV);
 		FTyp = LV->f_typ;
 		return result;
 	}
-	if (gc->IsKeyWord("COUNT")) {
+	if (base_compiler->IsKeyWord("COUNT")) {
 		TestNotSum();
 		SetIi_Report(WasIiPrefix);
 		result = new FrmlElemInp(_count, IDA[Ii]);
 		FTyp = 'R';
 		return result;
 	}
-	if (gc->IsKeyWord("GROUP")) {
+	if (base_compiler->IsKeyWord("GROUP")) {
 		TestNotSum();
-		if (WasIiPrefix) gc->OldError(41);
+		if (WasIiPrefix) base_compiler->OldError(41);
 		result = new FrmlElemMerge(_mergegroup, &MergOpGroup);
 		FTyp = 'R';
 		return result;
 	}
-	if (gc->IsKeyWord("LINE")) { n = 0; goto label1; }
-	if (gc->IsKeyWord("PAGE")) { n = 1; goto label1; }
-	if (gc->IsKeyWord("PAGELIMIT")) {
+	if (base_compiler->IsKeyWord("LINE")) { n = 0; goto label1; }
+	if (base_compiler->IsKeyWord("PAGE")) { n = 1; goto label1; }
+	if (base_compiler->IsKeyWord("PAGELIMIT")) {
 		n = 2;
 	label1:
 		if ((FrmlSumEl == nullptr) && !WasIiPrefix) {
@@ -475,19 +475,19 @@ FrmlElem* Report::RdFldNameFrml(char& FTyp)
 			return result;
 		}
 	}
-	if (gc->IsKeyWord("ERROR")) {
+	if (base_compiler->IsKeyWord("ERROR")) {
 		Err('r', WasIiPrefix);
 		result = (FrmlElem*)(&IDA[Ii]->OpErr);
 		FTyp = 'B';
 		return result;
 	}
-	if (gc->IsKeyWord("WARNING")) {
+	if (base_compiler->IsKeyWord("WARNING")) {
 		Err('r', WasIiPrefix);
 		result = (FrmlElem*)(&IDA[Ii]->OpWarn);
 		FTyp = 'B';
 		return result;
 	}
-	if (gc->IsKeyWord("ERRORTEXT")) {
+	if (base_compiler->IsKeyWord("ERRORTEXT")) {
 		Err('r', WasIiPrefix);
 		result = IDA[Ii]->ErrTxtFrml;
 		FTyp = 'S';
@@ -508,7 +508,7 @@ FrmlElem* Report::RdFldNameFrml(char& FTyp)
 		}
 		else if (CBlk == nullptr) { FindInRec(FTyp, &result, WasIiPrefix); return result; }
 		else if (OwnInBlock(FTyp, &result)) return result;
-		else gc->OldError(8);
+		else base_compiler->OldError(8);
 	}
 	if (OwnInBlock(FTyp, &result)) return result;
 	FindInRec(FTyp, &result, WasIiPrefix);
@@ -556,9 +556,9 @@ label1:
 	while (L != nullptr) {
 		for (BlkD* B1 : L->Ft) {
 			for (RFldD* rf : B1->ReportFields) {
-				std::string sLexWord = gc->LexWord;
-				if ((gc->Lexem == _identifier) && EquUpCase(rf->Name, sLexWord)) {
-					gc->RdLex();
+				std::string sLexWord = base_compiler->LexWord;
+				if ((base_compiler->Lexem == _identifier) && EquUpCase(rf->Name, sLexWord)) {
+					base_compiler->RdLex();
 					result = true;
 					*RF = rf;
 					*B = B1;
@@ -582,7 +582,7 @@ FrmlElem* Report::FindIiandFldFrml(FileD** FD, char& FTyp)
 	FrmlElem* z = nullptr;
 	if (WhatToRd == 'i') {       /* search first in Ii*/
 		*FD = InpFD(Oi);
-		z = gc->TryRdFldFrml(*FD, FTyp, this);
+		z = base_compiler->TryRdFldFrml(*FD, FTyp, this);
 		if (z != nullptr) {
 			Ii = Oi;
 			goto label1;
@@ -590,7 +590,7 @@ FrmlElem* Report::FindIiandFldFrml(FileD** FD, char& FTyp)
 	}
 	for (i = 1; i <= MaxIi; i++) {       /* search in  I1 .. Imax resp. Oi*/
 		*FD = InpFD(i);
-		z = gc->TryRdFldFrml(*FD, FTyp, this);
+		z = base_compiler->TryRdFldFrml(*FD, FTyp, this);
 		if (z != nullptr) {
 			Ii = i;
 			goto label1;
@@ -610,43 +610,43 @@ void Report::RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 
 	if (wasIiPrefix) {
 		processed_file = InpFD(Ii);
-		gc->processing_F = processed_file;
-		if (!gc->IsRoleName(true, processed_file, &FD, &LD)) {
-			gc->Error(9);
+		base_compiler->processing_F = processed_file;
+		if (!base_compiler->IsRoleName(true, processed_file, &FD, &LD)) {
+			base_compiler->Error(9);
 		}
 	}
 	else {
 		if (!Join && (WhatToRd == 'i')) {
 			Ii = Oi;
 			processed_file = InpFD(Ii);
-			gc->processing_F = processed_file;
-			if (gc->IsRoleName(true, processed_file, &FD, &LD)) {
+			base_compiler->processing_F = processed_file;
+			if (base_compiler->IsRoleName(true, processed_file, &FD, &LD)) {
 				goto label2;
 			}
 		}
 		for (int16_t i = 1; i <= MaxIi; i++) {
 			processed_file = InpFD(i);
-			gc->processing_F = processed_file;
-			if (gc->IsRoleName(true, processed_file, &FD, &LD)) {
+			base_compiler->processing_F = processed_file;
+			if (base_compiler->IsRoleName(true, processed_file, &FD, &LD)) {
 				Ii = i;
 				goto label2;
 			}
 			if ((WhatToRd == 'i') && (i == Oi)) goto label1;
 		}
 	label1:
-		gc->Error(9);
+		base_compiler->Error(9);
 	}
 label2:
-	gc->RdLex(); // '.'
-	Z = gc->RdFAccess(FD, LD, FTyp);
+	base_compiler->RdLex(); // '.'
+	Z = base_compiler->RdFAccess(FD, LD, FTyp);
 	if (LD == nullptr) {
 		Ii = 0;
 	}
 	else {
-		Z = gc->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr);
+		Z = base_compiler->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr);
 		TestSetSumIi();
 		if ((FrmlSumEl != nullptr) && !FrstSumVar && (CBlk != nullptr)) {
-			gc->OldError(59);
+			base_compiler->OldError(59);
 		}
 	}
 	*res = Z;
@@ -659,9 +659,9 @@ bool Report::OwnInBlock(char& FTyp, FrmlElem** res)
 	// RF = CBlk->RFD;
 	// while (RF != nullptr) {
 	for (auto rf : CBlk->ReportFields) {
-		std::string sLexWord = gc->LexWord;
+		std::string sLexWord = base_compiler->LexWord;
 		if (EquUpCase(rf->Name, sLexWord)) {
-			gc->RdLex();
+			base_compiler->RdLex();
 			FTyp = rf->FrmlTyp;
 			*res = rf->Frml;
 			result = true;
@@ -679,21 +679,21 @@ void Report::FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 	FrmlElem* Z = nullptr;
 	if (wasIiPrefix) {
 		FD = InpFD(Ii);
-		Z = gc->TryRdFldFrml(FD, FTyp, this);
+		Z = base_compiler->TryRdFldFrml(FD, FTyp, this);
 	}
 	else Z = FindIiandFldFrml(&FD, FTyp);
-	if (Z == nullptr) gc->Error(8);
+	if (Z == nullptr) base_compiler->Error(8);
 	TestSetSumIi();
-	*res = gc->FrmlContxt(Z, FD, FD->FF->RecPtr);
+	*res = base_compiler->FrmlContxt(Z, FD, FD->FF->RecPtr);
 }
 
 void Report::Rd_Oi()
 {
 	Oi = 1;
-	if (isdigit(gc->ForwChar)) {
-		gc->ReadChar();
-		Oi = gc->CurrChar - '0';
-		if ((Oi == 0) || (Oi > MaxIi)) gc->Error(62);
+	if (isdigit(base_compiler->ForwChar)) {
+		base_compiler->ReadChar();
+		Oi = base_compiler->CurrChar - '0';
+		if ((Oi == 0) || (Oi > MaxIi)) base_compiler->Error(62);
 		WhatToRd = 'i';
 	}
 }
@@ -721,13 +721,13 @@ LvDescr* Report::MakeOldMLvD()
 	return L;
 }
 
-void Report::RdAutoSortSK(InpD* ID, std::unique_ptr<Compiler>& compiler)
+void Report::RdAutoSortSK(InpD* ID)
 {
 	KeyFldD* SK = nullptr;
 	//WORD n = 0;
-	if (gc->Lexem == ';') {
-		compiler->RdLex();
-		compiler->RdKFList(ID->SFld, compiler->processing_F);
+	if (base_compiler->Lexem == ';') {
+		base_compiler->RdLex();
+		base_compiler->RdKFList(ID->SFld, base_compiler->processing_F);
 	}
 	LvDescr* L = nullptr;
 	bool auto_sort = ID->AutoSort;
@@ -766,7 +766,7 @@ void Report::RdAutoSortSK(InpD* ID, std::unique_ptr<Compiler>& compiler)
 	}
 
 	if (auto_sort && (ID->SK.empty())) {
-		compiler->OldError(60);
+		base_compiler->OldError(60);
 	}
 
 	ID->FrstLvS = NewLvS(L, ID);
@@ -787,7 +787,7 @@ LvDescr* Report::NewLvS(LvDescr* L, InpD* ID)
 
 void Report::RdAssignBlk(std::vector<AssignD*>* ARoot)
 {
-	if (gc->IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
+	if (base_compiler->IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
 	else {
 		std::vector<AssignD*> A = RdAssign2();
 		for (auto assign : A) {
@@ -799,13 +799,13 @@ void Report::RdAssignBlk(std::vector<AssignD*>* ARoot)
 void Report::RdBeginEnd(std::vector<AssignD*>* ARoot)
 {
 label1:
-	if (gc->IsKeyWord("END")) return;
+	if (base_compiler->IsKeyWord("END")) return;
 	RdAssignBlk(ARoot);
-	if (gc->Lexem == ';') {
-		gc->RdLex();
+	if (base_compiler->Lexem == ';') {
+		base_compiler->RdLex();
 		goto label1;
 	}
-	gc->AcceptKeyWord("END");
+	base_compiler->AcceptKeyWord("END");
 }
 
 void Report::RdBlock(std::vector<BlkD*>& BB)
@@ -832,67 +832,68 @@ void Report::RdBlock(std::vector<BlkD*>& BB)
 	BB.push_back(CBlk);
 	size_t reportFieldsVectorIndex = 0;
 	RdCond();
-	if (gc->IsKeyWord("BEGIN")) {
+	if (base_compiler->IsKeyWord("BEGIN")) {
 		RdBeginEnd(&CBlk->BeforeProc);
 		goto label1;
 	}
-	if (gc->Lexem == ';') {
+	if (base_compiler->Lexem == ';') {
 		goto label2; // read var decl.
 	}
 label0:
-	if (gc->IsKeyWord("BEGIN")) {
+	if (base_compiler->IsKeyWord("BEGIN")) {
 		RdBeginEnd(&CBlk->AfterProc);
 		goto label2;
 	}
-	if (gc->Lexem == '.') {
-		gc->RdLex();
-		if (gc->IsKeyWord("LINE"))
-			if (gc->Lexem == _le) {
-				gc->RdLex();
-				CBlk->LineBound = gc->RdRealFrml(this);
+	if (base_compiler->Lexem == '.') {
+		base_compiler->RdLex();
+		if (base_compiler->IsKeyWord("LINE"))
+			if (base_compiler->Lexem == _le) {
+				base_compiler->RdLex();
+				CBlk->LineBound = base_compiler->RdRealFrml(this);
 			}
 			else {
-				gc->Accept(_assign);
+				base_compiler->Accept(_assign);
 				CBlk->AbsLine = true;
-				CBlk->LineNo = gc->RdRealFrml(this);
+				CBlk->LineNo = base_compiler->RdRealFrml(this);
 			}
-		else if (gc->IsKeyWord("PAGE")) {
-			gc->Accept(_assign);
+		else if (base_compiler->IsKeyWord("PAGE")) {
+			base_compiler->Accept(_assign);
 			CBlk->SetPage = true;
-			CBlk->PageNo = gc->RdRealFrml(this);
+			CBlk->PageNo = base_compiler->RdRealFrml(this);
 		}
-		else if (gc->IsKeyWord("NOTATEND")) {
+		else if (base_compiler->IsKeyWord("NOTATEND")) {
 			CBlk->NotAtEnd = true;
 		}
-		else if (gc->IsKeyWord("NOTSOLO")) {
+		else if (base_compiler->IsKeyWord("NOTSOLO")) {
 			CBlk->DHLevel = 1;
 		}
 		else {
-			gc->Error(54);
+			base_compiler->Error(54);
 		}
 	}
 	else {
 		RF = new RFldD();
-		gc->SkipBlank(false);
-		if (gc->ForwChar == ':') {
-			gc->TestIdentif();
-			RF->Name = gc->LexWord;
-			if (FindInLvBlk(LstLvM, &DummyB, &RF1) || gc->FindLocVar(&LVBD, &LV)) {
-				gc->Error(26);
+		base_compiler->SkipBlank(false);
+		if (base_compiler->ForwChar == ':') {
+			base_compiler->TestIdentif();
+			RF->Name = base_compiler->LexWord;
+			if (FindInLvBlk(LstLvM, &DummyB, &RF1) || base_compiler->FindLocVar(&LVBD, &LV)) {
+				base_compiler->Error(26);
 			}
-			gc->RdLex();
-			gc->Accept(_assign);
+			base_compiler->RdLex();
+			base_compiler->Accept(_assign);
 		}
 		else {
 			RF->Name = "";
 		}
-		RF->Frml = gc->RdFrml(RF->FrmlTyp, this);
+
+		RF->Frml = base_compiler->RdFrml(RF->FrmlTyp, this);
 		RF->BlankOrWrap = false;
 		CBlk->ReportFields.push_back(RF);
 	}
 label1:
-	if (gc->Lexem != ';') {
-		gc->Accept(',');
+	if (base_compiler->Lexem != ';') {
+		base_compiler->Accept(',');
 		goto label0;
 	}
 label2:
@@ -907,8 +908,8 @@ label2:
 	}
 
 	RepeatedGrp = false;
-	gc->SkipBlank(true);
-	switch (gc->ForwChar) {
+	base_compiler->SkipBlank(true);
+	switch (base_compiler->ForwChar) {
 	case 0x1A: {
 		// ^Z
 		goto label4;
@@ -916,7 +917,7 @@ label2:
 	}
 	case '\\': {
 		CBlk->FF1 = true;
-		gc->ReadChar();
+		base_compiler->ReadChar();
 		break;
 	}
 	}
@@ -929,17 +930,17 @@ label3:
 	storedCh = "";
 	if (CBlk->NTxtLines == 0) {
 		CBlk->lineLength = 0;
-		while (gc->ForwChar == ' ') {
+		while (base_compiler->ForwChar == ' ') {
 			RdCh(LineLen);
 		}
 		CBlk->NBlksFrst = LineLen;
 	}
-	while (!(gc->ForwChar == 0x0D || gc->ForwChar == 0x1A))
-		switch (gc->ForwChar) {
+	while (!(base_compiler->ForwChar == 0x0D || base_compiler->ForwChar == 0x1A))
+		switch (base_compiler->ForwChar) {
 		case '_':
 		case '@':
 		case 0x10: {
-			UC = (char)gc->ForwChar;
+			UC = (char)base_compiler->ForwChar;
 			storedCh += static_cast<char>(0xFF);
 			rep[offset++] = 0xFF;
 			if (RF == nullptr) {
@@ -951,21 +952,21 @@ label3:
 					RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
 				}
 
-				if (RF == nullptr) gc->Error(30);
+				if (RF == nullptr) base_compiler->Error(30);
 				RepeatedGrp = true;
 			}
 			if (UC == 0x10) {
-				if (RF->FrmlTyp != 'S') gc->Error(12);
+				if (RF->FrmlTyp != 'S') base_compiler->Error(12);
 				if (!RepeatedGrp) RF->Typ = 'P';
-				else if (RF->Typ != 'P') gc->Error(73);
-				gc->ReadChar();
+				else if (RF->Typ != 'P') base_compiler->Error(73);
+				base_compiler->ReadChar();
 				goto label5;
 			}
 			L = NUnderscores(UC, LineLen);
-			switch (gc->ForwChar) {
+			switch (base_compiler->ForwChar) {
 			case ',': {
 				RdCh(LineLen);
-				if (RF->FrmlTyp != 'R') gc->Error(12);
+				if (RF->FrmlTyp != 'R') base_compiler->Error(12);
 				M = NUnderscores(UC, LineLen);
 				L = L + M + 1;
 				storedCh += static_cast<char>(L);
@@ -977,12 +978,12 @@ label3:
 			}
 			case '.': {
 				RdCh(LineLen);
-				if (RF->FrmlTyp != 'R') gc->Error(12);
+				if (RF->FrmlTyp != 'R') base_compiler->Error(12);
 				M = NUnderscores(UC, LineLen);
-				if (gc->ForwChar == '.') {
+				if (base_compiler->ForwChar == '.') {
 					RdCh(LineLen);
 					N = NUnderscores(UC, LineLen);
-					if ((L != 2) || (M != 2) || !(N == 2 || N == 4)) gc->Error(71);
+					if ((L != 2) || (M != 2) || !(N == 2 || N == 4)) base_compiler->Error(71);
 					TestSetRFTyp('D', RepeatedGrp, RF);
 					if (N == 4) RF->BlankOrWrap = true;
 				}
@@ -998,19 +999,19 @@ label3:
 			}
 			case ':': {
 				RdCh(LineLen);
-				if (RF->FrmlTyp != 'R') gc->Error(12);
+				if (RF->FrmlTyp != 'R') base_compiler->Error(12);
 				M = NUnderscores(UC, LineLen);
-				if (M != 2) gc->Error(69);
+				if (M != 2) base_compiler->Error(69);
 				M = 3;
-				if (gc->ForwChar == ':') {
+				if (base_compiler->ForwChar == ':') {
 					RdCh(LineLen);
 					N = NUnderscores(UC, LineLen);
-					if (N != 2) gc->Error(69);
+					if (N != 2) base_compiler->Error(69);
 					M = 6;
-					if (gc->ForwChar == '.') {
+					if (base_compiler->ForwChar == '.') {
 						RdCh(LineLen);
 						N = NUnderscores(UC, LineLen);
-						if (N != 2) gc->Error(69);
+						if (N != 2) base_compiler->Error(69);
 						M = 9;
 					}
 				}
@@ -1048,7 +1049,7 @@ label3:
 			CBlk->FF2 = true;
 			EndString(CBlk, rep, LineLen, storedCh.length());
 			offset = 0;
-			gc->ReadChar();
+			base_compiler->ReadChar();
 			goto label4;
 			break;
 		}
@@ -1059,13 +1060,13 @@ label3:
 			break;
 		}
 		default: {
-			if (gc->ForwChar == 0xff) {
+			if (base_compiler->ForwChar == 0xff) {
 				storedCh += ' ';
 				rep[offset++] = ' ';
 			}
 			else {
-				storedCh += gc->ForwChar;
-				rep[offset++] = gc->ForwChar;
+				storedCh += base_compiler->ForwChar;
+				rep[offset++] = base_compiler->ForwChar;
 			}
 			RdCh(LineLen);
 			break;
@@ -1073,16 +1074,16 @@ label3:
 		}
 	EndString(CBlk, rep, LineLen, storedCh.length());
 	offset = 0;
-	gc->SkipBlank(true);
-	if (gc->ForwChar != 0x1A) goto label3;
+	base_compiler->SkipBlank(true);
+	if (base_compiler->ForwChar != 0x1A) goto label3;
 label4:
 	if ((CBlk->NTxtLines == 1) && (CBlk->lineLength == 0) && CBlk->FF1) {
 		CBlk->NTxtLines = 0;
 		CBlk->FF1 = false;
 		CBlk->FF2 = true;
 	}
-	if (RF != nullptr) gc->Error(30);
-	gc->RdLex();
+	if (RF != nullptr) base_compiler->Error(30);
+	base_compiler->RdLex();
 
 	// TODO: co bude se storedCh? ulozi se nekam?
 	// vypada to, ze v EndString se se vstupem pracuje, string je mozna zbytecny
@@ -1090,14 +1091,14 @@ label4:
 
 void Report::RdCh(short& LineLen)
 {
-	if (!IsPrintCtrl(gc->ForwChar)) LineLen++;
-	gc->ReadChar();
+	if (!IsPrintCtrl(base_compiler->ForwChar)) LineLen++;
+	base_compiler->ReadChar();
 }
 
 short Report::NUnderscores(char C, short& LineLen)
 {
 	short N = 0;
-	while (gc->ForwChar == static_cast<BYTE>(C)) {
+	while (base_compiler->ForwChar == static_cast<BYTE>(C)) {
 		N++;
 		RdCh(LineLen);
 	}
@@ -1123,14 +1124,14 @@ void Report::TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF)
 {
 	if (RepeatedGrp) {
 		if (RF->Typ != Typ) {
-			gc->Error(73);
+			base_compiler->Error(73);
 		}
 	}
 	else {
 		RF->Typ = Typ;
 	}
-	if (gc->ForwChar == '.' || gc->ForwChar == ',' || gc->ForwChar == ':') {
-		gc->Error(95);
+	if (base_compiler->ForwChar == '.' || base_compiler->ForwChar == ',' || base_compiler->ForwChar == ':') {
+		base_compiler->Error(95);
 	}
 }
 
@@ -1142,12 +1143,12 @@ void Report::TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF)
 		}
 		else {
 			if (RF->BlankOrWrap && (UC == '_')) {
-				gc->Error(73);
+				base_compiler->Error(73);
 			}
 		}
 	}
 	else if (UC == '@') {
-		gc->Error(80);
+		base_compiler->Error(80);
 	}
 }
 
@@ -1159,33 +1160,33 @@ std::vector<AssignD*> Report::RdAssign2()
 	std::vector<AssignD*> result;
 	AssignD* A = new AssignD();
 
-	if (gc->IsKeyWord("IF")) {
+	if (base_compiler->IsKeyWord("IF")) {
 		A->Kind = MInstrCode::_ifThenElse;
-		A->Bool = gc->RdBool(this);
-		gc->AcceptKeyWord("THEN");
+		A->Bool = base_compiler->RdBool(this);
+		base_compiler->AcceptKeyWord("THEN");
 		RdAssignBlk(&A->Instr);
-		if (gc->IsKeyWord("ELSE")) {
+		if (base_compiler->IsKeyWord("ELSE")) {
 			RdAssignBlk(&A->ElseInstr);
 		}
 	}
-	else if (gc->ForwChar == '.') {
+	else if (base_compiler->ForwChar == '.') {
 		A->Kind = MInstrCode::_parfile;
-		FD = gc->RdFileName();
-		if (!FD->IsParFile) gc->OldError(9);
-		gc->Accept('.');
+		FD = base_compiler->RdFileName();
+		if (!FD->IsParFile) base_compiler->OldError(9);
+		base_compiler->Accept('.');
 		A->FD = FD;
-		F = gc->RdFldName(FD);
+		F = base_compiler->RdFldName(FD);
 		A->PFldD = F;
-		if ((F->Flg & f_Stored) == 0) gc->OldError(14);
-		gc->RdAssignFrml(F->frml_type, A->Add, &A->Frml, this);
+		if ((F->Flg & f_Stored) == 0) base_compiler->OldError(14);
+		base_compiler->RdAssignFrml(F->frml_type, A->Add, &A->Frml, this);
 	}
-	else if (gc->FindLocVar(&LVBD, &LV)) {
-		gc->RdLex();
+	else if (base_compiler->FindLocVar(&LVBD, &LV)) {
+		base_compiler->RdLex();
 		A->Kind = MInstrCode::_locvar;
 		A->LV = LV;
-		gc->RdAssignFrml(LV->f_typ, A->Add, &A->Frml, this);
+		base_compiler->RdAssignFrml(LV->f_typ, A->Add, &A->Frml, this);
 	}
-	else gc->Error(147);
+	else base_compiler->Error(147);
 
 	result.push_back(A);
 	return result;
@@ -1193,10 +1194,10 @@ std::vector<AssignD*> Report::RdAssign2()
 
 void Report::RdCond()
 {
-	if (gc->Lexem == '(') {
-		gc->RdLex();
-		CBlk->Bool = gc->RdBool(this);
-		gc->Accept(')');
+	if (base_compiler->Lexem == '(') {
+		base_compiler->RdLex();
+		CBlk->Bool = base_compiler->RdBool(this);
+		base_compiler->Accept(')');
 	}
 }
 
@@ -1204,23 +1205,23 @@ LvDescr* Report::RdKeyName()
 {
 	LvDescr* L = nullptr;
 	FieldDescr* F = nullptr;
-	gc->ReadChar();
-	gc->Lexem = gc->CurrChar;
-	gc->Accept('_');
+	base_compiler->ReadChar();
+	base_compiler->Lexem = base_compiler->CurrChar;
+	base_compiler->Accept('_');
 	if (WhatToRd == 'O') {
 		L = FrstLvM;
 	}
 	else {
 		L = IDA[Oi]->FrstLvS;
 	}
-	F = gc->RdFldName(InpFD(Oi));
+	F = base_compiler->RdFldName(InpFD(Oi));
 	while (L != nullptr) {
 		if (L->Fld == F) {
 			return L;
 		}
 		L = L->Chain;
 	}
-	gc->OldError(46);
+	base_compiler->OldError(46);
 	return nullptr;
 }
 

@@ -576,9 +576,8 @@ void MakeMerge(CopyD* CD)
 		s = s + " #O1_" + CD->FD2->Name;
 		if (CD->Append) s = s + '+';
 
-		gc->SetInpStr(s);
-
 		const std::unique_ptr merge = std::make_unique<Merge>();
+		merge->SetInput(s);
 		merge->Read();
 		merge->Run();
 

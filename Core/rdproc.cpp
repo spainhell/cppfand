@@ -1159,155 +1159,162 @@ bool RdHeadLast(Compiler* compiler, Instr_edittxt* IE)
 	return result;
 }
 
-bool RdViewOpt(EditOpt* EO, FileD* file_d)
+bool RdViewOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 {
-	std::unique_ptr<Compiler> lc = std::make_unique<Compiler>(file_d);
-	lc->rdFldNameType = FieldNameType::P;
+	FileD* prev_file = compiler->processing_F;
+	FieldNameType prev_field = compiler->rdFldNameType;
+
+	compiler->rdFldNameType = FieldNameType::P;
 
 	FileD* FD = nullptr;
 	RprtOpt* RO = nullptr;
 	bool Flgs[23]{ false };
 	auto result = false;
-	lc->RdLex();
+	compiler->RdLex();
 	result = true;
 	CViewKey = EO->ViewKey;
-	if (lc->IsOpt("TAB")) {
-		lc->RdNegFldList(EO->NegTab, EO->Tab);
+	if (compiler->IsOpt("TAB")) {
+		compiler->RdNegFldList(EO->NegTab, EO->Tab);
 	}
-	else if (lc->IsOpt("DUPL")) {
-		lc->RdNegFldList(EO->NegDupl, EO->Dupl);
+	else if (compiler->IsOpt("DUPL")) {
+		compiler->RdNegFldList(EO->NegDupl, EO->Dupl);
 	}
-	else if (lc->IsOpt("NOED")) {
-		lc->RdNegFldList(EO->NegNoEd, EO->NoEd);
+	else if (compiler->IsOpt("NOED")) {
+		compiler->RdNegFldList(EO->NegNoEd, EO->NoEd);
 	}
-	else if (lc->IsOpt("MODE")) {
-		lc->SkipBlank(false);
-		if ((lc->Lexem == _quotedstr) && (lc->ForwChar == ',' || lc->ForwChar == ')')) {
+	else if (compiler->IsOpt("MODE")) {
+		compiler->SkipBlank(false);
+		if ((compiler->Lexem == _quotedstr) && (compiler->ForwChar == ',' || compiler->ForwChar == ')')) {
 			DataEditorParams params;
-			int validate = params.SetFromString(lc->LexWord, true);
+			int validate = params.SetFromString(compiler->LexWord, true);
 			if (validate != 0) {
-				lc->Error(validate);
+				compiler->Error(validate);
 			}
 			EO->Mode = new FrmlElemString(_const, 0); // GetOp(_const, LexWord.length() + 1);
-			((FrmlElemString*)EO->Mode)->S = lc->LexWord;
-			lc->RdLex();
+			((FrmlElemString*)EO->Mode)->S = compiler->LexWord;
+			compiler->RdLex();
 		}
 		else {
-			EO->Mode = lc->RdStrFrml(nullptr);
+			EO->Mode = compiler->RdStrFrml(nullptr);
 		}
 	}
-	else if (RdHeadLast(lc.get(), EO)) {
+	else if (RdHeadLast(compiler, EO)) {
 		return result;
 	}
-	else if (lc->IsOpt("WATCH")) {
-		EO->WatchDelayZ = lc->RdRealFrml(nullptr);
+	else if (compiler->IsOpt("WATCH")) {
+		EO->WatchDelayZ = compiler->RdRealFrml(nullptr);
 	}
-	else if (lc->IsOpt("WW")) {
-		lc->Accept('(');
+	else if (compiler->IsOpt("WW")) {
+		compiler->Accept('(');
 		EO->WFlags = 0;
-		if (lc->Lexem == '(') { lc->RdLex(); EO->WFlags = WNoPop; }
-		lc->RdW(EO->W);
-		lc->RdFrame(&EO->Top, EO->WFlags);
-		if (lc->Lexem == ',') {
-			lc->RdLex();
-			EO->ZAttr = lc->RdAttr(); lc->Accept(',');
-			EO->ZdNorm = lc->RdAttr(); lc->Accept(',');
-			EO->ZdHiLi = lc->RdAttr();
-			if (lc->Lexem == ',') {
-				lc->RdLex();
-				EO->ZdSubset = lc->RdAttr();
-				if (lc->Lexem == ',') {
-					lc->RdLex();
-					EO->ZdDel = lc->RdAttr();
-					if (lc->Lexem == ',') {
-						lc->RdLex();
-						EO->ZdTab = lc->RdAttr();
-						if (lc->Lexem == ',') {
-							lc->RdLex();
-							EO->ZdSelect = lc->RdAttr();
+		if (compiler->Lexem == '(') { compiler->RdLex(); EO->WFlags = WNoPop; }
+		compiler->RdW(EO->W);
+		compiler->RdFrame(&EO->Top, EO->WFlags);
+		if (compiler->Lexem == ',') {
+			compiler->RdLex();
+			EO->ZAttr = compiler->RdAttr(); compiler->Accept(',');
+			EO->ZdNorm = compiler->RdAttr(); compiler->Accept(',');
+			EO->ZdHiLi = compiler->RdAttr();
+			if (compiler->Lexem == ',') {
+				compiler->RdLex();
+				EO->ZdSubset = compiler->RdAttr();
+				if (compiler->Lexem == ',') {
+					compiler->RdLex();
+					EO->ZdDel = compiler->RdAttr();
+					if (compiler->Lexem == ',') {
+						compiler->RdLex();
+						EO->ZdTab = compiler->RdAttr();
+						if (compiler->Lexem == ',') {
+							compiler->RdLex();
+							EO->ZdSelect = compiler->RdAttr();
 						}
 					}
 				}
 			}
 		}
-		lc->Accept(')');
+		compiler->Accept(')');
 		if ((EO->WFlags & WNoPop) != 0) {
-			lc->Accept(')');
+			compiler->Accept(')');
 		}
 	}
-	else if (lc->IsOpt("EXIT")) {
-		lc->Accept('(');
+	else if (compiler->IsOpt("EXIT")) {
+		compiler->Accept('(');
 		while (true) {
 			EdExitD* X = new EdExitD();
 			EO->ExD.push_back(X);
 
-			RdKeyList(lc.get(), X);
-			if (lc->IsKeyWord("QUIT")) X->Typ = 'Q';
-			else if (lc->IsKeyWord("REPORT")) {
-				if (X->AtWrRec || (EO->LVRecPtr != nullptr)) lc->OldError(144);
-				lc->Accept('(');
+			RdKeyList(compiler, X);
+			if (compiler->IsKeyWord("QUIT")) X->Typ = 'Q';
+			else if (compiler->IsKeyWord("REPORT")) {
+				if (X->AtWrRec || (EO->LVRecPtr != nullptr)) compiler->OldError(144);
+				compiler->Accept('(');
 				X->Typ = 'R';
-				RO = lc->GetRprtOpt();
-				lc->RdChptName('R', &RO->RprtPos, true);
-				while (lc->Lexem == ',') {
-					lc->RdLex();
-					if (lc->IsOpt("ASSIGN")) {
-						RdPath(lc.get(), true, RO->Path, RO->CatIRec);
+				RO = compiler->GetRprtOpt();
+				compiler->RdChptName('R', &RO->RprtPos, true);
+				while (compiler->Lexem == ',') {
+					compiler->RdLex();
+					if (compiler->IsOpt("ASSIGN")) {
+						RdPath(compiler, true, RO->Path, RO->CatIRec);
 					}
-					else if (lc->IsKeyWord("EDIT")) {
+					else if (compiler->IsKeyWord("EDIT")) {
 						RO->Edit = true;
 					}
 					else {
-						lc->Error(130);
+						compiler->Error(130);
 					}
 				}
 				X->RO = RO;
-				lc->Accept(')');
+				compiler->Accept(')');
 			}
-			else if (!(lc->Lexem == ',' || lc->Lexem == ')')) {
+			else if (!(compiler->Lexem == ',' || compiler->Lexem == ')')) {
 				X->Typ = 'P';
-				X->Proc = RdProcArg(lc.get(), 'E');
+				X->Proc = RdProcArg(compiler, 'E');
 			}
-			if (lc->Lexem == ',') {
-				lc->RdLex();
+			if (compiler->Lexem == ',') {
+				compiler->RdLex();
 				continue;
 			}
 			break;
 		}
-		lc->Accept(')');
+		compiler->Accept(')');
 	}
 	else if (EO->LVRecPtr != nullptr) {
 		result = false;
 	}
-	else if (lc->IsOpt("COND")) {
-		if (lc->Lexem == '(') {
-			lc->RdLex();
-			EO->Cond = lc->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
-			lc->Accept(')');
+	else if (compiler->IsOpt("COND")) {
+		if (compiler->Lexem == '(') {
+			compiler->RdLex();
+			EO->Cond = compiler->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
+			compiler->Accept(')');
 		}
 		else {
-			EO->Cond = lc->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
+			EO->Cond = compiler->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
 		}
 	}
-	else if (lc->IsOpt("JOURNAL")) {
-		EO->Journal = lc->RdFileName();
+	else if (compiler->IsOpt("JOURNAL")) {
+		EO->Journal = compiler->RdFileName();
 		WORD l = EO->Journal->FF->RecLen - 13;
 		if (file_d->FF->file_type == FileType::INDEX) {
 			l++;
 		}
 		if (file_d->FF->RecLen != l) {
-			lc->OldError(111);
+			compiler->OldError(111);
 		}
 	}
-	else if (lc->IsOpt("SAVEAFTER")) {
-		EO->SaveAfterZ = lc->RdRealFrml(nullptr);
+	else if (compiler->IsOpt("SAVEAFTER")) {
+		EO->SaveAfterZ = compiler->RdRealFrml(nullptr);
 	}
-	else if (lc->IsOpt("REFRESH")) {
-		EO->RefreshDelayZ = lc->RdRealFrml(nullptr);
+	else if (compiler->IsOpt("REFRESH")) {
+		EO->RefreshDelayZ = compiler->RdRealFrml(nullptr);
 	}
 	else {
 		result = false;
 	}
+
+	// revert compiler changes:
+	compiler->processing_F = prev_file;
+	compiler->rdFldNameType = prev_field;
+	
 	return result;
 }
 
@@ -1653,7 +1660,7 @@ Instr_edit* RdEditCall(Compiler* compiler)
 		RdBegViewDcl(&instr_edit->options);
 	}
 	while (compiler->Lexem == ',') {
-		bool b = RdViewOpt(&instr_edit->options, instr_edit->EditFD);
+		bool b = RdViewOpt(compiler, &instr_edit->options, instr_edit->EditFD);
 		if (!b) RdEditOpt(compiler, &instr_edit->options, instr_edit->EditFD);
 	}
 	return instr_edit;
@@ -2988,7 +2995,7 @@ std::vector<Instr*> RdPInstr(Compiler* compiler)
 
 void ReadProcHead(Compiler* compiler, const std::string& name)
 {
-	ResetCompilePars();
+	gc->ResetCompilePars();
 	compiler->rdFldNameType = FieldNameType::P;
 	compiler->rdFuncType = ReadFuncType::P;
 	//ptrRdFldNameFrml = RdFldNameFrmlP;

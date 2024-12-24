@@ -264,10 +264,10 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	MarkStore(p);
 	void* cr = Chpt->FF->RecPtr;
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
-	gc->SetInpStr(s);
 	SpecFDNameAllowed = true;
 
 	const std::unique_ptr merge = std::make_unique<Merge>();
+	merge->SetInput(s); //gc->SetInpStr(s);
 	merge->Read();
 	SpecFDNameAllowed = false;
 	merge->Run();

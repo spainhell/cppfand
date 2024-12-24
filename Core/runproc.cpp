@@ -75,8 +75,9 @@ void ReportProc(RprtOpt* RO, bool save)
 	//MarkBoth(p, p2);
 	PrintView = false;
 	if (RO->Flds.empty()) {
-		gc->SetInpTT(&RO->RprtPos, true);
 		const std::unique_ptr report = std::make_unique<Report>();
+		report->SetInput(&RO->RprtPos, true);
+
 		if (RO->SyntxChk) {
 			IsCompileErr = false;
 			//NewExit(Ovr(), er);
@@ -238,9 +239,8 @@ void MergeProc(Instr_merge_display* PD)
 	void* p = nullptr; void* p2 = nullptr;
 	MarkBoth(p, p2);
 
-	gc->SetInpTT(&PD->Pos, true);
-
 	const std::unique_ptr merge = std::make_unique<Merge>();
+	merge->SetInput(&PD->Pos, true);
 	merge->Read();
 	merge->Run();
 

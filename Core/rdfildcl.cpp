@@ -273,7 +273,7 @@ void RdChkDsFromPos(FileD* FD, std::vector<LogicControl*>& C)
 	}
 	if (FD->ChptPos.rdb == nullptr) return;
 	if (FD->TxtPosUDLI == 0) return;
-	ResetCompilePars();
+	gc->ResetCompilePars();
 	gc->SetInpTTxtPos(FD);
 	gc->RdLex();
 	while (!(gc->ForwChar == 'L' || gc->ForwChar == 0x1A)) {
@@ -405,7 +405,7 @@ bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 			if ((file_d != nullptr) && !found) continue;
 			break;
 		}
-		ResetCompilePars();
+		gc->ResetCompilePars();
 		gc->SetInpTTxtPos(file_d);
 		gc->RdLex();
 		if ((gc->Lexem != '#') || (gc->ForwChar != 'U')) {
@@ -437,7 +437,7 @@ bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 			while (gc->Lexem == ',') {
 				FVA = FileVarsAllowed;
 				FileVarsAllowed = false;
-				if (!RdViewOpt(EO, file_d)) gc->Error(44);
+				if (!RdViewOpt(gc, EO, file_d)) gc->Error(44);
 				FileVarsAllowed = FVA;
 			}
 			if (!found && (gc->Lexem == ';')) {
@@ -486,7 +486,7 @@ void TestUserView(FileD* file_d)
 		RdBegViewDcl(&EO);
 
 		while (gc->Lexem == ',') {
-			if (!RdViewOpt(&EO, file_d)) {
+			if (!RdViewOpt(gc, &EO, file_d)) {
 				gc->Error(44);
 			}
 		}
@@ -719,7 +719,7 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 	void* p = nullptr;
 	FileD* file_d = nullptr; // new created FileD; will be returned from this method
 
-	ResetCompilePars();
+	gc->ResetCompilePars();
 	gc->RdLex();
 	isSql = EquUpCase(Ext, ".SQL");
 	bool isHlp = EquUpCase(Ext, ".HLP");

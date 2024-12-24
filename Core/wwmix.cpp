@@ -762,7 +762,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 	size_t I = 1;
 
 	bool Del = true;
-	ResetCompilePars();
+	gc->ResetCompilePars();
 	cf = CFile;
 
 	while (true) {

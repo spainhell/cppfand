@@ -106,7 +106,7 @@ WORD ScrTextMode(bool Redraw, bool Switch)
 
 void InitAccess()
 {
-	ResetCompilePars();
+	gc->ResetCompilePars();
 	SpecFDNameAllowed = false;
 	FillChar(&XWork, sizeof(XWork), 0);
 }

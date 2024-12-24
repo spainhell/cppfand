@@ -30,8 +30,8 @@ void ReportGenerator::RunAutoReport(RprtOpt* RO)
 {
 	void* p1 = RO->FDL[0]->FD->FF->RecPtr;
 	std::string txt = GenAutoRprt(RO, true);
-	gc->SetInpStdStr(txt, false);
 	std::unique_ptr report = std::make_unique<Report>();
+	report->SetInput(txt, false);
 	report->Read(RO);
 	report->Run(RO);
 	RO->FDL[0]->FD->FF->RecPtr = p1;

@@ -52,7 +52,7 @@ std::vector<FieldDescr*> RdSubFldList(Compiler* compiler, const std::vector<Fiel
 Instr_sort* RdSortCall(Compiler* compiler);
 Instr_edit* RdEditCall(Compiler* compiler);
 
-bool RdViewOpt(EditOpt* EO, FileD* file_d);
+bool RdViewOpt(Compiler* compiler, EditOpt* EO, FileD* file_d);
 void RdEditOpt(Compiler* compiler, EditOpt* EO, FileD* file_d);
 void RdRprtOpt(Compiler* compiler, RprtOpt* RO, bool has_first);
 

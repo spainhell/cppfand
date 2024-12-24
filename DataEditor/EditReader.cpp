@@ -389,7 +389,7 @@ void EditReader::RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos)
 	edit_->Rows = edit_->LastRow - edit_->FrstRow + 1;
 
 	if (FL.empty()) {
-		ResetCompilePars();
+		gc->ResetCompilePars();
 		RdEForm(edit_, FormPos);
 		edit_->IsUserForm = true;
 	}
@@ -688,7 +688,7 @@ void EditReader::RdDepChkImpl(EditD* edit)
 	case FileType::RDB: {
 		ReadMessage(53);
 		s = MsgLine;
-		ResetCompilePars();
+		gc->ResetCompilePars();
 		gc->SetInpStr(s);
 		RdUDLI(edit->FD);
 		break;
@@ -701,7 +701,7 @@ void EditReader::RdDepChkImpl(EditD* edit)
 		s = s + MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "'";
-		ResetCompilePars();
+		gc->ResetCompilePars();
 		gc->SetInpStr(s);
 		RdUDLI(edit->FD);
 		break;
@@ -924,7 +924,7 @@ void EditReader::RdAllUDLIs(FileD* FD)
 		RdAllUDLIs(FD->OrigFD);
 	}
 	if (FD->TxtPosUDLI != 0) {
-		ResetCompilePars();
+		gc->ResetCompilePars();
 		gc->SetInpTTxtPos(FD);
 		r = CRdb;
 		CRdb = FD->ChptPos.rdb;

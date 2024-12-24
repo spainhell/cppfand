@@ -45,6 +45,7 @@ public:
 	void SetInpTTPos(FileD* file_d, int Pos, bool Decode);
 	void SetInpTT(RdbPos* rdb_pos, bool FromTxt);
 	void SetInpTTxtPos(FileD* file_d);
+	void ResetCompilePars();
 	void ReadChar();
 	WORD RdDirective(bool& b);
 	void RdForwName(pstring& s);

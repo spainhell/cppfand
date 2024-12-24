@@ -236,16 +236,6 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 	//CFile = cf;
 }
 
-void ResetCompilePars()
-{
-	gc->rdFldNameType = FieldNameType::F;
-	gc->rdFuncType = ReadFuncType::none;
-	FileVarsAllowed = true;
-	FDLocVarAllowed = false;
-	IdxLocVarAllowed = false;
-	PrevCompInp.clear();
-}
-
 std::string TranslateOrd(std::string text)
 {
 	std::string trans;

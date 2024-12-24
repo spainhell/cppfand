@@ -1994,7 +1994,7 @@ void TextEditor::Calculate()
 	//NewExit(Ovr(), er);
 	//goto label2;
 	try {
-		ResetCompilePars();
+		gc->ResetCompilePars();
 		//ptrRdFldNameFrml = RdFldNameFrmlT;
 		gc->rdFldNameType = FieldNameType::T;
 	label0:

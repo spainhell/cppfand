@@ -4535,7 +4535,7 @@ void DataEditor::Calculate2()
 	//NewExit(Ovr(), er);
 	//goto label2;
 	try {
-		ResetCompilePars();
+		gc->ResetCompilePars();
 	label0:
 		txt = CalcTxt;
 	label4:

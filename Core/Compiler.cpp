@@ -63,7 +63,7 @@ Compiler::~Compiler()
 std::string Compiler::Error(short N)
 {
 	ReadMessage(1000 + N);
-	std::string ErrMsg = MsgLine;
+	std::string ErrMsg = LexWord + " - " + MsgLine;
 
 	if (N == 1) {
 		if (ExpChar >= ' ') {
@@ -217,6 +217,16 @@ void Compiler::SetInpTTxtPos(FileD* file_d)
 	}
 
 	input_pos = pos;
+}
+
+void Compiler::ResetCompilePars()
+{
+	rdFldNameType = FieldNameType::F;
+	rdFuncType = ReadFuncType::none;
+	FileVarsAllowed = true;
+	FDLocVarAllowed = false;
+	IdxLocVarAllowed = false;
+	PrevCompInp.clear();
 }
 
 void Compiler::ReadChar()

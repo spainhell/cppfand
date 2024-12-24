@@ -26,7 +26,7 @@ private:
 	FrmlElem* RdDirFilVar_M(char& FTyp, bool wasIiPrefix);
 	FrmlElem* RdOutpFldName(char& FTyp);
 	void MakeOldMFlds();
-	void RdAutoSortSK_M(InpD* ID, std::unique_ptr<Compiler>& compiler);
+	void RdAutoSortSK_M(InpD* ID, Compiler* compiler);
 	void ImplAssign(OutpRD* outputRD, FieldDescr* outputField);
 	FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op);
 	FieldDescr* FindIiandFldD(std::string fieldName);
