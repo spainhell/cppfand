@@ -6,6 +6,7 @@
 #include "TextEditor.h"
 #include "../Drivers/constants.h"
 #include "../Core/base.h"
+#include "../Core/Compiler.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
@@ -79,7 +80,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 		else {
 			w = PushW(1, 1, TxtCols, TxtRows, true, true);
 		}
-		uint16_t i = 1;
+		size_t i = 1;
 		bool frst = true;
 		int16_t delta = 0;
 		if (backw) {
@@ -180,7 +181,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 						name = "root";
 					}
 					else {
-						name = LexWord;
+						name = gc->LexWord;
 					}
 					byName = true;
 					continue;

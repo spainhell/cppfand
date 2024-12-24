@@ -776,17 +776,17 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 			if (Txt.length() == 0) {
 				return true;
 			}
-			g_compiler->SetInpStr(Txt);
-			g_compiler->RdLex();
-			*Bool = g_compiler->RdBool(nullptr);
-			if (Lexem != 0x1A) g_compiler->Error(21);
+			gc->SetInpStr(Txt);
+			gc->RdLex();
+			*Bool = gc->RdBool(nullptr);
+			if (gc->Lexem != 0x1A) gc->Error(21);
 			BoolTxt = new std::string();
 			*BoolTxt = Txt;
 			return true;
 		}
 		catch (std::exception& e) {
 			pstring Msg = MsgLine;
-			I = CurrPos;
+			I = gc->input_pos;
 			SetMsgPar(Msg);
 			WrLLF10Msg(110);
 			IsCompileErr = false;

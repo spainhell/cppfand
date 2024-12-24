@@ -2435,7 +2435,7 @@ bool DataEditor::EquFileViewName(FileD* FD, std::string S, EditOpt** EO)
 	else if (S == FD->Name) {
 		*EO = new EditOpt();
 		(*EO)->UserSelFlds = true;
-		(*EO)->Flds = g_compiler->AllFldsList(FD, false);
+		(*EO)->Flds = gc->AllFldsList(FD, false);
 		return result;
 	}
 
@@ -2547,7 +2547,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		}
 
 		if (sl1.empty()) {
-			EO->Flds = g_compiler->AllFldsList(LD->ToFD, false);
+			EO->Flds = gc->AllFldsList(LD->ToFD, false);
 		}
 		else {
 			RdUserView(LD->ToFD, sl1, EO);
@@ -3277,7 +3277,7 @@ void DataEditor::Sorting()
 	SaveFiles();
 	MarkStore(p);
 
-	if (!g_compiler->PromptSortKeys(edit_->FD, edit_->Flds, SKRoot) || (SKRoot.empty())) {
+	if (!gc->PromptSortKeys(edit_->FD, edit_->Flds, SKRoot) || (SKRoot.empty())) {
 		ReleaseStore(&p);
 		record_ = edit_->NewRecPtr;
 		DisplAllWwRecs();
@@ -3309,7 +3309,7 @@ void DataEditor::AutoReport()
 {
 	void* p = nullptr; RprtOpt* RO = nullptr;
 	FileUseMode UM = Closed;
-	MarkStore(p); RO = g_compiler->GetRprtOpt();
+	MarkStore(p); RO = gc->GetRprtOpt();
 	RO->FDL[0]->FD = file_d_;
 	RO->Flds = edit_->Flds;
 	if (params_->Select) {
@@ -3780,8 +3780,8 @@ bool DataEditor::EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& B
 	MsgStr* PTxtMsgS;
 	int TxtXY = 0;
 	WORD R1 = 0;
-	WORD OldTxtPos = 0;
-	WORD TxtPos = 0; // vychozi pozice zobrazeni textu (index 1. znaku v editoru)
+	size_t OldTxtPos = 0;
+	size_t TxtPos = 0; // vychozi pozice zobrazeni textu (index 1. znaku v editoru)
 	WORD CtrlMsgNr = 0;
 	WORD C = 0, LastLen = 0;
 	LongStr* S = nullptr;
@@ -3865,7 +3865,7 @@ label2:
 		editor->EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
 	ErrMsg = "";
-	heslo = LexWord;
+	heslo = gc->LexWord;
 	LastLen = S->LL;
 	if (EdBreak == 0xffff) {
 		C = Event.Pressed.KeyCombination();
@@ -4548,10 +4548,10 @@ void DataEditor::Calculate2()
 		if (Event.Pressed.KeyCombination() == 'U') goto label0;
 		if (Event.Pressed.KeyCombination() == __ESC || (txt.length() == 0)) goto label3;
 		CalcTxt = txt;
-		g_compiler->SetInpStr(txt);
-		g_compiler->RdLex();
-		Z = g_compiler->RdFrml(FTyp, nullptr);
-		if (Lexem != 0x1A) g_compiler->Error(21);
+		gc->SetInpStr(txt);
+		gc->RdLex();
+		Z = gc->RdFrml(FTyp, nullptr);
+		if (gc->Lexem != 0x1A) gc->Error(21);
 		if (Event.Pressed.KeyCombination() == __CTRL_F4) {
 			F = (*CFld)->FldD;
 			if ((*CFld)->Ed(IsNewRec) && (F->frml_type == FTyp)) {
@@ -4601,7 +4601,7 @@ void DataEditor::Calculate2()
 	catch (std::exception& e) {
 		//label2:
 		Msg = MsgLine;
-		I = CurrPos;
+		I = gc->input_pos;
 		SetMsgPar(Msg);
 		WrLLF10Msg(110);
 		IsCompileErr = false;
@@ -5631,7 +5631,7 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 
 		if (IsCompileErr) {
 			EdRecKey = MsgLine;
-			LastExitCode = CurrPos + 1;
+			LastExitCode = gc->input_pos + 1;
 			IsCompileErr = false;
 		}
 		else {

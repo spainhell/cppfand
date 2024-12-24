@@ -63,8 +63,8 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	Ext = ".000";
 	DrvNm = Dir[0];
 	MountVol(true);
-	g_compiler->SetInpStr(numbers);
-	g_compiler->RdLex();
+	gc->SetInpStr(numbers);
+	gc->RdLex();
 label1:
 	for (WORD i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {
 		if (!EquUpCase(catalog->GetRdbName(i), "ARCHIVES")) {
@@ -106,16 +106,16 @@ label1:
 				}
 			}
 		}
-		while (!(Lexem == 0x1A || Lexem == _number)) g_compiler->RdLex();
-		if (Lexem == _number) {
-			if (LexWord.length() == 1) {
-				std::string lexword = LexWord;
+		while (!(gc->Lexem == 0x1A || gc->Lexem == _number)) gc->RdLex();
+		if (gc->Lexem == _number) {
+			if (gc->LexWord.length() == 1) {
+				std::string lexword = gc->LexWord;
 				ArNr = "0" + lexword;
 			}
 			else {
-				ArNr = LexWord;
+				ArNr = gc->LexWord;
 			}
-			g_compiler->RdLex();
+			gc->RdLex();
 			goto label1;
 		}
 	}

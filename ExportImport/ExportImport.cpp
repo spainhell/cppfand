@@ -71,7 +71,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						CFile->saveS(F, F1->RdFix(F->L), CRecPtr);
 					}
 					else {
-						char c = (char)ForwChar;
+						char c = (char)gc->ForwChar;
 						if (c == '\'' || c == '"') {
 							F1->RdChar();
 							s = F1->RdDelim(c);
@@ -576,7 +576,7 @@ void MakeMerge(CopyD* CD)
 		s = s + " #O1_" + CD->FD2->Name;
 		if (CD->Append) s = s + '+';
 
-		g_compiler->SetInpStr(s);
+		gc->SetInpStr(s);
 
 		const std::unique_ptr merge = std::make_unique<Merge>();
 		merge->Read();

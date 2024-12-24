@@ -9,6 +9,7 @@
 
 MergeReportBase::MergeReportBase()
 {
+	//base_compiler = new Compiler(input);
 	ChainSum = false;
 	Ii = 0;
 	Oi = 0;
@@ -19,6 +20,7 @@ MergeReportBase::MergeReportBase()
 
 MergeReportBase::~MergeReportBase()
 {
+	//delete base_compiler;
 }
 
 FileD* MergeReportBase::InpFD(WORD I)
@@ -28,7 +30,7 @@ FileD* MergeReportBase::InpFD(WORD I)
 
 void MergeReportBase::TestNotSum()
 {
-	if (FrmlSumEl != nullptr) g_compiler->OldError(41);
+	if (FrmlSumEl != nullptr) gc->OldError(41);
 }
 
 void MergeReportBase::Err(char source, bool wasIiPrefix)
@@ -63,13 +65,13 @@ void MergeReportBase::SetIi_Report(bool wasIiPrefix)
 bool MergeReportBase::RdIiPrefix()
 {
 	bool result;
-	if ((ForwChar == '.') && (LexWord.length() == 2) && (LexWord[1] == 'I') &&
-		(isdigit(LexWord[2]) && LexWord[2] != '0')) {
-		Ii = LexWord[2] - '0';
+	if ((gc->ForwChar == '.') && (gc->LexWord.length() == 2) && (gc->LexWord[1] == 'I') &&
+		(isdigit(gc->LexWord[2]) && gc->LexWord[2] != '0')) {
+		Ii = gc->LexWord[2] - '0';
 		if ((Ii > MaxIi) || (WhatToRd == 'i') && (Ii > Oi)) {
-			g_compiler->Error(9);
+			gc->Error(9);
 		}
-		g_compiler->RdLex(); g_compiler->RdLex();
+		gc->RdLex(); gc->RdLex();
 		result = true;
 	}
 	else {
@@ -98,12 +100,12 @@ void MergeReportBase::CopyPrevMFlds()
 		if (it != vFieldNames.end()) break;
 		vFieldNames.push_back(LexWordString);*/
 
-		FieldDescr* F = g_compiler->FindFldName(InpFD(Ii), fld_name);
+		FieldDescr* F = gc->FindFldName(InpFD(Ii), fld_name);
 		if (F == nullptr) {
-			g_compiler->OldError(8);
+			gc->OldError(8);
 		}
-		if (!g_compiler->FldTypIdentity(M->FldD, F)) {
-			g_compiler->OldError(12);
+		if (!gc->FldTypIdentity(M->FldD, F)) {
+			gc->OldError(12);
 		}
 		KeyFldD* MNew = new KeyFldD();
 		//MNew->pChain = nullptr; // M->pChain;
@@ -121,16 +123,16 @@ void MergeReportBase::CopyPrevMFlds()
 void MergeReportBase::CheckMFlds(std::vector<KeyFldD*>& M1, std::vector<KeyFldD*>& M2)
 {
 	if (M1.size() != M2.size()) {
-		g_compiler->OldError(30);
+		gc->OldError(30);
 	}
 
 	for (size_t i = 0; i < M1.size(); i++) {
 		KeyFldD* m1 = M1[i];
 		KeyFldD* m2 = M2[i];
-		if (!g_compiler->FldTypIdentity(m1->FldD, m2->FldD)
+		if (!gc->FldTypIdentity(m1->FldD, m2->FldD)
 			|| (m1->Descend != m2->Descend)
 			|| (m1->CompLex != m2->CompLex))
-			g_compiler->OldError(12);
+			gc->OldError(12);
 	}
 
 	//while (M1 != nullptr) {
@@ -152,7 +154,7 @@ void MergeReportBase::TestSetSumIi()
 {
 	if ((FrmlSumEl != nullptr) && (Ii != 0))
 		if (FrstSumVar || (SumIi == 0)) SumIi = Ii;
-		else if (SumIi != Ii) g_compiler->OldError(27);
+		else if (SumIi != Ii) gc->OldError(27);
 }
 
 void MergeReportBase::ZeroSumFlds(LvDescr* L)

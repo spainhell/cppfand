@@ -7,7 +7,7 @@
 
 class Compiler;
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
-extern Compiler* g_compiler; // global g_compiler instance
+extern Compiler* gc; // global g_compiler instance
 
 enum class FieldNameType { none, F, P, T };
 enum class ReadFuncType { none, P };
@@ -19,8 +19,8 @@ struct stSaveState
 	std::string lex_word;
 	bool SpecFDNameAllowed = false, IdxLocVarAllowed = false, FDLocVarAllowed = false, IsCompileErr = false;
 	std::deque<CompInpD> PrevCompInp;
-	BYTE* InpArrPtr = nullptr; RdbPos InpRdbPos;
-	size_t InpArrLen = 0;
+	std::string InputString;
+	RdbPos InpRdbPos;
 	size_t CurrPos = 0;
 	size_t OldErrPos = 0;
 	std::vector<FrmlElemSum*> *FrmlSumEl = nullptr;
@@ -34,7 +34,9 @@ struct stSaveState
 class Compiler {
 public:
 	Compiler();
+	Compiler(std::string& input);
 	Compiler(FileD* file_d);
+	Compiler(FileD* file_d, std::string& input);
 	~Compiler();
 	std::string Error(short N);
 	void SetInpStr(std::string& s);
@@ -119,6 +121,14 @@ public:
 	FileD* processing_F = nullptr; // actually compiled file
 	static std::deque<LocVarBlkD> ProcStack;
 
+	std::string input_string;
+	size_t input_pos = 0;
+	size_t input_old_err_pos = 0;
+
+	BYTE CurrChar; // { Compile }
+	BYTE ForwChar, ExpChar, Lexem;
+	pstring LexWord;
+
 private:
 	double ValofS(pstring& S);
 	bool SrchF(FieldDescr* F1, FieldDescr* F);
@@ -143,7 +153,4 @@ private:
 	LinkD* FindOwnLD(FileD* FD, std::string RoleName);
 	void SetLocVars(FrmlElem* Z, char typ, bool return_param, std::vector<LocVar*>& newVars);
 	void RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vector<LocVar*> newVars);
-
-	std::string input_string_;
-	size_t input_pos_ = 0;
 };

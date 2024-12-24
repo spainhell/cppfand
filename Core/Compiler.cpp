@@ -23,7 +23,7 @@
 
 const BYTE MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
-Compiler* g_compiler = new Compiler();
+Compiler* gc = new Compiler(); // global compiler instance
 
 //bool KeyArgFound;
 //FieldDescr* KeyArgFld;
@@ -32,10 +32,6 @@ pstring QQdiv = "div";
 pstring QQmod = "mod";
 pstring QQround = "round";
 
-BYTE CurrChar; // { Compile }
-BYTE ForwChar, ExpChar, Lexem;
-pstring LexWord;
-
 // init Compiler static variable
 std::deque<LocVarBlkD> Compiler::ProcStack;
 
@@ -43,9 +39,20 @@ Compiler::Compiler()
 {
 }
 
+Compiler::Compiler(std::string& input)
+{
+	input_string = input;
+}
+
 Compiler::Compiler(FileD* file_d)
 {
 	processing_F = file_d;
+}
+
+Compiler::Compiler(FileD* file_d, std::string& input)
+{
+	processing_F = file_d;
+	input_string = input;
 }
 
 Compiler::~Compiler()
@@ -74,10 +81,10 @@ std::string Compiler::Error(short N)
 			ErrMsg = ErrMsg + " " + MsgLine;
 		}
 	}
-	CurrPos--;
+	input_pos--;
 	ClearKbdBuf();
-	size_t l = InpArrLen;
-	WORD i = CurrPos;
+	size_t l = input_string.length();
+	size_t i = input_pos;
 	if (IsTestRun && (!PrevCompInp.empty() && InpRdbPos.rdb != CRdb /* 0xinclude higher Rdb*/
 		|| InpRdbPos.rdb == nullptr) /* TODO: ptr(0, 1)*/ /*LongStr + ShowErr*/
 		&& StoreAvail() > l + TxtCols * TxtRows * 2 + 50)
@@ -86,8 +93,7 @@ std::string Compiler::Error(short N)
 		//MarkStore(p1);
 		int w = PushW(1, 1, TxtCols, TxtRows);
 		TextAttr = screen.colors.tNorm;
-		char* p = new char[l];
-		memcpy(p, InpArrPtr, l);
+		std::string p = input_string;
 		if (!PrevCompInp.empty()) {
 			ReadMessage(63);
 		}
@@ -96,17 +102,13 @@ std::string Compiler::Error(short N)
 		}
 		std::string HdTxt = MsgLine;
 		LongStr LS;
-		LS.A = p;
-		LS.LL = l;
+		LS.A = (char*)p.c_str();
+		LS.LL = p.length();
 		std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
 		editor->SimpleEditText('T', ErrMsg, HdTxt, &LS, 0xfff, i, upd);
-		p = LS.A;
-		l = LS.LL;
 		PopW(w);
-		delete[] p;
-		p = nullptr;
-		//ReleaseStore(p1);
 	}
+
 	EdRecKey = ErrMsg;
 	LastExitCode = i + 1 + 1;
 	IsCompileErr = true;
@@ -117,21 +119,23 @@ std::string Compiler::Error(short N)
 
 void Compiler::SetInpStr(std::string& s)
 {
-	InpArrLen = s.length();
-	InpArrPtr = (BYTE*)s.data();
-	if (InpArrLen == 0) ForwChar = 0x1A;
-	else ForwChar = InpArrPtr[0];
-	CurrPos = 0;
+	input_string = s;
+
+	if (input_string.empty()) ForwChar = 0x1A;
+	else ForwChar = input_string[0];
+
+	input_pos = 0;
 	FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
 }
 
 void Compiler::SetInpStdStr(std::string& s, bool ShowErr)
 {
-	InpArrLen = s.length();
-	InpArrPtr = (BYTE*)s.c_str();
-	if (InpArrLen == 0) ForwChar = 0x1A;
-	else ForwChar = InpArrPtr[0];
-	CurrPos = 0;
+	input_string = s;
+
+	if (input_string.empty()) ForwChar = 0x1A;
+	else ForwChar = input_string[0];
+
+	input_pos = 0;
 	InpRdbPos.rdb = nullptr;
 	if (ShowErr) InpRdbPos.rdb = nullptr; // TODO: tady bylo InpRdbPos.rdb:=ptr(0,1);
 	InpRdbPos.i_rec = 0;
@@ -139,11 +143,12 @@ void Compiler::SetInpStdStr(std::string& s, bool ShowErr)
 
 void Compiler::SetInpLongStr(LongStr* S, bool ShowErr)
 {
-	InpArrLen = S->LL;
-	InpArrPtr = (BYTE*)&S->A[0];
-	if (InpArrLen == 0) ForwChar = 0x1A;
-	else ForwChar = InpArrPtr[0];
-	CurrPos = 0;
+	input_string = std::string(S->A, S->LL);
+
+	if (input_string.empty()) ForwChar = 0x1A;
+	else ForwChar = input_string[0];
+
+	input_pos = 0;
 	InpRdbPos.rdb = nullptr;
 	if (ShowErr) InpRdbPos.rdb = nullptr; // TODO: tady bylo InpRdbPos.rdb:=ptr(0,1);
 	InpRdbPos.i_rec = 0;
@@ -153,15 +158,18 @@ void Compiler::SetInpLongStr(LongStr* S, bool ShowErr)
 // nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
 void Compiler::SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 {
-	LongStr* s = file_d->FF->TF->ReadLongStr(Pos);
+	LongStr* S = file_d->FF->TF->ReadLongStr(Pos);
 	if (Decode) {
-		Coding::CodingLongStr(file_d, s);
+		Coding::CodingLongStr(file_d, S);
 	}
-	InpArrLen = s->LL;
-	InpArrPtr = (BYTE*)&s->A[0];
-	if (InpArrLen == 0) ForwChar = 0x1A;
-	else ForwChar = InpArrPtr[0];
-	CurrPos = 0;
+	input_string = std::string(S->A, S->LL);
+
+	if (input_string.empty()) ForwChar = 0x1A;
+	else ForwChar = input_string[0];
+
+	input_pos = 0;
+
+	delete S; S = nullptr;
 }
 
 void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
@@ -201,30 +209,31 @@ void Compiler::SetInpTTxtPos(FileD* file_d)
 	//RdbD* r = file_d->ChptPos.rdb;
 	processing_F = file_d;
 
-	if (pos > InpArrLen) {
+	if (pos >= input_string.length()) {
 		ForwChar = 0x1A;
 	}
 	else {
-		ForwChar = InpArrPtr[pos];
+		ForwChar = input_string[pos];
 	}
 
-	CurrPos = pos;
+	input_pos = pos;
 }
 
 void Compiler::ReadChar()
 {
+	size_t len = input_string.length();
 	CurrChar = ForwChar;
-	if (CurrPos < InpArrLen) {
-		CurrPos++;
-		if (CurrPos == InpArrLen) {
+	if (input_pos < len) {
+		input_pos++;
+		if (input_pos == len) {
 			ForwChar = 0x1A;
 		}
 		else {
-			ForwChar = InpArrPtr[CurrPos];
+			ForwChar = input_string[input_pos];
 		}
 	}
-	else if (CurrPos == InpArrLen) {
-		CurrPos++;
+	else if (input_pos == len) {
+		input_pos++;
 		ForwChar = 0x1A; // CTRL+Z = 0x1A
 	}
 }
@@ -355,7 +364,7 @@ label1:
 	case 0x1A: {
 		if (!PrevCompInp.empty()) {
 			PrevCompInp.pop_back();
-			if (CurrPos <= InpArrLen) ForwChar = InpArrPtr[CurrPos];
+			if (input_pos < input_string.length()) ForwChar = input_string[input_pos];
 			goto label1;
 		}
 		break;
@@ -433,7 +442,7 @@ label1:
 
 void Compiler::OldError(short N)
 {
-	CurrPos = OldErrPos;
+	input_pos = input_old_err_pos;
 	Error(N);
 }
 
@@ -456,7 +465,7 @@ void Compiler::RdBackSlashCode()
 
 void Compiler::RdLex()
 {
-	OldErrPos = CurrPos;
+	input_old_err_pos = input_pos;
 	SkipBlank(false);
 	ReadChar();
 	Lexem = CurrChar;
@@ -545,7 +554,7 @@ void Compiler::RdLex()
 
 bool Compiler::IsForwPoint()
 {
-	return (ForwChar == '.') && (InpArrPtr[CurrPos + 1] != '.');
+	return (ForwChar == '.') && (input_string[input_pos + 1] != '.');
 }
 
 void Compiler::TestIdentif()
@@ -637,7 +646,7 @@ label1:
 		return ValofS(S);
 	}
 	if ((ForwChar == 'e' || ForwChar == 'E')
-		&& (InpArrPtr[CurrPos + 1] == '-' || (InpArrPtr[CurrPos + 1] >= 0 && InpArrPtr[CurrPos + 1] <= 9))) {
+		&& (input_string[input_pos + 1] == '-' || (input_string[input_pos + 1] >= 0 && input_string[input_pos + 1] <= 9))) {
 		S.Append('e'); ReadChar();
 		if (ForwChar == '-') { ReadChar(); S.Append('-'); }
 		RdLex(); TestLex(_number); S = S + LexWord;
@@ -771,11 +780,10 @@ stSaveState* Compiler::SaveCompState()
 	state->FDLocVarAllowed = FDLocVarAllowed;
 	state->IsCompileErr = IsCompileErr;
 	state->PrevCompInp = PrevCompInp;
-	state->InpArrPtr = InpArrPtr;
+	state->InputString = input_string;
 	state->InpRdbPos = InpRdbPos;
-	state->InpArrLen = InpArrLen;
-	state->CurrPos = CurrPos;
-	state->OldErrPos = OldErrPos;
+	state->CurrPos = input_pos;
+	state->OldErrPos = input_old_err_pos;
 	state->FrmlSumEl = FrmlSumEl;
 	state->FrstSumVar = FrstSumVar;
 	state->FileVarsAllowed = FileVarsAllowed;
@@ -797,11 +805,10 @@ void Compiler::RestoreCompState(stSaveState* p)
 	FDLocVarAllowed = p->FDLocVarAllowed;
 	IsCompileErr = p->IsCompileErr;
 	PrevCompInp = p->PrevCompInp;
-	InpArrPtr = p->InpArrPtr;
+	input_string = p->InputString;
 	InpRdbPos = p->InpRdbPos;
-	InpArrLen = p->InpArrLen;
-	CurrPos = p->CurrPos;
-	OldErrPos = p->OldErrPos;
+	input_pos = p->CurrPos;
+	input_old_err_pos = p->OldErrPos;
 	FrmlSumEl = p->FrmlSumEl;
 	FrstSumVar = p->FrstSumVar;
 	FileVarsAllowed = p->FileVarsAllowed;
@@ -1031,11 +1038,11 @@ void Compiler::RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char C
 					CRdb->v_files.push_back(f);
 					TestLex(']');
 					lv->FD = f; // here was lv->FD = CFile
-					n = CurrPos;
+					n = input_pos;
 					lx = Lexem;
 					fc = ForwChar;
 					RestoreCompState(p);
-					CurrPos = n; Lexem = lx; ForwChar = fc;
+					input_pos = n; Lexem = lx; ForwChar = fc;
 					RdLex();
 				}
 			}
@@ -1327,7 +1334,7 @@ void Compiler::GoCompileErr(int i_rec, WORD n)
 	IsCompileErr = true;
 	InpRdbPos.rdb = CRdb;
 	InpRdbPos.i_rec = i_rec;
-	CurrPos = 0;
+	input_pos = 0;
 	ReadMessage(n);
 	GoExit();
 }

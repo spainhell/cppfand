@@ -1,4 +1,5 @@
 #pragma once
+//#include "../Core/Compiler.h"
 #include "../Core/rdrun.h"
 
 class MergeReportBase {
@@ -29,4 +30,6 @@ protected:
 
 	InpD* IDA[30];
 	short MaxIi;
+
+	//Compiler* base_compiler;
 };

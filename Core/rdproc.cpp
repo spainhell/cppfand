@@ -168,12 +168,12 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 	}
 	compiler->TestIdentif();
 	for (LinkD* ld : LinkDRoot) {
-		sLexWord = LexWord;
+		sLexWord = gc->LexWord;
 		if ((ld->FromFD == CFile) && EquUpCase(ld->RoleName, sLexWord)) {
 			if ((ld->IndexRoot == 0)) compiler->Error(116);
 			compiler->RdLex();
 			fd = ld->ToFD;
-			if (Lexem == '(') {
+			if (gc->Lexem == '(') {
 				compiler->RdLex();
 				if (!compiler->FindLocVar(&LVBD, &lv) || !(lv->f_typ == 'i' || lv->f_typ == 'r')) compiler->Error(177);
 				compiler->RdLex();
@@ -226,7 +226,7 @@ FrmlElem* RdFldNameFrmlP(Compiler* compiler, char& FTyp, MergeReportBase* caller
 			return result;
 		}
 		else {
-			std::string f_name = LexWord;
+			std::string f_name = compiler->LexWord;
 			bool linked = compiler->IsRoleName(FileVarsAllowed, compiler->processing_F, &FD, &LD);
 
 			if (FD != nullptr) {
@@ -295,7 +295,7 @@ FrmlElem* RdFldNameFrmlP(Compiler* compiler, char& FTyp, MergeReportBase* caller
 		}
 	}
 
-	if (ForwChar == '[') {
+	if (compiler->ForwChar == '[') {
 		auto A = new FrmlElem14(_accrecno, 8); // Z = GetOp(_accrecno, 8);
 		FD = compiler->RdFileName();
 		compiler->RdLex();
@@ -347,7 +347,7 @@ FileD* RdPath(Compiler* compiler, bool NoFD, std::string& Path, WORD& CatIRec)
 {
 	FileD* fd = nullptr;
 	CatIRec = 0;
-	if (Lexem == _quotedstr) {
+	if (compiler->Lexem == _quotedstr) {
 		Path = compiler->RdStringConst();
 		fd = nullptr;
 	}
@@ -355,8 +355,8 @@ FileD* RdPath(Compiler* compiler, bool NoFD, std::string& Path, WORD& CatIRec)
 		compiler->TestIdentif();
 		fd = compiler->FindFileD();
 		if (fd == nullptr) {
-			CatIRec = catalog->GetCatalogIRec(LexWord, true);
-			TestCatError(compiler, CatIRec, LexWord, false);
+			CatIRec = catalog->GetCatalogIRec(compiler->LexWord, true);
+			TestCatError(compiler, CatIRec, compiler->LexWord, false);
 		}
 		else if (NoFD) {
 			compiler->Error(97);
@@ -449,7 +449,7 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 		((FrmlElemPrompt*)Z)->FldD = F;
 		FTyp = F->frml_type;
 		if (F->field_type == FieldType::TEXT) compiler->OldError(65);
-		if (Lexem == _assign) {
+		if (compiler->Lexem == _assign) {
 			compiler->RdLex();
 			((FrmlElemPrompt*)Z)->P2 = compiler->RdFrml(Typ, nullptr);
 			if (Typ != FTyp) compiler->OldError(12);
@@ -556,10 +556,10 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 	label3:
 		auto iZ = (FrmlElem16*)Z;
 		RdPath(compiler, true, iZ->TxtPath, iZ->TxtCatIRec);
-		if ((Z->Op == _gettxt) && (Lexem == ',')) {
+		if ((Z->Op == _gettxt) && (compiler->Lexem == ',')) {
 			compiler->RdLex();
 			iZ->P1 = compiler->RdRealFrml(nullptr);
-			if (Lexem == ',') {
+			if (compiler->Lexem == ',') {
 				compiler->RdLex();
 				iZ->P2 = compiler->RdRealFrml(nullptr);
 			}
@@ -639,7 +639,7 @@ XKey* RdViewKeyImpl(Compiler* compiler, FileD* FD)
 	XKey* K = nullptr;
 	if (FD != nullptr) K = FD->Keys.empty() ? nullptr : FD->Keys[0];
 	if (K == nullptr) compiler->Error(24);
-	if (Lexem == '/') {
+	if (compiler->Lexem == '/') {
 		K = compiler->RdViewKey(FD);
 	}
 	return K;
@@ -651,7 +651,7 @@ void RdSelectStr(Compiler* compiler, FrmlElemFunction* Z)
 	Z->P1 = compiler->RdRealFrml(nullptr); compiler->Accept(',');
 	Z->P2 = compiler->RdRealFrml(nullptr); compiler->Accept(',');
 	Z->P3 = compiler->RdStrFrml(nullptr);
-	while (Lexem == ',') {
+	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		if (compiler->IsOpt("HEAD")) Z->P4 = compiler->RdStrFrml(nullptr);
 		else if (compiler->IsOpt("FOOT")) Z->P5 = compiler->RdStrFrml(nullptr);
@@ -680,17 +680,17 @@ void RdChoices(Compiler* compiler, Instr_menu* PD)
 			N++;
 			if ((PD->Kind == PInstrCode::_menubar) && (N > 30)) compiler->Error(102);
 			CD->TxtFrml = compiler->RdStrFrml(nullptr);
-			if (Lexem == ',') {
+			if (compiler->Lexem == ',') {
 				compiler->RdLex();
-				if (Lexem != ',') {
+				if (compiler->Lexem != ',') {
 					CD->HelpName = compiler->RdHelpName();
 					PD->HelpRdb = CRdb;
 				}
-				if (Lexem == ',') {
+				if (compiler->Lexem == ',') {
 					compiler->RdLex();
-					if (Lexem != ',') {
+					if (compiler->Lexem != ',') {
 						CD->Condition = compiler->RdBool(nullptr);
-						if (Lexem == '!') {
+						if (compiler->Lexem == '!') {
 							CD->DisplEver = true;
 							compiler->RdLex();
 						}
@@ -700,7 +700,7 @@ void RdChoices(Compiler* compiler, Instr_menu* PD)
 			compiler->Accept(':');
 			AddInstr(CD->v_instr, RdPInstr(compiler));
 		}
-		if (Lexem == ';') {
+		if (compiler->Lexem == ';') {
 			compiler->RdLex();
 			if (compiler->IsKeyWord("END")) return;
 			continue;
@@ -713,12 +713,12 @@ void RdChoices(Compiler* compiler, Instr_menu* PD)
 
 void RdMenuAttr(Compiler* compiler, Instr_menu* PD)
 {
-	if (Lexem != ';') return;
+	if (compiler->Lexem != ';') return;
 	compiler->RdLex();
 	PD->mAttr[0] = compiler->RdAttr(); compiler->Accept(',');
 	PD->mAttr[1] = compiler->RdAttr(); compiler->Accept(',');
 	PD->mAttr[2] = compiler->RdAttr();
-	if (Lexem == ',') {
+	if (compiler->Lexem == ',') {
 		compiler->RdLex();
 		PD->mAttr[3] = compiler->RdAttr();
 	}
@@ -729,9 +729,9 @@ Instr* RdMenuBox(Compiler* compiler, bool Loop)
 	Instr_menu* result = new Instr_menu(PInstrCode::_menubox);
 	
 	result->Loop = Loop;
-	if (Lexem == '(') {
+	if (compiler->Lexem == '(') {
 		compiler->RdLex();
-		if (Lexem != ';') {
+		if (compiler->Lexem != ';') {
 			result->X = compiler->RdRealFrml(nullptr);
 			compiler->Accept(',');
 			result->Y = compiler->RdRealFrml(nullptr);
@@ -739,7 +739,7 @@ Instr* RdMenuBox(Compiler* compiler, bool Loop)
 		RdMenuAttr(compiler, result);
 		compiler->Accept(')');
 	}
-	if (Lexem == '!') { compiler->RdLex(); result->Shdw = true; }
+	if (compiler->Lexem == '!') { compiler->RdLex(); result->Shdw = true; }
 	if (compiler->IsKeyWord("PULLDOWN")) result->PullDown = true;
 	if (!compiler->TestKeyWord("OF")) result->HdLine = compiler->RdStrFrml(nullptr);
 	RdChoices(compiler, result);
@@ -751,11 +751,11 @@ Instr* RdMenuBar(Compiler* compiler)
 {
 	Instr_menu* PD = new Instr_menu(PInstrCode::_menubar); // GetPInstr(_menubar, 48);
 	auto result = PD;
-	if (Lexem == '(') {
+	if (compiler->Lexem == '(') {
 		compiler->RdLex();
-		if (Lexem != ';') {
+		if (compiler->Lexem != ';') {
 			PD->Y = compiler->RdRealFrml(nullptr);
-			if (Lexem == ',') {
+			if (compiler->Lexem == ',') {
 				compiler->RdLex();
 				PD->X = compiler->RdRealFrml(nullptr);
 				compiler->Accept(',');
@@ -857,13 +857,13 @@ Instr* RdCase(Compiler* compiler)
 		PD->Bool = compiler->RdBool(nullptr);
 		compiler->Accept(':');
 		AddInstr(PD->v_instr, RdPInstr(compiler));
-		bool b = Lexem == ';';
+		bool b = compiler->Lexem == ';';
 		if (b) compiler->RdLex();
 		if (!compiler->IsKeyWord("END")) {
 			if (compiler->IsKeyWord("ELSE")) {
 				while (!compiler->IsKeyWord("END")) {
 					AddInstr(PD->v_else_instr, RdPInstr(compiler));
-					if (Lexem == ';') {
+					if (compiler->Lexem == ';') {
 						compiler->RdLex();
 					}
 					else {
@@ -890,7 +890,7 @@ Instr_loops* RdRepeatUntil(Compiler* compiler)
 	Instr_loops* result = PD;
 	while (!compiler->IsKeyWord("UNTIL")) {
 		AddInstr(PD->v_instr, RdPInstr(compiler));
-		if (Lexem == ';') {
+		if (compiler->Lexem == ';') {
 			compiler->RdLex();
 		}
 		else {
@@ -961,7 +961,7 @@ Instr_forall* RdForAll(Compiler* compiler)
 			CViewKey = compiler->RdViewKey(processed_file);
 		}
 		compiler->processing_F = processed_file;
-		if (Lexem == '(') {
+		if (compiler->Lexem == '(') {
 			compiler->RdLex();
 			PD->CBool = compiler->RdKeyInBool(PD->CKIRoot, false, true, PD->CSQLFilter, nullptr);
 			if ((!PD->CKIRoot.empty()) && (PD->CLV != nullptr)) {
@@ -969,11 +969,11 @@ Instr_forall* RdForAll(Compiler* compiler)
 			}
 			compiler->Accept(')');
 		}
-		if (Lexem == '!') {
+		if (compiler->Lexem == '!') {
 			compiler->RdLex();
 			PD->CWIdx = true;
 		}
-		if (Lexem == '%') {
+		if (compiler->Lexem == '%') {
 			compiler->RdLex();
 			PD->CProcent = true;
 		}
@@ -996,7 +996,7 @@ std::vector<Instr*> RdBeginEnd(Compiler* compiler)
 			// read instructions and add them to the list
 			AddInstr(instructions, RdPInstr(compiler));
 
-			if (Lexem == ';') {
+			if (compiler->Lexem == ';') {
 				compiler->RdLex();
 				if (!compiler->IsKeyWord("END")) {
 					continue;
@@ -1013,7 +1013,7 @@ std::vector<Instr*> RdBeginEnd(Compiler* compiler)
 
 Instr_proc* RdProcArg(Compiler* compiler, char Caller)
 {
-	std::string ProcName = LexWord;
+	std::string ProcName = compiler->LexWord;
 	RdbPos Pos;
 	TypAndFrml TArg[31];
 	LocVar* LV = nullptr;
@@ -1022,29 +1022,29 @@ Instr_proc* RdProcArg(Compiler* compiler, char Caller)
 	}
 	WORD N = 0;
 	if (Caller != 'P') {
-		if (Lexem == '(') {
+		if (compiler->Lexem == '(') {
 			compiler->RdLex();
 			goto label1;
 		}
 	}
-	else if (Lexem == ',') {
+	else if (compiler->Lexem == ',') {
 		compiler->RdLex();
 		compiler->Accept('(');
 	label1:
 		N++;
 		if (N > 30) compiler->Error(123);
-		TArg[N].Name = LexWord;
-		if ((ForwChar != '.') && compiler->FindLocVar(&LVBD, &LV) && (LV->f_typ == 'i' || LV->f_typ == 'r')) {
+		TArg[N].Name = compiler->LexWord;
+		if ((compiler->ForwChar != '.') && compiler->FindLocVar(&LVBD, &LV) && (LV->f_typ == 'i' || LV->f_typ == 'r')) {
 			compiler->RdLex();
 			TArg[N].FTyp = LV->f_typ;
 			TArg[N].FD = LV->FD;
 			TArg[N].RecPtr = LV->record;
 		}
-		else if (Lexem == '@') {
+		else if (compiler->Lexem == '@') {
 			compiler->RdLex();
-			if (Lexem == '[') {
+			if (compiler->Lexem == '[') {
 				compiler->RdLex();
-				TArg[N].Name = LexWord;
+				TArg[N].Name = compiler->LexWord;
 				compiler->Accept(_identifier);
 				compiler->Accept(',');
 				auto z = new FrmlElemFunction(_setmybp, 0); // GetOp(_setmybp, 0);
@@ -1060,7 +1060,7 @@ Instr_proc* RdProcArg(Compiler* compiler, char Caller)
 		else {
 			TArg[N].Frml = compiler->RdFrml(TArg[N].FTyp, nullptr);
 		}
-		if (Lexem == ',') {
+		if (compiler->Lexem == ',') {
 			compiler->RdLex();
 			goto label1;
 		}
@@ -1116,15 +1116,15 @@ void RdKeyCode(Compiler* compiler, EdExitD* X)
 	std::string key; // tady bude "shift" | "ctrl" | "alt"
 	BYTE fnNr; // tady bude cislo funkci klavesy
 
-	lastKey->KeyName = LexWord;
-	if (FindShiftCtrlAltFxx(LexWord, key, fnNr))
+	lastKey->KeyName = compiler->LexWord;
+	if (FindShiftCtrlAltFxx(compiler->LexWord, key, fnNr))
 	{
 		SetCode(key, fnNr, lastKey);
 		compiler->RdLex();
 	}
 	else {
 		for (i = 0; i < NKeyNames; i++) {
-			if (EquUpCase(KeyNames[i].Nm, LexWord)) {
+			if (EquUpCase(KeyNames[i].Nm, compiler->LexWord)) {
 				lastKey->KeyCode = KeyNames[i].Code;
 				lastKey->Break = KeyNames[i].Brk;
 				compiler->RdLex();
@@ -1161,149 +1161,149 @@ bool RdHeadLast(Compiler* compiler, Instr_edittxt* IE)
 
 bool RdViewOpt(EditOpt* EO, FileD* file_d)
 {
-	std::unique_ptr<Compiler> local_compiler = std::make_unique<Compiler>(file_d);
-	local_compiler->rdFldNameType = FieldNameType::P;
+	std::unique_ptr<Compiler> lc = std::make_unique<Compiler>(file_d);
+	lc->rdFldNameType = FieldNameType::P;
 
 	FileD* FD = nullptr;
 	RprtOpt* RO = nullptr;
 	bool Flgs[23]{ false };
 	auto result = false;
-	local_compiler->RdLex();
+	lc->RdLex();
 	result = true;
 	CViewKey = EO->ViewKey;
-	if (local_compiler->IsOpt("TAB")) {
-		local_compiler->RdNegFldList(EO->NegTab, EO->Tab);
+	if (lc->IsOpt("TAB")) {
+		lc->RdNegFldList(EO->NegTab, EO->Tab);
 	}
-	else if (local_compiler->IsOpt("DUPL")) {
-		local_compiler->RdNegFldList(EO->NegDupl, EO->Dupl);
+	else if (lc->IsOpt("DUPL")) {
+		lc->RdNegFldList(EO->NegDupl, EO->Dupl);
 	}
-	else if (local_compiler->IsOpt("NOED")) {
-		local_compiler->RdNegFldList(EO->NegNoEd, EO->NoEd);
+	else if (lc->IsOpt("NOED")) {
+		lc->RdNegFldList(EO->NegNoEd, EO->NoEd);
 	}
-	else if (local_compiler->IsOpt("MODE")) {
-		local_compiler->SkipBlank(false);
-		if ((Lexem == _quotedstr) && (ForwChar == ',' || ForwChar == ')')) {
+	else if (lc->IsOpt("MODE")) {
+		lc->SkipBlank(false);
+		if ((lc->Lexem == _quotedstr) && (lc->ForwChar == ',' || lc->ForwChar == ')')) {
 			DataEditorParams params;
-			int validate = params.SetFromString(LexWord, true);
+			int validate = params.SetFromString(lc->LexWord, true);
 			if (validate != 0) {
-				local_compiler->Error(validate);
+				lc->Error(validate);
 			}
 			EO->Mode = new FrmlElemString(_const, 0); // GetOp(_const, LexWord.length() + 1);
-			((FrmlElemString*)EO->Mode)->S = LexWord;
-			local_compiler->RdLex();
+			((FrmlElemString*)EO->Mode)->S = lc->LexWord;
+			lc->RdLex();
 		}
 		else {
-			EO->Mode = local_compiler->RdStrFrml(nullptr);
+			EO->Mode = lc->RdStrFrml(nullptr);
 		}
 	}
-	else if (RdHeadLast(local_compiler.get(), EO)) {
+	else if (RdHeadLast(lc.get(), EO)) {
 		return result;
 	}
-	else if (local_compiler->IsOpt("WATCH")) {
-		EO->WatchDelayZ = local_compiler->RdRealFrml(nullptr);
+	else if (lc->IsOpt("WATCH")) {
+		EO->WatchDelayZ = lc->RdRealFrml(nullptr);
 	}
-	else if (local_compiler->IsOpt("WW")) {
-		local_compiler->Accept('(');
+	else if (lc->IsOpt("WW")) {
+		lc->Accept('(');
 		EO->WFlags = 0;
-		if (Lexem == '(') { local_compiler->RdLex(); EO->WFlags = WNoPop; }
-		local_compiler->RdW(EO->W);
-		local_compiler->RdFrame(&EO->Top, EO->WFlags);
-		if (Lexem == ',') {
-			local_compiler->RdLex();
-			EO->ZAttr = local_compiler->RdAttr(); local_compiler->Accept(',');
-			EO->ZdNorm = local_compiler->RdAttr(); local_compiler->Accept(',');
-			EO->ZdHiLi = local_compiler->RdAttr();
-			if (Lexem == ',') {
-				local_compiler->RdLex();
-				EO->ZdSubset = local_compiler->RdAttr();
-				if (Lexem == ',') {
-					local_compiler->RdLex();
-					EO->ZdDel = local_compiler->RdAttr();
-					if (Lexem == ',') {
-						local_compiler->RdLex();
-						EO->ZdTab = local_compiler->RdAttr();
-						if (Lexem == ',') {
-							local_compiler->RdLex();
-							EO->ZdSelect = local_compiler->RdAttr();
+		if (lc->Lexem == '(') { lc->RdLex(); EO->WFlags = WNoPop; }
+		lc->RdW(EO->W);
+		lc->RdFrame(&EO->Top, EO->WFlags);
+		if (lc->Lexem == ',') {
+			lc->RdLex();
+			EO->ZAttr = lc->RdAttr(); lc->Accept(',');
+			EO->ZdNorm = lc->RdAttr(); lc->Accept(',');
+			EO->ZdHiLi = lc->RdAttr();
+			if (lc->Lexem == ',') {
+				lc->RdLex();
+				EO->ZdSubset = lc->RdAttr();
+				if (lc->Lexem == ',') {
+					lc->RdLex();
+					EO->ZdDel = lc->RdAttr();
+					if (lc->Lexem == ',') {
+						lc->RdLex();
+						EO->ZdTab = lc->RdAttr();
+						if (lc->Lexem == ',') {
+							lc->RdLex();
+							EO->ZdSelect = lc->RdAttr();
 						}
 					}
 				}
 			}
 		}
-		local_compiler->Accept(')');
+		lc->Accept(')');
 		if ((EO->WFlags & WNoPop) != 0) {
-			local_compiler->Accept(')');
+			lc->Accept(')');
 		}
 	}
-	else if (local_compiler->IsOpt("EXIT")) {
-		local_compiler->Accept('(');
+	else if (lc->IsOpt("EXIT")) {
+		lc->Accept('(');
 		while (true) {
 			EdExitD* X = new EdExitD();
 			EO->ExD.push_back(X);
 
-			RdKeyList(local_compiler.get(), X);
-			if (local_compiler->IsKeyWord("QUIT")) X->Typ = 'Q';
-			else if (local_compiler->IsKeyWord("REPORT")) {
-				if (X->AtWrRec || (EO->LVRecPtr != nullptr)) local_compiler->OldError(144);
-				local_compiler->Accept('(');
+			RdKeyList(lc.get(), X);
+			if (lc->IsKeyWord("QUIT")) X->Typ = 'Q';
+			else if (lc->IsKeyWord("REPORT")) {
+				if (X->AtWrRec || (EO->LVRecPtr != nullptr)) lc->OldError(144);
+				lc->Accept('(');
 				X->Typ = 'R';
-				RO = local_compiler->GetRprtOpt();
-				local_compiler->RdChptName('R', &RO->RprtPos, true);
-				while (Lexem == ',') {
-					local_compiler->RdLex();
-					if (local_compiler->IsOpt("ASSIGN")) {
-						RdPath(local_compiler.get(), true, RO->Path, RO->CatIRec);
+				RO = lc->GetRprtOpt();
+				lc->RdChptName('R', &RO->RprtPos, true);
+				while (lc->Lexem == ',') {
+					lc->RdLex();
+					if (lc->IsOpt("ASSIGN")) {
+						RdPath(lc.get(), true, RO->Path, RO->CatIRec);
 					}
-					else if (local_compiler->IsKeyWord("EDIT")) {
+					else if (lc->IsKeyWord("EDIT")) {
 						RO->Edit = true;
 					}
 					else {
-						local_compiler->Error(130);
+						lc->Error(130);
 					}
 				}
 				X->RO = RO;
-				local_compiler->Accept(')');
+				lc->Accept(')');
 			}
-			else if (!(Lexem == ',' || Lexem == ')')) {
+			else if (!(lc->Lexem == ',' || lc->Lexem == ')')) {
 				X->Typ = 'P';
-				X->Proc = RdProcArg(local_compiler.get(), 'E');
+				X->Proc = RdProcArg(lc.get(), 'E');
 			}
-			if (Lexem == ',') {
-				local_compiler->RdLex();
+			if (lc->Lexem == ',') {
+				lc->RdLex();
 				continue;
 			}
 			break;
 		}
-		local_compiler->Accept(')');
+		lc->Accept(')');
 	}
 	else if (EO->LVRecPtr != nullptr) {
 		result = false;
 	}
-	else if (local_compiler->IsOpt("COND")) {
-		if (Lexem == '(') {
-			local_compiler->RdLex();
-			EO->Cond = local_compiler->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
-			local_compiler->Accept(')');
+	else if (lc->IsOpt("COND")) {
+		if (lc->Lexem == '(') {
+			lc->RdLex();
+			EO->Cond = lc->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
+			lc->Accept(')');
 		}
 		else {
-			EO->Cond = local_compiler->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
+			EO->Cond = lc->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
 		}
 	}
-	else if (local_compiler->IsOpt("JOURNAL")) {
-		EO->Journal = local_compiler->RdFileName();
+	else if (lc->IsOpt("JOURNAL")) {
+		EO->Journal = lc->RdFileName();
 		WORD l = EO->Journal->FF->RecLen - 13;
 		if (file_d->FF->file_type == FileType::INDEX) {
 			l++;
 		}
 		if (file_d->FF->RecLen != l) {
-			local_compiler->OldError(111);
+			lc->OldError(111);
 		}
 	}
-	else if (local_compiler->IsOpt("SAVEAFTER")) {
-		EO->SaveAfterZ = local_compiler->RdRealFrml(nullptr);
+	else if (lc->IsOpt("SAVEAFTER")) {
+		EO->SaveAfterZ = lc->RdRealFrml(nullptr);
 	}
-	else if (local_compiler->IsOpt("REFRESH")) {
-		EO->RefreshDelayZ = local_compiler->RdRealFrml(nullptr);
+	else if (lc->IsOpt("REFRESH")) {
+		EO->RefreshDelayZ = lc->RdRealFrml(nullptr);
 	}
 	else {
 		result = false;
@@ -1314,7 +1314,7 @@ bool RdViewOpt(EditOpt* EO, FileD* file_d)
 void RdKeyList(Compiler* compiler, EdExitD* X)
 {
 	while (true) {
-		if ((Lexem == '(') || (Lexem == '^')) {
+		if ((compiler->Lexem == '(') || (compiler->Lexem == '^')) {
 			compiler->RdNegFldList(X->NegFlds, X->Flds);
 		}
 		else if (compiler->IsKeyWord("RECORD")) {
@@ -1326,7 +1326,7 @@ void RdKeyList(Compiler* compiler, EdExitD* X)
 		else {
 			RdKeyCode(compiler, X);
 		}
-		if (Lexem == ',') {
+		if (compiler->Lexem == ',') {
 			compiler->RdLex();
 			continue;
 		}
@@ -1449,13 +1449,13 @@ void RdProcCall(Compiler* compiler, Instr** pinstr)
 			iPutPixel->Par4 = compiler->RdRealFrml(nullptr);
 			compiler->Accept(',');
 			iPutPixel->Par5 = compiler->RdAttr();
-			if (Lexem == ',') {
+			if (compiler->Lexem == ',') {
 				compiler->RdLex();
 				iPutPixel->Par6 = compiler->RdRealFrml(nullptr);
-				if (Lexem == ',') {
+				if (compiler->Lexem == ',') {
 					compiler->RdLex();
 					iPutPixel->Par7 = compiler->RdRealFrml(nullptr);
-					if (Lexem == ',') {
+					if (compiler->Lexem == ',') {
 						compiler->RdLex();
 						iPutPixel->Par8 = compiler->RdRealFrml(nullptr); compiler->Accept(',');
 						iPutPixel->Par9 = compiler->RdRealFrml(nullptr); compiler->Accept(',');
@@ -1473,7 +1473,7 @@ void RdProcCall(Compiler* compiler, Instr** pinstr)
 			else iPutPixel->Par4 = compiler->RdRealFrml(nullptr);
 			compiler->Accept(',');
 			iPutPixel->Par5 = compiler->RdAttr();
-			if ((iPutPixel->Kind == PInstrCode::_ellipse) && (Lexem == ',')) {
+			if ((iPutPixel->Kind == PInstrCode::_ellipse) && (compiler->Lexem == ',')) {
 				compiler->RdLex();
 				iPutPixel->Par6 = compiler->RdRealFrml(nullptr);
 				compiler->Accept(',');
@@ -1545,7 +1545,7 @@ std::vector<FieldDescr*> RdFlds(Compiler* compiler)
 	while (true) {
 		auto fd = compiler->RdFldName(compiler->processing_F);
 		FLRoot.push_back(fd);
-		if (Lexem == ',') {
+		if (compiler->Lexem == ',') {
 			compiler->RdLex();
 			continue;
 		}
@@ -1572,7 +1572,7 @@ std::vector<FieldDescr*> RdSubFldList(Compiler* compiler, const std::vector<Fiel
 			bool found = false;
 			compiler->TestIdentif();
 			for (FieldDescr* f : v_fields) {
-				if (EquUpCase(f->Name, LexWord)) {
+				if (EquUpCase(f->Name, compiler->LexWord)) {
 					found = true;
 					field = f;
 					result.push_back(f);
@@ -1589,7 +1589,7 @@ std::vector<FieldDescr*> RdSubFldList(Compiler* compiler, const std::vector<Fiel
 			compiler->OldError(20);
 		}
 
-		if (Lexem == ',') {
+		if (compiler->Lexem == ',') {
 			compiler->RdLex();
 			continue;
 		}
@@ -1643,7 +1643,7 @@ Instr_edit* RdEditCall(Compiler* compiler)
 			compiler->Error(114);
 		}
 		stSaveState* p = compiler->SaveCompState();
-		bool b = RdUserView(instr_edit->EditFD, LexWord, &instr_edit->options);
+		bool b = RdUserView(instr_edit->EditFD, compiler->LexWord, &instr_edit->options);
 		compiler->RestoreCompState(p);
 		if (!b) compiler->Error(114);
 		compiler->RdLex();
@@ -1652,7 +1652,7 @@ Instr_edit* RdEditCall(Compiler* compiler)
 		compiler->processing_F = instr_edit->EditFD;
 		RdBegViewDcl(&instr_edit->options);
 	}
-	while (Lexem == ',') {
+	while (compiler->Lexem == ',') {
 		bool b = RdViewOpt(&instr_edit->options, instr_edit->EditFD);
 		if (!b) RdEditOpt(compiler, &instr_edit->options, instr_edit->EditFD);
 	}
@@ -1719,10 +1719,10 @@ Instr* RdReportCall(Compiler* compiler)
 	bool has_first = false;
 	FileD* processing_file = nullptr;
 
-	if (Lexem != ',') {
+	if (compiler->Lexem != ',') {
 		has_first = true;
 		bool b = false;
-		if (Lexem == '(') {
+		if (compiler->Lexem == '(') {
 			compiler->RdLex();
 			b = true;
 		}
@@ -1741,14 +1741,14 @@ Instr* RdReportCall(Compiler* compiler)
 				compiler->processing_F = processing_file;
 				CViewKey = compiler->RdViewKey(FDL->FD);
 				FDL->ViewKey = CViewKey;
-				if (Lexem == '(') {
+				if (compiler->Lexem == '(') {
 					compiler->RdLex();
 					FDL->Cond = compiler->RdKeyInBool(FDL->KeyIn, true, true, FDL->SQLFilter, nullptr);
 					compiler->Accept(')');
 				}
 			}
 
-			if (b && (Lexem == ',')) {
+			if (b && (compiler->Lexem == ',')) {
 				compiler->RdLex();
 				continue;
 			}
@@ -1765,23 +1765,23 @@ Instr* RdReportCall(Compiler* compiler)
 	}
 
 	compiler->Accept(',');
-	if (Lexem == '[') {
+	if (compiler->Lexem == '[') {
 		compiler->RdLex();
 		RO->RprtPos.rdb = (RdbD*)compiler->RdStrFrml(nullptr);
 		RO->RprtPos.i_rec = 0;
 		RO->FromStr = true;
 		compiler->Accept(']');
 	}
-	else if (!has_first || (Lexem == _identifier)) {
+	else if (!has_first || (compiler->Lexem == _identifier)) {
 		compiler->TestIdentif();
-		if (!compiler->FindChpt('R', LexWord, false, &RO->RprtPos)) {
+		if (!compiler->FindChpt('R', compiler->LexWord, false, &RO->RprtPos)) {
 			compiler->Error(37);
 		}
 		compiler->RdLex();
 	}
 	else {
 		compiler->Accept('(');
-		switch (Lexem) {
+		switch (compiler->Lexem) {
 		case '?': {
 			RO->Flds = compiler->AllFldsList(processing_file, false);
 			compiler->RdLex();
@@ -1794,7 +1794,7 @@ Instr* RdReportCall(Compiler* compiler)
 		}
 		default: {
 			RO->Flds = RdFlds(compiler);
-			if (Lexem == '?') {
+			if (compiler->Lexem == '?') {
 				compiler->RdLex();
 				RO->UserSelFlds = true;
 			}
@@ -1803,7 +1803,7 @@ Instr* RdReportCall(Compiler* compiler)
 		}
 		compiler->Accept(')');
 	}
-	while (Lexem == ',') {
+	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		if (has_first) {
 			RprtFDListEl* FDL = RO->FDL[RO->FDL.size() - 1]; // last element
@@ -1822,7 +1822,7 @@ Instr* RdReportCall(Compiler* compiler)
 void RdRprtOpt(Compiler* compiler, RprtOpt* RO, bool has_first)
 {
 	FileD* FD = nullptr;
-	WORD N = 0;
+	size_t N = 0;
 
 	if (compiler->IsOpt("ASSIGN")) {
 		RdPath(compiler, true, RO->Path, RO->CatIRec);
@@ -1848,14 +1848,14 @@ void RdRprtOpt(Compiler* compiler, RprtOpt* RO, bool has_first)
 			compiler->RdKFList(RO->SK, CFile);
 			compiler->Accept(')');
 		}
-		WORD Low = CurrPos;
+		WORD Low = compiler->input_pos;
 		compiler->Accept(_equ);
 		bool br = false;
-		if (Lexem == '(') {
-			Low = CurrPos;
+		if (compiler->Lexem == '(') {
+			Low = compiler->input_pos;
 			compiler->RdLex();
 			br = true;
-			if (Lexem == '?') {
+			if (compiler->Lexem == '?') {
 				compiler->RdLex();
 				RO->UserCondQuest = true;
 				if (br) {
@@ -1865,8 +1865,8 @@ void RdRprtOpt(Compiler* compiler, RprtOpt* RO, bool has_first)
 			}
 		}
 		RO->FDL[0]->Cond = compiler->RdKeyInBool(RO->FDL[0]->KeyIn, true, true, RO->FDL[0]->SQLFilter, nullptr);
-		N = OldErrPos - Low;
-		RO->CondTxt = std::string((const char*)&InpArrPtr[Low], N);
+		N = compiler->input_old_err_pos - Low;
+		RO->CondTxt = compiler->input_string.substr(Low, N); //std::string((const char*)&InpArrPtr[Low], N);
 
 		if (br) {
 			compiler->Accept(')');
@@ -1937,19 +1937,19 @@ Instr* RdRDBCall(Compiler* compiler)
 	auto PD = new Instr_call(); // GetPD(_call, 12);
 	compiler->RdLex();
 	//s[0] = 0;
-	if (Lexem == '\\') {
+	if (compiler->Lexem == '\\') {
 		s = "\\";
 		compiler->RdLex();
 	}
 	compiler->TestIdentif();
-	if (LexWord.length() > 8) compiler->Error(2);
-	PD->RdbNm = s + std::string(LexWord);
+	if (compiler->LexWord.length() > 8) compiler->Error(2);
+	PD->RdbNm = s + std::string(compiler->LexWord);
 	compiler->RdLex();
-	if (Lexem == ',') {
+	if (compiler->Lexem == ',') {
 		compiler->RdLex();
 		compiler->TestIdentif();
-		if (LexWord.length() > 12) compiler->Error(2);
-		PD->ProcNm = LexWord;
+		if (compiler->LexWord.length() > 12) compiler->Error(2);
+		PD->ProcNm = compiler->LexWord;
 		compiler->RdLex();
 		PD->ProcCall = RdProcArg(compiler, 'C');
 	}
@@ -1966,7 +1966,7 @@ Instr* RdExec(Compiler* compiler)
 	RdPath(compiler, true, PD->ProgPath, PD->ProgCatIRec);
 	compiler->Accept(',');
 	PD->Param = compiler->RdStrFrml(nullptr);
-	while (Lexem == ',') {
+	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		if (compiler->IsKeyWord("NOCANCEL")) PD->NoCancel = true;
 		else if (compiler->IsKeyWord("FREEMEM")) PD->FreeMm = true;
@@ -1991,14 +1991,14 @@ Instr* RdCopyFile(Compiler* compiler)
 	/* !!! with D^ do!!! */
 	CD->FD1 = RdPath(compiler, false, CD->Path1, CD->CatIRec1);
 	CD->WithX1 = RdX(compiler, CD->FD1);
-	if (Lexem == '/') {
+	if (compiler->Lexem == '/') {
 		if (CD->FD1 != nullptr) { CFile = CD->FD1; CD->ViewKey = compiler->RdViewKey(CD->FD1); }
 		else CD->Opt1 = RdCOpt(compiler);
 	}
 	compiler->Accept(',');
 	CD->FD2 = RdPath(compiler, false, CD->Path2, CD->CatIRec2);
 	CD->WithX2 = RdX(compiler, CD->FD2);
-	if (Lexem == '/') {
+	if (compiler->Lexem == '/') {
 		if (CD->FD2 != nullptr) compiler->Error(139);
 		else CD->Opt2 = RdCOpt(compiler);
 	}
@@ -2012,7 +2012,7 @@ Instr* RdCopyFile(Compiler* compiler)
 				&& (FD2->typSQLFile)) OldError(155);
 #endif
 	}
-	while (Lexem == ',') {
+	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		if (compiler->IsOpt("HEAD")) {
 			CD->HdFD = compiler->RdFileName();
@@ -2025,7 +2025,7 @@ Instr* RdCopyFile(Compiler* compiler)
 		else if (compiler->IsOpt("MODE")) {
 			compiler->TestLex(_quotedstr);
 			for (i = 0; i < 7; i++) {
-				if (EquUpCase(LexWord, ModeTxt[i])) {
+				if (EquUpCase(compiler->LexWord, ModeTxt[i])) {
 					CD->Mode = i + 1;
 					goto label1;
 				}
@@ -2050,7 +2050,7 @@ CpOption RdCOpt(Compiler* compiler)
 	compiler->RdLex();
 	compiler->TestIdentif();
 	for (i = 0; i < 3; i++)
-		if (EquUpCase(OptArr[i], LexWord)) {
+		if (EquUpCase(OptArr[i], compiler->LexWord)) {
 			compiler->RdLex();
 			return CpOption(i + 1); // vracime i + 1 (CpOption ma 4 moznosti, je to posunute ...)
 		}
@@ -2061,7 +2061,7 @@ CpOption RdCOpt(Compiler* compiler)
 bool RdX(Compiler* compiler, FileD* FD)
 {
 	auto result = false;
-	if ((Lexem == '.') && (FD != nullptr)) {
+	if ((compiler->Lexem == '.') && (FD != nullptr)) {
 		compiler->RdLex();
 		compiler->AcceptKeyWord("X");
 		if (FD->FF->file_type != FileType::INDEX) compiler->OldError(108);
@@ -2085,7 +2085,7 @@ bool TestFixVar(Compiler* compiler, CpOption Opt, FileD* FD1, FileD* FD2)
 bool RdList(Compiler* compiler, pstring* S)
 {
 	auto result = false;
-	if (Lexem != '(') return result;
+	if (compiler->Lexem != '(') return result;
 	compiler->RdLex();
 	// TODO: compiler !!! S = (pstring*)(compiler->RdStrFrml);
 	compiler->Accept(')');
@@ -2118,14 +2118,14 @@ Instr* RdEditTxt(Compiler* compiler)
 	}
 	else RdPath(compiler, true, PD->TxtPath, PD->TxtCatIRec);
 	PD->EdTxtMode = 'T';
-	while (Lexem == ',') {
+	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		if (compiler->IsOpt("WW")) {
 			compiler->Accept('(');
-			if (Lexem == '(') { compiler->RdLex(); PD->WFlags = WNoPop; }
+			if (compiler->Lexem == '(') { compiler->RdLex(); PD->WFlags = WNoPop; }
 			compiler->RdW(PD->Ww);
 			compiler->RdFrame(&PD->Hd, PD->WFlags);
-			if (Lexem == ',') { compiler->RdLex(); PD->Atr = compiler->RdAttr(); }
+			if (compiler->Lexem == ',') { compiler->RdLex(); PD->Atr = compiler->RdAttr(); }
 			compiler->Accept(')');
 			if ((PD->WFlags & WNoPop) != 0) compiler->Accept(')');
 		}
@@ -2140,14 +2140,14 @@ Instr* RdEditTxt(Compiler* compiler)
 				PD->ExD.push_back(pX);
 			label2:
 				RdKeyCode(compiler, pX);
-				if (Lexem == ',') { compiler->RdLex(); goto label2; }
+				if (compiler->Lexem == ',') { compiler->RdLex(); goto label2; }
 				compiler->Accept(':');
 				if (compiler->IsKeyWord("QUIT")) pX->Typ = 'Q';
-				else if (!(Lexem == ',' || Lexem == ')')) {
+				else if (!(compiler->Lexem == ',' || compiler->Lexem == ')')) {
 					pX->Typ = 'P';
 					pX->Proc = RdProcArg(compiler, 'T');
 				}
-				if (Lexem == ',') { compiler->RdLex(); goto label1; }
+				if (compiler->Lexem == ',') { compiler->RdLex(); goto label1; }
 				compiler->Accept(')');
 			}
 			else
@@ -2165,7 +2165,7 @@ Instr* RdPutTxt(Compiler* compiler)
 	RdPath(compiler, true, PD->TxtPath1, PD->TxtCatIRec1);
 	compiler->Accept(',');
 	PD->Txt = compiler->RdStrFrml(nullptr);
-	if (Lexem == ',') {
+	if (compiler->Lexem == ',') {
 		compiler->RdLex();
 		compiler->AcceptKeyWord("APPEND");
 		PD->App = true;
@@ -2179,8 +2179,8 @@ Instr* RdTurnCat(Compiler* compiler)
 	compiler->RdLex();
 	compiler->TestIdentif();
 	PD->NextGenFD = compiler->FindFileD();
-	const int first = catalog->GetCatalogIRec(LexWord, true);
-	TestCatError(compiler, first, LexWord, true);
+	const int first = catalog->GetCatalogIRec(compiler->LexWord, true);
+	TestCatError(compiler, first, compiler->LexWord, true);
 	compiler->RdLex();
 	PD->FrstCatIRec = first;
 	const std::string rdb_name = catalog->GetRdbName(first);
@@ -2213,18 +2213,18 @@ void RdWriteln(Compiler* compiler, WriteType OpKind, Instr_writeln** pinstr)
 
 		if (w->Typ == 'R') {
 			w->Typ = 'F';
-			if (Lexem == ':') {
+			if (compiler->Lexem == ':') {
 				compiler->RdLex();
-				if (Lexem == _quotedstr) {
+				if (compiler->Lexem == _quotedstr) {
 					w->Typ = 'D';
-					w->Mask = LexWord;
+					w->Mask = compiler->LexWord;
 					compiler->RdLex();
 				}
 				else {
 					w->N = compiler->RdInteger();
-					if (Lexem == ':') {
+					if (compiler->Lexem == ':') {
 						compiler->RdLex();
-						if (Lexem == '-') {
+						if (compiler->Lexem == '-') {
 							compiler->RdLex();
 							w->M = -compiler->RdInteger();
 						}
@@ -2236,7 +2236,7 @@ void RdWriteln(Compiler* compiler, WriteType OpKind, Instr_writeln** pinstr)
 			}
 		}
 
-		if (Lexem == ',') {
+		if (compiler->Lexem == ',') {
 			compiler->RdLex();
 			if ((OpKind == WriteType::message) && compiler->IsOpt("HELP")) {
 				z = compiler->RdStrFrml(nullptr);
@@ -2285,7 +2285,7 @@ Instr* RdIndexfile(Compiler* compiler)
 	compiler->RdLex();
 	PD->IndexFD = compiler->RdFileName();
 	if (PD->IndexFD->FF->file_type != FileType::INDEX) compiler->OldError(108);
-	if (Lexem == ',') {
+	if (compiler->Lexem == ',') {
 		compiler->RdLex();
 		compiler->AcceptKeyWord("COMPRESS");
 		PD->Compress = true;
@@ -2301,8 +2301,8 @@ Instr* RdGetIndex(Compiler* compiler)
 	LocVar* lv = RdIdxVar(compiler);
 	PD->loc_var1 = lv; compiler->Accept(',');
 	PD->mode = ' ';
-	if (Lexem == '+' || Lexem == '-') {
-		PD->mode = Lexem;
+	if (compiler->Lexem == '+' || compiler->Lexem == '-') {
+		PD->mode = compiler->Lexem;
 		compiler->RdLex();
 		compiler->Accept(',');
 		PD->condition = compiler->RdRealFrml(nullptr); /*RecNr*/
@@ -2312,7 +2312,7 @@ Instr* RdGetIndex(Compiler* compiler)
 	if (lv->FD != compiler->processing_F) compiler->OldError(164);
 	CViewKey = compiler->RdViewKey(lv->FD);
 	PD->keys = CViewKey;
-	while (Lexem == ',') {
+	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		if (compiler->IsOpt("SORT")) {
 			if (!((XWKey*)lv->record)->KFlds.empty()) {
@@ -2356,10 +2356,10 @@ Instr* RdClrWw(Compiler* compiler)
 	auto PD = new Instr_clrww(); // GetPD(_clrww, 24);
 	compiler->RdLex();
 	compiler->RdW(PD->W2);
-	if (Lexem == ',') {
+	if (compiler->Lexem == ',') {
 		compiler->RdLex();
-		if (Lexem != ',') PD->Attr2 = compiler->RdAttr();
-		if (Lexem == ',') { compiler->RdLex(); PD->FillC = compiler->RdStrFrml(nullptr); }
+		if (compiler->Lexem != ',') PD->Attr2 = compiler->RdAttr();
+		if (compiler->Lexem == ',') { compiler->RdLex(); PD->FillC = compiler->RdStrFrml(nullptr); }
 	}
 	return PD;
 }
@@ -2372,15 +2372,15 @@ Instr* RdMount(Compiler* compiler)
 	compiler->TestIdentif();
 	FileD* FD = compiler->FindFileD();
 	if (FD == nullptr) {
-		i = catalog->GetCatalogIRec(LexWord, true);
+		i = catalog->GetCatalogIRec(compiler->LexWord, true);
 	}
 	else {
 		i = FD->CatIRec;
 	}
-	TestCatError(compiler, i, LexWord, false);
+	TestCatError(compiler, i, compiler->LexWord, false);
 	compiler->RdLex();
 	PD->MountCatIRec = i;
-	if (Lexem == ',') {
+	if (compiler->Lexem == ',') {
 		compiler->RdLex();
 		compiler->AcceptKeyWord("NOCANCEL");
 		PD->MountNoCancel = true;
@@ -2393,7 +2393,7 @@ Instr* RdDisplay(Compiler* compiler)
 	auto PD = new Instr_merge_display(PInstrCode::_display); // GetPD(_display, sizeof(RdbPos));
 	compiler->RdLex();
 	pstring* s = nullptr;
-	if ((Lexem == _identifier) && compiler->FindChpt('H', LexWord, false, &PD->Pos)) {
+	if ((compiler->Lexem == _identifier) && compiler->FindChpt('H', compiler->LexWord, false, &PD->Pos)) {
 		compiler->RdLex();
 	}
 	else {
@@ -2430,10 +2430,10 @@ Instr_graph* RdGraphP(Compiler* compiler)
 			compiler->Accept(',');
 			PDGD->ZA[i] = compiler->RdFldName(PDGD->FD);
 			i++;
-		} while (!((i > 9) || (Lexem != ',')));
+		} while (!((i > 9) || (compiler->Lexem != ',')));
 		compiler->Accept(')');
 	}
-	while (Lexem == ',') {
+	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		for (i = 0; i < 11; i++) {
 			if (compiler->IsOpt(Nm1[i])) {
@@ -2452,7 +2452,7 @@ Instr_graph* RdGraphP(Compiler* compiler)
 		if (compiler->IsDigitOpt("HEADZ", i)) PDGD->HZA[i] = compiler->RdStrFrml(nullptr);
 		else if (compiler->IsKeyWord("INTERACT")) PDGD->Interact = true;
 		else if (compiler->IsOpt("COND")) {
-			if (Lexem == '(') {
+			if (compiler->Lexem == '(') {
 				compiler->RdLex();
 				PDGD->Cond = compiler->RdKeyInBool(PDGD->KeyIn, false, true, PDGD->SQLFilter, nullptr);
 				compiler->Accept(')');
@@ -2500,10 +2500,10 @@ Instr_graph* RdGraphP(Compiler* compiler)
 		else if (compiler->IsOpt("WW")) {
 			WinG* Ww = new WinG();
 			compiler->Accept('(');
-			if (Lexem == '(') { compiler->RdLex(); Ww->WFlags = WNoPop; }
+			if (compiler->Lexem == '(') { compiler->RdLex(); Ww->WFlags = WNoPop; }
 			compiler->RdW(Ww->W);
 			compiler->RdFrame(Ww->Top, Ww->WFlags);
-			if (Lexem == ',') {
+			if (compiler->Lexem == ',') {
 				compiler->RdLex();
 				Ww->ColBack = compiler->RdStrFrml(nullptr); compiler->Accept(',');
 				Ww->ColFor = compiler->RdStrFrml(nullptr); compiler->Accept(',');
@@ -2584,7 +2584,7 @@ Instr_recs* RdMixRecAcc(Compiler* compiler, PInstrCode Op)
 #endif
 		}
 }
-	if ((Lexem == ',') && (Op == PInstrCode::_writerec || Op == PInstrCode::_deleterec || Op == PInstrCode::_recallrec)) {
+	if ((compiler->Lexem == ',') && (Op == PInstrCode::_writerec || Op == PInstrCode::_deleterec || Op == PInstrCode::_recallrec)) {
 		compiler->RdLex();
 		compiler->Accept('+');
 		PD->AdUpd = true;
@@ -2608,7 +2608,7 @@ Instr* RdLinkRec(Compiler* compiler)
 	}
 	else {
 		compiler->TestIdentif();
-		LD = compiler->FindLD(PD->RecLV1->FD, LexWord);
+		LD = compiler->FindLD(PD->RecLV1->FD, compiler->LexWord);
 		if (LD == nullptr) compiler->Error(9);
 		compiler->RdLex();
 		compiler->Accept('(');
@@ -2634,7 +2634,7 @@ label1:
 	else if (compiler->IsOpt("LEFT")) PD->Left = compiler->RdRealFrml(nullptr);
 	else if (compiler->IsOpt("RIGHT")) PD->Right = compiler->RdRealFrml(nullptr);
 	else compiler->Error(160);
-	if (Lexem == ',') { compiler->RdLex(); goto label1; }
+	if (compiler->Lexem == ',') { compiler->RdLex(); goto label1; }
 	return PD;
 }
 
@@ -2658,10 +2658,10 @@ std::vector<AssignD*> MakeImplAssign(Compiler* compiler, FileD* FD1, FileD* FD2)
 {
 	std::vector<AssignD*> ARoot;
 	char FTyp;
-	pstring S = LexWord;
+	pstring S = compiler->LexWord;
 	for (FieldDescr* F1 : FD1->FldD) {
 		if ((F1->Flg & f_Stored) != 0) {
-			LexWord = F1->Name;
+			compiler->LexWord = F1->Name;
 			FieldDescr* F2 = compiler->FindFldName(FD2);
 			if (F2 != nullptr) {
 				AssignD* A = new AssignD();
@@ -2684,7 +2684,7 @@ std::vector<AssignD*> MakeImplAssign(Compiler* compiler, FileD* FD1, FileD* FD2)
 			}
 		}
 	}
-	LexWord = S;
+	compiler->LexWord = S;
 	return ARoot;
 }
 
@@ -2693,14 +2693,14 @@ Instr_assign* RdAssign(Compiler* compiler)
 	FileD* FD = nullptr; FieldDescr* F = nullptr;
 	LocVar* LV = nullptr; LocVar* LV2 = nullptr; char PV;
 	Instr_assign* PD = nullptr; pstring FName; char FTyp = 0;
-	if (ForwChar == '.')
+	if (compiler->ForwChar == '.')
 		if (compiler->FindLocVar(&LVBD, &LV) && (LV->f_typ == 'r' || LV->f_typ == 'i')) {
 			FTyp = LV->f_typ;
 			compiler->RdLex(); compiler->RdLex();
 			if (FTyp == 'i') {
 				compiler->AcceptKeyWord("NRECS");
 				compiler->Accept(_assign);
-				if ((Lexem != _number) || (LexWord != "0")) compiler->Error(183);
+				if ((compiler->Lexem != _number) || (compiler->LexWord != "0")) compiler->Error(183);
 				compiler->RdLex();
 				PD = new Instr_assign(PInstrCode::_asgnxnrecs); // GetPInstr(_asgnxnrecs, 4);
 				PD->xnrIdx = (XWKey*)LV->record;
@@ -2717,7 +2717,7 @@ Instr_assign* RdAssign(Compiler* compiler)
 			}
 		}
 		else {
-			FName = LexWord;
+			FName = compiler->LexWord;
 			FD = compiler->FindFileD();
 			if (FD->IsActiveRdb()) compiler->Error(121);
 			compiler->RdLex(); compiler->RdLex();
@@ -2759,7 +2759,7 @@ Instr_assign* RdAssign(Compiler* compiler)
 				goto label0;
 			}
 		}
-	else if (ForwChar == '[') {
+	else if (compiler->ForwChar == '[') {
 		PD = new Instr_assign(PInstrCode::_asgnField); // GetPInstr(_asgnField, 18);
 		FD = compiler->RdFileName();
 		PD->FD = FD; compiler->RdLex();
@@ -2836,7 +2836,7 @@ Instr_assign* RdAssign(Compiler* compiler)
 	}
 	else {
 		compiler->RdLex();
-		if (Lexem == _assign) compiler->OldError(8);
+		if (compiler->Lexem == _assign) compiler->OldError(8);
 		else compiler->OldError(34);
 	}
 	return PD;
@@ -2851,13 +2851,13 @@ Instr* RdWith(Compiler* compiler)
 		P = new Instr_window(); //GetPInstr(_window, 29);
 		auto iP = (Instr_window*)P;
 		compiler->Accept('(');
-		if (Lexem == '(') {
+		if (compiler->Lexem == '(') {
 			compiler->RdLex();
 			iP->WithWFlags = WNoPop;
 		}
 		compiler->RdW(iP->W);
 		compiler->RdFrame(&iP->Top, iP->WithWFlags);
-		if (Lexem == ',') {
+		if (compiler->Lexem == ',') {
 			compiler->RdLex();
 			iP->Attr = compiler->RdAttr();
 		}
@@ -2898,7 +2898,7 @@ Instr* RdWith(Compiler* compiler)
 			label3:
 				compiler->Accept(')');
 			}
-			if (Lexem == ',') {
+			if (compiler->Lexem == ',') {
 				compiler->RdLex();
 				continue;
 			}
@@ -2949,7 +2949,7 @@ std::vector<Instr*> RdPInstr(Compiler* compiler)
 	else if (compiler->IsKeyWord("BREAK")) single_instr = new Instr(PInstrCode::_break);
 	else if (compiler->IsKeyWord("EXIT")) single_instr = new Instr(PInstrCode::_exitP);
 	else if (compiler->IsKeyWord("CANCEL")) single_instr = new Instr(PInstrCode::_cancel);
-	else if (Lexem == ';') single_instr = nullptr;
+	else if (compiler->Lexem == ';') single_instr = nullptr;
 	else if (IsRdUserFunc) single_instr = RdUserFuncAssign(compiler);
 	else if (compiler->IsKeyWord("MENULOOP")) single_instr = RdMenuBox(compiler, true);
 	else if (compiler->IsKeyWord("MENU")) single_instr = RdMenuBox(compiler, false);
@@ -2967,9 +2967,9 @@ std::vector<Instr*> RdPInstr(Compiler* compiler)
 #endif 
 	else if (compiler->IsKeyWord("RESETCATALOG")) single_instr = new Instr(PInstrCode::_resetcat);
 	else if (compiler->IsKeyWord("RANDOMIZE")) single_instr = new Instr(PInstrCode::_randomize);
-	else if (Lexem == _identifier) {
+	else if (compiler->Lexem == _identifier) {
 		compiler->SkipBlank(false);
-		if (ForwChar == '(') {
+		if (compiler->ForwChar == '(') {
 			RdProcCall(compiler , &single_instr); // funkce muze ovlivnit single_instruction
 		}
 		else if (compiler->IsKeyWord("CLRSCR")) single_instr = new Instr(PInstrCode::_clrscr);
@@ -2999,7 +2999,7 @@ void ReadProcHead(Compiler* compiler, const std::string& name)
 	compiler->RdLex();
 	ResetLVBD();
 	LVBD.FceName = name;
-	if (Lexem == '(') {
+	if (compiler->Lexem == '(') {
 		compiler->RdLex();
 		compiler->RdLocDcl(&LVBD, true, true, 'P');
 		compiler->Accept(')');
@@ -3014,7 +3014,7 @@ std::vector<Instr*> ReadProcBody(Compiler* compiler)
 	compiler->AcceptKeyWord("BEGIN");
 	std::vector<Instr*> result = RdBeginEnd(compiler);
 	compiler->Accept(';');
-	if (Lexem != 0x1A) {
+	if (compiler->Lexem != 0x1A) {
 		std::string error40 = compiler->Error(40);
 		std::string err_msg = "ReadProcBody exception: " + error40;
 		throw std::exception(err_msg.c_str());
@@ -3043,7 +3043,7 @@ void ReadDeclChpt(Compiler* compiler)
 			int32_t items = FuncDRoot.size() - CRdb->OldFCRoot.size();
 			std::deque<FuncD*>::iterator it0 = FuncDRoot.begin();
 			for (int32_t i = 0; i < items; i++) {
-				if (EquUpCase((*it0)->name, LexWord)) {
+				if (EquUpCase((*it0)->name, compiler->LexWord)) {
 					compiler->Error(26);
 				}
 				++it0;
@@ -3053,7 +3053,7 @@ void ReadDeclChpt(Compiler* compiler)
 			//fc->Chain = FuncDRoot;
 			//FuncDRoot = fc;
 			FuncDRoot.push_front(fc);
-			fc->name = LexWord;
+			fc->name = compiler->LexWord;
 			compiler->rdFldNameType = FieldNameType::P;
 			compiler->rdFuncType = ReadFuncType::P;
 			//ptrChainSumEl = nullptr;
@@ -3063,7 +3063,7 @@ void ReadDeclChpt(Compiler* compiler)
 			ResetLVBD();
 			LVBD.FceName = fc->name;
 			compiler->Accept('(');
-			if (Lexem != ')') {
+			if (compiler->Lexem != ')') {
 				compiler->RdLocDcl(&LVBD, true, false, 'D'); // nacte parametry funkce
 			}
 			compiler->Accept(')');
@@ -3099,7 +3099,7 @@ void ReadDeclChpt(Compiler* compiler)
 			fc->v_instr = RdBeginEnd(compiler);
 			compiler->Accept(';');
 		}
-		else if (Lexem == 0x1A) {
+		else if (compiler->Lexem == 0x1A) {
 			return;
 		}
 		else {
@@ -3144,7 +3144,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 			local_compiler->SetInpStdStr(s, false);
 			local_compiler->RdLex();
 			result = local_compiler->RdFrml(fTyp, nullptr);
-			if ((fTyp != X->EvalTyp) || (Lexem != 0x1A)) {
+			if ((fTyp != X->EvalTyp) || (gc->Lexem != 0x1A)) {
 				result = nullptr;
 			}
 			else {
@@ -3156,7 +3156,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 			// throw std::exception(err_msg.c_str());
 		}
 
-		WORD cpos = CurrPos;
+		size_t cpos = gc->input_pos;
 
 		if (LastExitCode != 0) {
 			LastTxtPos = cpos;
@@ -3189,7 +3189,7 @@ Instr* RdBackup(Compiler* compiler, char MTyp, bool IsBackup)
 
 	bool found = false;
 	for (int i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {
-		if (EquUpCase(catalog->GetRdbName(i), "ARCHIVES") && EquUpCase(catalog->GetFileName(i), LexWord)) {
+		if (EquUpCase(catalog->GetRdbName(i), "ARCHIVES") && EquUpCase(catalog->GetFileName(i), compiler->LexWord)) {
 			compiler->RdLex();
 			PD->BrCatIRec = i;
 			found = true;
@@ -3209,7 +3209,7 @@ Instr* RdBackup(Compiler* compiler, char MTyp, bool IsBackup)
 				PD->bmMasks = compiler->RdStrFrml(nullptr);
 			}
 		}
-		while (Lexem == ',') {
+		while (compiler->Lexem == ',') {
 			compiler->RdLex();
 			if (MTyp == 'M') {
 				if (!IsBackup && compiler->IsKeyWord("OVERWRITE")) {
@@ -3252,7 +3252,7 @@ Instr* RdCallLProc(Compiler* compiler)
 	Instr_lproc* pd = new Instr_lproc();
 	compiler->RdLex();
 	pd->name = compiler->RdChptName('L', &pd->lpPos, true);
-	if (Lexem == ',') {
+	if (compiler->Lexem == ',') {
 		compiler->RdLex();
 		compiler->TestIdentif();
 		//pd->lpName = LexWord;
