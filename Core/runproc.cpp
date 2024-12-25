@@ -1670,7 +1670,7 @@ void CallProcedure(Instr_proc* PD)
 #ifdef _DEBUG
 	//std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 	std::string srcCode = gc->input_string;
-	if (srcCode.find("var d,c:string; begin proc(Clr);") != std::string::npos) {
+	if (srcCode.find("(PARAM3:file; VetaP:record of PARAM3) var Kal,s:string;") != std::string::npos) {
 		printf("");
 	}
 #endif

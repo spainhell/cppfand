@@ -26,7 +26,7 @@ TextEditorEvents::~TextEditorEvents()
 	_modes_handler = nullptr;
 }
 
-void TextEditorEvents::CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
+bool TextEditorEvents::CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 {
 	bool Ctrl = false;
 	WORD Delta = 0;
@@ -78,6 +78,7 @@ label1:
 		editor->WrLLMargMsg(LastS, LastNr);
 		AddCtrlAltShift(flgs);
 	}
+	return true;
 }
 
 bool TextEditorEvents::My2GetEvent()
@@ -525,7 +526,11 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 	//}
 
 	std::string OrigS = "    ";
-	CtrlShiftAlt(editor, mode, LastS, LastNr, IsWrScreen);
+	bool end = CtrlShiftAlt(editor, mode, LastS, LastNr, IsWrScreen);
+	//if (end) {
+	//	ClrEvent();
+	//	return;
+	//}
 	GetEvent();
 	TextEditorMode tm = _modes_handler->GetMode();
 
@@ -591,6 +596,33 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 
 		if (TestExitKeys(editor, mode, ExitD, fs, sp, key)) {
 			goto Nic;
+		}
+
+		if (bScroll) {
+			switch (key) {
+			case __LEFT:
+			case __RIGHT:
+			case __UP:
+			case __DOWN:
+			case __PAGEUP:
+			case __PAGEDOWN:
+			case __HOME:
+			case __END:
+			case __CTRL_PAGEUP:
+			case __CTRL_PAGEDOWN:
+			case __CTRL_HOME:
+			case __CTRL_END: {
+				// only moves on screen are allowed in scroll mode
+				break;
+			}
+			case __ESC: {
+				// exit editor is allowed
+				break;
+			}
+			default: {
+				goto Nic;
+			}
+			}
 		}
 
 		// test frame drawing mode
@@ -1151,8 +1183,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			}
 			case _KW_: {
 				I1 = editor->blocks->BegBLn; I2 = editor->blocks->BegBPos;
-					I3 = editor->blocks->EndBLn; I = editor->blocks->EndBPos;
-					bb = TypeB;
+				I3 = editor->blocks->EndBLn; I = editor->blocks->EndBPos;
+				bb = TypeB;
 				if (!editor->BlockExist()) {
 					editor->blocks->BegBLn = 1; editor->blocks->EndBLn = 0x7FFF;
 					editor->blocks->BegBPos = 1; editor->blocks->EndBPos = 0xFF;
@@ -1202,9 +1234,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				case TextBlock: {
 					do {
 						I2 = 0x1000; if (fs - L2 < int(I2))  I2 = fs - L2;
-						if ((TypeT != FileT) && ((I2 >= MaxLenT - editor->_lenT) || (I2 >= StoreAvail()))) {
-							if (I2 >= StoreAvail()) {
-								I2 = StoreAvail();
+						if ((TypeT != FileT) && ((I2 >= MaxLenT - editor->_lenT) || (I2 >= MemoryAvailable()))) {
+							if (I2 >= MemoryAvailable()) {
+								I2 = MemoryAvailable();
 							}
 							I2 = MinW(I2, MaxLenT - editor->_lenT) - 2; fs = L2 + I2;
 							WrLLF10Msg(404);

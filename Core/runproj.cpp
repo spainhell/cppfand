@@ -955,7 +955,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 
 	MaxHp = nullptr;
 	ReleaseStore(&p2);
-	int Free = StoreAvail();
+	int Free = MemoryAvailable();
 	RunMsgClear();
 	if (WasError) {
 #ifdef FandSQL

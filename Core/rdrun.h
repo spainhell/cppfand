@@ -54,8 +54,8 @@ struct LvDescr {
 struct EdExKeyD
 {
 	std::string KeyName;
-	BYTE Break = 0;
-	unsigned short KeyCode = 0;
+	uint8_t Break = 0;
+	uint16_t KeyCode = 0;
 };
 
 struct EdExitD

@@ -40,7 +40,7 @@ void WorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NRe
 		//KF = KF->pChain;
 	}
 
-	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
+	BYTEs = (MemoryAvailable() - RestBytes - sizeof(WRec)) / 3;
 
 	if (BYTEs < 4096) {
 		RunError(624);

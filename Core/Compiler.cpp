@@ -87,7 +87,7 @@ std::string Compiler::Error(short N)
 	size_t i = input_pos;
 	if (IsTestRun && (!PrevCompInp.empty() && InpRdbPos.rdb != CRdb /* 0xinclude higher Rdb*/
 		|| InpRdbPos.rdb == nullptr) /* TODO: ptr(0, 1)*/ /*LongStr + ShowErr*/
-		&& StoreAvail() > l + TxtCols * TxtRows * 2 + 50)
+		&& MemoryAvailable() > l + TxtCols * TxtRows * 2 + 50)
 	{
 		bool upd;
 		//MarkStore(p1);
