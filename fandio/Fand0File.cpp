@@ -903,7 +903,7 @@ int Fand0File::CreateIndexFile()
 			delete XW; XW = nullptr;
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
-			if (!SaveCache(0, Handle)) GoExit();
+			if (!SaveCache(0, Handle)) GoExit(MsgLine);
 			/*FlushHandles; */
 		}
 		fail = false;
@@ -918,7 +918,7 @@ int Fand0File::CreateIndexFile()
 	}
 	_parent->Unlock(0);
 	_parent->OldLockMode(md);
-	if (fail) GoExit();
+	if (fail) GoExit(MsgLine);
 
 	return 0;
 }
@@ -1325,7 +1325,7 @@ void Fand0File::IndexFileProc(bool Compress)
 			}
 		}
 		if (!SaveCache(0, Handle)) {
-			GoExit();
+			GoExit(MsgLine);
 		}
 		SubstDuplF(FD2, false);
 		delete FD2; FD2 = nullptr;

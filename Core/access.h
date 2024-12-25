@@ -28,8 +28,6 @@ enum class ForAllFilesOperation {
 
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d = nullptr, WORD i = 0);
 
-void ResetCompilePars(); // r953 - posledni fce
-
 std::string TranslateOrd(std::string text);
 
 bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** newRecord);

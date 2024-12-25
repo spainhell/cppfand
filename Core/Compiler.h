@@ -7,32 +7,36 @@
 
 class Compiler;
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
-extern Compiler* g_compiler; // global g_compiler instance
+extern Compiler* gc; // global g_compiler instance
 
 enum class FieldNameType { none, F, P, T };
+enum class ReadFuncType { none, P };
 
 struct stSaveState
 {
 	BYTE CurrChar = 0;
 	BYTE ForwChar = 0; BYTE ExpChar = 0; BYTE Lexem = 0;
-	pstring LexWord;
+	std::string lex_word;
 	bool SpecFDNameAllowed = false, IdxLocVarAllowed = false, FDLocVarAllowed = false, IsCompileErr = false;
 	std::deque<CompInpD> PrevCompInp;
-	BYTE* InpArrPtr = nullptr; RdbPos InpRdbPos;
-	size_t InpArrLen = 0;
+	std::string InputString;
+	RdbPos InpRdbPos;
 	size_t CurrPos = 0;
 	size_t OldErrPos = 0;
 	std::vector<FrmlElemSum*> *FrmlSumEl = nullptr;
 	bool FrstSumVar = false, FileVarsAllowed = false;
 	//FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*) = nullptr; // ukazatel na funkci
 	FieldNameType RdFldNameType = FieldNameType::none;
-	FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
+	ReadFuncType RdFuncType = ReadFuncType::none;
+	FileD* processed_file = nullptr;
 };
 
 class Compiler {
 public:
 	Compiler();
+	Compiler(std::string& input);
 	Compiler(FileD* file_d);
+	Compiler(FileD* file_d, std::string& input);
 	~Compiler();
 	std::string Error(short N);
 	void SetInpStr(std::string& s);
@@ -41,6 +45,7 @@ public:
 	void SetInpTTPos(FileD* file_d, int Pos, bool Decode);
 	void SetInpTT(RdbPos* rdb_pos, bool FromTxt);
 	void SetInpTTxtPos(FileD* file_d);
+	void ResetCompilePars();
 	void ReadChar();
 	WORD RdDirective(bool& b);
 	void RdForwName(pstring& s);
@@ -60,7 +65,6 @@ public:
 	bool IsOpt(pstring S);
 	bool IsDigitOpt(pstring S, WORD& N);
 	bool IsIdentifStr(std::string& S);
-	pstring* RdStrConst();
 	std::string RdStringConst();
 	char Rd1Char();
 	char RdQuotedChar();
@@ -111,10 +115,19 @@ public:
 	void GoCompileErr(int i_rec, WORD n);
 
 	FieldNameType rdFldNameType = FieldNameType::none;
+	ReadFuncType rdFuncType = ReadFuncType::none;
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);
 
 	FileD* processing_F = nullptr; // actually compiled file
-	static std::deque<LocVarBlkD*> ProcStack;
+	static std::deque<LocVarBlkD> ProcStack;
+
+	std::string input_string;
+	size_t input_pos = 0;
+	size_t input_old_err_pos = 0;
+
+	BYTE CurrChar; // { Compile }
+	BYTE ForwChar, ExpChar, Lexem;
+	pstring LexWord;
 
 private:
 	double ValofS(pstring& S);

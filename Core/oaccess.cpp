@@ -57,7 +57,7 @@ void SaveFiles()
 	bool b = SaveCache(0, catalog_file->FF->Handle);
 	// TODO: HANDLE: FlushHandles();
 
-	if (!b) GoExit();
+	if (!b) GoExit(MsgLine);
 }
 
 void CloseFANDFiles(bool FromDML)
@@ -190,11 +190,17 @@ WORD TestMountVol(char DriveC)
 	CloseFilesOnDrive(D);
 	CVol = Vol;
 label1:
-	F10SpecKey = VK_ESCAPE;
+	F10SpecKey = __ESC;
 	SetMsgPar(Drive, CVol);
 	WrLLF10Msg(808);
-	if (Event.Pressed.KeyCombination() == __ESC) { if (PromptYN(21)) { GoExit(); } }
-	else goto label1;
+	if (Event.Pressed.KeyCombination() == __ESC) {
+		if (PromptYN(21)) {
+			GoExit(MsgLine);
+		}
+	}
+	else {
+		goto label1;
+	}
 	//if (D == FloppyDrives) FindFirst(Drive + ":\\*.VOL", 0, S);
 	//else FindFirst(Drive + ":\\*.*", VolumeID, S);
 	switch (DosError()) {

@@ -303,7 +303,7 @@ void RunError(WORD N)
 	RunErrNr = N;
 	ClearKbdBuf();
 	WrLLF10Msg(RunErrNr);
-	GoExit();
+	GoExit(MsgLine);
 }
 
 bool PromptYN(WORD NMsg)

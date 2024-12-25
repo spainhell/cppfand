@@ -71,7 +71,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						CFile->saveS(F, F1->RdFix(F->L), CRecPtr);
 					}
 					else {
-						char c = (char)ForwChar;
+						char c = (char)gc->ForwChar;
 						if (c == '\'' || c == '"') {
 							F1->RdChar();
 							s = F1->RdDelim(c);
@@ -561,7 +561,9 @@ void FileCopy(CopyD* CD)
 	}
 	SaveFiles();
 	RunMsgOff();
-	if (LastExitCode != 0 && !CD->NoCancel) GoExit();
+	if (LastExitCode != 0 && !CD->NoCancel) {
+		GoExit(MsgLine);
+	}
 }
 
 void MakeMerge(CopyD* CD)
@@ -576,9 +578,8 @@ void MakeMerge(CopyD* CD)
 		s = s + " #O1_" + CD->FD2->Name;
 		if (CD->Append) s = s + '+';
 
-		g_compiler->SetInpStr(s);
-
 		const std::unique_ptr merge = std::make_unique<Merge>();
+		merge->SetInput(s);
 		merge->Read();
 		merge->Run();
 
@@ -605,7 +606,7 @@ void BackUp(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 	delete F; F = nullptr;
 	if (LastExitCode != 0) {
 		RunMsgOff();
-		if (!NoCancel) GoExit();
+		if (!NoCancel) GoExit(MsgLine);
 	}
 }
 
@@ -641,7 +642,7 @@ void BackupM(Instr_backup* PD)
 	F->Close();
 	if (LastExitCode != 0) {
 		RunMsgOff();
-		if (!PD->BrNoCancel) GoExit();
+		if (!PD->BrNoCancel) GoExit(MsgLine);
 	}
 	ReleaseStore(&p);
 }

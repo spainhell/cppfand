@@ -75,8 +75,9 @@ void ReportProc(RprtOpt* RO, bool save)
 	//MarkBoth(p, p2);
 	PrintView = false;
 	if (RO->Flds.empty()) {
-		g_compiler->SetInpTT(&RO->RprtPos, true);
 		const std::unique_ptr report = std::make_unique<Report>();
+		report->SetInput(&RO->RprtPos, true);
+
 		if (RO->SyntxChk) {
 			IsCompileErr = false;
 			//NewExit(Ovr(), er);
@@ -237,13 +238,14 @@ void MergeProc(Instr_merge_display* PD)
 {
 	void* p = nullptr; void* p2 = nullptr;
 	MarkBoth(p, p2);
-	g_compiler->SetInpTT(&PD->Pos, true);
 
 	const std::unique_ptr merge = std::make_unique<Merge>();
+	merge->SetInput(&PD->Pos, true);
 	merge->Read();
 	merge->Run();
 
 	SaveFiles();
+
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
 }
@@ -392,7 +394,7 @@ void ExecPgm(Instr_exec* PD)
 	//screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
 	screen.GotoXY(1, 1);
 	if (!b) {
-		GoExit();
+		GoExit(MsgLine);
 	}
 }
 
@@ -407,7 +409,7 @@ void CallRdbProc(Instr_call* PD)
 	// TODO: tady se ma obnovit stav (MyBP - ProcStkD)
 	ReleaseStore(&p);
 	if (!b) {
-		GoExit();
+		GoExit(MsgLine);
 	}
 }
 
@@ -423,7 +425,7 @@ void MountProc(WORD CatIRec, bool NoCancel)
 	}
 	catch (std::exception& e) {
 		if (NoCancel) LastExitCode = 1;
-		else GoExit();
+		else GoExit(MsgLine);
 	}
 }
 
@@ -1663,28 +1665,30 @@ void CallProcedure(Instr_proc* PD)
 	//oldprocbp = ProcMyBP;
 	std::deque<LinkD*> ld = LinkDRoot;
 	size_t lstFDindex = CRdb->v_files.size() - 1; // index of last item in FileDRoot;
-	g_compiler->SetInpTT(&PD->PPos, true);
+	gc->SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
-	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("h:=TxtHead(h);") != std::string::npos) {
+	//std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
+	std::string srcCode = gc->input_string;
+	if (srcCode.find("var d,c:string; begin proc(Clr);") != std::string::npos) {
 		printf("");
 	}
 #endif
 
 	// save LVBD
-	LocVarBlkD oldLVDB = LVBD;
-	Compiler::ProcStack.push_front(&oldLVDB);
+	//LocVarBlkD oldLVDB = LVBD;
+	Compiler::ProcStack.push_front(LVBD);
 
-	ReadProcHead("");
+	ReadProcHead(gc, "");
 	PD->variables = LVBD;
 	WORD params_count = PD->variables.NParam;
 	LocVar* lvroot = PD->variables.GetRoot();
 	//oldbp = MyBP;
-	//PushProcStk();
+	//Compiler::ProcStack.push_front(&LVBD); //PushProcStk();
+
 	if ((params_count != PD->N) && !((params_count == PD->N - 1) && PD->ExPar)) {
-		CurrPos = 0;
-		g_compiler->Error(119);
+		gc->input_pos = 0;
+		gc->Error(119);
 	}
 
 	it0 = PD->variables.vLocVar.begin();
@@ -1692,27 +1696,27 @@ void CallProcedure(Instr_proc* PD)
 	// projdeme vstupni parametry funkce
 	for (i = 0; i < params_count; i++) {
 		if (PD->TArg[i].FTyp != (*it0)->f_typ) {
-			CurrPos = 0;
-			g_compiler->Error(119);
+			gc->input_pos = 0;
+			gc->Error(119);
 		}
 		switch (PD->TArg[i].FTyp) {
 		case 'r':
 		case 'i': {
 			if ((*it0)->FD != PD->TArg[i].FD) {
-				CurrPos = 0;
-				g_compiler->Error(119);
+				gc->input_pos = 0;
+				gc->Error(119);
 			}
 			(*it0)->record = static_cast<uint8_t*>(PD->TArg[i].RecPtr);
 			break;
 		}
 		case 'f': {
 			if (PD->TArg[i].RecPtr != nullptr) {
-				const auto state = g_compiler->SaveCompState();
+				const auto state = gc->SaveCompState();
 				std::string code = RunString(CFile, PD->TArg[i].TxtFrml, CRecPtr);
-				g_compiler->SetInpStdStr(code, true);
+				gc->SetInpStdStr(code, true);
 				CFile = RdFileD(PD->TArg[i].Name, FileType::FAND16, "$");
 				CRdb->v_files.push_back(CFile);
-				g_compiler->RestoreCompState(state);
+				gc->RestoreCompState(state);
 			}
 			else {
 				CFile = PD->TArg[i].FD;
@@ -1734,8 +1738,8 @@ void CallProcedure(Instr_proc* PD)
 			if (lv->is_return_param && (z->Op != _getlocvar)
 				|| PD->TArg[i].FromProlog
 				&& (PD->TArg[i].IsRetPar != lv->is_return_param)) {
-				CurrPos = 0;
-				g_compiler->Error(119);
+				gc->input_pos = 0;
+				gc->Error(119);
 			}
 			LVAssignFrml(CFile, lv, false, PD->TArg[i].Frml, CRecPtr);
 			break;
@@ -1761,7 +1765,7 @@ void CallProcedure(Instr_proc* PD)
 	}
 
 	// ****** READ PROCEDURE BODY ****** //
-	std::vector<Instr*> instructions = ReadProcBody();
+	std::vector<Instr*> instructions = ReadProcBody(gc);
 	// ********************************* //
 
 	FDLocVarAllowed = false;
@@ -1830,9 +1834,10 @@ void CallProcedure(Instr_proc* PD)
 	}
 	//PopProcStk();
 	//ProcMyBP = (ProcStkD*)oldprocbp;
+
+	LVBD = Compiler::ProcStack.front();
 	Compiler::ProcStack.pop_front();
 
-	LVBD = oldLVDB;
 	LinkDRoot = ld;
 
 	//CFile = lstFD->pChain;

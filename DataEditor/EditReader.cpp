@@ -46,7 +46,7 @@ void EditReader::StoreRT(WORD Ln, std::vector<std::string>& SL, WORD NFlds)
 {
 	ERecTxtD* RT = new ERecTxtD();
 	if (NFlds == 0) {
-		g_compiler->Error(81);
+		gc->Error(81);
 	}
 	RT->N = Ln;
 	RT->SL = SL;
@@ -65,19 +65,19 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	std::string s;
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
 	bool comment = false; char c = '\0'; BYTE a = 0;
-	g_compiler->SetInpTT(&FormPos, true);
+	gc->SetInpTT(&FormPos, true);
 
 	bool skipAfterHash = false;
 	while (true) {
 		s = "";
-		while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == 0x0D || ForwChar == '{')) {
+		while (!(gc->ForwChar == '#' || gc->ForwChar == 0x1A || gc->ForwChar == 0x0D || gc->ForwChar == '{')) {
 			/* read headlines */
-			s += static_cast<char>(ForwChar);
-			g_compiler->ReadChar();
+			s += static_cast<char>(gc->ForwChar);
+			gc->ReadChar();
 		}
-		switch (ForwChar) {
+		switch (gc->ForwChar) {
 		case 0x1A: {
-			g_compiler->Error(76);
+			gc->Error(76);
 			break;
 		}
 		case '#': {
@@ -85,7 +85,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 			break;
 		}
 		case '{': {
-			g_compiler->SkipBlank(true);
+			gc->SkipBlank(true);
 			continue;
 			break;
 		}
@@ -95,23 +95,23 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 			break;
 		}
 		else {
-			g_compiler->ReadChar();
-			if (ForwChar == 0x0A) g_compiler->ReadChar();
+			gc->ReadChar();
+			if (gc->ForwChar == 0x0A) gc->ReadChar();
 			//SToSL(&edit->HdTxt, s);
 			edit->HdTxt.push_back(s);
 			edit->NHdTxt++;
 			if (edit->NHdTxt + 1 > edit->Rows) {
-				g_compiler->Error(102);
+				gc->Error(102);
 			}
 		}
 	}
 
 	/* read field list */
-	g_compiler->ReadChar();
-	g_compiler->ReadChar();
-	Lexem = CurrChar;
-	g_compiler->Accept('_');
-	FileD* FD1 = g_compiler->RdFileName();
+	gc->ReadChar();
+	gc->ReadChar();
+	gc->Lexem = gc->CurrChar;
+	gc->Accept('_');
+	FileD* FD1 = gc->RdFileName();
 	if (edit->FD == nullptr) {
 		edit->FD = FD1;
 	}
@@ -119,10 +119,10 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	while (true) {
 		N++;
 		EFldD* D = new EFldD();
-		if (Lexem == _number) {
-			M = g_compiler->RdInteger();
-			if (M == 0) g_compiler->OldError(115);
-			g_compiler->Accept(':');
+		if (gc->Lexem == _number) {
+			M = gc->RdInteger();
+			if (M == 0) gc->OldError(115);
+			gc->Accept(':');
 			D->ScanNr = M;
 		}
 		else {
@@ -136,20 +136,20 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 		edit->FirstFld.push_back(D);
 
 		if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) {
-			g_compiler->Error(77);
+			gc->Error(77);
 		}
-		F = g_compiler->RdFldName(edit->FD);
+		F = gc->RdFldName(edit->FD);
 		D->FldD = F;
 		edit->Flds.push_back(F);
-		if (Lexem == ',') {
-			g_compiler->RdLex();
+		if (gc->Lexem == ',') {
+			gc->RdLex();
 			continue;
 		}
 		break;
 	}
 
-	g_compiler->TestLex(';');
-	g_compiler->SkipBlank(true);
+	gc->TestLex(';');
+	gc->SkipBlank(true);
 	/* read record lines */
 	std::vector<EFldD*>::iterator D = edit->FirstFld.begin();
 	NPages = 0;
@@ -162,20 +162,20 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 		s = "";
 		Ln++;
 		Col = edit->FrstCol;
-		while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{')) {
-			if (ForwChar == '_') {
+		while (!(gc->ForwChar == 0x0D || gc->ForwChar == 0x1A || gc->ForwChar == '\\' || gc->ForwChar == '{')) {
+			if (gc->ForwChar == '_') {
 				if (D == edit->FirstFld.end()) {
-					g_compiler->Error(30);
+					gc->Error(30);
 				}
 				NFlds++;
 				(*D)->Col = Col;
 				(*D)->Ln = Ln;
 				(*D)->Page = NPages;
 				M = 0;
-				while (ForwChar == '_') {
+				while (gc->ForwChar == '_') {
 					s += ' ';
 					M++; Col++;
-					g_compiler->ReadChar();
+					gc->ReadChar();
 				}
 				F = (*D)->FldD;
 				(*D)->L = F->L;
@@ -188,29 +188,29 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 				else if (M != (*D)->L) {
 					str((*D)->L, 2, s);
 					SetMsgPar(s, F->Name);
-					g_compiler->Error(79);
+					gc->Error(79);
 				}
-				if (Col > edit->LastCol) g_compiler->Error(102);
+				if (Col > edit->LastCol) gc->Error(102);
 				++D; //D = D->pChain;
 			}
 			else {
-				if (!screen.SetStyleAttr(ForwChar, a)) {
+				if (!screen.SetStyleAttr(gc->ForwChar, a)) {
 					if (Col > edit->LastCol) {
-						g_compiler->Error(102);
+						gc->Error(102);
 					}
 					Col++;
 				}
-				s += static_cast<char>(ForwChar);
-				g_compiler->ReadChar();
+				s += static_cast<char>(gc->ForwChar);
+				gc->ReadChar();
 			}
 		}
 
 		//SToSL(&SLRoot, s);
 		SLRoot.push_back(s);
-		c = ForwChar;
-		if (c == '\\') g_compiler->ReadChar();
-		g_compiler->SkipBlank(true);
-		if (ForwChar != 0x1A) {
+		c = gc->ForwChar;
+		if (c == '\\') gc->ReadChar();
+		gc->SkipBlank(true);
+		if (gc->ForwChar != 0x1A) {
 			if ((c == '\\') || (edit->NHdTxt + Ln == edit->Rows)) {
 				StoreRT(Ln, SLRoot, NFlds);
 				NPages++;
@@ -229,7 +229,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	edit->NPages = NPages;
 
 	if (D != edit->FirstFld.end()) {
-		g_compiler->Error(30);
+		gc->Error(30);
 	}
 	// sort items in FirstFld by ScanNr
 	std::ranges::sort(edit->FirstFld, [](const EFldD* a, const EFldD* b) {
@@ -389,7 +389,7 @@ void EditReader::RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos)
 	edit_->Rows = edit_->LastRow - edit_->FrstRow + 1;
 
 	if (FL.empty()) {
-		ResetCompilePars();
+		gc->ResetCompilePars();
 		RdEForm(edit_, FormPos);
 		edit_->IsUserForm = true;
 	}
@@ -458,7 +458,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		std::string mode = RunString(file_d, EO->Mode, rec);
 		int result = edit_->params_->SetFromString(mode, false);
 		if (result != 0) {
-			g_compiler->Error(92);
+			gc->Error(92);
 		}
 	}
 	if (spec.Prompt158) edit_->params_->Prompt158 = true;
@@ -688,8 +688,8 @@ void EditReader::RdDepChkImpl(EditD* edit)
 	case FileType::RDB: {
 		ReadMessage(53);
 		s = MsgLine;
-		ResetCompilePars();
-		g_compiler->SetInpStr(s);
+		gc->ResetCompilePars();
+		gc->SetInpStr(s);
 		RdUDLI(edit->FD);
 		break;
 	}
@@ -701,8 +701,8 @@ void EditReader::RdDepChkImpl(EditD* edit)
 		s = s + MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "'";
-		ResetCompilePars();
-		g_compiler->SetInpStr(s);
+		gc->ResetCompilePars();
+		gc->SetInpStr(s);
 		RdUDLI(edit->FD);
 		break;
 	}
@@ -801,30 +801,30 @@ void EditReader::ReadDependencies(FileD* file_d)
 {
 	char FTyp = '\0';
 
-	g_compiler->processing_F = file_d;
-	g_compiler->RdLex();
+	gc->processing_F = file_d;
+	gc->RdLex();
 
-	g_compiler->Accept('(');
-	FrmlElem* Bool = g_compiler->RdBool(nullptr);
-	g_compiler->Accept(')');
+	gc->Accept('(');
+	FrmlElem* Bool = gc->RdBool(nullptr);
+	gc->Accept(')');
 
 	while (true) {
-		EFldD* D = FindEFld_E(g_compiler->RdFldName(file_d));
-		g_compiler->Accept(_assign);
-		FrmlElem* Z = g_compiler->RdFrml(FTyp, nullptr);
+		EFldD* D = FindEFld_E(gc->RdFldName(file_d));
+		gc->Accept(_assign);
+		FrmlElem* Z = gc->RdFrml(FTyp, nullptr);
 
 		if (D != nullptr) {
 			Dependency* dep = new Dependency(Bool, Z);
 			D->Dependencies.push_back(dep);
 		}
 
-		if (Lexem == ';') {
-			g_compiler->RdLex();
-			if (!(Lexem == '#' || Lexem == 0x1A)) {
-				if (Lexem == '(') {
-					g_compiler->Accept('(');
-					Bool = g_compiler->RdBool(nullptr);
-					g_compiler->Accept(')');
+		if (gc->Lexem == ';') {
+			gc->RdLex();
+			if (!(gc->Lexem == '#' || gc->Lexem == 0x1A)) {
+				if (gc->Lexem == '(') {
+					gc->Accept('(');
+					Bool = gc->RdBool(nullptr);
+					gc->Accept(')');
 				}
 				continue;
 			}
@@ -835,9 +835,9 @@ void EditReader::ReadDependencies(FileD* file_d)
 
 void EditReader::RdCheck()
 {
-	g_compiler->SkipBlank(false);
-	size_t Low = CurrPos;
-	g_compiler->RdLex();
+	gc->SkipBlank(false);
+	size_t Low = gc->input_pos;
+	gc->RdLex();
 	while (true) {
 		LogicControl* C = ReadLogicControl(Low);
 		ZeroUsed();
@@ -852,11 +852,11 @@ void EditReader::RdCheck()
 			delete C; C = nullptr;
 		}
 
-		if (Lexem == ';') {
-			g_compiler->SkipBlank(false);
-			Low = CurrPos;
-			g_compiler->RdLex();
-			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
+		if (gc->Lexem == ';') {
+			gc->SkipBlank(false);
+			Low = gc->input_pos;
+			gc->RdLex();
+			if (!(gc->Lexem == '#' || gc->Lexem == 0x1A)) continue;
 		}
 		break;
 	}
@@ -866,12 +866,12 @@ void EditReader::RdImpl(FileD* file_d)
 {
 	// TODO: nema byt f_typ vstupnim parametrem?
 	char FTyp = '\0';
-	g_compiler->RdLex();
+	gc->RdLex();
 
 	while (true) {
-		FieldDescr* F = g_compiler->RdFldName(file_d);
-		g_compiler->Accept(_assign);
-		FrmlElem* Z = g_compiler->RdFrml(FTyp, nullptr);
+		FieldDescr* F = gc->RdFldName(file_d);
+		gc->Accept(_assign);
+		FrmlElem* Z = gc->RdFrml(FTyp, nullptr);
 		EFldD* D = FindEFld_E(F);
 
 		if (D != nullptr) {
@@ -882,9 +882,9 @@ void EditReader::RdImpl(FileD* file_d)
 			edit_->Impl.push_back(ID);
 		}
 
-		if (Lexem == ';') {
-			g_compiler->RdLex();
-			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
+		if (gc->Lexem == ';') {
+			gc->RdLex();
+			if (!(gc->Lexem == '#' || gc->Lexem == 0x1A)) continue;
 		}
 
 		break;
@@ -894,24 +894,24 @@ void EditReader::RdImpl(FileD* file_d)
 void EditReader::RdUDLI(FileD* file_d)
 {
 	CFile = file_d; // to be sure
-	g_compiler->processing_F = file_d;
+	gc->processing_F = file_d;
 
-	g_compiler->RdLex();
-	if ((Lexem == '#') && (ForwChar == 'U')) {
+	gc->RdLex();
+	if ((gc->Lexem == '#') && (gc->ForwChar == 'U')) {
 		do {
-			g_compiler->RdLex();
-		} while (!(Lexem == '#' || Lexem == 0x1A));
+			gc->RdLex();
+		} while (!(gc->Lexem == '#' || gc->Lexem == 0x1A));
 	}
-	if ((Lexem == '#') && (ForwChar == 'D')) {
-		g_compiler->RdLex();
+	if ((gc->Lexem == '#') && (gc->ForwChar == 'D')) {
+		gc->RdLex();
 		ReadDependencies(file_d);
 	}
-	if ((Lexem == '#') && (ForwChar == 'L')) {
-		g_compiler->RdLex();
+	if ((gc->Lexem == '#') && (gc->ForwChar == 'L')) {
+		gc->RdLex();
 		RdCheck();
 	}
-	if ((Lexem == '#') && (ForwChar == 'I')) {
-		g_compiler->RdLex();
+	if ((gc->Lexem == '#') && (gc->ForwChar == 'I')) {
+		gc->RdLex();
 		RdImpl(file_d);
 	}
 }
@@ -924,8 +924,8 @@ void EditReader::RdAllUDLIs(FileD* FD)
 		RdAllUDLIs(FD->OrigFD);
 	}
 	if (FD->TxtPosUDLI != 0) {
-		ResetCompilePars();
-		g_compiler->SetInpTTxtPos(FD);
+		gc->ResetCompilePars();
+		gc->SetInpTTxtPos(FD);
 		r = CRdb;
 		CRdb = FD->ChptPos.rdb;
 		RdUDLI(FD);

@@ -1984,7 +1984,7 @@ void TextEditor::Calculate()
 	wwmix ww;
 	FrmlElem* Z = nullptr;
 	std::string txt;
-	WORD I;
+	size_t I;
 	std::string Msg;
 	void* p = nullptr;
 	char FTyp;
@@ -1994,9 +1994,9 @@ void TextEditor::Calculate()
 	//NewExit(Ovr(), er);
 	//goto label2;
 	try {
-		ResetCompilePars();
+		gc->ResetCompilePars();
 		//ptrRdFldNameFrml = RdFldNameFrmlT;
-		g_compiler->rdFldNameType = FieldNameType::T;
+		gc->rdFldNameType = FieldNameType::T;
 	label0:
 		txt = CalcTxt;
 		Del = true; I = 1;
@@ -2018,10 +2018,10 @@ void TextEditor::Calculate()
 			UpdatedL = true;
 			goto label3;
 		}
-		g_compiler->SetInpStr(txt);
-		g_compiler->RdLex();
-		Z = g_compiler->RdFrml(FTyp, nullptr);
-		if (Lexem != 0x1A) g_compiler->Error(21);
+		gc->SetInpStr(txt);
+		gc->RdLex();
+		Z = gc->RdFrml(FTyp, nullptr);
+		if (gc->Lexem != 0x1A) gc->Error(21);
 
 		switch (FTyp) {
 		case 'R': {
@@ -2050,7 +2050,7 @@ void TextEditor::Calculate()
 	catch (std::exception& e) {
 		//label2:
 		Msg = MsgLine;
-		I = CurrPos;
+		I = gc->input_pos;
 		SetMsgPar(Msg);
 		WrLLF10Msg(110);
 		IsCompileErr = false;
@@ -2850,7 +2850,7 @@ void CursorWord()
 		pp++;
 	}
 
-	LexWord = word;
+	gc->LexWord = word;
 }
 
 void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
@@ -3014,8 +3014,8 @@ TextEditor::~TextEditor()
 	this->_screen = nullptr;
 }
 
-bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
-	WORD& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
+bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, size_t pMaxLen,
+	size_t& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
 	bool oldEdOK = EdOk;
@@ -3069,7 +3069,7 @@ bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::str
 	return EditT;
 }
 
-void TextEditor::SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* pLS, WORD MaxLen, WORD& Ind, bool& Updat)
+void TextEditor::SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* pLS, size_t MaxLen, size_t& Ind, bool& Updat)
 {
 	bool Srch = false;
 	int Scr = 0;
@@ -3108,7 +3108,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 	int Size = 0; // , L = 0;
 	int w1 = 0;
 	bool Loc = false;
-	WORD Ind = 0, oldInd = 0;
+	size_t Ind = 0, oldInd = 0;
 	int oldTxtxy = 0;
 	LongStr* LS = nullptr;
 	std::string compErrTxt;
@@ -3292,7 +3292,7 @@ void TextEditor::ViewPrinterTxt()
 	EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
 
-void TextEditor::ViewHelpText(std::string& s, WORD& TxtPos)
+void TextEditor::ViewHelpText(std::string& s, size_t& TxtPos)
 {
 	// make copy of text from std::string because it changes in EditText()
 	char* helpText = new char[s.length()];

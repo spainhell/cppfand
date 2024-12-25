@@ -61,50 +61,45 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 
 void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 {
-	//WORD i;
 	WORD n;
 	bool b;
-	//CompInpD* ci;
-	//LongStr* s2;
-	void* p2 = nullptr;
 
-	InpArrLen = s->LL;
-	InpArrPtr = (BYTE*)s->A;
+	gc->input_string = std::string(s->A, s->LL);
+
 	PrevCompInp.clear();
-	if (InpArrLen == 0) {
-		ForwChar = 0x1A;
+	if (gc->input_string.empty()) {
+		gc->ForwChar = 0x1A;
 	}
 	else {
-		ForwChar = InpArrPtr[1];
+		gc->ForwChar = (BYTE)gc->input_string[0];
 	}
-	CurrPos = 1;
+	gc->input_pos = 1;
 	SwitchLevel = 0;
 	void* cr = CRecPtr;
 	ss = new LongStr(MaxLStrLen + 2);
-	MarkStore(p2);
 	l = 0;
 	if (Typ == 'E') {
 	label0:
-		while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == '\r' || ForwChar == '{')) {
+		while (!(gc->ForwChar == '#' || gc->ForwChar == 0x1A || gc->ForwChar == '\r' || gc->ForwChar == '{')) {
 			// { read headlines }
-			Wr(ForwChar);
-			g_compiler->ReadChar();
+			Wr(gc->ForwChar);
+			gc->ReadChar();
 		}
-		switch (ForwChar) {
+		switch (gc->ForwChar) {
 		case 0x1A:
 		case '#': {
 			goto label1;
 			break;
 		}
 		case '{': {
-			g_compiler->SkipBlank(true);
+			gc->SkipBlank(true);
 			Wr('{');
 			Wr('}');
 			break;
 		}
 		default: {
-			g_compiler->ReadChar();
-			if (ForwChar == '\n') g_compiler->ReadChar();
+			gc->ReadChar();
+			if (gc->ForwChar == '\n') gc->ReadChar();
 			break;
 		}
 		}
@@ -112,40 +107,42 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 		goto label0;
 	}
 label1:
-	switch (ForwChar) {
+	switch (gc->ForwChar) {
 	case '0x1A': {
 		if (!PrevCompInp.empty()) {
 			PrevCompInp.pop_back();
-			if (CurrPos <= InpArrLen) ForwChar = InpArrPtr[CurrPos];
+			if (gc->input_pos < gc->input_string.length()) {
+				gc->ForwChar = gc->input_string[gc->input_pos];
+			}
 			goto label1;
 		}
 		else {
 			s->LL = l;
 			MyMove(ss->A, s->A, l);
 			delete s; s = nullptr;
-			ReleaseStore(&p2);
+			//ReleaseStore(&p2);
 			CRecPtr = cr;
 			return;
 		}
 		break;
 	}
 	case '{': {
-		g_compiler->ReadChar();
-		if (ForwChar == '$') {
-			n = g_compiler->RdDirective(b);
+		gc->ReadChar();
+		if (gc->ForwChar == '$') {
+			n = gc->RdDirective(b);
 			switch (n) {
 			case 0:;
 			case 1: {
 				SwitchLevel++;
-				if (!b) g_compiler->SkipLevel(true);
+				if (!b) gc->SkipLevel(true);
 			}
 			case 5: {
 				PrevCompInp.emplace_back(CompInpD());
-				g_compiler->SetInpTT(&ChptIPos, true);
+				gc->SetInpTT(&ChptIPos, true);
 			}
 
 			default: {
-				if (n == 3) g_compiler->SkipLevel(false);
+				if (n == 3) gc->SkipLevel(false);
 				else SwitchLevel--;
 			}
 			}
@@ -154,34 +151,34 @@ label1:
 		else {
 			n = 1;
 		label2:
-			switch (ForwChar) {
+			switch (gc->ForwChar) {
 			case '{': n++;
 			case '}': {
 				n--;
 				if (n == 0) {
 					Wr(' ');
-					g_compiler->ReadChar();
+					gc->ReadChar();
 					goto label1;
 				}
 			}
 			}
-			g_compiler->ReadChar();
+			gc->ReadChar();
 			goto label2;
 		}
 		break;
 	}
 	case '\'': {
 		do {
-			Wr(ForwChar);
-			g_compiler->ReadChar();
-		} while (ForwChar == '\'' || ForwChar == 0x1A);
-		if (ForwChar == 0x1A) goto label1;
+			Wr(gc->ForwChar);
+			gc->ReadChar();
+		} while (gc->ForwChar == '\'' || gc->ForwChar == 0x1A);
+		if (gc->ForwChar == 0x1A) goto label1;
 		break;
 	}
 	default: {
-		if (ForwChar <= ' ') { // ^@..' '
+		if (gc->ForwChar <= ' ') { // ^@..' '
 			if (!(Typ == 'R' || Typ == 'U' || Typ == 'E' || Typ == 'H')) {
-				while ((ForwChar <= ' ') && (ForwChar != 0x1A)) g_compiler->ReadChar();
+				while ((gc->ForwChar <= ' ') && (gc->ForwChar != 0x1A)) gc->ReadChar();
 				Wr(' ');
 				goto label1;
 			}
@@ -189,8 +186,8 @@ label1:
 		break;
 	}
 	}
-	Wr(ForwChar);
-	g_compiler->ReadChar();
+	Wr(gc->ForwChar);
+	gc->ReadChar();
 	goto label1;
 }
 
@@ -267,10 +264,10 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	MarkStore(p);
 	void* cr = Chpt->FF->RecPtr;
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
-	g_compiler->SetInpStr(s);
 	SpecFDNameAllowed = true;
 
 	const std::unique_ptr merge = std::make_unique<Merge>();
+	merge->SetInput(s); //gc->SetInpStr(s);
 	merge->Read();
 	SpecFDNameAllowed = false;
 	merge->Run();

@@ -73,21 +73,22 @@ extern pstring SQLDateMask;
 // ********** COMPARE FUNCTIONS **********
 extern double Power10[21];
 
-extern BYTE CurrChar; // { Compile }
-extern BYTE ForwChar, ExpChar, Lexem;
-extern pstring LexWord;
+//extern BYTE CurrChar; // { Compile }
+//extern BYTE ForwChar, ExpChar, Lexem;
+//extern pstring LexWord;
 
 extern bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
 //extern CompInpD* PrevCompInp;						    // { saved at "include" }
 extern std::deque<CompInpD> PrevCompInp;				// { saved at "include" }
-extern BYTE* InpArrPtr; extern RdbPos InpRdbPos;		// { "  "  }
-extern size_t InpArrLen;
-extern size_t CurrPos;
-extern size_t OldErrPos;			// { "  "  }
+//extern BYTE* InpArrPtr;									// { "  "  }
+extern RdbPos InpRdbPos;								// { "  "  }
+//extern size_t InpArrLen;
+//extern size_t CurrPos;
+//extern size_t OldErrPos;			// { "  "  }
 extern std::vector<FrmlElemSum*> *FrmlSumEl;				//{ set while reading sum / count argument }
 extern bool FrstSumVar, FileVarsAllowed;
 //extern FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*); // ukazatel na funkci
-extern FrmlElem* (*RdFunction)(char&); // ukazatel na funkci
+//extern FrmlElem* (*RdFunction)(void*, char&); // ukazatel na funkci
 //extern void (*ptrChainSumEl)(); // {set by user}
 extern BYTE LstCompileVar; // { boundary }
 

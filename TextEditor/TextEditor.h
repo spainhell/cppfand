@@ -104,18 +104,18 @@ public:
 	~TextEditor();
 
 	bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
-		LongStr* pLS, WORD pMaxLen, WORD& pInd, int& pScr,
+		LongStr* pLS, size_t pMaxLen, size_t& pInd, int& pScr,
 		std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat,
 		WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS);
 	void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
-		WORD MaxLen, WORD& Ind, bool& Updat);
+		size_t MaxLen, size_t& Ind, bool& Updat);
 	void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
 		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 	void ViewPrinterTxt();
 	void SetEditTxt(Instr_setedittxt* PD);
 	void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg,
 	                short& pRightMarg);
-	void ViewHelpText(std::string& S, WORD& TxtPos);
+	void ViewHelpText(std::string& S, size_t& TxtPos);
 
 	void InitTxtEditor();
 	void InitHelpViewEditor();

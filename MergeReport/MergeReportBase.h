@@ -1,11 +1,18 @@
 #pragma once
+//#include "../Core/Compiler.h"
 #include "../Core/rdrun.h"
+
+class Compiler;
 
 class MergeReportBase {
 public:
 	bool ChainSum;
 	virtual FrmlElem* RdFldNameFrml(char& FTyp) = 0;
 	virtual void ChainSumEl() = 0;
+	void SetInput(std::string& input);
+	void SetInput(std::string& s, bool ShowErr);
+	void SetInput(RdbPos* rdb_pos, bool FromTxt);
+	void SetInput(FileD* file_d, int Pos, bool Decode);
 
 protected:
 	MergeReportBase();
@@ -29,4 +36,6 @@ protected:
 
 	InpD* IDA[30];
 	short MaxIi;
+
+	Compiler* base_compiler;
 };

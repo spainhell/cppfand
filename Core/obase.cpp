@@ -196,7 +196,7 @@ void TestTxtHError(TextFile* F)
 	if (HandleError != 0) {
 		SetMsgPar(F->name);
 		WrLLF10Msg(700 + HandleError);
-		GoExit();
+		GoExit(MsgLine);
 	}
 }
 

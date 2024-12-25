@@ -17,7 +17,7 @@
 void CloseGoExit(Fand0File* fand_file)
 {
 	fand_file->Close(); //CloseClearH(fand_file);
-	GoExit();
+	GoExit(MsgLine);
 }
 
 //BYTE ByteMask[_MAX_INT_DIG];
@@ -234,17 +234,6 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 		R = R->ChainBack;
 	}
 	//CFile = cf;
-}
-
-void ResetCompilePars()
-{
-	// ptrRdFldNameFrml = g_compiler->RdFldNameFrmlF;
-	g_compiler->rdFldNameType = FieldNameType::F;
-	RdFunction = nullptr;
-	FileVarsAllowed = true;
-	FDLocVarAllowed = false;
-	IdxLocVarAllowed = false;
-	PrevCompInp.clear();
 }
 
 std::string TranslateOrd(std::string text)

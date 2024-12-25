@@ -856,16 +856,16 @@ int StoreAvail()
 	return 512 * 1024;
 }
 
-[[noreturn]] void GoExit()
+[[noreturn]] void GoExit(const std::string& message)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::WARN, "GoExit(): '%s'", MsgLine.c_str());
+	log->log(loglevel::WARN, "GoExit(): '%s'", message.c_str());
 #ifdef _DEBUG
-	screen.ScrWrText(1, 1, MsgLine.c_str());
+	screen.ScrWrText(1, 1, message.c_str());
 #endif
 	BreakP = true;
-	log->log(loglevel::WARN, "GoExit(): Setting 'BreakP = true'", MsgLine.c_str());
-	throw std::exception(MsgLine.c_str());
+	log->log(loglevel::WARN, "GoExit(): Setting 'BreakP = true'", message.c_str());
+	throw std::exception(message.c_str());
 }
 
 bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_memory, bool load_font, bool text_mode)
