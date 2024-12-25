@@ -83,7 +83,7 @@ void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, void* record)
 						SetMsgPar(file_d->Name);
 						if (IsTestRun) {
 							if (!PromptYN(832)) {
-								GoExit();
+								GoExit(MsgLine);
 							}
 						}
 						else {

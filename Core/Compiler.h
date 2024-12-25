@@ -65,7 +65,6 @@ public:
 	bool IsOpt(pstring S);
 	bool IsDigitOpt(pstring S, WORD& N);
 	bool IsIdentifStr(std::string& S);
-	pstring* RdStrConst();
 	std::string RdStringConst();
 	char Rd1Char();
 	char RdQuotedChar();

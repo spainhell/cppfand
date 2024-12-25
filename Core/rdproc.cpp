@@ -16,26 +16,26 @@
 
 bool IsRdUserFunc;
 kNames KeyNames[NKeyNames] = {
-	{"HOME", 51, VK_HOME},
-	{"UP", 52, VK_UP},
-	{"PGUP", 53, VK_NEXT},
-	{"LEFT", 55, VK_LEFT},
-	{"RIGHT", 57, VK_RIGHT},
-	{"END", 59, VK_END},
-	{"DOWN", 60, VK_DOWN},
-	{"PGDN", 61, VK_NEXT},
-	{"INS", 62, VK_INSERT},
-	{"CTRLLEFT", 71, CTRL + VK_LEFT},
-	{"CTRLRIGHT", 72, CTRL + VK_RIGHT},
-	{"CTRLEND", 73, CTRL + VK_END},
-	{"CTRLPGDN", 74, CTRL + VK_NEXT},
-	{"CTRLHOME", 75, CTRL + VK_HOME},
-	{"CTRLPGUP", 76, CTRL + VK_PRIOR},
+	{"HOME", 51, __HOME},
+	{"UP", 52, __UP},
+	{"PGUP", 53, __PAGEUP},
+	{"LEFT", 55, __LEFT},
+	{"RIGHT", 57, __RIGHT},
+	{"END", 59, __END},
+	{"DOWN", 60, __DOWN},
+	{"PGDN", 61, __PAGEDOWN},
+	{"INS", 62, __INSERT},
+	{"CTRLLEFT", 71, __CTRL_LEFT},
+	{"CTRLRIGHT", 72, __CTRL_RIGHT},
+	{"CTRLEND", 73, __CTRL_END},
+	{"CTRLPGDN", 74, __CTRL_PAGEDOWN},
+	{"CTRLHOME", 75, __CTRL_HOME},
+	{"CTRLPGUP", 76, __CTRL_PAGEUP},
 	{"TAB", 77, VK_TAB},
 	{"SHIFTTAB", 78, SHIFT + VK_TAB},
 	{"CTRLN", 79, CTRL + 'N'},
 	{"CTRLY", 80, CTRL + 'Y'},
-	{"ESC", 81, VK_ESCAPE},
+	{"ESC", 81, __ESC},
 	{"CTRLP", 82, CTRL + 'P'} };
 
 
@@ -1109,30 +1109,33 @@ void SetCode(std::string keyName, BYTE fnNr, EdExKeyD* E)
 
 void RdKeyCode(Compiler* compiler, EdExitD* X)
 {
-	WORD i = 0;
-	X->Keys.push_back(EdExKeyD());
-	EdExKeyD* lastKey = &X->Keys.back();
-
+	EdExKeyD lastKey;
 	std::string key; // tady bude "shift" | "ctrl" | "alt"
 	BYTE fnNr; // tady bude cislo funkci klavesy
 
-	lastKey->KeyName = compiler->LexWord;
-	if (FindShiftCtrlAltFxx(compiler->LexWord, key, fnNr))
-	{
-		SetCode(key, fnNr, lastKey);
+	lastKey.KeyName = compiler->LexWord;
+
+	if (FindShiftCtrlAltFxx(compiler->LexWord, key, fnNr)) {
+		SetCode(key, fnNr, &lastKey);
 		compiler->RdLex();
 	}
 	else {
-		for (i = 0; i < NKeyNames; i++) {
+		bool found = false;
+		for (uint8_t i = 0; i < NKeyNames; i++) {
 			if (EquUpCase(KeyNames[i].Nm, compiler->LexWord)) {
-				lastKey->KeyCode = KeyNames[i].Code;
-				lastKey->Break = KeyNames[i].Brk;
+				lastKey.KeyCode = KeyNames[i].Code;
+				lastKey.Break = KeyNames[i].Brk;
 				compiler->RdLex();
-				return;
+				found = true;
+				break;
 			}
 		}
-		compiler->Error(129);
+		if (!found) {
+			compiler->Error(129);
+		}
 	}
+
+	X->Keys.push_back(std::move(lastKey));
 }
 
 bool RdHeadLast(Compiler* compiler, EditOpt* EO)

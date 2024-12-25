@@ -1546,7 +1546,7 @@ void DataEditor::BuildWork()
 		file_d_->FF->RecLen = l;
 	}
 	if (!ok) {
-		GoExit();
+		GoExit(MsgLine);
 	}
 	ReleaseStore(&p);
 }

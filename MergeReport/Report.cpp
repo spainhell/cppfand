@@ -413,7 +413,7 @@ label1:
 		//LVBD = *Compiler::ProcStack.front(); Compiler::ProcStack.pop_front(); //PopProcStk();
 		if (ex) {
 			RunMsgOff();
-			if (!WasLPTCancel) GoExit();
+			if (!WasLPTCancel) GoExit(MsgLine);
 		}
 		return;
 	}
@@ -1861,7 +1861,7 @@ label1:
 	if (ID->Scan->eof) return;
 	if (ESCPressed() && PromptYN(24)) {
 		WasLPTCancel = true;
-		GoExit();
+		GoExit(MsgLine);
 	}
 	RecCount++;
 	RunMsgN(RecCount);

@@ -113,7 +113,7 @@ std::string Compiler::Error(short N)
 	LastExitCode = i + 1 + 1;
 	IsCompileErr = true;
 	MsgLine = ErrMsg;
-	GoExit();
+	GoExit(MsgLine);
 	return ErrMsg;
 }
 
@@ -479,13 +479,11 @@ void Compiler::RdLex()
 	SkipBlank(false);
 	ReadChar();
 	Lexem = CurrChar;
-	if (IsLetter(CurrChar))
-	{
+	if (IsLetter(CurrChar)) {
 		Lexem = _identifier;
 		LexWord[1] = CurrChar;
 		WORD i = 1;
-		while (IsLetter(ForwChar) || isdigit(ForwChar))
-		{
+		while (IsLetter(ForwChar) || isdigit(ForwChar)) {
 			i++;
 			if (i > 32) Error(2);
 			ReadChar();
@@ -494,12 +492,10 @@ void Compiler::RdLex()
 		LexWord[0] = (char)i;
 		LexWord[i + 1] = '\0';
 	}
-	else if (isdigit(CurrChar))
-	{
+	else if (isdigit(CurrChar)) {
 		Lexem = _number; LexWord[1] = CurrChar;
 		WORD i = 1;
-		while (isdigit(ForwChar))
-		{
+		while (isdigit(ForwChar)) {
 			i++;
 			if (i > 15) Error(6);
 			ReadChar();
@@ -507,59 +503,71 @@ void Compiler::RdLex()
 		}
 		LexWord[0] = (char)i;
 	}
-	else switch (CurrChar) {
-	case '\'': {
-		Lexem = _quotedstr;
-		ReadChar(); LexWord = "";
-		while (CurrChar != '\'' || ForwChar == '\'')
-		{
-			if (CurrChar == 0x1A) Error(17);
-			if (LexWord.length() == LexWord.initLength() - 1) Error(6);
-			if (CurrChar == '\'') ReadChar();
-			else if (CurrChar == '\\') RdBackSlashCode();
-			LexWord.Append(CurrChar); ReadChar();
-		}
-		break;
-	}
-	case ':':
-		if (ForwChar == '=') { ReadChar(); Lexem = _assign; }
-		break;
-	case '.':
-		if (ForwChar == '.') { ReadChar(); Lexem = _subrange; }
-		break;
-	case '=':
-		if (ForwChar == '>') { ReadChar(); Lexem = _limpl; }
-		else Lexem = _equ;
-		break;
-	case '+':
-		if (ForwChar == '=') { ReadChar(); Lexem = _addass; }
-		break;
-	case '<': {
-		switch (ForwChar) {
-		case '>': { ReadChar(); Lexem = _ne; break; }
-		case '=': {
-			ReadChar();
-			if (ForwChar == '>')
-			{
-				ReadChar(); Lexem = _lequ;
+	else {
+		switch (CurrChar) {
+		case '\'': {
+			Lexem = _quotedstr;
+			ReadChar(); LexWord = "";
+			while (CurrChar != '\'' || ForwChar == '\'') {
+				if (CurrChar == 0x1A) {
+					Error(17);
+				}
+
+				if (LexWord.length() == LexWord.initLength() - 1) {
+					Error(6);
+				}
+
+				if (CurrChar == '\'') {
+					ReadChar();
+				}
+				else if (CurrChar == '\\') {
+					RdBackSlashCode();
+				}
+
+				LexWord.Append(CurrChar);
+				ReadChar();
 			}
-			else Lexem = _le;
 			break;
 		}
-		default: Lexem = _lt; break;
+		case ':':
+			if (ForwChar == '=') { ReadChar(); Lexem = _assign; }
+			break;
+		case '.':
+			if (ForwChar == '.') { ReadChar(); Lexem = _subrange; }
+			break;
+		case '=':
+			if (ForwChar == '>') { ReadChar(); Lexem = _limpl; }
+			else Lexem = _equ;
+			break;
+		case '+':
+			if (ForwChar == '=') { ReadChar(); Lexem = _addass; }
+			break;
+		case '<': {
+			switch (ForwChar) {
+			case '>': { ReadChar(); Lexem = _ne; break; }
+			case '=': {
+				ReadChar();
+				if (ForwChar == '>') {
+					ReadChar();	Lexem = _lequ;
+				}
+				else {
+					Lexem = _le;
+				}
+				break;
+			}
+			default: Lexem = _lt; break;
+			}
+			break;
 		}
-		break;
+		case '>':
+			if (ForwChar == '=') {
+				ReadChar(); Lexem = _ge;
+			}
+			else Lexem = _gt;
+			break;
+		default: break;
+		}
 	}
-	case '>':
-		if (ForwChar == '=') { ReadChar(); Lexem = _ge; }
-		else Lexem = _gt;
-		break;
-	default: break;
-	}
-	//if (LexWord == "S333")
-	//{
-	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
-	//}
 }
 
 bool Compiler::IsForwPoint()
@@ -736,13 +744,6 @@ bool Compiler::IsDigitOpt(pstring S, WORD& N)
 		return true;
 	}
 	return false;
-}
-
-pstring* Compiler::RdStrConst()
-{
-	pstring* S = new pstring(LexWord);
-	Accept(_quotedstr);
-	return S;
 }
 
 std::string Compiler::RdStringConst()
@@ -1346,7 +1347,7 @@ void Compiler::GoCompileErr(int i_rec, WORD n)
 	InpRdbPos.i_rec = i_rec;
 	input_pos = 0;
 	ReadMessage(n);
-	GoExit();
+	GoExit(MsgLine);
 }
 
 XKey* Compiler::RdViewKey(FileD* file_d)

@@ -561,7 +561,9 @@ void FileCopy(CopyD* CD)
 	}
 	SaveFiles();
 	RunMsgOff();
-	if (LastExitCode != 0 && !CD->NoCancel) GoExit();
+	if (LastExitCode != 0 && !CD->NoCancel) {
+		GoExit(MsgLine);
+	}
 }
 
 void MakeMerge(CopyD* CD)
@@ -604,7 +606,7 @@ void BackUp(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 	delete F; F = nullptr;
 	if (LastExitCode != 0) {
 		RunMsgOff();
-		if (!NoCancel) GoExit();
+		if (!NoCancel) GoExit(MsgLine);
 	}
 }
 
@@ -640,7 +642,7 @@ void BackupM(Instr_backup* PD)
 	F->Close();
 	if (LastExitCode != 0) {
 		RunMsgOff();
-		if (!PD->BrNoCancel) GoExit();
+		if (!PD->BrNoCancel) GoExit(MsgLine);
 	}
 	ReleaseStore(&p);
 }

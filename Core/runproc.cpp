@@ -394,7 +394,7 @@ void ExecPgm(Instr_exec* PD)
 	//screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
 	screen.GotoXY(1, 1);
 	if (!b) {
-		GoExit();
+		GoExit(MsgLine);
 	}
 }
 
@@ -409,7 +409,7 @@ void CallRdbProc(Instr_call* PD)
 	// TODO: tady se ma obnovit stav (MyBP - ProcStkD)
 	ReleaseStore(&p);
 	if (!b) {
-		GoExit();
+		GoExit(MsgLine);
 	}
 }
 
@@ -425,7 +425,7 @@ void MountProc(WORD CatIRec, bool NoCancel)
 	}
 	catch (std::exception& e) {
 		if (NoCancel) LastExitCode = 1;
-		else GoExit();
+		else GoExit(MsgLine);
 	}
 }
 

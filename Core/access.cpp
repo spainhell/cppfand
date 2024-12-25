@@ -17,7 +17,7 @@
 void CloseGoExit(Fand0File* fand_file)
 {
 	fand_file->Close(); //CloseClearH(fand_file);
-	GoExit();
+	GoExit(MsgLine);
 }
 
 //BYTE ByteMask[_MAX_INT_DIG];

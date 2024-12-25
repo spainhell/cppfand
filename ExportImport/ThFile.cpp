@@ -264,7 +264,7 @@ bool ThFile::TestErr152()
 
 		WrLLF10Msg(808);
 		const WORD KbdChar = Event.Pressed.KeyCombination();
-		if ((KbdChar == __ESC) && PromptYN(21)) GoExit();
+		if ((KbdChar == __ESC) && PromptYN(21)) GoExit(MsgLine);
 		result = true;
 	}
 	return result;

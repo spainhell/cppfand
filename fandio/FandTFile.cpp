@@ -78,7 +78,7 @@ void FandTFile::Err(unsigned short n, bool ex) const
 	if (IsWork) {
 		SetMsgPar(FandWorkTName);
 		WrLLF10Msg(n);
-		if (ex) GoExit();
+		if (ex) GoExit(MsgLine);
 	}
 	else {
 		FileMsg(_parent->GetFileD(), n, 'T');

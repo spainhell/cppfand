@@ -56,7 +56,7 @@ int StoreAvail();
 std::string* StoreStr(std::string S);
 void MarkBoth(void* p, void* p2);
 
-void GoExit();
+void GoExit(const std::string& message);
 bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_memory, bool load_font, bool text_mode);
 
 

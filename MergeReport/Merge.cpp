@@ -225,7 +225,7 @@ label1:
 		b = SaveCache(0, CFile->FF->Handle);
 		RunMsgOff();
 		if (!b) {
-			GoExit();
+			GoExit(MsgLine);
 		}
 		CloseInpOutp();
 		//PopProcStk();
