@@ -28,8 +28,8 @@ int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr,
 	std::string top, std::string bottom, BYTE WFlags); // r176
 int PushWrLLMsg(WORD N, bool WithESC);
 void WrLLMsg(WORD N);
-void WrLLMsgTxt();
-void WrLLF10MsgLine(); // stejna fce definovana v kbdww.cpp
+void WrLLMsgTxt(std::string& message);
+void WrLLF10MsgLine(std::string& message); // stejna fce definovana v kbdww.cpp
 void WrLLF10Msg(int msgNr); // stejna fce definovana v kbdww.cpp
 bool PromptYN(WORD NMsg);
 extern WORD RunErrNr;
