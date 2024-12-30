@@ -2465,7 +2465,7 @@ FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool
 		else {
 			TestBool(FTyp);
 			if (Z->Op == _eval) {
-				((FrmlElem21*)Z)->EvalFD = processing_F;
+				((FrmlElemEval*)Z)->eval_file = processing_F;
 			}
 		}
 

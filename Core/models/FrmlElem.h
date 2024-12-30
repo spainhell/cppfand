@@ -202,20 +202,23 @@ public:
 	LocVar* LV = nullptr;
 	XKey* PackKey = nullptr; // 20 { _keyof,_lvdeleted }
 };
-class FrmlElem21 : public FrmlElem
+
+class FrmlElemEval : public FrmlElem
 {
 public:
-	FrmlElem21(instr_type Op, size_t buff_size);
-	FrmlElem* EvalP1 = nullptr;
-	char EvalTyp = '\0';
-	FileD* EvalFD = nullptr; // 21 {_eval}
+	FrmlElemEval(instr_type Op, size_t buff_size);
+	FrmlElem* eval_elem = nullptr;
+	char eval_type = '\0';
+	FileD* eval_file = nullptr; // 21 {_eval}
 };
+
 class FrmlElem22 : public FrmlElem
 {
 public:
 	FrmlElem22(instr_type Op, size_t buff_size);
 	XWKey* WKey = nullptr; // 22 {_indexnrecs}
 };
+
 class FrmlElemOwned : public FrmlElem
 {
 public:

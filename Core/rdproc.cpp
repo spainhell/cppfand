@@ -433,9 +433,9 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 		FTyp = 'R';
 	label4:
 		compiler->RdLex();
-		Z = new FrmlElem21(_eval, 5);
-		((FrmlElem21*)Z)->EvalTyp = FTyp;
-		((FrmlElem21*)Z)->EvalP1 = compiler->RdStrFrml(nullptr);
+		Z = new FrmlElemEval(_eval, 5);
+		((FrmlElemEval*)Z)->eval_type = FTyp;
+		((FrmlElemEval*)Z)->eval_elem = compiler->RdStrFrml(nullptr);
 	}
 	else if (FileVarsAllowed) {
 		compiler->Error(75);
@@ -3145,7 +3145,7 @@ void ReadDeclChpt(Compiler* compiler)
 	}
 }
 
-FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
+FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, void* record)
 {
 	FileD* cf = CFile;
 	CFile = file_d;
@@ -3157,7 +3157,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 
 	FrmlElem* result = nullptr;
 
-	std::string s = RunString(file_d, X->EvalP1, record);
+	std::string s = RunString(file_d, X->eval_elem, record);
 	if (s.empty()) {
 		LastExitCode = 0;
 	}
@@ -3167,11 +3167,11 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 		local_compiler->rdFldNameType = FieldNameType::P;
 		local_compiler->rdFuncType = ReadFuncType::P;
 
-		if (X->EvalFD == nullptr) {
+		if (X->eval_file == nullptr) {
 			FileVarsAllowed = false;
 		}
 		else {
-			local_compiler->processing_F = X->EvalFD;
+			local_compiler->processing_F = X->eval_file;
 			FileVarsAllowed = true;
 		}
 
@@ -3180,7 +3180,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 			local_compiler->SetInpStdStr(s, false);
 			local_compiler->RdLex();
 			result = local_compiler->RdFrml(fTyp, nullptr);
-			if ((fTyp != X->EvalTyp) || (gc->Lexem != 0x1A)) {
+			if ((fTyp != X->eval_type) || (gc->Lexem != 0x1A)) {
 				result = nullptr;
 			}
 			else {
@@ -3196,7 +3196,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 
 		if (LastExitCode != 0) {
 			LastTxtPos = cpos;
-			if (X->EvalTyp == 'B') {
+			if (X->eval_type == 'B') {
 				result = new FrmlElemBool(_const, 0, false);
 				// z->B = false;
 			}

@@ -105,7 +105,7 @@ FrmlElem20::FrmlElem20(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size
 {
 }
 
-FrmlElem21::FrmlElem21(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemEval::FrmlElemEval(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 

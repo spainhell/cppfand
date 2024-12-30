@@ -732,7 +732,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _eval: {
-		result = RunBool(file_d, GetEvalFrml(file_d, (FrmlElem21*)X, record), record);
+		result = RunBool(file_d, GetEvalFrml(file_d, (FrmlElemEval*)X, record), record);
 		break;
 	}
 	case _newfile: {
@@ -951,7 +951,7 @@ label1:
 	}
 	case _eval: {
 		// MarkStore(p);
-		result = RunReal(file_d, GetEvalFrml(file_d, (FrmlElem21*)X, record), record);
+		result = RunReal(file_d, GetEvalFrml(file_d, (FrmlElemEval*)X, record), record);
 		// ReleaseStore(p);
 		break;
 	}
@@ -1531,7 +1531,7 @@ XKey* GetFromKey(LinkD* LD)
 FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record)
 {
 	if ((Z != nullptr) && (Z->Op == _eval)) {
-		Z = GetEvalFrml(file_d, (FrmlElem21*)Z, record);
+		Z = GetEvalFrml(file_d, (FrmlElemEval*)Z, record);
 	}
 	return Z;
 }
@@ -1621,7 +1621,7 @@ label1:
 		break;
 	}
 	case _eval: {
-		return RunString(file_d, GetEvalFrml(file_d, (FrmlElem21*)X, record), record);
+		return RunString(file_d, GetEvalFrml(file_d, (FrmlElemEval*)X, record), record);
 		break;
 	}
 	case _newfile: {
