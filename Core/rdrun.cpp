@@ -30,7 +30,7 @@ EditD* EditDRoot;
 FrmlElem* PgeSizeZ = nullptr, * PgeLimitZ = nullptr;
 bool CompileFD = false;
 bool EditRdbMode = false;
-LocVarBlkD LVBD;
+LocVarBlock LVBD;
 std::string CalcTxt;
 MergOpSt MergOpGroup = { _const, 0.0 };
 
@@ -42,9 +42,9 @@ bool EFldD::Ed(bool IsNewRec)
 void ResetLVBD()
 {
 	//LVBD.pChain = nullptr;
-	LVBD.vLocVar.clear();
+	LVBD.variables.clear();
 	LVBD.NParam = 0;
-	LVBD.FceName = "";
+	LVBD.func_name = "";
 }
 
 bool Add(FileD* file_d, Additive* add_d, void* record, double value, bool back)

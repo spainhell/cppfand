@@ -26,13 +26,13 @@ public:
 	std::string S;
 };
 
-class LocVarBlkD
+class LocVarBlock
 {
 public:
-	LocVarBlkD() {  }
+	LocVarBlock() = default;
 	LocVar* GetRoot();
 	LocVar* FindByName(std::string Name);
-	std::string FceName;
-	std::vector<LocVar*> vLocVar;
-	WORD NParam = 0;
+	std::string func_name;
+	std::vector<LocVar*> variables;
+	size_t NParam = 0;
 };

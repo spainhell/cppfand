@@ -167,15 +167,15 @@ bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** 
 	return lu;
 }
 
-LocVar* LocVarBlkD::GetRoot()
+LocVar* LocVarBlock::GetRoot()
 {
-	if (this->vLocVar.size() > 0) return this->vLocVar[0];
+	if (this->variables.size() > 0) return this->variables[0];
 	return nullptr;
 }
 
-LocVar* LocVarBlkD::FindByName(std::string Name)
+LocVar* LocVarBlock::FindByName(std::string Name)
 {
-	for (LocVar* i : vLocVar) {
+	for (LocVar* i : variables) {
 		if (EquUpCase(Name, i->name)) return i;
 	}
 	return nullptr;

@@ -11,7 +11,7 @@ class LogicControl;
 class FrmlElem;
 class FrmlElemSum;
 class FieldDescr;
-class LocVarBlkD;
+class LocVarBlock;
 
 struct KeyInD
 {

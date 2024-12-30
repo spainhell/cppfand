@@ -71,7 +71,7 @@ public:
 	BYTE N = 0;
 	bool ExPar = false;
 	std::vector<TypAndFrml> TArg;
-	LocVarBlkD variables;
+	LocVarBlock loc_var_block;
 };
 
 class Instr_lproc : public Instr

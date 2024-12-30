@@ -170,7 +170,7 @@ extern bool SelQuest;
 extern FrmlElem* PgeSizeZ, *PgeLimitZ;
 extern EditD* EditDRoot;
 extern bool CompileFD, EditRdbMode;
-extern LocVarBlkD LVBD;
+extern LocVarBlock LVBD;
 
 extern std::string CalcTxt;
 struct MergOpSt { char Op; double Group; };

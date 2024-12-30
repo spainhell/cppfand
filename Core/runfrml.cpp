@@ -536,8 +536,8 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElemUserFunc* X, void* record)
 	LocVar* return_lv = nullptr; // tady bude ulozena posledni promenna, ktera je pak navratovou hodnotou
 
 	//for (LocVar* lv : X->FC->LVB.vLocVar) {
-	for (size_t i = 0; i < X->FC->LVB.vLocVar.size(); i++) {
-		LocVar* lv = X->FC->LVB.vLocVar[i];
+	for (size_t i = 0; i < X->FC->LVB.variables.size(); i++) {
+		LocVar* lv = X->FC->LVB.variables[i];
 		if (lv->is_param || lv->is_return_param) {
 			// parameter or return parameter variable -> assign value
 			LVAssignFrml(file_d, lv, false, X->FrmlL[i], record);

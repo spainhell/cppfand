@@ -419,7 +419,6 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 	LocVar* LV = nullptr;
 	LinkD* LD = nullptr;
 	void* p = nullptr;
-	//WORD* pofs = (WORD*)&p;
 
 	if (compiler->IsKeyWord("EVALB")) {
 		FTyp = 'B';
@@ -447,16 +446,24 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 		FieldDescr* F = RdFieldDescr("", true);
 		((FrmlElemPrompt*)Z)->FldD = F;
 		FTyp = F->frml_type;
-		if (F->field_type == FieldType::TEXT) compiler->OldError(65);
+
+		if (F->field_type == FieldType::TEXT) {
+			compiler->OldError(65);
+		}
+
 		if (compiler->Lexem == _assign) {
 			compiler->RdLex();
 			((FrmlElemPrompt*)Z)->P2 = compiler->RdFrml(Typ, nullptr);
-			if (Typ != FTyp) compiler->OldError(12);
+
+			if (Typ != FTyp) {
+				compiler->OldError(12);
+			}
 		}
 	}
 	else if (compiler->IsKeyWord("KEYOF")) {
 		compiler->RdLex();
 		FTyp = 'S';
+
 		if (!IsRecVar(compiler, &LV)) {
 			Op = _recno;
 			Z = RdKeyOfOrRecNo(compiler, Op, N, Arg, Typ, FTyp);
@@ -490,6 +497,7 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 		compiler->RdLex();
 		Z = new FrmlElemLink(_link, 5); // GetOp(_link, 5);
 		auto iZ = (FrmlElemLink*)Z;
+
 		if (IsRecVar(compiler, &LV)) {
 			iZ->LinkFromRec = true;
 			iZ->LinkLV = LV;
@@ -501,6 +509,7 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 			iZ->LinkRecFrml = compiler->RdRealFrml(nullptr);
 			compiler->Accept(']');
 		}
+
 		compiler->Accept(',');
 #ifdef FandSQL
 		if (v_files->typSQLFile) OldError(155);
@@ -520,6 +529,7 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 	else if (compiler->IsKeyWord("ISDELETED")) {
 		compiler->RdLex();
 		FTyp = 'B';
+
 		if (IsRecVar(compiler, &LV)) {
 			Z = new FrmlElem20(_lvdeleted, 4); // GetOp(_lvdeleted, 4);
 			((FrmlElem20*)Z)->LV = LV;
@@ -535,6 +545,7 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 			if (v_files->typSQLFile) Error(155);
 #endif
 		}
+
 	}
 	else if (compiler->IsKeyWord("GETPATH")) {
 		compiler->RdLex();
@@ -770,15 +781,13 @@ Instr* RdMenuBar(Compiler* compiler)
 
 Instr_loops* RdIfThenElse(Compiler* compiler)
 {
-	auto PD = new Instr_loops(PInstrCode::_ifthenelseP);
-	auto result = PD;
-	PD->Bool = compiler->RdBool(nullptr);
-
+	Instr_loops* result = new Instr_loops(PInstrCode::_ifthenelseP);
+	result->Bool = compiler->RdBool(nullptr);
 	compiler->AcceptKeyWord("THEN");
-	PD->v_instr = RdPInstr(compiler);
+	result->v_instr = RdPInstr(compiler);
 
 	if (compiler->IsKeyWord("ELSE")) {
-		PD->v_else_instr = RdPInstr(compiler);
+		result->v_else_instr = RdPInstr(compiler);
 	}
 
 	return result;
@@ -786,11 +795,10 @@ Instr_loops* RdIfThenElse(Compiler* compiler)
 
 Instr_loops* RdWhileDo(Compiler* compiler)
 {
-	auto PD = new Instr_loops(PInstrCode::_whiledo);
-	auto result = PD;
-	PD->Bool = compiler->RdBool(nullptr);
+	Instr_loops* result = new Instr_loops(PInstrCode::_whiledo);
+	result->Bool = compiler->RdBool(nullptr);
 	compiler->AcceptKeyWord("DO");
-	PD->v_instr = RdPInstr(compiler);
+	result->v_instr = RdPInstr(compiler);
 	return result;
 }
 
@@ -3034,7 +3042,7 @@ void ReadProcHead(Compiler* compiler, const std::string& name)
 	IsRdUserFunc = false;
 	compiler->RdLex();
 	ResetLVBD();
-	LVBD.FceName = name;
+	LVBD.func_name = name;
 	if (compiler->Lexem == '(') {
 		compiler->RdLex();
 		compiler->RdLocDcl(&LVBD, true, true, 'P');
@@ -3097,7 +3105,7 @@ void ReadDeclChpt(Compiler* compiler)
 			IsRdUserFunc = true;
 			compiler->RdLex();
 			ResetLVBD();
-			LVBD.FceName = fc->name;
+			LVBD.func_name = fc->name;
 			compiler->Accept('(');
 			if (compiler->Lexem != ')') {
 				compiler->RdLocDcl(&LVBD, true, false, 'D'); // nacte parametry funkce
@@ -3118,7 +3126,7 @@ void ReadDeclChpt(Compiler* compiler)
 				compiler->Error(39);
 			}
 			LocVar* lv = new LocVar();
-			LVBD.vLocVar.push_back(lv);
+			LVBD.variables.push_back(lv);
 			lv->name = fc->name;
 			lv->is_return_value = true;
 			lv->f_typ = typ;
@@ -3152,7 +3160,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, void* record)
 	void* cr = CRecPtr;
 	CRecPtr = record;
 
-	LocVarBlkD oldLVBD = LVBD;
+	LocVarBlock oldLVBD = LVBD;
 	//LVBD = Compiler::ProcStack.front();
 
 	FrmlElem* result = nullptr;

@@ -70,8 +70,8 @@ public:
 	char Rd1Char();
 	char RdQuotedChar();
 	void AcceptKeyWord(const std::string& S);
-	void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp);
-	bool FindLocVar(LocVarBlkD* LVB, LocVar** LV);
+	void RdLocDcl(LocVarBlock* LVB, bool IsParList, bool WithRecVar, char CTyp);
+	bool FindLocVar(LocVarBlock* LVB, LocVar** LV);
 	//LocVar* FindLocVar(std::vector<LocVar*>& LVRoot);
 	bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP);
 	std::string RdChptName(char C, RdbPos* Pos, bool TxtExpr);
@@ -120,7 +120,7 @@ public:
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);
 
 	FileD* processing_F = nullptr; // actually compiled file
-	static std::deque<LocVarBlkD> ProcStack;
+	static std::deque<LocVarBlock> ProcStack;
 
 	std::string input_string;
 	size_t input_pos = 0;
@@ -136,7 +136,7 @@ private:
 	bool SrchZ(FieldDescr* F1, FrmlElem* Z);
 	bool IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunCode);
 	void TestBool(char FTyp);
-	LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList);
+	LocVar* RdVarName(LocVarBlock* LVB, bool IsParList);
 	FrmlElem* BOperation(char Typ, instr_type Fun, FrmlElem* Frml);
 	FrmlElem* RdMult(char& FTyp, MergeReportBase* caller);
 	FrmlElem* RdAdd(char& FTyp, MergeReportBase* caller);

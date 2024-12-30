@@ -1677,15 +1677,15 @@ void CallProcedure(Instr_proc* PD)
 	Compiler::ProcStack.push_front(LVBD);
 
 	ReadProcHead(gc, "");
-	PD->variables = LVBD;
-	WORD params_count = PD->variables.NParam;
+	PD->loc_var_block = LVBD;
+	size_t params_count = PD->loc_var_block.NParam;
 
 	if ((params_count != PD->N) && !((params_count == PD->N - 1) && PD->ExPar)) {
 		gc->input_pos = 0;
 		gc->Error(119);
 	}
 
-	it0 = PD->variables.vLocVar.begin();
+	it0 = PD->loc_var_block.variables.begin();
 
 	// projdeme vstupni parametry funkce
 	for (i = 0; i < params_count; i++) {
@@ -1716,7 +1716,7 @@ void CallProcedure(Instr_proc* PD)
 				CFile = PD->TArg[i].FD;
 			}
 			it1 = it0;
-			while (it1 != PD->variables.vLocVar.end()) {
+			while (it1 != PD->loc_var_block.variables.end()) {
 				if (((*it1)->f_typ == 'i' || (*it1)->f_typ == 'r') && ((*it1)->FD == (*it0)->FD)) {
 					(*it1)->FD = CFile;
 				}
@@ -1737,7 +1737,7 @@ void CallProcedure(Instr_proc* PD)
 			}
 
 			// input params has to be evaluated with previous LocVarBlkD
-			LocVarBlkD actual_lvbd = LVBD;
+			LocVarBlock actual_lvbd = LVBD;
 			LVBD = Compiler::ProcStack.front();
 			// process input param
 			LVAssignFrml(CFile, lv, false, PD->TArg[i].Frml, CRecPtr);
@@ -1749,14 +1749,14 @@ void CallProcedure(Instr_proc* PD)
 		++it0;
 	}
 	it1 = it0;
-	while (it0 != PD->variables.vLocVar.end()) {
+	while (it0 != PD->loc_var_block.variables.end()) {
 		if ((*it0)->f_typ == 'r') {
-			CFile = (*it0)->FD;
-			CRecPtr = CFile->GetRecSpace();
-			CFile->SetTWorkFlag(CRecPtr);
-			CFile->ZeroAllFlds(CRecPtr, false);
-			CFile->ClearDeletedFlag(CRecPtr);
-			(*it0)->record = static_cast<uint8_t*>(CRecPtr);
+			FileD* fd = (*it0)->FD;
+			uint8_t* record = fd->GetRecSpace();
+			fd->SetTWorkFlag(record);
+			fd->ZeroAllFlds(record, false);
+			fd->ClearDeletedFlag(record);
+			(*it0)->record = static_cast<uint8_t*>(record);
 		}
 		else if ((*it0)->f_typ == 'f') {
 			// dynamic file definition
@@ -1771,7 +1771,7 @@ void CallProcedure(Instr_proc* PD)
 
 	FDLocVarAllowed = false;
 	it0 = it1;
-	while (it0 != PD->variables.vLocVar.end()) {
+	while (it0 != PD->loc_var_block.variables.end()) {
 		if ((*it0)->f_typ == 'i') {
 			XWKey* hX = (XWKey*)(*it0)->record;
 			if (hX->KFlds.empty()) {
@@ -1794,9 +1794,9 @@ void CallProcedure(Instr_proc* PD)
 	}
 	instructions.clear();
 
-	it0 = PD->variables.vLocVar.begin();
+	it0 = PD->loc_var_block.variables.begin();
 	i = 0;
-	while (it0 != PD->variables.vLocVar.end()) {
+	while (it0 != PD->loc_var_block.variables.end()) {
 		// projdeme navratove hodnoty (navratova hodnota funkce + VAR parametry)
 		// a tyto navratove hodnoty ulozime zpet do patricneho FrmlElem
 		if ((*it0)->is_return_param) {

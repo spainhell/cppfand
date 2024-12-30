@@ -34,7 +34,7 @@ pstring QQmod = "mod";
 pstring QQround = "round";
 
 // init Compiler static variable
-std::deque<LocVarBlkD> Compiler::ProcStack;
+std::deque<LocVarBlock> Compiler::ProcStack;
 
 Compiler::Compiler()
 {
@@ -830,7 +830,7 @@ void Compiler::RestoreCompState(stSaveState* p)
 	delete p;
 }
 
-LocVar* Compiler::RdVarName(LocVarBlkD* LVB, bool IsParList)
+LocVar* Compiler::RdVarName(LocVarBlock* LVB, bool IsParList)
 {
 	TestIdentif();
 	LocVar* lvar = LVB->FindByName(LexWord);
@@ -838,7 +838,7 @@ LocVar* Compiler::RdVarName(LocVarBlkD* LVB, bool IsParList)
 	else {
 		lvar = new LocVar(LexWord);
 		if (IsParList) { lvar->is_param = true; LVB->NParam++; }
-		LVB->vLocVar.push_back(lvar);
+		LVB->variables.push_back(lvar);
 
 	}
 	RdLex();
@@ -945,7 +945,7 @@ void Compiler::RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vec
 	}
 }
 
-void Compiler::RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
+void Compiler::RdLocDcl(LocVarBlock* LVB, bool IsParList, bool WithRecVar, char CTyp)
 {
 	FrmlElem* Z = nullptr;
 	bool b = false;
@@ -1112,7 +1112,7 @@ void Compiler::RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char C
 //	return result;
 //}
 
-bool Compiler::FindLocVar(LocVarBlkD* LVB, LocVar** LV)
+bool Compiler::FindLocVar(LocVarBlock* LVB, LocVar** LV)
 {
 	if (Lexem != _identifier) return false;
 	*LV = LVB->FindByName(LexWord);
@@ -1810,7 +1810,7 @@ bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 			FrmlElemUserFunc* z = new FrmlElemUserFunc(_userfunc, 8);
 			z->FC = fc;
 			WORD n = fc->LVB.NParam;
-			std::vector<LocVar*>::iterator itr = fc->LVB.vLocVar.begin();
+			std::vector<LocVar*>::iterator itr = fc->LVB.variables.begin();
 			for (WORD i = 1; i <= n; i++) {
 				FrmlElem* frml = RdFormula(typ, caller);
 				z->FrmlL.push_back(frml);
