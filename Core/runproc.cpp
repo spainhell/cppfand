@@ -400,12 +400,11 @@ void ExecPgm(Instr_exec* PD)
 
 void CallRdbProc(Instr_call* PD)
 {
-	bool b = false;
 	void* p = nullptr;
 	wwmix ww;
 	MarkStore(p);
 	// TODO: tady se ma ulozit stav (MyBP - ProcStkD)
-	b = EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall, &ww);
+	bool b = EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall, &ww);
 	// TODO: tady se ma obnovit stav (MyBP - ProcStkD)
 	ReleaseStore(&p);
 	if (!b) {
