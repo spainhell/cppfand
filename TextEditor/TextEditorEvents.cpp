@@ -26,7 +26,7 @@ TextEditorEvents::~TextEditorEvents()
 	_modes_handler = nullptr;
 }
 
-void TextEditorEvents::CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
+bool TextEditorEvents::CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 {
 	bool Ctrl = false;
 	WORD Delta = 0;
@@ -78,6 +78,8 @@ label1:
 		editor->WrLLMargMsg(LastS, LastNr);
 		AddCtrlAltShift(flgs);
 	}
+
+	return true;
 }
 
 bool TextEditorEvents::My2GetEvent()
@@ -525,7 +527,11 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 	//}
 
 	std::string OrigS = "    ";
-	CtrlShiftAlt(editor, mode, LastS, LastNr, IsWrScreen);
+	bool end = CtrlShiftAlt(editor, mode, LastS, LastNr, IsWrScreen);
+	//if (end) {
+	//	ClrEvent();
+	//	return;
+	//}
 	GetEvent();
 	TextEditorMode tm = _modes_handler->GetMode();
 
@@ -1202,9 +1208,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				case TextBlock: {
 					do {
 						I2 = 0x1000; if (fs - L2 < int(I2))  I2 = fs - L2;
-						if ((TypeT != FileT) && ((I2 >= MaxLenT - editor->_lenT) || (I2 >= StoreAvail()))) {
-							if (I2 >= StoreAvail()) {
-								I2 = StoreAvail();
+						if ((TypeT != FileT) && ((I2 >= MaxLenT - editor->_lenT) || (I2 >= MemoryAvailable()))) {
+							if (I2 >= MemoryAvailable()) {
+								I2 = MemoryAvailable();
 							}
 							I2 = MinW(I2, MaxLenT - editor->_lenT) - 2; fs = L2 + I2;
 							WrLLF10Msg(404);

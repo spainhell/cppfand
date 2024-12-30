@@ -14,8 +14,8 @@
 #include "../fandio/XWKey.h"
 #include "../Drivers/constants.h"
 
-bool IsRdUserFunc;
-kNames KeyNames[NKeyNames] = {
+struct key_names { std::string name; uint8_t brk; uint16_t code; };
+static std::vector<key_names> KeyNames = {
 	{"HOME", 51, __HOME},
 	{"UP", 52, __UP},
 	{"PGUP", 53, __PAGEUP},
@@ -37,7 +37,6 @@ kNames KeyNames[NKeyNames] = {
 	{"CTRLY", 80, CTRL + 'Y'},
 	{"ESC", 81, __ESC},
 	{"CTRLP", 82, CTRL + 'P'} };
-
 
 void AddInstr(std::vector<Instr*>& dst, std::vector<Instr*> src)
 {
@@ -1121,15 +1120,16 @@ void RdKeyCode(Compiler* compiler, EdExitD* X)
 	}
 	else {
 		bool found = false;
-		for (uint8_t i = 0; i < NKeyNames; i++) {
-			if (EquUpCase(KeyNames[i].Nm, compiler->LexWord)) {
-				lastKey.KeyCode = KeyNames[i].Code;
-				lastKey.Break = KeyNames[i].Brk;
+		for (size_t i = 0; i < KeyNames.size(); i++) {
+			if (EquUpCase(KeyNames[i].name, compiler->LexWord)) {
+				lastKey.KeyCode = KeyNames[i].code;
+				lastKey.Break = KeyNames[i].brk;
 				compiler->RdLex();
 				found = true;
 				break;
 			}
 		}
+
 		if (!found) {
 			compiler->Error(129);
 		}
@@ -3127,7 +3127,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 	CRecPtr = record;
 
 	LocVarBlkD oldLVBD = LVBD;
-	LVBD = Compiler::ProcStack.front();
+	//LVBD = Compiler::ProcStack.front();
 
 	FrmlElem* result = nullptr;
 

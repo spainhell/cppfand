@@ -17,7 +17,7 @@ public:
 	TextEditorEvents();
 	~TextEditorEvents();
 	void HandleEvent(TextEditor* editor, char& Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
-	void CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen);
+	bool CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen);
 	bool My2GetEvent();
 
 private:

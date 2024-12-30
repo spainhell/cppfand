@@ -40,18 +40,18 @@ void WorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NRe
 		//KF = KF->pChain;
 	}
 
-	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
+	//BYTEs = (MemoryAvailable() - RestBytes - sizeof(WRec)) / 3;
 
-	if (BYTEs < 4096) {
-		RunError(624);
-	}
+	//if (BYTEs < 4096) {
+	//	RunError(624);
+	//}
 
-	if (BYTEs < kB60) {
-		WPageSize = (unsigned short)BYTEs & 0xF000;
-	}
-	else {
+	//if (BYTEs < kB60) {
+	//	WPageSize = (unsigned short)BYTEs & 0xF000;
+	//}
+	//else {
 		WPageSize = kB60;
-	}
+	//}
 
 	// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
 	MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array

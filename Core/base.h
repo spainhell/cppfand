@@ -52,7 +52,7 @@ void DispH(void* ad, short NoBytes);
 void MarkStore(void* p);
 void ReleaseStore(void** pointer);
 void ReleaseAfterLongStr(void** pointer);
-int StoreAvail();
+int MemoryAvailable();
 std::string* StoreStr(std::string S);
 void MarkBoth(void* p, void* p2);
 

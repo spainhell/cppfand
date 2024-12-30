@@ -851,7 +851,7 @@ bool EquArea(void* p1, void* p2, size_t len)
 	return memcmp(p1, p2, len) == 0;
 }
 
-int StoreAvail()
+int MemoryAvailable()
 {
 	return 512 * 1024;
 }

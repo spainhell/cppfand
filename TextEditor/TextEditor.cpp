@@ -1593,8 +1593,7 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 	case __LEFT:
 	case __RIGHT:
 	case __UP:
-	case __DOWN:
-	{
+	case __DOWN: {
 		WORD scanCode = EvKeyC.Key()->wVirtualScanCode;
 		size_t idx = FrameString.find_first_of(Arr[positionOnActualLine - 1]);
 		BYTE zn1 = (idx == std::string::npos) ? 0 : BYTE(idx);
@@ -1685,10 +1684,12 @@ bool TextEditor::TestLastPos(WORD F, WORD T)
 {
 	WORD LP = GetArrLineLength();
 	if (F > LP) F = LP + 1;
+
 	if (LP + T - F <= LineMaxSize) {
 		if (LP >= F) {
 			memcpy(&Arr[T - 1], &Arr[F - 1], LP - F + 1);
 		}
+
 		if (TypeB == TextBlock) {
 			if (blocks->LineAbs(TextLineNr) == blocks->BegBLn) {
 				MoveB(blocks->BegBPos, F, T);
@@ -1697,15 +1698,19 @@ bool TextEditor::TestLastPos(WORD F, WORD T)
 				MoveB(blocks->EndBPos, F, T);
 			}
 		}
+
 		if (F > T) {
 			if (T <= LP) {
 				memset(&Arr[LP + T - F], ' ', F - T);
 			}
 		}
+
 		UpdatedL = true;
 		return true;
 	}
-	else return false;
+	else {
+		return false;
+	}
 }
 
 void TextEditor::DelChar()
@@ -1849,7 +1854,7 @@ void TextEditor::WrCharE(char Ch)
 
 void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 {
-	WORD lst, ii1;
+	size_t lst, ii1;
 	short ii;
 	char A[260];
 	bool bBool;
@@ -1859,19 +1864,14 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 	SetPart(First);
 	WORD fst = First; // -Part.PosP;
 	int llst = Last; // -Part.PosP;
+
 	if (llst > _lenT) lst = _lenT;
 	else lst = llst;
+
 	do {
 		if (_lenT > 0x400) ii1 = _lenT - 0x400;
 		else ii1 = 0;
-		//if ((fst >= ii1) && !AllRd) {
-		//	NextPartDek();
-		//	//fst -= Part.MovI;
-		//	//lst -= Part.MovI;
-		//	//llst -= Part.MovI;
-		//	if (llst > _lenT) lst = _lenT;
-		//	else lst = llst;
-		//}
+
 		i = fst; ii1 = i;
 		if ((i < 2) || (_textT[i - 1] == __LF)) {
 			while (_textT[ii1] == ' ') ii1++; Posit = MaxW(Posit, ii1 - i + 1);
@@ -1976,6 +1976,7 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 			if (llst > _lenT) lst = _lenT; else lst = llst;
 		}
 	} while (Rep);
+
 	blocks->BegBLn = 1; blocks->BegBPos = 1; blocks->EndBLn = 1; blocks->EndBPos = 1; TypeB = TextBlock;
 }
 
@@ -2089,7 +2090,7 @@ void ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint,
 	fs = co->length();
 	LenPrint += fs;
 	if (Oper == 'p') LenPrint++;
-	if ((StoreAvail() > LenPrint) && (LenPrint < 0xFFF0)) {
+	if ((MemoryAvailable() > LenPrint) && (LenPrint < 0xFFF0)) {
 		char* t = new char[LenPrint];
 		p = t;
 		Move(&co[1], p, co->length());

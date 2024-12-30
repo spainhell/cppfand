@@ -39,9 +39,6 @@ std::vector<Instr*> RdBeginEnd(Compiler* compiler);
 Instr_proc* RdProcArg(Compiler* compiler, char Caller);
 void RdKeyCode(Compiler* compiler, EdExitD* X);
 
-const BYTE NKeyNames = 21;
-struct kNames { pstring Nm; BYTE Brk; unsigned __int32 Code; };
-extern kNames KeyNames[NKeyNames];
 bool RdHeadLast(Compiler* compiler, EditOpt* EO);
 bool RdHeadLast(Compiler* compiler, Instr_edittxt* IE);
 void RdKeyList(Compiler* compiler, EdExitD* X);

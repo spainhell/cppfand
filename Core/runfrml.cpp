@@ -732,8 +732,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _eval: {
-		FrmlElem* gef = GetEvalFrml(file_d, (FrmlElem21*)X, record);
-		result = RunBool(file_d, gef, record);
+		result = RunBool(file_d, GetEvalFrml(file_d, (FrmlElem21*)X, record), record);
 		break;
 	}
 	case _newfile: {
@@ -1104,7 +1103,7 @@ label1:
 		break;
 	}
 	case _memavail: {
-		result = StoreAvail();
+		result = MemoryAvailable();
 		break;
 	}
 	case _maxcol: {
