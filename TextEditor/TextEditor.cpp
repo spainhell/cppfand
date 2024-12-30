@@ -587,14 +587,14 @@ void TextEditor::WrLLMargMsg(std::string& s, WORD n)
 {
 	if (!s.empty()) {
 		MsgLine = s;
-		WrLLMsgTxt();
+		WrLLMsgTxt(s);
 	}
 	else {
 		if (n != 0) WrLLMsg(n);
 		else {
 			if (!LastS.empty()) {
 				MsgLine = LastS;
-				WrLLMsgTxt();
+				WrLLMsgTxt(LastS);
 			}
 			else {
 				WrLLMsg(LastNr);

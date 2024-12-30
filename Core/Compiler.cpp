@@ -24,6 +24,7 @@
 const BYTE MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
 Compiler* gc = new Compiler(); // global compiler instance
+bool IsRdUserFunc;
 
 //bool KeyArgFound;
 //FieldDescr* KeyArgFld;

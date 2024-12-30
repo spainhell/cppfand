@@ -4840,8 +4840,8 @@ void DataEditor::DisplLL()
 	WORD n;
 	if (!edit_->Last.empty()) {
 		MsgLine = edit_->Last;
-		if (!MsgLine.empty()) {
-			WrLLMsgTxt();
+		if (!edit_->Last.empty() /*&& edit_->Last != " "*/) {
+			WrLLMsgTxt(edit_->Last);
 			DisplLASwitches();
 		}
 		return;
@@ -4873,7 +4873,7 @@ void DataEditor::DisplCtrlAltLL(WORD Flags)
 	if ((Flags & 0x04) != 0) {        /* Ctrl */
 		if (!edit_->CtrlLast.empty()) {
 			MsgLine = edit_->CtrlLast;
-			WrLLMsgTxt();
+			WrLLMsgTxt(edit_->CtrlLast);
 		}
 		else if (IsCurrChpt(file_d_)) WrLLMsg(125);
 		else if (params_->EdRecVar) WrLLMsg(154);
@@ -4882,14 +4882,14 @@ void DataEditor::DisplCtrlAltLL(WORD Flags)
 	else if ((Flags & 0x03) != 0) {         /* Shift */
 		if (!edit_->ShiftLast.empty()) {
 			MsgLine = edit_->ShiftLast;
-			WrLLMsgTxt();
+			WrLLMsgTxt(edit_->ShiftLast);
 		}
 		else DisplLL();
 	}
 	else if ((Flags & 0x08) != 0) {         /* Alt */
 		if (!edit_->AltLast.empty()) {
 			MsgLine = edit_->AltLast;
-			WrLLMsgTxt();
+			WrLLMsgTxt(edit_->AltLast);
 		}
 		else DisplLL();
 	}

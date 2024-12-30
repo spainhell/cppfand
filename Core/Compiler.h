@@ -8,6 +8,7 @@
 class Compiler;
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 extern Compiler* gc; // global g_compiler instance
+extern bool IsRdUserFunc;
 
 enum class FieldNameType { none, F, P, T };
 enum class ReadFuncType { none, P };

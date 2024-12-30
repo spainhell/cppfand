@@ -1138,15 +1138,41 @@ void RdKeyCode(Compiler* compiler, EdExitD* X)
 	X->Keys.push_back(std::move(lastKey));
 }
 
+void ReplaceEmptyStringWithSingleSpace(FrmlElemString* el)
+{
+	if (el->Op == _const && el->S.empty()) {
+		el->S = " ";
+	}
+}
+
 bool RdHeadLast(Compiler* compiler, EditOpt* EO)
 {
-	auto result = true;
-	if (compiler->IsOpt("HEAD")) EO->Head = compiler->RdStrFrml(nullptr);
-	else if (compiler->IsOpt("LAST")) EO->Last = compiler->RdStrFrml(nullptr);
-	else if (compiler->IsOpt("CTRL")) EO->CtrlLast = compiler->RdStrFrml(nullptr);
-	else if (compiler->IsOpt("ALT")) EO->AltLast = compiler->RdStrFrml(nullptr);
-	else if (compiler->IsOpt("SHIFT")) EO->ShiftLast = compiler->RdStrFrml(nullptr);
-	else result = false;
+	bool result = true;
+
+	if (compiler->IsOpt("HEAD")) {
+		EO->Head = compiler->RdStrFrml(nullptr);
+		ReplaceEmptyStringWithSingleSpace((FrmlElemString*)EO->Head);
+	}
+	else if (compiler->IsOpt("LAST")) {
+		EO->Last = compiler->RdStrFrml(nullptr);
+		ReplaceEmptyStringWithSingleSpace((FrmlElemString*)EO->Last);
+	}
+	else if (compiler->IsOpt("CTRL")) {
+		EO->CtrlLast = compiler->RdStrFrml(nullptr);
+		ReplaceEmptyStringWithSingleSpace((FrmlElemString*)EO->CtrlLast);
+	}
+	else if (compiler->IsOpt("ALT")) {
+		EO->AltLast = compiler->RdStrFrml(nullptr);
+		ReplaceEmptyStringWithSingleSpace((FrmlElemString*)EO->AltLast);
+	}
+	else if (compiler->IsOpt("SHIFT")) {
+		EO->ShiftLast = compiler->RdStrFrml(nullptr);
+		ReplaceEmptyStringWithSingleSpace((FrmlElemString*)EO->ShiftLast);
+	}
+	else {
+		result = false;
+	}
+
 	return result;
 }
 

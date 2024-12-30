@@ -1662,29 +1662,23 @@ void CallProcedure(Instr_proc* PD)
 
 	if (PD == nullptr) return;
 	MarkBoth(p1, p2);
-	//oldprocbp = ProcMyBP;
+
 	std::deque<LinkD*> ld = LinkDRoot;
 	size_t lstFDindex = CRdb->v_files.size() - 1; // index of last item in FileDRoot;
 	gc->SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
-	//std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 	std::string srcCode = gc->input_string;
-	if (srcCode.find("(PARAM3:file; VetaP:record of PARAM3) var Kal,s:string;") != std::string::npos) {
+	if (srcCode.find("proc(Tyden,(evalr('VetaD.'+ef)));") != std::string::npos) {
 		printf("");
 	}
 #endif
 
-	// save LVBD
-	//LocVarBlkD oldLVDB = LVBD;
 	Compiler::ProcStack.push_front(LVBD);
 
 	ReadProcHead(gc, "");
 	PD->variables = LVBD;
 	WORD params_count = PD->variables.NParam;
-	LocVar* lvroot = PD->variables.GetRoot();
-	//oldbp = MyBP;
-	//Compiler::ProcStack.push_front(&LVBD); //PushProcStk();
 
 	if ((params_count != PD->N) && !((params_count == PD->N - 1) && PD->ExPar)) {
 		gc->input_pos = 0;
@@ -1741,7 +1735,14 @@ void CallProcedure(Instr_proc* PD)
 				gc->input_pos = 0;
 				gc->Error(119);
 			}
+
+			// input params has to be evaluated with previous LocVarBlkD
+			LocVarBlkD actual_lvbd = LVBD;
+			LVBD = Compiler::ProcStack.front();
+			// process input param
 			LVAssignFrml(CFile, lv, false, PD->TArg[i].Frml, CRecPtr);
+			// return LocVarBlkD back
+			LVBD = actual_lvbd;
 			break;
 		}
 		}

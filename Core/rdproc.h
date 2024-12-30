@@ -9,7 +9,6 @@
 #include "switches.h"
 
 class MergeReportBase;
-extern bool IsRdUserFunc;
 
 void TestCatError(Compiler* compiler, int i, const std::string& name, bool old);
 bool IsRecVar(Compiler* compiler, LocVar** LV);

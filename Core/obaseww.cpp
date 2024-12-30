@@ -179,11 +179,11 @@ int PushWrLLMsg(WORD N, bool WithESC)
 // nacteni a zapis posledniho radku s klavesovymi zkratkami
 void WrLLMsg(WORD N)
 {
-	ReadMessage(N);
-	WrLLMsgTxt();
+	std::string message = ReadMessage(N);
+	WrLLMsgTxt(message);
 }
 
-void WrLLMsgTxt()
+void WrLLMsgTxt(std::string& message)
 {
 	WordRec w; bool On;
 	WORD Buf[MaxTxtCols + 1];
@@ -192,14 +192,14 @@ void WrLLMsgTxt()
 	On = false;
 	WORD i = 0;
 	WORD j = 0;
-	while ((i < MsgLine.length()) && (j < TxtCols)) {
-		if (MsgLine[i] == 0x17)
+	while ((i < message.length()) && (j < TxtCols)) {
+		if (message[i] == 0x17)
 		{
 			if (On) { w.Hi = screen.colors.lNorm; On = false; }
 			else { w.Hi = screen.colors.lFirst; On = true; }
 		}
 		else {
-			w.Lo = MsgLine[i];
+			w.Lo = message[i];
 			Buf[j] = (w.Hi << 8) + w.Lo;
 			j++;
 		}
@@ -216,7 +216,7 @@ void WrLLMsgTxt()
 	delete p;
 }
 
-void WrLLF10MsgLine()
+void WrLLF10MsgLine(std::string& message)
 {
 	WORD row = TxtRows - 1;
 	CHAR_INFO* Buf = new CHAR_INFO[TxtCols];
@@ -226,27 +226,27 @@ void WrLLF10MsgLine()
 	if (F10SpecKey == 0xffff) {
 		screen.ScrWrStr(1, row + 1, "...!", screen.colors.zNorm | 0x80);
 	}
-	else if (spec.F10Enter)	{
+	else if (spec.F10Enter) {
 		screen.ScrWrStr(1, row + 1, "\x11\xD9 !", screen.colors.zNorm | 0x80);
 	}
 	else {
 		screen.ScrWrStr(1, row + 1, "F10!", screen.colors.zNorm | 0x80);
 	}
-	WORD col = MsgLine.length() + 5;
+	WORD col = message.length() + 5;
 	WORD len = 0;
 	if ((F10SpecKey == 0xfffe) || (F10SpecKey == __F1)) {
-		MsgLine = MsgLine + " " + "F1";
+		message = message + " " + "F1";
 		len = 2;
 	}
 	if ((F10SpecKey == 0xfffe) || (F10SpecKey == __SHIFT_F7)) {
-		MsgLine = MsgLine + " " + "ShiftF7";
+		message = message + " " + "ShiftF7";
 		len += 7;
 	}
 	if (MsgLine.length() > TxtCols - 5) {
-		MsgLine = MsgLine.substr(0, TxtCols - 5);
+		message = message.substr(0, TxtCols - 5);
 		len = 0;
 	}
-	screen.ScrWrStr(6, row + 1, MsgLine, screen.colors.zNorm);
+	screen.ScrWrStr(6, row + 1, message, screen.colors.zNorm);
 
 	bool end = false;
 	while (!end) {
@@ -294,8 +294,8 @@ void WrLLF10MsgLine()
  */
 void WrLLF10Msg(int msgNr)
 {
-	ReadMessage(msgNr);
-	WrLLF10MsgLine();
+	std::string message = ReadMessage(msgNr);
+	WrLLF10MsgLine(message);
 }
 
 void RunError(WORD N)

@@ -2009,7 +2009,7 @@ void UpdateUTxt()
 		}
 		catch (std::exception& ex) {
 			if (b) {
-				WrLLF10MsgLine();
+				WrLLF10MsgLine(MsgLine);
 				ReleaseStore(&p);
 				if (PromptYN(59)) {
 					continue;
