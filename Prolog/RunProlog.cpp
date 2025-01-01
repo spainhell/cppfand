@@ -25,6 +25,9 @@ void RunProlog::Run()
 	{
 		RunIndexy();
 	}
+	else if (_chapter_name == "Texty") {
+		RunTexty();
+	}
 	else {
 		// other chapters
 	}
@@ -79,6 +82,39 @@ void RunProlog::RunIndexy()
 	}
 }
 
+void RunProlog::RunTexty()
+{
+	std::string file_name, file_type, module_name, file_path;
+	bool found = FandFile(_src_code, file_name, file_type, module_name, file_path);
+
+	// get access to PARAM3.TTT
+	FileD* param_f = FindFile("PARAM3");
+	FieldDescr* param_fld = FindField(param_f, "TTT");
+
+	if (!found) {
+		SaveToParamFile(param_f, param_fld, "BEGIN\rEND;");
+	}
+	else {
+		// if module_name is between '', remove them
+		if (module_name.front() == '\'' && module_name.back() == '\'') {
+			module_name = module_name.substr(1, module_name.size() - 2);
+		}
+
+		std::vector<FileD*> file_descs = GetFileDescsInModule(module_name, FileType::UNKNOWN);
+		std::vector<std::string> files = GetFilesWithStoredTexts(file_descs);
+
+		// prepare source code
+		std::string output = "BEGIN\r";
+		for (const std::string& file : files) {
+			output += "proc(Texty1,(@" + file + "));\r";
+		}
+		output += "END;";
+
+		// save result to PARAM3.TTT
+		SaveToParamFile(param_f, param_fld, output);
+	}
+}
+
 FieldDescr* RunProlog::FindField(FileD* file_d, std::string field_name)
 {
 	if (file_d != nullptr) {
@@ -113,15 +149,68 @@ std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, F
 
 	while (R != nullptr) {
 		if (!R->v_files.empty() && EquUpCase(R->v_files[0]->Name, module_name)) {
+			// skip the first file, which is the module itself
 			for (size_t i = 1; i < R->v_files.size(); i++) {
-				if (R->v_files[i]->FF->file_type == file_type) {
+				if (R->v_files[i]->FF->file_type == FileType::UNKNOWN) {
 					result.push_back(R->v_files[i]->Name);
+				}
+				else if (R->v_files[i]->FF->file_type == file_type) {
+					result.push_back(R->v_files[i]->Name);
+				}
+				else {
+					continue;
 				}
 			}
 			break;
 		}
 		else {
 			R = R->ChainBack;
+		}
+	}
+
+	return result;
+}
+
+std::vector<FileD*> RunProlog::GetFileDescsInModule(std::string& module_name, FileType file_type)
+{
+	std::vector<FileD*> result;
+
+	RdbD* R = CRdb;
+
+	while (R != nullptr) {
+		if (!R->v_files.empty() && EquUpCase(R->v_files[0]->Name, module_name)) {
+			// skip the first file, which is the module itself
+			for (size_t i = 1; i < R->v_files.size(); i++) {
+				if (file_type == FileType::UNKNOWN) {
+					result.push_back(R->v_files[i]);
+				}
+				else if (R->v_files[i]->FF->file_type == file_type) {
+					result.push_back(R->v_files[i]);
+				}
+				else {
+					continue;
+				}
+			}
+			break;
+		}
+		else {
+			R = R->ChainBack;
+		}
+	}
+
+	return result;
+}
+
+std::vector<std::string> RunProlog::GetFilesWithStoredTexts(const std::vector<FileD*>& v_files_descs)
+{
+	std::vector<std::string> result;
+
+	for (FileD* file : v_files_descs) {
+		for (FieldDescr* field : file->FldD) {
+			if (field->field_type == FieldType::TEXT && field->isStored()) {
+				result.push_back(file->Name);
+				break;
+			}
 		}
 	}
 

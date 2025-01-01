@@ -15,6 +15,7 @@ public:
 	void Run();
 	void RunDbfExport();
 	void RunIndexy();
+	void RunTexty();
 
 private:
 	RdbPos* _rdb_pos;
@@ -25,6 +26,8 @@ private:
 	FieldDescr* FindField(FileD* file_d, std::string field_name);
 	FileD* FindFile(std::string file_name);
 	std::vector<std::string> GetFilesInModule(std::string& module_name, FileType file_type);
+	std::vector<FileD*> GetFileDescsInModule(std::string& module_name, FileType file_type);
+	std::vector<std::string> GetFilesWithStoredTexts(const std::vector<FileD*>& v_files_descs);
 	std::string ReadFromParamFile(FileD* file_d, FieldDescr* field_d);
 	void SaveToParamFile(FileD* file_d, FieldDescr* field_d, std::string value);
 	std::vector<std::string> GetDbfDeclaration(FileD* file_d);

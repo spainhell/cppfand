@@ -560,7 +560,12 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElemUserFunc* X, void* record)
 		//}
 	}
 
+	LocVarBlock oldLVBD = LVBD;
+	LVBD = X->FC->LVB;
+
 	RunProcedure(X->FC->v_instr);
+
+	LVBD = oldLVBD;
 
 	return return_lv;
 }

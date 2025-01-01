@@ -50,8 +50,8 @@ public:
 	WORD GetNrKeys();
 	void Reset();
 
-	void ReadRec(size_t rec_nr, void* record) const;
-	void WriteRec(size_t rec_nr, void* record) const;
+	size_t ReadRec(size_t rec_nr, void* record) const;
+	size_t WriteRec(size_t rec_nr, void* record) const;
 
 	uint8_t* GetRecSpace() const;
 

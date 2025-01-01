@@ -57,19 +57,19 @@ Fand0File::~Fand0File()
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-void Fand0File::ReadRec(size_t rec_nr, void* record)
+size_t Fand0File::ReadRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+	return ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
-void Fand0File::WriteRec(size_t rec_nr, void* record)
+size_t Fand0File::WriteRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
-	WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 	WasWrRec = true;
+	return WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
 void Fand0File::CreateRec(int n, void* record)
@@ -1233,7 +1233,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 		return;
 	}
 
-	// close and delete this FandFile physical file
+	// close and delete original file
 	SaveCache(0, Handle);
 	CloseClearH(&Handle);
 	MyDeleteFile(orig_path);
@@ -1318,8 +1318,8 @@ void Fand0File::IndexFileProc(bool Compress)
 	BYTE* record = _parent->GetRecSpace();
 	if (Compress) {
 		FileD* FD2 = _parent->OpenDuplicateF(false);
-		for (int ren_nr = 1; ren_nr <= NRecs; ren_nr++) {
-			_parent->ReadRec(ren_nr, record);
+		for (int rec_nr = 1; rec_nr <= NRecs; rec_nr++) {
+			_parent->ReadRec(rec_nr, record);
 			if (!_parent->DeletedFlag(record)) {
 				FD2->PutRec(record);
 			}
@@ -1328,6 +1328,8 @@ void Fand0File::IndexFileProc(bool Compress)
 			GoExit(MsgLine);
 		}
 		SubstDuplF(FD2, false);
+		NRecs = FD2->FF->NRecs;
+		XFNotValid();
 		delete FD2; FD2 = nullptr;
 	}
 	XF->NoCreate = false;

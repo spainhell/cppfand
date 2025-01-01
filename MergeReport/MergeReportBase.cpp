@@ -9,7 +9,7 @@
 
 void MergeReportBase::SetInput(std::string& input)
 {
-	base_compiler->input_string = input;
+	base_compiler->SetInpStdStr(input, false);
 }
 
 void MergeReportBase::SetInput(std::string& s, bool ShowErr)

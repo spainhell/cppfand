@@ -13,15 +13,15 @@ FandFile::FandFile()
 FandFile::~FandFile()
 = default;
 
-void FandFile::ReadData(size_t position, size_t count, void* buf) const
+size_t FandFile::ReadData(size_t position, size_t count, void* buf) const
 {
-	ReadWriteData(READ, position, count, buf);
+	return ReadWriteData(READ, position, count, buf);
 }
 
-void FandFile::WriteData(size_t position, size_t count, void* buf)
+size_t FandFile::WriteData(size_t position, size_t count, void* buf)
 {
 	SetUpdateFlag();
-	ReadWriteData(WRITE, position, count, buf);
+	return ReadWriteData(WRITE, position, count, buf);
 }
 
 void FandFile::SetUpdateFlag()
@@ -39,9 +39,10 @@ bool FandFile::HasUpdateFlag() const
 	return _updateFlag;
 }
 
-void FandFile::ReadWriteData(FileOperation operation, size_t position, size_t count, void* buf) const
+size_t FandFile::ReadWriteData(FileOperation operation, size_t position, size_t count, void* buf) const
 {
 	Logging* log = Logging::getInstance();
+	size_t result = 0;
 
 	short PgeIdx = 0, PgeRest = 0;
 	WORD err = 0; int PgeNo = 0;
@@ -49,7 +50,7 @@ void FandFile::ReadWriteData(FileOperation operation, size_t position, size_t co
 
 	if (Handle == nullptr) {
 		RunError(706);
-		return;
+		return result;
 	}
 
 	// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
@@ -57,14 +58,14 @@ void FandFile::ReadWriteData(FileOperation operation, size_t position, size_t co
 	SeekH(Handle, position);
 
 	if (operation == READ) {
-		ReadH(Handle, count, buf);
+		result = ReadH(Handle, count, buf);
 	}
 	else {
-		WriteH(Handle, count, buf);
+		result = WriteH(Handle, count, buf);
 	}
 
 	if (HandleError == 0) {
-		return;
+		
 	}
 	else {
 		if (operation == READ) {
@@ -79,4 +80,6 @@ void FandFile::ReadWriteData(FileOperation operation, size_t position, size_t co
 		SetMsgPar(CPath);
 		RunError(700 + err);
 	}
+
+	return result;
 }

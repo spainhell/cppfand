@@ -47,8 +47,8 @@ public:
 	LockMode ExLMode = NullMode;
 	LockMode TaLMode = NullMode;
 
-	void ReadRec(size_t rec_nr, void* record);
-	void WriteRec(size_t rec_nr, void* record);
+	size_t ReadRec(size_t rec_nr, void* record);
+	size_t WriteRec(size_t rec_nr, void* record);
 	void CreateRec(int n, void* record);
 	void DeleteRec(int n, void* record);
 	void DelAllDifTFlds(void* record, void* comp_record);

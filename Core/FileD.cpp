@@ -90,14 +90,14 @@ void FileD::Reset()
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-void FileD::ReadRec(size_t rec_nr, void* record) const
+size_t FileD::ReadRec(size_t rec_nr, void* record) const
 {
-	this->FF->ReadRec(rec_nr, record);
+	return this->FF->ReadRec(rec_nr, record);
 }
 
-void FileD::WriteRec(size_t rec_nr, void* record) const
+size_t FileD::WriteRec(size_t rec_nr, void* record) const
 {
-	this->FF->WriteRec(rec_nr, record);
+	return this->FF->WriteRec(rec_nr, record);
 }
 
 uint8_t* FileD::GetRecSpace() const

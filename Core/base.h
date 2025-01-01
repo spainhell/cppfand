@@ -73,7 +73,7 @@ long SeekH(HANDLE handle, size_t pos);
 long FileSizeH(HANDLE handle);
 HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM);
 size_t ReadH(HANDLE handle, size_t length, void* buffer);
-void WriteH(HANDLE handle, size_t length, void* buffer);
+size_t WriteH(HANDLE handle, size_t length, void* buffer);
 void CloseH(HANDLE* handle);
 void CloseClearH(HANDLE* h);
 
