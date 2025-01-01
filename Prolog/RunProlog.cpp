@@ -181,7 +181,10 @@ std::vector<FileD*> RunProlog::GetFileDescsInModule(std::string& module_name, Fi
 		if (!R->v_files.empty() && EquUpCase(R->v_files[0]->Name, module_name)) {
 			// skip the first file, which is the module itself
 			for (size_t i = 1; i < R->v_files.size(); i++) {
-				if (file_type == FileType::UNKNOWN) {
+				if (R->v_files[i]->IsHlpFile) {
+					continue;
+				}
+				else if (file_type == FileType::UNKNOWN) {
 					result.push_back(R->v_files[i]);
 				}
 				else if (R->v_files[i]->FF->file_type == file_type) {
