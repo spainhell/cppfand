@@ -10,7 +10,7 @@ ReadProlog::~ReadProlog()
 {
 }
 
-void ReadProlog::Read(RdbPos* rdb_pos)
+std::string ReadProlog::Read(RdbPos* rdb_pos)
 {
 	RdbD* ChptLRdb = rdb_pos->rdb;
 	uint8_t* CRecPtr = ChptLRdb->v_files[0]->GetRecSpace();
@@ -22,4 +22,6 @@ void ReadProlog::Read(RdbPos* rdb_pos)
 
 	delete[] CRecPtr;
 	CRecPtr = nullptr;
+
+	return compiler->input_string;
 }

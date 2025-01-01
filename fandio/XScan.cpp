@@ -179,7 +179,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 #ifdef FandSQL
 	if (Kind = 4) {           /* !on .SQL with Workindex */
 		KIRoot = GetZStore(sizeof(KIRoot^));
-		KIRoot->X1 = StoreStr(XX->S); KIRoot->X2 = StoreStr(XX->S);
+		KIRoot->X1 =XX->S; KIRoot->X2 = XX->S;
 		New(SQLStreamPtr(Strm), init); i_rec = 1
 	}
 	else
@@ -187,7 +187,6 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	{
 		FD->FF->TestXFExist();
 		KeyInD* new_key_in = new KeyInD();
-		//KIRoot = new KeyInD(); // (KeyInD*)GetZStore(sizeof(*KIRoot));
 		KIRoot.push_back(new_key_in);
 		Key->FindNr(FD, XX->S, new_key_in->XNrBeg);
 		AddFFs(Key, XX->S);

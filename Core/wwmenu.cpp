@@ -809,53 +809,53 @@ void TMenuBar::GetItemRect(WORD I, TRect* R)
 	R->Size.Y = 1;
 }
 
-TMenuBarS::TMenuBarS()
-{
-}
-
-TMenuBarS::TMenuBarS(WORD MsgNr)
-{
-	ReadMessage(MsgNr);
-	MsgTxt = StoreStr(MsgLine);
-	HlpRdb = (RdbD*)HelpFD;
-	nTxt = (CountDLines(&MsgTxt[1], MsgTxt->length(), '/') - 1) / 2;
-	Move(&screen.colors.mNorm, Palette, 3);
-	InitTMenuBar(1, 1, TxtCols);
-}
-
-TMenuBox* TMenuBarS::GetDownMenu()
-{
-	pstring TNr(10);
-	WORD n, err;
-	TMenuBoxS* result = nullptr;
-
-	TNr = GetText(nTxt + iTxt);
-	val(TNr, n, err);
-	if ((TNr.length() == 0) || (err != 0)) {
-		// do nothing
-	}
-	else {
-		ReadMessage(n);
-		result = new TMenuBoxS(MenuX, MenuY, MsgLine);
-		result->parent = this;
-	}
-
-	return result;
-}
-
-std::string TMenuBarS::GetHlpName()
-{
-	pstring s;
-	str(iTxt, s);
-	return GetText(0) + "_" + s.c_str();
-}
-
-std::string TMenuBarS::GetText(short I)
-{
-	std::string s = *MsgTxt;
-	return GetNthLine(s, I + 1, 1, '/');
-	//return GetDLine(&MsgTxt[1], MsgTxt->length(), '/', I + 1);
-}
+//TMenuBarS::TMenuBarS()
+//{
+//}
+//
+//TMenuBarS::TMenuBarS(WORD MsgNr)
+//{
+//	ReadMessage(MsgNr);
+//	MsgTxt = MsgLine;
+//	HlpRdb = (RdbD*)HelpFD;
+//	nTxt = (CountDLines(&MsgTxt[1], MsgTxt.length(), '/') - 1) / 2;
+//	Move(&screen.colors.mNorm, Palette, 3);
+//	InitTMenuBar(1, 1, TxtCols);
+//}
+//
+//TMenuBox* TMenuBarS::GetDownMenu()
+//{
+//	pstring TNr(10);
+//	WORD n, err;
+//	TMenuBoxS* result = nullptr;
+//
+//	TNr = GetText(nTxt + iTxt);
+//	val(TNr, n, err);
+//	if ((TNr.length() == 0) || (err != 0)) {
+//		// do nothing
+//	}
+//	else {
+//		ReadMessage(n);
+//		result = new TMenuBoxS(MenuX, MenuY, MsgLine);
+//		result->parent = this;
+//	}
+//
+//	return result;
+//}
+//
+//std::string TMenuBarS::GetHlpName()
+//{
+//	pstring s;
+//	str(iTxt, s);
+//	return GetText(0) + "_" + s.c_str();
+//}
+//
+//std::string TMenuBarS::GetText(short I)
+//{
+//	std::string s = MsgTxt;
+//	return GetNthLine(s, I + 1, 1, '/');
+//	//return GetDLine(&MsgTxt[1], MsgTxt->length(), '/', I + 1);
+//}
 
 TMenuBarP::TMenuBarP()
 {

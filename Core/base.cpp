@@ -602,7 +602,10 @@ void CloseH(HANDLE* handle)
 {
 	HANDLE h = *handle;
 	Logging* log = Logging::getInstance();
+
+#ifdef _DEBUG
 	DataFile* fileForClose = nullptr;
+#endif
 
 	if (*handle == nullptr) return;
 
@@ -783,17 +786,6 @@ bool SaveCache(WORD ErrH, HANDLE f)
 	// saves cache to the file
 	//cache.SaveRemoveCache(f);
 	return true;
-}
-
-short HeapErrFun(WORD Size)
-{
-	return 0;
-}
-
-std::string* StoreStr(std::string S)
-{
-	auto nss = new std::string(S);
-	return nss;
 }
 
 void MarkStore(void* p)

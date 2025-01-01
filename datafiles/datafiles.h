@@ -1,4 +1,7 @@
 #pragma once
+
+#ifdef _DEBUG
+
 #include <cstdio>
 #include <string>
 #include <map>
@@ -21,3 +24,5 @@ public:
 };
 
 extern std::map<std::string, DataFile> filesMap;
+
+#endif

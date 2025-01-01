@@ -100,3 +100,17 @@ bool FindShiftCtrlAltFxx(std::string input, std::string& key, unsigned char& fnK
 	}
 	return false;
 }
+
+bool FandFile(std::string input, std::string& file, std::string& type, std::string& module, std::string& full_path)
+{
+	std::regex self_regex("fandfile\\(([\\w|\\']+),([\\w|\\']+),([\\w|\\']+),([\\w|\\']+)\\)", std::regex_constants::icase);
+	std::smatch sm;
+	if (std::regex_search(input, sm, self_regex)) {
+		file = sm[1];
+		type = sm[2];
+		module = sm[3];
+		full_path = sm[4];
+		return true;
+	}
+	return false;
+}

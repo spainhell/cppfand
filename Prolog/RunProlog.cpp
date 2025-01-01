@@ -4,6 +4,7 @@
 #include "../Core/GlobalVariables.h"
 #include "../Common/Compare.h"
 #include "../Core/Models/Instr.h"
+#include "../Common/exprcmp.h"
 
 RunProlog::RunProlog(Instr_lproc* prolog_instr)
 {
@@ -12,7 +13,7 @@ RunProlog::RunProlog(Instr_lproc* prolog_instr)
 	_chapter_name = prolog_instr->name;
 
 	auto reader = std::make_unique<ReadProlog>();
-	reader->Read(_rdb_pos);
+	_src_code = reader->Read(_rdb_pos);
 }
 
 void RunProlog::Run()
@@ -48,6 +49,34 @@ void RunProlog::RunDbfExport()
 
 void RunProlog::RunIndexy()
 {
+	std::string file_name, file_type, module_name, file_path;
+	bool found = FandFile(_src_code, file_name, file_type, module_name, file_path);
+
+	// get access to PARAM3.TTT
+	FileD* param_f = FindFile("PARAM3");
+	FieldDescr* param_fld = FindField(param_f, "TTT");
+
+	if (!found) {
+		SaveToParamFile(param_f, param_fld, "BEGIN\rEND;");
+	}
+	else {
+		// if module_name is between '', remove them
+		if (module_name.front() == '\'' && module_name.back() == '\'') {
+			module_name = module_name.substr(1, module_name.size() - 2);
+		}
+
+		std::vector<std::string> files = GetFilesInModule(module_name, FileType::INDEX);
+
+		// prepare source code
+		std::string output = "BEGIN\r";
+		for (const std::string& file : files) {
+			output += "proc(Indexy1,(@" + file + "));\r";
+		}
+		output += "END;";
+
+		// save result to PARAM3.TTT
+		SaveToParamFile(param_f, param_fld, output);
+	}
 }
 
 FieldDescr* RunProlog::FindField(FileD* file_d, std::string field_name)
@@ -74,6 +103,29 @@ FileD* RunProlog::FindFile(std::string file_name)
 	}
 
 	return nullptr;
+}
+
+std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, FileType file_type)
+{
+	std::vector<std::string> result;
+
+	RdbD* R = CRdb;
+
+	while (R != nullptr) {
+		if (!R->v_files.empty() && EquUpCase(R->v_files[0]->Name, module_name)) {
+			for (size_t i = 1; i < R->v_files.size(); i++) {
+				if (R->v_files[i]->FF->file_type == file_type) {
+					result.push_back(R->v_files[i]->Name);
+				}
+			}
+			break;
+		}
+		else {
+			R = R->ChainBack;
+		}
+	}
+
+	return result;
 }
 
 std::string RunProlog::ReadFromParamFile(FileD* file_d, FieldDescr* field_d)
@@ -122,7 +174,7 @@ std::vector<std::string> RunProlog::GetDbfDeclaration(FileD* file_d)
 		switch (field->field_type) {
 		case FieldType::ALFANUM: {
 			s += field->Name + ":A," + std::to_string(field->L) + ";";
-			break; 
+			break;
 		}
 		case FieldType::BOOL: {
 			s += field->Name + ":B;";

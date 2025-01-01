@@ -126,16 +126,16 @@ public:
 	void GetItemRect(WORD I, TRect* R) override;
 };
 
-class TMenuBarS : public TMenuBar
-{
-public:
-	TMenuBarS();
-	TMenuBarS(WORD MsgNr);
-	std::string* MsgTxt;
-	TMenuBox* GetDownMenu() override;
-	std::string GetHlpName() override;
-	std::string GetText(short I) override;
-};
+//class TMenuBarS : public TMenuBar
+//{
+//public:
+//	TMenuBarS();
+//	TMenuBarS(WORD MsgNr);
+//	std::string MsgTxt;
+//	TMenuBox* GetDownMenu() override;
+//	std::string GetHlpName() override;
+//	std::string GetText(short I) override;
+//};
 
 class TMenuBarP : public TMenuBar
 {

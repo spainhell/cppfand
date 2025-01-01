@@ -1,3 +1,5 @@
+#ifdef _DEBUG
+
 #include "datafiles.h"
 
 std::map<std::string, DataFile> filesMap;
@@ -25,3 +27,5 @@ void DataFile::SetOpen()
 {
 	state = _opened;
 }
+
+#endif

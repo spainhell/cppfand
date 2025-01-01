@@ -8,6 +8,6 @@ public:
 	ReadProlog();
 	~ReadProlog();
 
-	void Read(RdbPos* rdb_pos);
+	std::string Read(RdbPos* rdb_pos);
 };
 
