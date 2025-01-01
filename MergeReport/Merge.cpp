@@ -236,7 +236,7 @@ label1:
 		JoinProc(1, EmptyGroup);
 	}
 	else {
-		MergeProcM();
+		MergeProc();
 	}
 	if (!EmptyGroup) {
 		WriteOutp(OutpRDs);
@@ -986,7 +986,7 @@ void Merge::MoveForwToRecM(InpD* ID)
 		ID->Error = false;
 		ID->Warning = false;
 		ID->ErrTxtFrml->S = "";  // ID->ErrTxtFrml->S[0] = 0;
-		for (LogicControl* C : ID->Chk) { // while (C != nullptr}
+		for (LogicControl* C : ID->Chk) {
 			if (!RunBool(CFile, C->Bool, CRecPtr)) {
 				ID->Warning = true;
 				ID->ErrTxtFrml->S = RunString(CFile, C->TxtZ, CRecPtr);
@@ -995,7 +995,6 @@ void Merge::MoveForwToRecM(InpD* ID)
 					return;
 				}
 			}
-			//C = C->pChain;
 		}
 	}
 }
@@ -1004,21 +1003,20 @@ void Merge::SetMFlds(std::vector<KeyFldD*>& M)
 {
 	FieldDescr* F = nullptr;
 	std::vector<ConstListEl>::iterator it0 = OldMFlds.begin();
-	//while (M != nullptr) {
-	for (KeyFldD* M : M) {
-		F = M->FldD;
+
+	for (KeyFldD* m : M) {
+		F = m->FldD;
 		switch (F->frml_type) {
 		case 'S': { CFile->saveS(F, it0->S, CRecPtr); break; }
 		case 'R': { CFile->saveR(F, it0->R, CRecPtr); break; }
 		default: { CFile->saveB(F, it0->B, CRecPtr); break; }
 		}
-		//M = M->pChain;
 
 		if (it0 != OldMFlds.end()) ++it0;
 	}
 }
 
-void Merge::MergeProcM()
+void Merge::MergeProc()
 {
 	WORD res = 0;
 	for (WORD i = 1; i <= MaxIi; i++) {

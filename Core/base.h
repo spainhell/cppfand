@@ -64,11 +64,6 @@ bool IsNetCVol();
 bool CacheExist();
 bool SaveCache(WORD ErrH, HANDLE f);
 
-//void SetUpdHandle(HANDLE H);
-//void ResetUpdHandle(HANDLE H);
-//bool IsUpdHandle(HANDLE H);
-//void FlushHandles();
-
 long SeekH(HANDLE handle, size_t pos);
 long FileSizeH(HANDLE handle);
 HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM);
@@ -83,8 +78,6 @@ std::string MyFExpand(std::string Nm, std::string EnvName);
 
 
 // *** DISPLAY ***
-WORD LogToAbsLenStyleStr(pstring s, WORD l);
-
 void SetMsgPar(const std::string& s);
 void SetMsgPar(const std::string& s1, const std::string& s2);
 void SetMsgPar(const std::string& s1, const std::string& s2, const std::string& s3);
@@ -98,11 +91,8 @@ extern Fonts fonts;
 std::string PrTab(WORD printerNr, WORD value);
 void SetCurrPrinter(short NewPr);
 
-
-
 typedef std::array<BYTE, 4> TPrTimeOut;
 
 void OpenWorkH();
 
 void NonameStartFunction();
-

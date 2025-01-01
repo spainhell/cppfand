@@ -135,6 +135,9 @@
     <ClCompile Include="LinkD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="datafiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="access-structs.h">
@@ -273,6 +276,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LinkD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="datafiles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

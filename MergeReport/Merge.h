@@ -48,7 +48,7 @@ private:
 	void CloseInpOutp();
 	void MoveForwToRecM(InpD* ID);
 	void SetMFlds(std::vector<KeyFldD*>& M);
-	void MergeProcM();
+	void MergeProc();
 	void JoinProc(WORD Ii, bool& EmptyGroup);
 
 };

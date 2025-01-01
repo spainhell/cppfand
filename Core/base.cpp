@@ -14,14 +14,13 @@
 
 #include "Cfg.h"
 #include "Compiler.h"
+#include "datafiles.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
-#include "../datafiles/datafiles.h"
 #include "../Common/exprcmp.h"
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
 #include "../fandio/cache.h"
-#include "../fandio/files.h"
 #include "../Logging/Logging.h"
 
 
@@ -296,86 +295,6 @@ void MyMove(void* A1, void* A2, WORD N)
 	memcpy(A2, A1, N);
 }
 
-HANDLE GetOverHandle(HANDLE fptr, int diff)
-{
-	ptrdiff_t pos = find(vOverHandle.begin(), vOverHandle.end(), fptr) - vOverHandle.begin();
-	int newPos = pos + diff;
-	if (newPos >= 0 && newPos < vOverHandle.size() - 1) { return vOverHandle[pos - 1]; }
-	return nullptr;
-}
-
-//bool IsHandle(HANDLE H)
-//{
-//	if (H == nullptr) return false;
-//	return Handles.count(H) > 0;
-//}
-//
-//bool IsUpdHandle(HANDLE H)
-//{
-//	if (H == nullptr) return false;
-//	return UpdHandles.count(H) > 0;
-//}
-//
-//bool IsFlshHandle(HANDLE H)
-//{
-//	if (H == nullptr) return false;
-//	return FlshHandles.count(H) > 0;
-//}
-//
-//void SetHandle(HANDLE H)
-//{
-//	if (H == nullptr) return;
-//	Handles.insert(H);
-//	//CardHandles++;
-//}
-//
-//void SetUpdHandle(HANDLE H)
-//{
-//	if (H == nullptr) return;
-//	UpdHandles.insert(H);
-//}
-
-//void SetFlshHandle(HANDLE H)
-//{
-//	if (H == nullptr) return;
-//	FlshHandles.insert(H);
-//}
-//
-//void ResetHandle(HANDLE H)
-//{
-//	if (H == nullptr) return;
-//	Handles.erase(H);
-//	//CardHandles--;
-//}
-//
-//void ResetUpdHandle(HANDLE H)
-//{
-//	if (H == nullptr) return;
-//	UpdHandles.erase(H);
-//}
-//
-//void ResetFlshHandle(HANDLE H)
-//{
-//	if (H == nullptr) return;
-//	FlshHandles.erase(H);
-//}
-//
-//void ClearHandles()
-//{
-//	Handles.clear();
-//	//CardHandles = 0;
-//}
-//
-//void ClearUpdHandles()
-//{
-//	UpdHandles.clear();
-//}
-//
-//void ClearFlshHandles()
-//{
-//	FlshHandles.clear();
-//}
-
 /// vrati pocet stejnych znaku na zacatku retezce
 WORD SLeadEqu(pstring S1, pstring S2)
 {
@@ -530,9 +449,6 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "opening file 0x%p '%s', error %i", handle, path.c_str(), HandleError);
-
-	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
-	vOverHandle.push_back((FILE*)handle);
 
 #ifdef _DEBUG
 	if (handle != nullptr) {
@@ -754,17 +670,6 @@ std::string MyFExpand(std::string Nm, std::string EnvName)
 	return result;
 }
 
-WORD LogToAbsLenStyleStr(pstring s, WORD l)
-{
-	WORD i = 1;
-	while ((i <= s.length()) && (l > 0)) {
-		if (!(s[i] == 0x13 || s[i] == 0x17 || s[i] == 0x11 || s[i] == 0x04
-			|| s[i] == 0x02 || s[i] == 0x05 || s[i] == 0x01)) l--;
-		i++;
-	}
-	return i - 1;
-}
-
 bool CacheExist()
 {
 	return true;
@@ -774,16 +679,6 @@ bool CacheExist()
 bool WrCPage(FILE* Handle, int N, void* Buf, WORD ErrH)
 {
 	return true;
-}
-
-void LockCache()
-{
-	// implementation is empty in the file MEMORY.PAS too
-}
-
-void UnLockCache()
-{
-	// implementation is empty in the file MEMORY.PAS too
 }
 
 bool SaveCache(WORD ErrH, HANDLE f)
