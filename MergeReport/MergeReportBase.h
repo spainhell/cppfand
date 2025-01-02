@@ -37,5 +37,8 @@ protected:
 	InpD* IDA[30];
 	short MaxIi;
 
+	std::vector<ConstListEl> OldMFlds;
+	std::vector<ConstListEl> NewMFlds;
+
 	Compiler* base_compiler;
 };

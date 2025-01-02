@@ -20,7 +20,6 @@
 #include "../Core/rdfildcl.h"
 #include "../Core/DateTime.h"
 
-
 Report::Report()
 {
 	Compiler::ProcStack.push_front(LVBD);

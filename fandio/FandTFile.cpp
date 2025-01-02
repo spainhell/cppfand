@@ -160,7 +160,7 @@ void FandTFile::RdPrefix(bool check)
 
 	if (!IsWork
 		&& (_parent->GetFileD() == Chpt)
-		&& ((T.HasCoproc != HasCoproc) || (CompArea(Version, T.Version, 4) != _equ))) {
+		&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(Version, T.Version, 4) != _equ))) {
 		CompileAll = true;
 	}
 	if (T.old_max_page == 0xffff) {

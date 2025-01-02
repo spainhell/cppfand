@@ -37,7 +37,6 @@ private:
 	std::vector<AssignD*> RdAssSequ();
 	void RdOutpRD(std::vector<OutpRD*>& RDRoot);
 
-
 	WORD CompMFlds(std::vector<KeyFldD*>& M);
 	void SetOldMFlds(std::vector<KeyFldD*>& M);
 	void ReadInpFileM(InpD* ID);
@@ -50,6 +49,9 @@ private:
 	void SetMFlds(std::vector<KeyFldD*>& M);
 	void MergeProc();
 	void JoinProc(WORD Ii, bool& EmptyGroup);
+
+	std::vector<OutpFD*> OutpFDRoot;
+	std::vector<OutpRD*> OutpRDs;
 
 };
 

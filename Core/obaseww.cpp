@@ -1,13 +1,13 @@
 #include "obaseww.h"
 
 #include <algorithm>
-#include "../Common/textfunc.h"
-#include "../fandio/files.h"
 #include "base.h"
-#include "OldDrivers.h"
 #include "GlobalVariables.h"
 #include "oaccess.h"
+#include "OldDrivers.h"
+#include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
+#include "../fandio/files.h"
 
 WORD RunErrNr = 0;
 

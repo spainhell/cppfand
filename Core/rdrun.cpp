@@ -12,12 +12,8 @@
 #include "../fandio/files.h"
 #include "../Core/DateTime.h"
 
-std::vector<ConstListEl> OldMFlds;
-std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/
 
 XString OldMXStr;                  /* Merge */
-std::vector<OutpFD*> OutpFDRoot;
-std::vector<OutpRD*> OutpRDs;
 bool Join;
 bool PrintView;                  /* Report */
 TextFile Rprt;		// puvodne text - souvisi s text. souborem

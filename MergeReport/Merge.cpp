@@ -944,10 +944,9 @@ void Merge::CloseInpOutp()
 {
 	//OutpFD* OD = OutpFDRoot;
 	//while (OD != nullptr) {
-	FileD* f = nullptr;
 
 	for (OutpFD* OD : OutpFDRoot) {
-		f = OD->FD;
+		FileD* fd = OD->FD;
 		OD->FD->ClearRecSpace(OD->RecPtr);
 #ifdef FandSQL
 		if (f->IsSQLFile) /* !!! with Strm^ do!!! */ {
@@ -957,19 +956,23 @@ void Merge::CloseInpOutp()
 #endif
 		{
 			if (OD->InplFD != nullptr) {
-				f = OD->InplFD;
-				f->FF->SubstDuplF(OD->FD, true);
+				fd = OD->InplFD;
+				fd->FF->SubstDuplF(OD->FD, true);
 			}
-			else f->OldLockMode(OD->Md);
+			else {
+				fd->OldLockMode(OD->Md);
+			}
 		}
 		//OD = OD->pChain;
 	}
 
 	for (short i = 1; i <= MaxIi; i++) {
-		IDA[i]->Scan->Close();
-		if (f != nullptr) {
-			f->ClearRecSpace(IDA[i]->ForwRecPtr);
-			f->OldLockMode(IDA[i]->Md);
+		InpD* inp = IDA[i];
+		inp->Scan->Close();
+		FileD* fd = inp->Scan->FD;
+		if (fd != nullptr) {
+			fd->ClearRecSpace(inp->ForwRecPtr);
+			fd->OldLockMode(inp->Md);
 		}
 	}
 }
