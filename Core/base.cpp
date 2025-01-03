@@ -674,11 +674,6 @@ void ReleaseAfterLongStr(void** pointer)
 	delete[] * pointer; *pointer = nullptr;
 }
 
-bool OverlapByteStr(void* p1, void* p2)
-{
-	return false;
-}
-
 bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size)
 {
 	return false;

@@ -43,7 +43,7 @@ void OpenTWorkH()
 void SaveFiles()
 {
 	Logging* log = Logging::getInstance();
-	
+
 	if (!CacheExist()) return;
 
 	// save catalog
@@ -60,18 +60,14 @@ void SaveFiles()
 	if (!b) GoExit(MsgLine);
 }
 
-void CloseFANDFiles(bool FromDML)
+void CloseFANDFiles()
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {
 		FileD* f = RD->v_files[0];
-		//while (f != nullptr) {
 		for (FileD* f : RD->v_files) {
-			if (!FromDML) {
-				f->FF->ExLMode = f->FF->LMode;
-			}
+			f->FF->ExLMode = f->FF->LMode;
 			f->CloseFile();
-			//f = f->pChain;
 		}
 		RD = RD->ChainBack;
 	}
@@ -83,7 +79,7 @@ void CloseFANDFiles(bool FromDML)
 	CloseH(&XWork.Handle);
 }
 
-void OpenFANDFiles(bool FromDML)
+void OpenFANDFiles()
 {
 	RdbD* RD = nullptr;
 	LockMode md = NullMode;
@@ -107,7 +103,7 @@ void OpenFANDFiles(bool FromDML)
 		auto it0 = RD->v_files.begin();
 		++it0;
 
-		while (!FromDML && (it0 != RD->v_files.end())) {
+		while (it0 != RD->v_files.end()) {
 			if ((*it0)->FF->ExLMode != NullMode) {
 				OpenF(*it0, CPath, Shared);
 				md = (*it0)->NewLockMode((*it0)->FF->ExLMode);

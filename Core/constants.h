@@ -8,7 +8,6 @@ int const UserLicNrShow = 999001; // 160188
 const WORD FDVersion = 0x0411;
 const WORD ResVersion = 0x0420;
 const char CfgVersion[] = { '4', '.', '2', '0', '\0' };
-const BYTE DMLVersion = 41;
 const bool HasCoproc = true;
 
 const WORD MaxLStrLen = 65000;

@@ -268,23 +268,11 @@ void InitRunFand()
 	printf("Current DIR: %s\n", currentDir);
 
 	NonameStartFunction();
-#ifdef FandDML
-	InitDML();
-#endif
 
-	//NewExit(Ovr(), *er);
-	// StackLimit += 256;
 	OldPrTimeOut = PrTimeOut;
-	//CallOpenFandFiles = OpenFandFiles;  // TODO: CallOpenFandFiles: procedure(FromDML:boolean);
-	//CallCloseFandFiles = CloseFandFiles;  // TODO: CallCloseFandFiles: procedure(FromDML:boolean);
 	video.CursOn = 0x0607; // {if exit before reading.CFG}
 	keyboard.DeleteKeyBuf(); // KbdBuffer[0] = 0x0;
 	F10SpecKey = 0;
-	//if (!GetEnv("DMLADDR").empty()) {
-	//	printf("type 'exit' to return to FAND");
-	//	wait();
-	//	return; // puvodne wait;
-	//}
 
 	WrkDir = GetEnv("FANDWORK");
 	if (WrkDir.empty()) WrkDir = FandDir;
@@ -403,7 +391,7 @@ void InitRunFand()
 	CompileHelpCatDcl();
 
 	OpenWorkH();
-	OpenFANDFiles(false);
+	OpenFANDFiles();
 
 	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?") {
 #ifndef FandRunV
@@ -478,9 +466,6 @@ void InitRunFand()
 #ifndef FandProlog
 	txt += "~PRL,";
 #endif
-/*#ifndef FandDML
-	txt += "~DML,";
-#endif*/
 //#ifdef Coproc
 //	txt = txt + "COPROC,";
 //#endif
@@ -576,7 +561,7 @@ label2:
 		case 0:
 		case 6: {
 			CloseH(&WorkHandle);
-			CloseFANDFiles(false);
+			CloseFANDFiles();
 			return;
 			break;
 		}

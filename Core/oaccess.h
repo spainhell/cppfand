@@ -6,8 +6,8 @@ void OpenXWorkH();
 void OpenTWorkH();
 
 void SaveFiles();
-void CloseFANDFiles(bool FromDML);
-void OpenFANDFiles(bool FromDML);
+void CloseFANDFiles();
+void OpenFANDFiles();
 
 
 //void CloseFilesAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
