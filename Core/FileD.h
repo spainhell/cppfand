@@ -110,7 +110,6 @@ public:
 	void ZeroAllFlds(void* record, bool delTFields);
 	void CopyRec(void* record1, void* record2, bool delTFields);
 
-	//void DelTFlds(void* record);
 	void DelAllDifTFlds(void* record, void* comp_record);
 
 	bool IsActiveRdb();

@@ -23,7 +23,6 @@
 #include "LinkD.h"
 #include "oaccess.h"
 #include "obaseww.h"
-#include "olongstr.h"
 #include "rdproc.h"
 #include "rdrun.h"
 #include "runproc.h"
@@ -466,19 +465,23 @@ WORD IntTSR(FileD* file_d, FrmlElem* X, void* record)
 	}
 
 	if (z->Op == _getlocvar) {
-		// p = (void*)(MyBP + ((FrmlElemLocVar*)z)->BPOfs);
 		p = ((FrmlElemLocVar*)z)->locvar;
 		switch (iX0->N31) {
-		case 'R': { p = &r; break; }
-		case 'S': {
-			LongStr* ss = CopyToLongStr(s);
-			TWork.Delete((int)p);
-			auto tmp = TWork.Store(ss->A, ss->LL);
-			p = &tmp;
-			delete ss; ss = nullptr;
+		case 'R': {
+			p = &r;
 			break;
 		}
-		case 'B': { p = &b; break; }
+		case 'S': {
+			std::string ss = s;
+			TWork.Delete((int)p);
+			int tmp = TWork.Store(ss);
+			p = &tmp;
+			break;
+		}
+		case 'B': {
+				p = &b;
+				break;
+			}
 		}
 	}
 	return 0; // puvodne se vracel obsah AX registru
@@ -1303,7 +1306,9 @@ bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z
 		result = false;
 	}
 	else if (Z->Op == _gettxt) {
-		pos = CopyTFFromGetTxt(file_d, TF, (FrmlElem16*)Z, record);
+		std::string text = GetTxt(file_d, (FrmlElem16*)Z, record);
+		file_d->saveS(F, text, record);
+		pos = file_d->loadT(F, record);
 		result = true;
 	}
 	else if (CanCopyT(file_d, F, Z, &TF02, &TFD02, TF02Pos, record) && (TF02->Format == TF->Format)) {
@@ -1323,18 +1328,20 @@ bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z
 
 void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bool Delete, bool Add)
 {
-	int pos = 0;
 	switch (field_d->frml_type) {
 	case 'S': {
 		if (field_d->field_type == FieldType::TEXT) {
 			FandTFile* tf;
+
 			if (file_d->FF->HasTWorkFlag(record)) {
 				tf = &TWork;
 			}
 			else {
 				tf = file_d->FF->TF;
 			}
-			if (TryCopyT(file_d, field_d, tf, pos, static_cast<FrmlElem16*>(X), record)) {
+
+			int pos = 0;
+			if (TryCopyT(file_d, field_d, tf, pos, X, record)) {
 				if (Delete) {
 					file_d->FF->DelTFld(field_d, record);
 				}
@@ -1731,9 +1738,7 @@ label1:
 		break;
 	}
 	case _gettxt: {
-		LongStr* s = GetTxt(file_d, static_cast<FrmlElem16*>(X), record);
-		result = std::string(s->A, s->LL);
-		delete s;
+		result = GetTxt(file_d, static_cast<FrmlElem16*>(X), record);
 		break;
 	}
 	case _nodiakr: {
@@ -1778,7 +1783,7 @@ label1:
 			double r = RunReal(file_d, iZ0->P1, record);
 			WORD l = RunInt(file_d, iZ0->P2, record);
 			BYTE m = RunInt(file_d, iZ0->P3, record);
-			
+
 			if (m == 255) {
 				result = to_string(static_cast<int>(r));
 			}
@@ -2148,4 +2153,57 @@ void GetRecNoXString(FileD* file_d, FrmlElemRecNo* Z, XString& X, void* record)
 		}
 		}
 	}
+}
+
+void GetTxtPrepare(FileD* file_d, FrmlElem16* Z, HANDLE* h, size_t& off, size_t& len, void* record)
+{
+	int l = 0;
+	off = 0;
+	if (Z->P1 != nullptr) {
+		int o = RunInt(file_d, Z->P1, record) - 1;
+		if (o < 0) off = 0;
+	}
+	SetTxtPathVol(Z->TxtPath, Z->TxtCatIRec);
+	TestMountVol(CPath[1]);
+	*h = OpenH(CPath, _isOldFile, RdOnly);
+	if (HandleError != 0) {
+		if (HandleError == 2) {
+			*h = nullptr;
+			len = 0;
+			return;
+		}
+		TestCPathError();
+	}
+	len = FileSizeH(*h);
+	LastExitCode = 0;
+	if (off >= len) off = len;
+	len -= off;
+	if (Z->P2 != nullptr) {
+		l = RunInt(file_d, Z->P2, record);
+		if (l < 0) l = 0;
+		if (l < len) len = l;
+	}
+	SeekH(*h, off);
+}
+
+std::string GetTxt(FileD* file_d, FrmlElem16* Z, void* record)
+{
+	HANDLE h = nullptr;
+	size_t len = 0, off = 0;
+
+	GetTxtPrepare(file_d, Z, &h, off, len, record);
+
+	if (len > MaxLStrLen) {
+		len = MaxLStrLen;
+		LastExitCode = 1;
+	}
+
+	char* buffer = new char[len];
+	LastTxtPos = (int32_t)(off + len);
+	if (len > 0) ReadH(h, len, buffer);
+	CloseH(&h);
+
+	std::string s = std::string(buffer, len);
+
+	return s;
 }

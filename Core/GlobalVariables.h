@@ -55,7 +55,7 @@ extern pstring EdRecKey;
 extern pstring EdKey;
 extern bool EdOk;
 extern pstring EdField;
-extern int LastTxtPos;
+extern int32_t LastTxtPos;
 extern int TxtXY;
 // { consecutive WORD - sized / for formula access / }
 extern WORD RprtLine; extern WORD RprtPage; extern WORD PgeLimit; // {report}

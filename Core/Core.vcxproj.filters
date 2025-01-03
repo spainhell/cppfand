@@ -78,9 +78,6 @@
     <ClCompile Include="obaseww.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="olongstr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="printtxt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -210,9 +207,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="obaseww.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="olongstr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="printtxt.h">

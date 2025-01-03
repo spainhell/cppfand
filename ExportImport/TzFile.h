@@ -1,7 +1,11 @@
 #pragma once
+#include <vector>
+
 #include "TyFile.h"
 #include "../Common/pstring.h"
-#include "../Core/olongstr.h"
+
+typedef void* HANDLE;
+class LongStr;
 
 class TzFile : public TyFile
 {

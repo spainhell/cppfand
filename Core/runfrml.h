@@ -49,3 +49,5 @@ double DifWDays(double R1, double R2, WORD d);
 double LastUpdate(const std::string& path);
 
 int GetFileSize();
+
+std::string GetTxt(FileD* file_d, FrmlElem16* Z, void* record);

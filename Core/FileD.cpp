@@ -2,7 +2,6 @@
 
 #include "GlobalVariables.h"
 #include "obaseww.h"
-#include "olongstr.h"
 #include "runfrml.h"
 #include "../fandio/files.h"
 #include "../fandio/XKey.h"
@@ -325,7 +324,7 @@ void FileD::SetUpdateFlag()
 void FileD::CloseFile()
 {
 	if (FF->Handle == nullptr) return;
-	
+
 	FF->CloseFile();
 
 }
@@ -503,7 +502,7 @@ void FileD::ZeroAllFlds(void* record, bool delTFields)
 /// \param delTFields deletes the existing destination T first
 void FileD::CopyRec(void* record1, void* record2, bool delTFields)
 {
-	if (delTFields)	{
+	if (delTFields) {
 		this->FF->DelTFlds(record2);
 	}
 
@@ -534,19 +533,18 @@ void FileD::CopyRec(void* record1, void* record2, bool delTFields)
 
 				pos = Fand0File::CopyT(tf2, tf1, pos);
 
-				if (!tf2->IsWork) OldLockMode(md2);
-				if (!tf1->IsWork) OldLockMode(md1);
+				if (!tf2->IsWork) {
+					OldLockMode(md2);
+				}
+				if (!tf1->IsWork) {
+					OldLockMode(md1);
+				}
 
 				saveT(f, pos, record2);
 			}
 		}
 	}
 }
-
-//void FileD::DelTFlds(void* record)
-//{
-//	this->FF->DelTFlds(record);
-//}
 
 void FileD::DelAllDifTFlds(void* record, void* comp_record)
 {
@@ -576,7 +574,7 @@ void FileD::CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files)
 
 void FileD::CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files)
 {
-		// find first_for_close in v_files
+	// find first_for_close in v_files
 	auto it0 = std::ranges::find(v_files, first_for_remove);
 
 	while (it0 != v_files.end()) {

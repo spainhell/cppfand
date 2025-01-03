@@ -456,11 +456,13 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* r
 					s = Coding::Code(s);
 				}
 				if (HasTWorkFlag(record)) {
-					saveT(field_d, TWork.Store(s), record);
+					int pos = TWork.Store(s);
+					saveT(field_d, pos, record);
 				}
 				else {
 					LockMode md = parent->NewLockMode(WrMode);
-					saveT(field_d, TF->Store(s), record);
+					int pos = TF->Store(s);
+					saveT(field_d, pos, record);
 					parent->OldLockMode(md);
 				}
 			}

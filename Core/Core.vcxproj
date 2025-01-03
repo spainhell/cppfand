@@ -80,7 +80,6 @@
     <ClCompile Include="oaccess.cpp" />
     <ClCompile Include="obase.cpp" />
     <ClCompile Include="obaseww.cpp" />
-    <ClCompile Include="olongstr.cpp" />
     <ClCompile Include="printtxt.cpp" />
     <ClCompile Include="Rdb.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
@@ -126,7 +125,6 @@
     <ClInclude Include="oaccess.h" />
     <ClInclude Include="obase.h" />
     <ClInclude Include="obaseww.h" />
-    <ClInclude Include="olongstr.h" />
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="Rdb.h" />
     <ClInclude Include="ResFile.h" />

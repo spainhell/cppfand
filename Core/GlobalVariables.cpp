@@ -45,7 +45,7 @@ pstring EdRecKey = "";
 pstring EdKey = pstring(32);
 bool EdOk = false;
 pstring EdField = pstring(32);
-int LastTxtPos = 0;
+int32_t LastTxtPos = 0;
 int TxtXY = 0;
 // { consecutive WORD - sized / for formula access / }
 WORD RprtLine = 0; WORD RprtPage = 0; WORD PgeLimit = 0; // {report}

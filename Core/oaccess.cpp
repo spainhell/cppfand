@@ -162,7 +162,9 @@ WORD TestMountVol(char DriveC)
 	Drive = "A";
 
 	if (IsNetCVol()) return 0;
+
 	D = toupper(DriveC) - '@';
+
 	if (D >= FloppyDrives) {
 		if (!CDir.empty() && toupper(CDir[0]) == spec.CPMdrive) {
 			D = FloppyDrives;
@@ -173,47 +175,56 @@ WORD TestMountVol(char DriveC)
 	}
 
 	const std::string MountedVolD = MountedVol[D - 1];
-	if (CVol.empty() || EquUpCase(MountedVolD, CVol)) {
-		goto label3;
-	}
 
-	Drive[1] = DriveC;
-	if (ActiveRdbOnDrive(D)) {
-		SetMsgPar(Drive, CVol, MountedVol[D - 1]);
-		RunError(812);
-	}
-	Vol = CVol;
-	CloseFilesOnDrive(D);
-	CVol = Vol;
-label1:
-	F10SpecKey = __ESC;
-	SetMsgPar(Drive, CVol);
-	WrLLF10Msg(808);
-	if (Event.Pressed.KeyCombination() == __ESC) {
-		if (PromptYN(21)) {
-			GoExit(MsgLine);
-		}
+	if (CVol.empty() || EquUpCase(MountedVolD, CVol)) {
+		// do nothing
 	}
 	else {
-		goto label1;
+
+		Drive[1] = DriveC;
+		if (ActiveRdbOnDrive(D)) {
+			SetMsgPar(Drive, CVol, MountedVol[D - 1]);
+			RunError(812);
+		}
+		Vol = CVol;
+		CloseFilesOnDrive(D);
+		CVol = Vol;
+
+		while (true) {
+			F10SpecKey = __ESC;
+			SetMsgPar(Drive, CVol);
+			WrLLF10Msg(808);
+			if (Event.Pressed.KeyCombination() == __ESC) {
+				if (PromptYN(21)) {
+					GoExit(MsgLine);
+				}
+			}
+			else {
+				continue;
+			}
+
+			switch (DosError()) {
+			case 18: {
+				/*label missing*/
+				WrLLF10Msg(809);
+				continue;
+				break;
+			}
+			case 0: {
+				break;
+			}
+			default: {
+				WrLLF10Msg(810);
+				continue;
+				break;
+			}
+			}
+
+			break;
+		}
+		MountedVol[D - 1] = CVol;
 	}
-	//if (D == FloppyDrives) FindFirst(Drive + ":\\*.VOL", 0, S);
-	//else FindFirst(Drive + ":\\*.*", VolumeID, S);
-	switch (DosError()) {
-	case 18/*label missing*/: { WrLLF10Msg(809); goto label1; break; }
-	case 0: break;
-	default: WrLLF10Msg(810); goto label1; break;
-	}
-	//i = S.Name.First('.');
-	//if (D == FloppyDrives) S.Name.Delete(i, 255);
-	//else if (i != 0) S.Name.Delete(i, 1);
-	//if (!SEquUpcase(S.Name, CVol))
-	//{
-	//	SetMsgPar(S.Name); WrLLF10Msg(817); goto label1;
-	//}
-// label2:
-	MountedVol[D - 1] = CVol;
-label3:
+
 	return D;
 }
 
@@ -221,12 +232,15 @@ void ReleaseDrive(WORD D)
 {
 	pstring Drive(1);
 	if (MountedVol[D - 1].empty()) return;
+
 	if (D == FloppyDrives) Drive = spec.CPMdrive;
-	else Drive = char(D + '@');
+	else Drive = (char)(D + '@');
+
 	if (ActiveRdbOnDrive(D)) {
 		SetMsgPar(Drive);
 		RunError(813);
 	}
+
 	CloseFilesOnDrive(D);
 	SetMsgPar(MountedVol[D - 1], Drive);
 	WrLLF10Msg(818);
@@ -248,7 +262,6 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 			}
 		}
 
-		//while (F != nullptr) {
 		for (FileD* f : R->v_files) {
 			if (file_d == f) {
 				if ((file_d == R->help_file) || (file_d->FF->file_type == FileType::RDB)) {
@@ -260,7 +273,6 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 				}
 				return true;
 			}
-			//F = F->pChain;
 		}
 
 		R = R->ChainBack;
@@ -281,8 +293,6 @@ void SetTxtPathVol(std::string& Path, int CatIRec)
 		CVol = "";
 	}
 }
-
-
 
 void TestDelErr(std::string& P)
 {
