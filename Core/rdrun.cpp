@@ -182,12 +182,15 @@ void CrIndRec(FileD* file_d, void* record)
 
 bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord)
 {
+	// TODO: is param file_d needed?
+
 	bool result = true;
 	LinkD* ld = add_d->LD;
 	kind2 = 'd';
 
 	if (ld != nullptr) {
-		if (LinkUpw(file_d, ld, n, false, record, linkedRecord)) {
+		if (LinkUpw(ld, n, false, record, linkedRecord)) {
+			// TODO: file_d should change after calling LinkUpw to 'ld->ToFD'
 			return result;
 		}
 		SetMsgPar(ld->RoleName);

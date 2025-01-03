@@ -25,9 +25,6 @@
     <ProjectReference Include="..\DataEditor\DataEditor.vcxproj">
       <Project>{2dd289f4-863e-4a49-9802-3932e6e698aa}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\datafiles\datafiles.vcxproj">
-      <Project>{4175a73a-df08-4f11-b715-cbe5408af874}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\Drivers\Drivers.vcxproj">
       <Project>{eff16929-f4e0-4b93-a05a-e6bcfea36a68}</Project>
     </ProjectReference>

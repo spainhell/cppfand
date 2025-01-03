@@ -30,7 +30,7 @@ void RecallRecProc(Instr_recs* PD);
 void AppendRecProc(FileD* file_d);
 void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, void* record);
 void ReadWriteRecProc(bool IsRead, Instr_recs* PD);
-void LinkRecProc(Instr_assign* PD);
+void LinkRecProc(Instr_assign* assign_instr);
 void ForAllProc(Instr_forall* PD);
 void HeadLineProc(FrmlElem* Z);
 void SetKeyBufProc(FrmlElem* Z);

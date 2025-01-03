@@ -2599,7 +2599,7 @@ void DataEditor::DisplChkErr(LogicControl* logic_control)
 		int n = 0;
 
 		BYTE* rec = nullptr;
-		bool b = LinkUpw(file_d_, LD, n, false, record_, &rec);
+		bool b = LinkUpw(LD, n, false, record_, &rec);
 
 		delete[] rec; rec = nullptr;
 		file_d_ = cf; record_ = cr;

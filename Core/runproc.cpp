@@ -723,39 +723,25 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	lv->FD->OldLockMode(md);
 }
 
-void LinkRecProc(Instr_assign* PD)
+void LinkRecProc(Instr_assign* assign_instr)
 {
-	void* p = nullptr;
-	void* r2 = nullptr;
-	void* lr2 = nullptr;
-	FileD* cf = nullptr;
-	void* cr = nullptr;
-	LinkD* ld = nullptr;
-
 	int n = 0;
-	cf = CFile;
-	cr = CRecPtr;
-	MarkStore(p);
-	ld = PD->LinkLD;
-	CRecPtr = PD->RecLV1->record;
-	lr2 = PD->RecLV2->record;
-	CFile = ld->ToFD;
-	CFile->ClearRecSpace(lr2);
-	CFile = ld->FromFD;
 	BYTE* rec = nullptr;
-	if (LinkUpw(CFile, ld, n, true, CRecPtr, &rec)) {
+	LinkD* ld = assign_instr->LinkLD;
+	uint8_t* lr2 = assign_instr->RecLV2->record;
+
+	ld->ToFD->ClearRecSpace(lr2);
+
+	if (LinkUpw(ld, n, true, assign_instr->RecLV1->record, &rec)) {
 		LastExitCode = 0;
 	}
 	else {
 		LastExitCode = 1;
 	}
-	//CFile->DelTFlds(lr2);
-	CFile->CopyRec(rec, lr2, true);
-	delete[] rec; rec = nullptr;
 
-	ReleaseStore(&p);
-	CFile = cf;
-	CRecPtr = cr;
+	ld->ToFD->CopyRec(rec, lr2, true);
+
+	delete[] rec; rec = nullptr;
 }
 
 void ForAllProc(Instr_forall* PD)
@@ -863,7 +849,7 @@ label1:
 				CRecPtr = lr;
 				CFile->ClearRecordUpdateFlag(lr);
 				//CFile->DelTFlds(lr);
-				CFile->CopyRec(cr, lr, true);
+				CFile->CopyRec((uint8_t*)cr, (uint8_t*)lr, true);
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr; // metoda LocVarAd byla odstranena z access.cpp
 		if (LVi != nullptr) {
@@ -884,7 +870,7 @@ label1:
 			OpenCreateF(CFile, CPath, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasRecordUpdateFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
-				CFile->CopyRec(lr, cr, false);
+				CFile->CopyRec((uint8_t*)lr, (uint8_t*)cr, false);
 				UpdRec(CFile, xScan->RecNr, true, cr);
 				CFile->OldLockMode(md1);
 			}

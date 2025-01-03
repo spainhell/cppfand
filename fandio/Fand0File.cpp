@@ -448,7 +448,7 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* r
 			break;
 		}
 		case FieldType::TEXT: {
-			if (s.length() == 0) {
+			if (s.empty()) {
 				saveT(field_d, 0, record);
 			}
 			else {

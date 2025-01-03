@@ -404,7 +404,7 @@ double LinkProc(FrmlElemLink* X, void* record)
 	LinkD* LD = X->LinkLD;
 	FileD* fromFD = LD->FromFD;
 	if (X->LinkFromRec) {
-		if (!LinkUpw(fromFD, LD, N, false, X->LinkLV->record, &rec)) N = -N;
+		if (!LinkUpw(LD, N, false, X->LinkLV->record, &rec)) N = -N;
 	}
 	else {
 		N = RunInt(fromFD, X->LinkRecFrml, record);
@@ -417,7 +417,7 @@ double LinkProc(FrmlElemLink* X, void* record)
 		BYTE* newRecord = fromFD->GetRecSpace();
 		fromFD->ReadRec(N, newRecord);
 		fromFD->OldLockMode(md);
-		if (!LinkUpw(fromFD, LD, N, false, newRecord, &rec)) N = -N;
+		if (!LinkUpw(LD, N, false, newRecord, &rec)) N = -N;
 		delete[] newRecord; newRecord = nullptr;
 	}
 
@@ -714,7 +714,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		int RecNo;
 		BYTE* newRecord = nullptr;
 		if (iX->LD != nullptr) {
-			b7 = LinkUpw(file_d, iX->LD, RecNo, false, record, &newRecord);
+			b7 = LinkUpw(iX->LD, RecNo, false, record, &newRecord);
 			if ((iX->P011 == nullptr)) {
 				result = b7;
 			}
@@ -941,8 +941,8 @@ label1:
 		auto iX = (FrmlElem7*)X;
 		BYTE* newRecord = nullptr;
 		if (iX->LD != nullptr) {
-			LinkUpw(file_d, iX->LD, RecNo, false, record, &newRecord);
-			result = RunReal(file_d, iX->P011, newRecord);
+			LinkUpw(iX->LD, RecNo, false, record, &newRecord);
+			result = RunReal(iX->LD->ToFD, iX->P011, newRecord);
 		}
 		else {
 			LinkLastRec(iX->File2, RecNo, false, &newRecord);
@@ -1266,8 +1266,8 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 		LockMode md = iZ->File2->NewLockMode(RdMode);
 		BYTE* newRecord = nullptr;
 		if (iZ->LD != nullptr) {
-			LinkUpw(file_d, iZ->LD, n, true, record, &newRecord);
-			TestTFrml(file_d, F, iZ->P011, TF02, TFD02, TF02Pos, newRecord);
+			LinkUpw(iZ->LD, n, true, record, &newRecord);
+			TestTFrml(iZ->LD->ToFD, F, iZ->P011, TF02, TFD02, TF02Pos, newRecord);
 		}
 		else {
 			LinkLastRec(iZ->File2, n, true, &newRecord);
@@ -1614,8 +1614,8 @@ label1:
 		LockMode lm = iX7->File2->NewLockMode(RdMode);
 		BYTE* newRecord = nullptr;
 		if (iX7->LD != nullptr) {
-			LinkUpw(file_d, iX7->LD, RecNo, true, record, &newRecord);
-			result = RunString(file_d, iX7->P011, newRecord);
+			LinkUpw(iX7->LD, RecNo, true, record, &newRecord);
+			result = RunString(iX7->LD->ToFD, iX7->P011, newRecord);
 		}
 		else {
 			LinkLastRec(iX7->File2, RecNo, true, &newRecord);
@@ -2204,6 +2204,9 @@ std::string GetTxt(FileD* file_d, FrmlElem16* Z, void* record)
 	CloseH(&h);
 
 	std::string s = std::string(buffer, len);
+
+	delete[] buffer;
+	buffer = nullptr;
 
 	return s;
 }

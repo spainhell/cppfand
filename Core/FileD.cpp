@@ -500,7 +500,7 @@ void FileD::ZeroAllFlds(void* record, bool delTFields)
 /// \param record1 source record
 /// \param record2 destination record
 /// \param delTFields deletes the existing destination T first
-void FileD::CopyRec(void* record1, void* record2, bool delTFields)
+void FileD::CopyRec(uint8_t* record1, uint8_t* record2, bool delTFields)
 {
 	if (delTFields) {
 		this->FF->DelTFlds(record2);

@@ -96,14 +96,15 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 }
 
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
-bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** newRecord)
+bool LinkUpw(LinkD* LD, int& N, bool WithT, void* record, BYTE** newRecord)
 {
-	FileD* ToFD = LD->ToFD;
-	*newRecord = ToFD->GetRecSpace();
+	FileD* from_FD = LD->FromFD;
+	FileD* to_FD = LD->ToFD;
+	*newRecord = to_FD->GetRecSpace();
 
 	XKey* K = LD->ToKey;
 	XString x;
-	x.PackKF(file_d, LD->Args, record);
+	x.PackKF(from_FD, LD->Args, record);
 
 
 #ifdef FandSQL
@@ -112,57 +113,54 @@ bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** 
 		if (LU) goto label2; else goto label1;
 	}
 #endif
-	const LockMode md = ToFD->NewLockMode(RdMode);
+	const LockMode md = to_FD->NewLockMode(RdMode);
 	bool lu;
-	if (ToFD->FF->file_type == FileType::INDEX) {
-		ToFD->FF->TestXFExist();
-		lu = K->SearchInterval(ToFD, x, false, N);
+	if (to_FD->FF->file_type == FileType::INDEX) {
+		to_FD->FF->TestXFExist();
+		lu = K->SearchInterval(to_FD, x, false, N);
 	}
-	else if (ToFD->FF->NRecs == 0) {
+	else if (to_FD->FF->NRecs == 0) {
 		lu = false;
 		N = 1;
 	}
 	else {
-		lu = ToFD->FF->SearchKey(x, K, N, *newRecord);
+		lu = to_FD->FF->SearchKey(x, K, N, *newRecord);
 	}
 
 	if (lu) {
-		ToFD->ReadRec(N, *newRecord);
+		to_FD->ReadRec(N, *newRecord);
 	}
 	else {
-		ToFD->ZeroAllFlds(*newRecord, false);
-		//const KeyFldD* KF = K->KFlds;
-		//for (KeyFldD* arg : LD->Args) {
+		to_FD->ZeroAllFlds(*newRecord, false);
 		for (size_t i = 0; i < LD->Args.size(); i++) {
 			FieldDescr* F = LD->Args[i]->FldD;
 			FieldDescr* F2 = K->KFlds[i]->FldD;
 			if (F2->isStored()) {
 				switch (F->frml_type) {
 				case 'S': {
-					x.S = file_d->loadS(F, record);
-					ToFD->saveS(F2, x.S, *newRecord);
+					x.S = from_FD->loadS(F, record);
+					to_FD->saveS(F2, x.S, *newRecord);
 					break;
 				}
 				case 'R': {
-					const double r = file_d->loadR(F, record);
-					ToFD->saveR(F2, r, *newRecord);
+					const double r = from_FD->loadR(F, record);
+					to_FD->saveR(F2, r, *newRecord);
 					break;
 				}
 				case 'B': {
-					const bool b = file_d->loadB(F, record);
-					ToFD->saveB(F2, b, *newRecord);
+					const bool b = from_FD->loadB(F, record);
+					to_FD->saveB(F2, b, *newRecord);
 					break;
 				}
 				}
 			}
-			//KF = KF->pChain;
 		}
 	}
 
 #ifdef FandSQL
 	if (!ToFD->IsSQLFile)
 #endif
-		ToFD->OldLockMode(md);
+		to_FD->OldLockMode(md);
 
 	return lu;
 }
