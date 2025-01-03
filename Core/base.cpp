@@ -20,7 +20,6 @@
 #include "../Common/exprcmp.h"
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
-#include "../fandio/cache.h"
 #include "../Logging/Logging.h"
 
 

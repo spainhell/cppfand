@@ -36,9 +36,6 @@
     <ClInclude Include="fandio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cache.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Fand0File.h">
       <Filter>Header Files\FandFiles</Filter>
     </ClInclude>
@@ -122,9 +119,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cache.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="fandio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
