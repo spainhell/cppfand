@@ -294,37 +294,6 @@ void MyMove(void* A1, void* A2, WORD N)
 	memcpy(A2, A1, N);
 }
 
-/// vrati pocet stejnych znaku na zacatku retezce
-WORD SLeadEqu(pstring S1, pstring S2)
-{
-	WORD count = 0;
-	// pocet znaku k otestovani
-	WORD minLen = min(S1.length(), S2.length());
-	for (size_t i = 0; i < minLen; i++) {
-		if (S1[i + 1] == S2[i + 1]) {
-			count++;
-			continue;
-		}
-		break;
-	}
-	return count;
-}
-
-WORD SLeadEqu(const std::string& s1, const std::string& s2)
-{
-	WORD count = 0;
-	// pocet znaku k otestovani
-	WORD minLen = min(s1.length(), s2.length());
-	for (size_t i = 0; i < minLen; i++) {
-		if (s1[i] == s2[i]) {
-			count++;
-			continue;
-}
-		break;
-	}
-	return count;
-}
-
 bool IsNetCVol()
 {
 #ifdef FandNetV
@@ -365,12 +334,12 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	DWORD access_mode = 0;
 	DWORD share_mode = 0;
 	DWORD create_mode = 0;
-	
+
 	switch (Mode) {
 	case _isOldFile: {
 		create_mode = OPEN_EXISTING;
 		break;
-		}
+	}
 	case _isOldNewFile: {
 		create_mode = OPEN_EXISTING;
 		break;
@@ -406,7 +375,7 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 		share_mode = 0;
 		break;
 	}
-	default: ;
+	default:;
 	}
 
 	while (true) {
@@ -697,12 +666,12 @@ void MarkBoth(void* p, void* p2)
 
 void ReleaseStore(void** pointer)
 {
-	delete[] *pointer; *pointer = nullptr;
+	delete[] * pointer; *pointer = nullptr;
 }
 
 void ReleaseAfterLongStr(void** pointer)
 {
-	delete[] *pointer; *pointer = nullptr;
+	delete[] * pointer; *pointer = nullptr;
 }
 
 bool OverlapByteStr(void* p1, void* p2)

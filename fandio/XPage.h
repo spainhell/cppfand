@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <vector>
 #include "XItem.h"
 #include "XItemLeaf.h"
@@ -51,5 +52,6 @@ private:
 
 	bool _cutItem(size_t iIndex, unsigned char length); // zkrati polozku o X Bytu, zaktualizuje M i L
 	bool _enhItem(size_t iIndex, unsigned char length); // prodlouzi polozku o X Bytu z predchozi polozky, zaktualizuje M i L
+	uint16_t SLeadEqu(const std::string& s1, const std::string& s2);
 };
 

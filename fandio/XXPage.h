@@ -27,4 +27,7 @@ public:
 	void PageFull();
 	void AddToLeaf(FileD* file_d, WRec* R, XKey* KD, void* record);
 	void AddToUpper(XXPage* P, int DownPage);
+
+private:
+	uint16_t SLeadEqu(pstring S1, pstring S2);
 };

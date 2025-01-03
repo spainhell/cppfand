@@ -20,8 +20,8 @@ typedef void* PProcedure;
 bool IsLetter(char C); // r4
 void MyMove(void* A1, void* A2, WORD N);
 
-WORD SLeadEqu(pstring S1, pstring S2);
-WORD SLeadEqu(const std::string& S1, const std::string& S2);
+//WORD SLeadEqu(pstring S1, pstring S2);
+//WORD SLeadEqu(const std::string& S1, const std::string& S2);
 bool EqualsMask(void* p, WORD l, pstring Mask); // r86 ASM
 bool EqualsMask(const std::string& value, std::string& mask);
 bool EquArea(void* p1, void* p2, size_t len);

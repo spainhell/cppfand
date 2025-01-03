@@ -1,6 +1,6 @@
 #include "XPage.h"
 
-#include "../Core/base.h"
+//#include "../Core/base.h"
 
 
 XPage::XPage()
@@ -509,4 +509,19 @@ bool XPage::_enhItem(size_t iIndex, unsigned char length)
 	memcpy(&Xi->data[length], origData, Xi->L - length); // a doplnime je puvodnimi daty
 	delete origData; origData = nullptr;
 	return true;
+}
+
+uint16_t XPage::SLeadEqu(const std::string& s1, const std::string& s2)
+{
+	uint16_t count = 0;
+	// pocet znaku k otestovani
+	uint16_t minLen = std::min(s1.length(), s2.length());
+	for (size_t i = 0; i < minLen; i++) {
+		if (s1[i] == s2[i]) {
+			count++;
+			continue;
+		}
+		break;
+	}
+	return count;
 }
