@@ -108,7 +108,7 @@ public:
 	FileD* OpenDuplicateF(bool createTextFile);
 	void DeleteDuplicateF(FileD* TempFD);
 	void ZeroAllFlds(void* record, bool delTFields);
-	void CopyRec(uint8_t* record1, uint8_t* record2, bool delTFields);
+	void CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields);
 
 	void DelAllDifTFlds(void* record, void* comp_record);
 

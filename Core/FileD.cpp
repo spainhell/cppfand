@@ -497,50 +497,81 @@ void FileD::ZeroAllFlds(void* record, bool delTFields)
 
 /// \brief Copy complete record
 /// - for T: one of this files is always TWork
-/// \param record1 source record
-/// \param record2 destination record
+/// \param src_record source record
+/// \param dst_record destination record
 /// \param delTFields deletes the existing destination T first
-void FileD::CopyRec(uint8_t* record1, uint8_t* record2, bool delTFields)
+void FileD::CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields)
 {
 	if (delTFields) {
-		this->FF->DelTFlds(record2);
+		this->FF->DelTFlds(dst_record);
 	}
 
-	memcpy(record2, record1, FF->RecLen);
+	//memcpy(dst_record, src_record, FF->RecLen);
 	for (FieldDescr* const& f : FldD) {
-		if ((f->field_type == FieldType::TEXT) && f->isStored()) {
-			FandTFile* tf1 = FF->TF;
-			FandTFile* tf2 = FF->TF;
+		if (f->isStored()) {
+			switch (f->field_type) {
+			case FieldType::TEXT: {
+				FandTFile* src_t00_file = FF->TF;
+				FandTFile* dst_t00_file = FF->TF;
 
-			if (tf1->Format != FandTFile::T00Format) {
-				std::string s = loadS(f, record1);
-				saveS(f, s, record2);
+				if (src_t00_file->Format != FandTFile::T00Format) {
+					std::string s = loadS(f, src_record);
+					saveS(f, s, dst_record);
+				}
+				else {
+					bool src_is_work = HasTWorkFlag(src_record);
+					bool dst_is_work = HasTWorkFlag(dst_record);
+
+
+					if (src_is_work) {
+						src_t00_file = &TWork;
+					}
+
+					if (dst_is_work) {
+						dst_t00_file = &TWork;
+					}
+
+					int src_pos = loadT(f, src_record);
+					int dst_pos = 0;
+
+					if (src_is_work && dst_is_work) {
+						// src and dest are in TWork
+						// don't need to lock anything
+						std::string s = src_t00_file->Read(src_pos);
+						dst_pos = dst_t00_file->Store(s);
+					}
+					else if (src_is_work) {
+						// src is in TWork
+						// lock dest for Write
+						LockMode md = NewLockMode(WrMode);
+						std::string s = src_t00_file->Read(src_pos);
+						dst_pos = dst_t00_file->Store(s);
+						OldLockMode(md);
+					}
+					else if (dst_is_work) {
+						// dest is in TWork
+						// lock src for Read
+						LockMode md = NewLockMode(RdMode);
+						std::string s = src_t00_file->Read(src_pos);
+						dst_pos = dst_t00_file->Store(s);
+						OldLockMode(md);
+					}
+					else {
+						// src and dest are single T00 file
+						// lock for Write
+						LockMode md = NewLockMode(WrMode);
+						std::string s = src_t00_file->Read(src_pos);
+						dst_pos = dst_t00_file->Store(s);
+						OldLockMode(md);
+					}
+
+					saveT(f, dst_pos, dst_record);
+				}
+				break;
 			}
-			else {
-				if (HasTWorkFlag(record1)) {
-					tf1 = &TWork;
-				}
-
-				int pos = loadT(f, record1);
-
-				if (HasTWorkFlag(record2)) {
-					tf2 = &TWork;
-				}
-
-				LockMode md1 = NullMode, md2 = NullMode;
-				if (!tf1->IsWork) md1 = NewLockMode(RdMode);
-				if (!tf2->IsWork) md2 = NewLockMode(WrMode);
-
-				pos = Fand0File::CopyT(tf2, tf1, pos);
-
-				if (!tf2->IsWork) {
-					OldLockMode(md2);
-				}
-				if (!tf1->IsWork) {
-					OldLockMode(md1);
-				}
-
-				saveT(f, pos, record2);
+			default: 
+				memcpy(&dst_record[f->Displ], &src_record[f->Displ], f->NBytes);
+				break;
 			}
 		}
 	}

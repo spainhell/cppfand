@@ -627,21 +627,6 @@ void FandTFile::CloseFile()
 
 void FandTFile::Delete(int pos)
 {
-	// funkce smaze cast T00 nebo TTT souboru
-	// s ohledem na to, ze v TTT souboru jsou predkompilovana data
-	// a tato data pak nejsou nicim nahrazena (novou kompilaci neumime ulozit)
-	// dojde ke ztrate dat
-
-	// proto budeme kontrolovat, zda se jedna o TTT soubor a pokud ano,
-	// tak koncime a nic mazat nebudeme
-
-	/*if (_parent->GetFileD() != nullptr) {
-		std::string name = upperCaseString(_parent->GetFileD()->FullPath);
-		if (name.find("TTT") != std::string::npos) {
-			return;
-		}
-	}*/
-
 	if (pos <= 0) return;
 	if ((Format != T00Format) || NotCached()) return;
 	if ((pos < MPageSize) || (pos >= MLen)) {
@@ -688,12 +673,12 @@ void FandTFile::Delete(int pos)
 	else {
 		// long text on more than 1 page
 		if (PosI != 0) {
-			goto label3;
+			Err(889, false);
+			return;
 		}
 	label2:
 		l = *(unsigned short*)X;
 		if (l > MaxLStrLen + 1) {
-		label3:
 			Err(889, false);
 			return;
 		}

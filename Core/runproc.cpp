@@ -580,33 +580,34 @@ void AppendRecProc(FileD* file_d)
 	file_d->OldLockMode(md);
 }
 
-void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, void* record)
+void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, void* new_data)
 {
-	uint8_t* record2 = file_d->GetRecSpace();
-	file_d->ReadRec(rec_nr, record2);
-	const bool deleted = file_d->DeletedFlag(record2);
+	uint8_t* old_data = file_d->GetRecSpace();
+	file_d->ReadRec(rec_nr, old_data);
+
+	const bool deleted = file_d->DeletedFlag(old_data);
 
 	if (ad_upd) {
 		if (deleted) {
-			LastExitCode = !RunAddUpdate(file_d, '+', nullptr, nullptr, record);
+			LastExitCode = !RunAddUpdate(file_d, '+', nullptr, nullptr, new_data);
 		}
 		else {
-			LastExitCode = !RunAddUpdate(file_d, 'd', record2, nullptr, record);
+			LastExitCode = !RunAddUpdate(file_d, 'd', old_data, nullptr, new_data);
 		}
 	}
 
 	if (file_d->FF->file_type == FileType::INDEX) {
-		file_d->FF->OverWrXRec(rec_nr, record2, record, record);
+		file_d->FF->OverWrXRec(rec_nr, old_data, new_data, new_data);
 	}
 	else {
-		file_d->WriteRec(rec_nr, record);
+		file_d->WriteRec(rec_nr, new_data);
 	}
 
 	if (!deleted) {
-		file_d->DelAllDifTFlds(record2, nullptr);
+		file_d->DelAllDifTFlds(old_data, nullptr);
 	}
 
-	delete[] record2; record2 = nullptr;
+	delete[] old_data; old_data = nullptr;
 }
 
 void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
@@ -1739,7 +1740,7 @@ void CallProcedure(Instr_proc* PD)
 			fd->SetTWorkFlag(record);
 			fd->ZeroAllFlds(record, false);
 			fd->ClearDeletedFlag(record);
-			(*it0)->record = static_cast<uint8_t*>(record);
+			(*it0)->record = record;
 		}
 		else if ((*it0)->f_typ == 'f') {
 			// dynamic file definition
@@ -1802,8 +1803,10 @@ void CallProcedure(Instr_proc* PD)
 		if (i > params_count) {
 			switch ((*it0)->f_typ) {
 			case 'r': {
-				CFile = (*it0)->FD;
-				CFile->ClearRecSpace((*it0)->record);
+				LocVar* loc_var = *it0;
+				loc_var->FD->ClearRecSpace(loc_var->record);
+				delete[] loc_var->record;
+				loc_var->record = nullptr;
 				break;
 			}
 			case 'i': {

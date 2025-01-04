@@ -1315,7 +1315,10 @@ bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z
 		LockMode md1 = NullMode, md2 = NullMode;
 		if (!TF02->IsWork) md2 = TFD02->NewLockMode(RdMode);
 		if (!TF->IsWork) md1 = file_d->NewLockMode(WrMode);
-		pos = Fand0File::CopyT(TF, TF02, TF02Pos);
+
+		std::string s = TF02->Read(TF02Pos);
+		pos = TF->Store(s);
+
 		if (!TF02->IsWork) TFD02->OldLockMode(md2);
 		if (!TF->IsWork) file_d->OldLockMode(md1);
 		result = true;
@@ -1326,14 +1329,15 @@ bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z
 	return result;
 }
 
-void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bool Delete, bool Add)
+void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bool deleteT, bool add)
 {
 	switch (field_d->frml_type) {
 	case 'S': {
 		if (field_d->field_type == FieldType::TEXT) {
 			FandTFile* tf;
 
-			if (file_d->FF->HasTWorkFlag(record)) {
+			bool work = file_d->FF->HasTWorkFlag(record);
+			if (work) {
 				tf = &TWork;
 			}
 			else {
@@ -1342,14 +1346,14 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 
 			int pos = 0;
 			if (TryCopyT(file_d, field_d, tf, pos, X, record)) {
-				if (Delete) {
+				if (deleteT && !work) {
 					file_d->FF->DelTFld(field_d, record);
 				}
 				file_d->saveT(field_d, pos, record);
 			}
 			else {
 				std::string s = RunString(file_d, X, record);
-				if (Delete) {
+				if (deleteT && !work) {
 					file_d->FF->DelTFld(field_d, record);
 				}
 				file_d->saveS(field_d, s, record);
@@ -1361,7 +1365,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 		break;
 	}
 	case 'R': {
-		if (Add) {
+		if (add) {
 			file_d->saveR(field_d, file_d->loadR(field_d, record) + RunReal(file_d, X, record), record);
 		}
 		else {
