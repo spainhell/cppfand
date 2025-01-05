@@ -344,6 +344,7 @@ std::string FandTFile::Read(int32_t pos)
 					Err(891, false);
 				}
 				else if (len == MaxLStrLen + 1) {
+					//auto check = GetLength(pos);
 					s = ReadLongBuffer(pos);
 				}
 				else {
@@ -396,7 +397,7 @@ std::string FandTFile::Read(int32_t pos)
 
 uint32_t FandTFile::GetLength(int32_t pos)
 {
-	int32_t result;
+	uint32_t result;
 
 	pos -= LicenseNr;
 	if (pos <= 0) {
@@ -411,7 +412,7 @@ uint32_t FandTFile::GetLength(int32_t pos)
 		// max length has been exceeded
 		result = 0;
 		Err(891, false);
-		
+
 	}
 	else if (len == MaxLStrLen + 1) {
 		result = ReadLongBufferLength(pos);
@@ -441,12 +442,13 @@ uint32_t FandTFile::Store(const std::string& data)
 	switch (Format) {
 	case T00Format: {
 		if (l > MaxLStrLen) {
-			// >65000B
+			// > 65000B
 			pos = NewPage(false);
 			WriteLongBuffer(pos, l, s);
+			//auto check = GetLength(pos);
 		}
 		else if (l > MPageSize - 2) {
-			// <65000B
+			// <= 65000B
 			pos = NewPage(false);
 			uint16_t data_len = (uint16_t)l;
 			WriteData(pos, 2, &data_len);
@@ -497,7 +499,6 @@ uint32_t FandTFile::Store(const std::string& data)
 	return pos;
 }
 
-
 void FandTFile::Delete(int32_t pos)
 {
 	if (pos <= 0) return;
@@ -509,74 +510,94 @@ void FandTFile::Delete(int32_t pos)
 		return;
 	}
 
-	SetUpdateFlag(); //SetUpdHandle(Handle);
+	SetUpdateFlag();
+
+	uint32_t page_pos;
+	int16_t l;
+	uint16_t u;
 
 	if (pos < MPageSize || pos >= eofPos)
-		return;								// mimo datovou oblast souboru
+		return; // mimo datovou oblast souboru
 
-	uint8_t X[MPageSize]{ 0 };
-	int32_t page_pos = pos & (0xFFFFFFFF << MPageShft);
-	int32_t PosI = pos & (MPageSize - 1);
+	ReadData(pos, 2, &l); // delka stringu
+	if (static_cast<unsigned short>(l) < MPageSize - 2) {
+		// SHORT TEXT na sdilene strance
+		char buffer[MPageSize];
+		u = static_cast<unsigned short>(pos) % MPageSize; // offset ve strance
+		page_pos = pos - u; // pozice stranky v souboru
+		ReadData(page_pos, MPageSize, buffer); // nactu stranku
+		*(short*)(buffer + u) = -l; // zaporne delku
+		char* p = buffer;
 
-	ReadData(page_pos, MPageSize, X);
-	void* wp = (unsigned short*)&X[PosI];
-	int32_t l = *(unsigned short*)wp;
+		while (!false) {
+			// spojuji volne fragmenty (posledni je vzdy volny!)
 
-	if (l <= MPageSize - 2) {
-		// small text on 1 page
-		*(short*)&X[PosI] = (short)(-l);
-		int32_t N = 0;
-		wp = (short*)X;
-
-		while (N < MPageSize - 2) {
-			if (*(short*)wp > 0) {
-				memset(&X[PosI + 2], 0, l);
-				WriteData(page_pos, MPageSize, X);
-				return;
+			// POZOR, fand v aktualni strance neudrzuje zbyvajici delku!!!, proto nasl. IF
+			if (page_pos + p - buffer == FreePart) {
+				// pred freePart platny string n. prazdny aktualni
+				break;
 			}
-			N = N - *(short*)wp + 2;
-			wp = (short*)&X[N];
+
+			l = *(short*)p;
+
+			if (l <= 0) {
+				// je-li fragment volny
+				char* p1 = p - l + 2; // adresa nasledujiciho fragmentu
+
+				if (page_pos + p1 - buffer == FreePart) {
+					// volna cast aktualniho segmentu
+					FreePart = page_pos + p - buffer; // pripojim to k volne casti
+					break;
+				}
+
+				if (p1 >= buffer + MPageSize - 2) {
+					// byl posledni (fragment je alespon 3)
+					break;
+				}
+
+				if ((l = *(short*)p1) <= 0) {
+					// je-li volny
+					*(short*)p += l - 2; // pripojim ho k predchozimu
+				}
+				else {
+					p = p1; // jinak vezmu nasledujici (nebo dalsi? + l + 2)
+				}
+			}
+			else
+				p += l + 2; // preskocim obsazeny fragment
 		}
 
-		if ((FreePart >= page_pos) && (FreePart < page_pos + MPageSize)) {
-			memset(X, 0, MPageSize);
-			*(short*)X = -510;
-			FreePart = page_pos;
-			WriteData(page_pos, MPageSize, X);
+		if (*(short*)buffer <= -(MPageSize - 2) && page_pos != FreePart) {
+			// jediny volny fragment ve strance
+			// a neni to aktualni segment
+			ReleasePage(page_pos); // uvolnim stranku
 		}
 		else {
-			ReleasePage(page_pos);
+			WriteData(page_pos, MPageSize, buffer); // zapis stranku (celou, mohlo se slucovat)
 		}
 	}
 	else {
-		// long text on more than 1 page
-		if (PosI != 0) {
-			Err(889, false);
-			return;
-		}
-	label2:
-		l = *(unsigned short*)X;
-		if (l > MaxLStrLen + 1) {
-			Err(889, false);
-			return;
-		}
-		const bool IsLongTxt = (l == MaxLStrLen + 1);
-		l += 2;
-	label4:
-		ReleasePage(page_pos);
-		if ((l > MPageSize) || IsLongTxt) {
-			page_pos = *(__int32*)&X[MPageSize - 4];
-
-			if ((page_pos < MPageSize) || (page_pos + MPageSize > MLen)) {
-				Err(888, false);
-				return;
+		// LONG TEXT
+		while (true) {
+			// cyklus uvolnovani segmentu
+			u = static_cast<unsigned short>(l);
+			if (u == MaxLStrLen + 1) // posledni segment?
+				--u; // ano, smazu priznak
+			u += 2; // do 1. zapocitam delku
+			while (true) {
+				// cyklus uvolnovani stranek v segmentu
+				ReadData(pos + MPageSize - 4, 4, &page_pos); // nactu adresu dalsi stranky
+				ReleasePage(pos);
+				pos = page_pos;
+				if (u <= MPageSize) // posledni stranka v segmentu
+					break;
+				u -= MPageSize - 4;
 			}
-			ReadData(page_pos, MPageSize, X);
-			if (l <= MPageSize) {
-				goto label2;
+			if (static_cast<unsigned short>(l) != MaxLStrLen + 1) {
+				// dalsi segment?
+				break; // ne
 			}
-			l = l - (MPageSize - 4);
-			goto label4;
+			ReadData(pos, 2, &l); // delka segmentu
 		}
 	}
 }
@@ -597,11 +618,18 @@ void FandTFile::CloseFile()
 	}
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="position"></param>
+/// <param name="count"></param>
+/// <param name="buffer"></param>
+/// <returns>Returns position of last read page</returns>
 uint32_t FandTFile::ReadBuffer(size_t position, size_t count, uint8_t* buffer)
 {
 	// position is after 2B length
 	uint16_t L = 0;
-	int32_t NxtPg = 0;
+	int32_t next_page_pos = 0;
 	int32_t offset = 0;
 	uint16_t rest = MPageSize - (position & (MPageSize - 1));
 
@@ -610,8 +638,8 @@ uint32_t FandTFile::ReadBuffer(size_t position, size_t count, uint8_t* buffer)
 		ReadData(position, L, &buffer[offset]);
 		offset += L;
 		count -= L;
-		ReadData(position + L, 4, &NxtPg);
-		position = NxtPg;
+		ReadData(position + L, 4, &next_page_pos);
+		position = next_page_pos;
 
 		if ((position < MPageSize) || (position + MPageSize > MLen)) {
 			Err(890, false);
@@ -623,7 +651,7 @@ uint32_t FandTFile::ReadBuffer(size_t position, size_t count, uint8_t* buffer)
 
 	// read last page
 	ReadData(position, count, &buffer[offset]);
-	return position + count;
+	return next_page_pos;
 }
 
 std::string FandTFile::ReadLongBuffer(uint32_t position)
@@ -634,31 +662,24 @@ std::string FandTFile::ReadLongBuffer(uint32_t position)
 	uint8_t buffer[MaxLStrLen]{ 0 };
 
 	// read first 65000 bytes long block
-	uint32_t next_read_pos = ReadBuffer(position + 2, MaxLStrLen, buffer);
+	uint32_t last_read_page_pos = ReadBuffer(position + 2, MaxLStrLen, buffer);
 	result += std::string((char*)buffer, MaxLStrLen);
 
 	// read next blocks
 	while (true) {
-		// is there enough space to read address of next block?
-		uint16_t rest = MPageSize - (next_read_pos & (MPageSize - 1));
-		if (rest >= 4) {
-			ReadData(next_read_pos, 4, &next_read_pos);
-		}
-		else {
-			throw("FandTFile::ReadLongBuffer: there is not enough space to read address");
-		}
+		ReadData(last_read_page_pos + MPageSize - 4, 4, &last_read_page_pos);
 
 		// get length of next section
 		uint16_t data_len;
-		ReadData(next_read_pos, 2, &data_len);
+		ReadData(last_read_page_pos, 2, &data_len);
 
 		if (data_len == MaxLStrLen + 1) {
-			next_read_pos = ReadBuffer(next_read_pos + 2, MaxLStrLen, buffer);
+			last_read_page_pos = ReadBuffer(last_read_page_pos + 2, MaxLStrLen, buffer);
 			result += std::string((char*)buffer, MaxLStrLen);
 		}
 		else {
 			// this is the last segment
-			next_read_pos = ReadBuffer(next_read_pos + 2, data_len, buffer);
+			last_read_page_pos = ReadBuffer(last_read_page_pos + 2, data_len, buffer);
 			result += std::string((char*)buffer, data_len);
 			break;
 		}
@@ -684,17 +705,17 @@ uint32_t FandTFile::ReadLongBufferLength(uint32_t position)
 			uint16_t to_read = MaxLStrLen + 2; // first page is 2B smaller because contains length
 
 			while (to_read > MPageSize - 4) {
-				// read next page position (last 4B of the page)
-				ReadData(page_pos + MPageSize - 4, 4, &page_pos);
 				if ((page_pos < MPageSize) || (page_pos + MPageSize > MLen)) {
 					Err(890, false);
 					return 0;
 				}
+				// read next page position (last 4B of the page)
+				ReadData(page_pos + MPageSize - 4, 4, &page_pos);
 				to_read -= MPageSize - 4;
 			}
 
 			// points to the last page -> read next segment position
-			ReadData(page_pos + to_read, 4, &page_pos);
+			ReadData(page_pos + MPageSize - 4, 4, &page_pos);
 			result += data_len; // +65000
 		}
 		else {
@@ -707,11 +728,18 @@ uint32_t FandTFile::ReadLongBufferLength(uint32_t position)
 	return result;
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="position"></param>
+/// <param name="count"></param>
+/// <param name="buffer"></param>
+/// <returns>Last written page position</returns>
 uint32_t FandTFile::WriteBuffer(size_t position, size_t count, uint8_t* buffer)
 {
 	// position is after 2B length
 	uint16_t L = 0;
-	int32_t NxtPg = 0;
+	int32_t next_page_pos = 0;
 	int32_t offset = 0;
 	uint16_t Rest = MPageSize - (position & (MPageSize - 1));
 
@@ -720,40 +748,34 @@ uint32_t FandTFile::WriteBuffer(size_t position, size_t count, uint8_t* buffer)
 		WriteData(position, L, &buffer[offset]);
 		offset += L;
 		count -= L;
-		NxtPg = NewPage(false);
-		WriteData(position + L, 4, &NxtPg);
-		position = NxtPg;
+		next_page_pos = NewPage(false);
+		WriteData(position + L, 4, &next_page_pos);
+		position = next_page_pos;
 		Rest = MPageSize;
 	}
 
 	// write last page
 	WriteData(position, count, &buffer[offset]);
-	return position + count;
+	return next_page_pos;
 }
 
 void FandTFile::WriteLongBuffer(size_t position, size_t count, uint8_t* buffer)
 {
 	// position is on the beginning of page
 	const uint16_t L_LEN = MaxLStrLen + 1;
-	uint32_t next_page_pos = 0;
 
 	// write first 65000 bytes long block
 	size_t offset = 0;
 	WriteData(position, 2, (void*)&L_LEN);
-	uint32_t next_free_space = WriteBuffer(position + 2, MaxLStrLen, &buffer[offset]);
+	uint32_t last_written_page_pos = WriteBuffer(position + 2, MaxLStrLen, &buffer[offset]);
 	offset += MaxLStrLen;
 
 	// write next blocks
 	while (offset < count) {
-		// is there enough space to write address of next block?
-		uint16_t rest = MPageSize - (next_free_space & (MPageSize - 1));
-		if (rest >= 4) {
-			next_page_pos = NewPage(false);
-			WriteData(next_free_space, 4, &next_page_pos);
-		}
-		else {
-			throw("FandTFile::WriteLongBuffer: there is not enough space to write address");
-		}
+		uint32_t next_page_pos = NewPage(false);
+
+		// write next segment position to the end of last written page
+		WriteData(last_written_page_pos + MPageSize - 4, 4, &next_page_pos);
 
 		size_t remains = count - offset;
 		if (remains > MaxLStrLen) {
@@ -764,7 +786,7 @@ void FandTFile::WriteLongBuffer(size_t position, size_t count, uint8_t* buffer)
 			WriteData(next_page_pos, 2, &last_length);
 		}
 
-		next_free_space = WriteBuffer(next_page_pos + 2, remains, &buffer[offset]);
+		last_written_page_pos = WriteBuffer(next_page_pos + 2, remains, &buffer[offset]);
 		offset += remains;
 	}
 }
@@ -828,12 +850,26 @@ int FandTFile::NewPage(bool NegL)
 	return PosPg;
 }
 
-void FandTFile::ReleasePage(int PosPg)
+void FandTFile::ReleasePage(int page_pos)
 {
 	unsigned char X[MPageSize]{ 0 };
 	*(int32_t*)X = FreeRoot;
-	WriteData(PosPg, MPageSize, X);
-	FreeRoot = PosPg >> MPageShft;
+	WriteData(page_pos, MPageSize, X);
+	FreeRoot = page_pos >> MPageShft;
+
+
+	//DWORD error;
+
+	//if (page_pos == (eofPos - MPageSize)) {
+	//	// je-li to posledni stranka souboru
+	//	eofPos = page_pos;
+	//	TruncF(Handle, error, eofPos); // tak zkratim soubor
+	//}
+	//else {
+	//	long l = FreeRoot / MPageSize;
+	//	WriteData(page_pos, 4, &l); // uvolnovanou stranku dam do seznamu volnych
+	//	FreeRoot = page_pos;
+	//}
 }
 
 void FandTFile::GetMLen()

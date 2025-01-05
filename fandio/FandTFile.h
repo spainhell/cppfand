@@ -59,7 +59,7 @@ private:
 	void WriteLongBuffer(size_t position, size_t count, uint8_t* buffer);
 	int32_t PreparePositionForShortText(size_t l);
 	int NewPage(bool NegL);
-	void ReleasePage(int PosPg);
+	void ReleasePage(int page_pos);
 	void GetMLen();
 
 	void RandIntByBytes(int& nr);
