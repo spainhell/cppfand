@@ -2274,14 +2274,15 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 void DelStorClpBd(void* P1, LongStr* sp)
 {
 	TWork.Delete(ClpBdPos);
-	ClpBdPos = TWork.Store(sp->A, sp->LL);
+	std::string data = std::string(sp->A, sp->LL);
+	ClpBdPos = TWork.Store(data);
 	ReleaseStore(&P1);
 }
 
 void MarkRdClpBd(void* P1, LongStr* sp)
 {
 	MarkStore(P1);
-	sp = TWork.ReadLongStr(ClpBdPos);
+	//sp = TWork.ReadLongStr(ClpBdPos);
 }
 
 bool TextEditor::BlockGrasp(char Oper, void* P1, LongStr* sp)

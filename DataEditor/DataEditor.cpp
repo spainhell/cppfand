@@ -2895,7 +2895,8 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			if ((*(int*)((char*)edit_->OldRecPtr + ChptTxt->Displ) == *(int*)((char*)record_ + ChptTxt->Displ)) && PromptYN(157)) {
 				s = file_d_->loadLongS(ChptTxt, record_);
 				TWork.Delete(ClpBdPos);
-				ClpBdPos = TWork.Store(s->A, s->LL);
+				std::string data = std::string(s->A, s->LL);
+				ClpBdPos = TWork.Store(data);
 				delete s; s = nullptr;
 			}
 			UndoRecord();

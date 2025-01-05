@@ -9,51 +9,9 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 #include "../pascal/random.h"
-#include "../pascal/real48.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 
-
-void RandIntByBytes(int& nr)
-{
-	unsigned char* byte = (unsigned char*)&nr;
-	for (size_t i = 0; i < 4; i++)
-	{
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
-	}
-}
-
-void RandByteByBytes(unsigned short& nr)
-{
-	unsigned char* byte = (unsigned char*)&nr;
-	for (size_t i = 0; i < 2; i++) {
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
-	}
-}
-
-void RandReal48ByBytes(double& nr)
-{
-	unsigned char* byte = (unsigned char*)&nr;
-	for (size_t i = 0; i < 6; i++) {
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
-	}
-}
-
-void RandBooleanByBytes(bool& nr)
-{
-	unsigned char* byte = (unsigned char*)&nr;
-	for (size_t i = 0; i < sizeof(nr); i++) {
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
-	}
-}
-
-void RandArrayByBytes(void* arr, size_t len)
-{
-	unsigned char* byte = (unsigned char*)arr;
-	for (size_t i = 0; i < len; i++) {
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
-	}
-}
 
 FandTFile::FandTFile(Fand0File* parent)
 {
@@ -395,90 +353,12 @@ int FandTFile::NewPage(bool NegL)
 void FandTFile::ReleasePage(int PosPg)
 {
 	unsigned char X[MPageSize]{ 0 };
-	*(__int32*)X = FreeRoot;
+	*(int32_t*)X = FreeRoot;
 	WriteData(PosPg, MPageSize, X);
 	FreeRoot = PosPg >> MPageShft;
 }
 
-LongStr* FandTFile::ReadLongStr(int Pos)
-{
-	LongStr* s = nullptr;
-	unsigned short i = 0, l = 0;
-	char* p = nullptr;
-	int offset = 0;
-	struct stFptD { int Typ = 0, Len = 0; } FptD;
-	Pos -= LicenseNr;
-	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) {
-		s = new LongStr(l);
-		s->LL = 0;
-		return s;
-	}
-	else {
-		switch (Format) {
-		case T00Format: {
-			if ((Pos < MPageSize) || (Pos >= MLen)) {
-				Err(891, false);
-				return s;
-			}
-			ReadData(Pos, 2, &l);
-			if (l > MaxLStrLen + 1) {
-				Err(891, false);
-				s = new LongStr(l);
-				s->LL = 0;
-				return s;
-			}
-			if (l == MaxLStrLen + 1) { l--; } // 65001
-			s = new LongStr(l + 2);
-			s->LL = l;
-			Read(Pos + 2, l, s->A);
-			break;
-		}
-		case DbtFormat: {
-			s = new LongStr(32768); //(LongStr*)GetStore(32770);
-			Pos = Pos << MPageShft;
-			p = s->A;
-			l = 0;
-			while (l <= 32768 - MPageSize) {
-				ReadData(Pos, MPageSize, &p[offset]);
-				for (i = 1; i <= MPageSize; i++) {
-					if (p[offset + i] == 0x1A) {
-						s->LL = l;
-						//ReleaseStore(&s->A[l + 1]);
-						return s;
-					}
-					l++;
-				}
-				offset += MPageSize;
-				Pos += MPageSize;
-			}
-			l--;
-			s->LL = l;
-			//ReleaseStore(&s->A[l + 1]);
-			break;
-		}
-		case FptFormat: {
-			Pos = Pos * FptFormatBlockSize;
-			ReadData(Pos, sizeof(FptD), &FptD);
-			//if (SwapLong(FptD.Typ) != 1/*text*/) {
-			//	s = new LongStr(l);
-			//	s->LL = 0;
-			//	return s;
-			//}
-			//else {
-			//	l = SwapLong(FptD.Len) & 0x7FFF;
-			//	s = new LongStr(l);
-			//	s->LL = l;
-			//	ReadCache(Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
-			//}
-			break;
-		}
-		default: break;
-		}
-	}
-	return s;
-}
-
-std::string FandTFile::Read(int pos)
+std::string FandTFile::Read(int32_t pos)
 {
 	std::string s;
 	pos -= LicenseNr;
@@ -495,6 +375,7 @@ std::string FandTFile::Read(int pos)
 			else {
 				unsigned short len; // length of data
 				ReadData(pos, 2, &len);
+
 				if (len > MaxLStrLen + 1) {
 					// max length has been exceeded
 					Err(891, false);
@@ -504,6 +385,7 @@ std::string FandTFile::Read(int pos)
 						// 65001
 						len--;
 					}
+
 					const std::unique_ptr<char[]> data = std::make_unique_for_overwrite<char[]>(len);
 					Read(pos + 2, len, data.get());
 					s = std::string(data.get(), len);
@@ -512,21 +394,50 @@ std::string FandTFile::Read(int pos)
 			break;
 		}
 		case DbtFormat: {
-			throw std::exception("FandTFile::Read(int pos): DBT FORMAT NOT SUPPORTED.");
+			LongStr* s = new LongStr(32768); //(LongStr*)GetStore(32770);
+			pos = pos << MPageShft;
+			unsigned l = 0;
+			char* p = s->A;
+			int offset = 0;
+			
+			while (l <= 32768 - MPageSize) {
+				ReadData(pos, MPageSize, &p[offset]);
+				for (uint16_t i = 1; i <= MPageSize; i++) {
+					if (p[offset + i] == 0x1A) {
+						s->LL = l;
+						//ReleaseStore(&s->A[l + 1]);
+						//return s;
+						return "";
+					}
+					l++;
+				}
+				offset += MPageSize;
+				pos += MPageSize;
+			}
+			l--;
+			s->LL = l;
+			//ReleaseStore(&s->A[l + 1]);
+			break;
 			break;
 		}
 		case FptFormat: {
-			throw std::exception("FandTFile::Read(int pos): FTP FORMAT NOT SUPPORTED.");
+			struct { int Typ = 0, Len = 0; } FptD;
+			pos = pos * FptFormatBlockSize;
+			ReadData(pos, sizeof(FptD), &FptD);
+			s = "";
 			break;
 		}
-		default: break;
 		}
 	}
+
 	return s;
 }
 
-int FandTFile::Store(char* s, size_t l)
+int32_t FandTFile::Store(const std::string& data)
 {
+	char* s = (char*)data.c_str();
+	size_t l = data.length();
+
 	int pos = 0;
 	char X[MPageSize + 1]{ 0 };
 	struct stFptD { int Typ = 0, Len = 0; } FptD;
@@ -542,6 +453,7 @@ int FandTFile::Store(char* s, size_t l)
 		if (l > MaxLStrLen) {
 			l = MaxLStrLen;
 		}
+
 		if (l > MPageSize - 2) {
 			// long text
 			pos = NewPage(false);
@@ -549,6 +461,7 @@ int FandTFile::Store(char* s, size_t l)
 		else {
 			// short text
 			int rest = MPageSize - FreePart % MPageSize;
+
 			if (l + 2 <= rest) {
 				pos = FreePart;
 			}
@@ -557,13 +470,17 @@ int FandTFile::Store(char* s, size_t l)
 				FreePart = pos;
 				rest = MPageSize;
 			}
-			if (l + 4 >= rest) FreePart = NewPage(false);
+
+			if (l + 4 >= rest) {
+				FreePart = NewPage(false);
+			}
 			else {
 				FreePart += l + 2;
 				rest = l + 4 - rest;
 				WriteData(FreePart, 2, &rest);
 			}
 		}
+
 		WriteData(pos, 2, &l);
 		Write(pos + 2, l, s);
 		break;
@@ -599,33 +516,12 @@ int FandTFile::Store(char* s, size_t l)
 		}
 		break;
 	}
-	default: break;
 	}
 	return pos;
 }
 
-int FandTFile::Store(const std::string& s)
-{
-	return Store(const_cast<char*>(s.c_str()), s.length());
-}
 
-void FandTFile::CloseFile()
-{
-	if (Handle != nullptr) {
-		CloseClearH(&Handle);
-		if (HandleError == 0) {
-			Handle = nullptr;
-			ClearUpdateFlag();
-		}
-		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FileType::DBF)) {
-			SetPathAndVolume(_parent->GetFileD());
-			CPath = CExtToT(this, CDir, CName, CExt);
-			MyDeleteFile(CPath);
-		}
-	}
-}
-
-void FandTFile::Delete(int pos)
+void FandTFile::Delete(int32_t pos)
 {
 	if (pos <= 0) return;
 	if ((Format != T00Format) || NotCached()) return;
@@ -703,6 +599,22 @@ void FandTFile::Delete(int pos)
 	}
 }
 
+void FandTFile::CloseFile()
+{
+	if (Handle != nullptr) {
+		CloseClearH(&Handle);
+		if (HandleError == 0) {
+			Handle = nullptr;
+			ClearUpdateFlag();
+		}
+		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FileType::DBF)) {
+			SetPathAndVolume(_parent->GetFileD());
+			CPath = CExtToT(this, CDir, CName, CExt);
+			MyDeleteFile(CPath);
+		}
+	}
+}
+
 void FandTFile::Read(size_t position, size_t count, char* buffer)
 {
 	Logging* log = Logging::getInstance();
@@ -753,6 +665,46 @@ void FandTFile::Write(size_t position, size_t count, char* buffer)
 void FandTFile::GetMLen()
 {
 	MLen = (MaxPage + 1) << MPageShft;
+}
+
+void FandTFile::RandIntByBytes(int& nr)
+{
+	unsigned char* byte = (unsigned char*)&nr;
+	for (size_t i = 0; i < 4; i++) {
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+	}
+}
+
+void FandTFile::RandByteByBytes(unsigned short& nr)
+{
+	unsigned char* byte = (unsigned char*)&nr;
+	for (size_t i = 0; i < 2; i++) {
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+	}
+}
+
+void FandTFile::RandReal48ByBytes(double& nr)
+{
+	unsigned char* byte = (unsigned char*)&nr;
+	for (size_t i = 0; i < 6; i++) {
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+	}
+}
+
+void FandTFile::RandBooleanByBytes(bool& nr)
+{
+	unsigned char* byte = (unsigned char*)&nr;
+	for (size_t i = 0; i < sizeof(nr); i++) {
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+	}
+}
+
+void FandTFile::RandArrayByBytes(void* arr, size_t len)
+{
+	unsigned char* byte = (unsigned char*)arr;
+	for (size_t i = 0; i < len; i++) {
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+	}
 }
 
 void WrDBaseHd()

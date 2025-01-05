@@ -432,7 +432,8 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 				sp->LL = (WORD)editor->_lenT;
 				if (TypeT == LocalT) {
 					TWork.Delete(*LocalPPtr);
-					*LocalPPtr = TWork.Store(sp->A, sp->LL);
+					std::string data = std::string(sp->A, sp->LL);
+					*LocalPPtr = TWork.Store(data);
 				}
 				else if (UpdatT) {
 					data_editor->UpdateEdTFld(sp);
@@ -470,7 +471,10 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 			case MemoT:
 			{
 				if (TypeT == LocalT) {
-					sp = TWork.ReadLongStr(*LocalPPtr);
+					std::string d = TWork.Read(*LocalPPtr);
+					LongStr* sp = new LongStr(d.length());
+					sp->LL = d.length();
+					memcpy(sp->A, d.c_str(), sp->LL);
 				}
 				else {
 					throw("Check implementation! EditDRoot is probably not set.");

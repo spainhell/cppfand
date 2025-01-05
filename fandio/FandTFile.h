@@ -13,6 +13,9 @@ const unsigned short MPageSize = 512;
 const unsigned char XPageShft = 10;
 const unsigned char MPageShft = 9;
 
+const unsigned short MAXLSTRLEN = 65000u;
+const unsigned short XPAGESIZE = 512;
+
 class FandTFile : public FandFile
 {
 public:
@@ -45,11 +48,11 @@ public:
 	void Create(const std::string& path);
 	int NewPage(bool NegL);
 	void ReleasePage(int PosPg);
-	void Delete(int Pos);
-	LongStr* ReadLongStr(int Pos);
-	std::string Read(int pos);
-	int Store(char* s, size_t l);
+
+	std::string Read(int32_t pos);
 	int Store(const std::string& s);
+	void Delete(int32_t pos);
+
 	void CloseFile();
 
 private:
@@ -57,5 +60,12 @@ private:
 	void Read(size_t position, size_t count, char* buffer);
 	void Write(size_t position, size_t count, char* buffer);
 	void GetMLen();
+
+	void RandIntByBytes(int& nr);
+	void RandByteByBytes(unsigned short& nr);
+	void RandReal48ByBytes(double& nr);
+	void RandBooleanByBytes(bool& nr);
+	void RandArrayByBytes(void* arr, size_t len);
+
 	long eofPos = 0;
 };

@@ -155,22 +155,21 @@ void Compiler::SetInpLongStr(LongStr* S, bool ShowErr)
 	InpRdbPos.i_rec = 0;
 }
 
-// vycte z CFile->TF blok dat
-// nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
 void Compiler::SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 {
-	LongStr* S = file_d->FF->TF->ReadLongStr(Pos);
+	std::string raw_data = file_d->FF->TF->Read(Pos);
+
 	if (Decode) {
-		Coding::CodingLongStr(file_d, S);
+		input_string = Coding::CodingString(file_d, raw_data);
 	}
-	input_string = std::string(S->A, S->LL);
+	else {
+		input_string = raw_data;
+	}
 
 	if (input_string.empty()) ForwChar = 0x1A;
 	else ForwChar = input_string[0];
 
 	input_pos = 0;
-
-	delete S; S = nullptr;
 }
 
 void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)

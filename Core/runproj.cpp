@@ -550,7 +550,7 @@ void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 		}
 	}
 
-	const int pos = ChptTF->Store((char*)text.c_str(), text.length());
+	const int pos = ChptTF->Store(text);
 
 	if (LicNr == 0) {
 		CFile->saveT(F, pos, CRecPtr);
