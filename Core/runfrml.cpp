@@ -2198,8 +2198,8 @@ std::string GetTxt(FileD* file_d, FrmlElem16* Z, void* record)
 	GetTxtPrepare(file_d, Z, &h, off, len, record);
 
 	if (len > MaxLStrLen) {
-		len = MaxLStrLen;
-		LastExitCode = 1;
+		//len = MaxLStrLen;
+		LastExitCode = 1; // text is long, but we can process it now -> only inform user
 	}
 
 	char* buffer = new char[len];

@@ -343,15 +343,13 @@ std::string FandTFile::Read(int32_t pos)
 					// max length has been exceeded
 					Err(891, false);
 				}
+				else if (len == MaxLStrLen + 1) {
+					s = ReadLongBuffer(pos);
+				}
 				else {
-					if (len == MaxLStrLen + 1) {
-						// 65001
-						len--;
-					}
-
-					const std::unique_ptr<char[]> data = std::make_unique_for_overwrite<char[]>(len);
-					Read(pos + 2, len, data.get());
-					s = std::string(data.get(), len);
+					const std::unique_ptr<uint8_t[]> data = std::make_unique_for_overwrite<uint8_t[]>(len);
+					ReadBuffer(pos + 2, len, data.get());
+					s = std::string((char*)data.get(), len);
 				}
 			}
 			break;
@@ -362,7 +360,7 @@ std::string FandTFile::Read(int32_t pos)
 			unsigned l = 0;
 			char* p = s->A;
 			int offset = 0;
-			
+
 			while (l <= 32768 - MPageSize) {
 				ReadData(pos, MPageSize, &p[offset]);
 				for (uint16_t i = 1; i <= MPageSize; i++) {
@@ -396,12 +394,41 @@ std::string FandTFile::Read(int32_t pos)
 	return s;
 }
 
-int32_t FandTFile::Store(const std::string& data)
+uint32_t FandTFile::GetLength(int32_t pos)
 {
-	char* s = (char*)data.c_str();
+	int32_t result;
+
+	pos -= LicenseNr;
+	if (pos <= 0) {
+		// OldTxt=-1 in RDB!
+		return 0;
+	}
+
+	unsigned short len; // length of data
+	ReadData(pos, 2, &len);
+
+	if (len > MaxLStrLen + 1) {
+		// max length has been exceeded
+		result = 0;
+		Err(891, false);
+		
+	}
+	else if (len == MaxLStrLen + 1) {
+		result = ReadLongBufferLength(pos);
+	}
+	else {
+		result = len;
+	}
+
+	return result;
+}
+
+uint32_t FandTFile::Store(const std::string& data)
+{
+	uint8_t* s = (uint8_t*)data.c_str();
 	size_t l = data.length();
 
-	int pos = 0;
+	uint32_t pos = 0;
 	char X[MPageSize + 1]{ 0 };
 	struct stFptD { int Typ = 0, Len = 0; } FptD;
 
@@ -414,38 +441,25 @@ int32_t FandTFile::Store(const std::string& data)
 	switch (Format) {
 	case T00Format: {
 		if (l > MaxLStrLen) {
-			l = MaxLStrLen;
-		}
-
-		if (l > MPageSize - 2) {
-			// long text
+			// >65000B
 			pos = NewPage(false);
+			WriteLongBuffer(pos, l, s);
+		}
+		else if (l > MPageSize - 2) {
+			// <65000B
+			pos = NewPage(false);
+			uint16_t data_len = (uint16_t)l;
+			WriteData(pos, 2, &data_len);
+			WriteBuffer(pos + 2, data_len, s);
 		}
 		else {
 			// short text
-			int rest = MPageSize - FreePart % MPageSize;
-
-			if (l + 2 <= rest) {
-				pos = FreePart;
-			}
-			else {
-				pos = NewPage(false);
-				FreePart = pos;
-				rest = MPageSize;
-			}
-
-			if (l + 4 >= rest) {
-				FreePart = NewPage(false);
-			}
-			else {
-				FreePart += l + 2;
-				rest = l + 4 - rest;
-				WriteData(FreePart, 2, &rest);
-			}
+			pos = PreparePositionForShortText(l);
+			uint16_t data_len = (uint16_t)l;
+			WriteData(pos, 2, &data_len);
+			WriteBuffer(pos + 2, data_len, s);
 		}
 
-		WriteData(pos, 2, &l);
-		Write(pos + 2, l, s);
 		break;
 	}
 	case DbtFormat: {
@@ -487,21 +501,24 @@ int32_t FandTFile::Store(const std::string& data)
 void FandTFile::Delete(int32_t pos)
 {
 	if (pos <= 0) return;
+
 	if ((Format != T00Format) || NotCached()) return;
+
 	if ((pos < MPageSize) || (pos >= MLen)) {
 		Err(889, false);
 		return;
 	}
 
 	SetUpdateFlag(); //SetUpdHandle(Handle);
+
 	if (pos < MPageSize || pos >= eofPos)
 		return;								// mimo datovou oblast souboru
 
-	unsigned char X[MPageSize]{ 0 };
-	int32_t posPg = pos & (0xFFFFFFFF << MPageShft);
+	uint8_t X[MPageSize]{ 0 };
+	int32_t page_pos = pos & (0xFFFFFFFF << MPageShft);
 	int32_t PosI = pos & (MPageSize - 1);
 
-	ReadData(posPg, MPageSize, X);
+	ReadData(page_pos, MPageSize, X);
 	void* wp = (unsigned short*)&X[PosI];
 	int32_t l = *(unsigned short*)wp;
 
@@ -510,23 +527,25 @@ void FandTFile::Delete(int32_t pos)
 		*(short*)&X[PosI] = (short)(-l);
 		int32_t N = 0;
 		wp = (short*)X;
+
 		while (N < MPageSize - 2) {
 			if (*(short*)wp > 0) {
 				memset(&X[PosI + 2], 0, l);
-				goto label1;
+				WriteData(page_pos, MPageSize, X);
+				return;
 			}
 			N = N - *(short*)wp + 2;
 			wp = (short*)&X[N];
 		}
-		if ((FreePart >= posPg) && (FreePart < posPg + MPageSize)) {
+
+		if ((FreePart >= page_pos) && (FreePart < page_pos + MPageSize)) {
 			memset(X, 0, MPageSize);
 			*(short*)X = -510;
-			FreePart = posPg;
-		label1:
-			WriteData(posPg, MPageSize, X);
+			FreePart = page_pos;
+			WriteData(page_pos, MPageSize, X);
 		}
 		else {
-			ReleasePage(posPg);
+			ReleasePage(page_pos);
 		}
 	}
 	else {
@@ -544,15 +563,15 @@ void FandTFile::Delete(int32_t pos)
 		const bool IsLongTxt = (l == MaxLStrLen + 1);
 		l += 2;
 	label4:
-		ReleasePage(posPg);
+		ReleasePage(page_pos);
 		if ((l > MPageSize) || IsLongTxt) {
-			posPg = *(__int32*)&X[MPageSize - 4];
+			page_pos = *(__int32*)&X[MPageSize - 4];
 
-			if ((posPg < MPageSize) || (posPg + MPageSize > MLen)) {
+			if ((page_pos < MPageSize) || (page_pos + MPageSize > MLen)) {
 				Err(888, false);
 				return;
 			}
-			ReadData(posPg, MPageSize, X);
+			ReadData(page_pos, MPageSize, X);
 			if (l <= MPageSize) {
 				goto label2;
 			}
@@ -578,16 +597,16 @@ void FandTFile::CloseFile()
 	}
 }
 
-void FandTFile::Read(size_t position, size_t count, char* buffer)
+uint32_t FandTFile::ReadBuffer(size_t position, size_t count, uint8_t* buffer)
 {
-	Logging* log = Logging::getInstance();
-	// log->log(loglevel::DEBUG, "FandTFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", position, count);
-	unsigned short L = 0;
-	int NxtPg = 0;
-	int offset = 0;
-	unsigned short Rest = MPageSize - (unsigned short(position) & (MPageSize - 1));
-	while (count > Rest) {
-		L = Rest - 4;
+	// position is after 2B length
+	uint16_t L = 0;
+	int32_t NxtPg = 0;
+	int32_t offset = 0;
+	uint16_t rest = MPageSize - (position & (MPageSize - 1));
+
+	while (count > rest) {
+		L = rest - 4;
 		ReadData(position, L, &buffer[offset]);
 		offset += L;
 		count -= L;
@@ -597,23 +616,107 @@ void FandTFile::Read(size_t position, size_t count, char* buffer)
 		if ((position < MPageSize) || (position + MPageSize > MLen)) {
 			Err(890, false);
 			memset(&buffer[offset], ' ', count);
-			return;
+			return 0;
 		}
-		Rest = MPageSize;
+		rest = MPageSize;
 	}
+
+	// read last page
 	ReadData(position, count, &buffer[offset]);
+	return position + count;
 }
 
-void FandTFile::Write(size_t position, size_t count, char* buffer)
+std::string FandTFile::ReadLongBuffer(uint32_t position)
 {
-	Logging* log = Logging::getInstance();
-	// log->log(loglevel::DEBUG, "FandTFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", position, count);
-	unsigned short L = 0;
-	int NxtPg = 0;
-	int offset = 0;
-	unsigned short Rest = MPageSize - (unsigned short(position) & (MPageSize - 1));
+	// position is on the beginning of page
+
+	std::string result;
+	uint8_t buffer[MaxLStrLen]{ 0 };
+
+	// read first 65000 bytes long block
+	uint32_t next_read_pos = ReadBuffer(position + 2, MaxLStrLen, buffer);
+	result += std::string((char*)buffer, MaxLStrLen);
+
+	// read next blocks
+	while (true) {
+		// is there enough space to read address of next block?
+		uint16_t rest = MPageSize - (next_read_pos & (MPageSize - 1));
+		if (rest >= 4) {
+			ReadData(next_read_pos, 4, &next_read_pos);
+		}
+		else {
+			throw("FandTFile::ReadLongBuffer: there is not enough space to read address");
+		}
+
+		// get length of next section
+		uint16_t data_len;
+		ReadData(next_read_pos, 2, &data_len);
+
+		if (data_len == MaxLStrLen + 1) {
+			next_read_pos = ReadBuffer(next_read_pos + 2, MaxLStrLen, buffer);
+			result += std::string((char*)buffer, MaxLStrLen);
+		}
+		else {
+			// this is the last segment
+			next_read_pos = ReadBuffer(next_read_pos + 2, data_len, buffer);
+			result += std::string((char*)buffer, data_len);
+			break;
+		}
+	}
+
+	return result;
+}
+
+uint32_t FandTFile::ReadLongBufferLength(uint32_t position)
+{
+	// position is on the beginning of page
+	uint32_t page_pos = position;
+	uint32_t result = 0;
+
+	// read next blocks
+	while (true) {
+		// get length of next section
+		uint16_t data_len;
+		ReadData(page_pos, 2, &data_len);
+
+		if (data_len == MaxLStrLen + 1) {
+			data_len = MaxLStrLen;
+			uint16_t to_read = MaxLStrLen + 2; // first page is 2B smaller because contains length
+
+			while (to_read > MPageSize - 4) {
+				// read next page position (last 4B of the page)
+				ReadData(page_pos + MPageSize - 4, 4, &page_pos);
+				if ((page_pos < MPageSize) || (page_pos + MPageSize > MLen)) {
+					Err(890, false);
+					return 0;
+				}
+				to_read -= MPageSize - 4;
+			}
+
+			// points to the last page -> read next segment position
+			ReadData(page_pos + to_read, 4, &page_pos);
+			result += data_len; // +65000
+		}
+		else {
+			// this is the last segment
+			result += data_len;
+			break;
+		}
+	}
+
+	return result;
+}
+
+uint32_t FandTFile::WriteBuffer(size_t position, size_t count, uint8_t* buffer)
+{
+	// position is after 2B length
+	uint16_t L = 0;
+	int32_t NxtPg = 0;
+	int32_t offset = 0;
+	uint16_t Rest = MPageSize - (position & (MPageSize - 1));
+
 	while (count > Rest) {
-		L = Rest - 4;
+		L = Rest - 4;  // 4B next page
 		WriteData(position, L, &buffer[offset]);
 		offset += L;
 		count -= L;
@@ -622,7 +725,74 @@ void FandTFile::Write(size_t position, size_t count, char* buffer)
 		position = NxtPg;
 		Rest = MPageSize;
 	}
+
+	// write last page
 	WriteData(position, count, &buffer[offset]);
+	return position + count;
+}
+
+void FandTFile::WriteLongBuffer(size_t position, size_t count, uint8_t* buffer)
+{
+	// position is on the beginning of page
+	const uint16_t L_LEN = MaxLStrLen + 1;
+	uint32_t next_page_pos = 0;
+
+	// write first 65000 bytes long block
+	size_t offset = 0;
+	WriteData(position, 2, (void*)&L_LEN);
+	uint32_t next_free_space = WriteBuffer(position + 2, MaxLStrLen, &buffer[offset]);
+	offset += MaxLStrLen;
+
+	// write next blocks
+	while (offset < count) {
+		// is there enough space to write address of next block?
+		uint16_t rest = MPageSize - (next_free_space & (MPageSize - 1));
+		if (rest >= 4) {
+			next_page_pos = NewPage(false);
+			WriteData(next_free_space, 4, &next_page_pos);
+		}
+		else {
+			throw("FandTFile::WriteLongBuffer: there is not enough space to write address");
+		}
+
+		size_t remains = count - offset;
+		if (remains > MaxLStrLen) {
+			WriteData(next_page_pos, 2, (void*)&L_LEN);
+		}
+		else {
+			uint16_t last_length = (uint16_t)remains;
+			WriteData(next_page_pos, 2, &last_length);
+		}
+
+		next_free_space = WriteBuffer(next_page_pos + 2, remains, &buffer[offset]);
+		offset += remains;
+	}
+}
+
+int32_t FandTFile::PreparePositionForShortText(size_t l)
+{
+	int32_t pos;
+	int rest = MPageSize - FreePart % MPageSize;
+
+	if (l + 2 <= rest) {
+		pos = FreePart;
+	}
+	else {
+		pos = NewPage(false);
+		FreePart = pos;
+		rest = MPageSize;
+	}
+
+	if (l + 4 >= rest) {
+		FreePart = NewPage(false);
+	}
+	else {
+		FreePart += l + 2;
+		rest = l + 4 - rest;
+		WriteData(FreePart, 2, &rest);
+	}
+
+	return pos;
 }
 
 int FandTFile::NewPage(bool NegL)
@@ -630,26 +800,30 @@ int FandTFile::NewPage(bool NegL)
 	int PosPg;
 	unsigned char X[MPageSize]{ 0 };
 	int* L = (int*)&X;
+
 	if (FreeRoot != 0) {
 		PosPg = FreeRoot << MPageShft;
 		ReadData(PosPg, 4, &FreeRoot);
+
 		if (FreeRoot > MaxPage) {
 			Err(888, false);
 			FreeRoot = 0;
-			goto label1;
+			MaxPage++;
+			MLen += MPageSize;
+			PosPg = MaxPage << MPageShft;
+			eofPos += MPageSize;
 		}
 	}
 	else {
-	label1:
 		MaxPage++;
 		MLen += MPageSize;
 		PosPg = MaxPage << MPageShft;
-		//pos = eofPos;			// NE
-		eofPos += MPageSize;		// prodlouzim soubor o logickou stranku
-		//TruncH(this->Handle, eofPos);			// kvuli FANDu i o fyzickou
+		eofPos += MPageSize;
 	}
-	//FillChar(X, MPageSize, 0); 
-	if (NegL) *L = -510;
+
+	if (NegL) {
+		*L = -510;
+	}
 	WriteData(PosPg, MPageSize, X);
 	return PosPg;
 }
