@@ -46,19 +46,18 @@ public:
 	void WrPrefix();
 	void SetEmpty();
 	void Create(const std::string& path);
-	int NewPage(bool NegL);
-	void ReleasePage(int PosPg);
+	void CloseFile();
 
 	std::string Read(int32_t pos);
-	int Store(const std::string& s);
+	int32_t Store(const std::string& s);
 	void Delete(int32_t pos);
-
-	void CloseFile();
 
 private:
 	Fand0File* _parent;
 	void Read(size_t position, size_t count, char* buffer);
 	void Write(size_t position, size_t count, char* buffer);
+	int NewPage(bool NegL);
+	void ReleasePage(int PosPg);
 	void GetMLen();
 
 	void RandIntByBytes(int& nr);

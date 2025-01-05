@@ -321,43 +321,6 @@ void FandTFile::Create(const std::string& path)
 	SetEmpty();
 }
 
-int FandTFile::NewPage(bool NegL)
-{
-	int PosPg;
-	unsigned char X[MPageSize]{ 0 };
-	int* L = (int*)&X;
-	if (FreeRoot != 0) {
-		PosPg = FreeRoot << MPageShft;
-		ReadData(PosPg, 4, &FreeRoot);
-		if (FreeRoot > MaxPage) {
-			Err(888, false);
-			FreeRoot = 0;
-			goto label1;
-		}
-	}
-	else {
-	label1:
-		MaxPage++;
-		MLen += MPageSize;
-		PosPg = MaxPage << MPageShft;
-		//pos = eofPos;			// NE
-		eofPos += MPageSize;		// prodlouzim soubor o logickou stranku
-		//TruncH(this->Handle, eofPos);			// kvuli FANDu i o fyzickou
-	}
-	//FillChar(X, MPageSize, 0); 
-	if (NegL) *L = -510;
-	WriteData(PosPg, MPageSize, X);
-	return PosPg;
-}
-
-void FandTFile::ReleasePage(int PosPg)
-{
-	unsigned char X[MPageSize]{ 0 };
-	*(int32_t*)X = FreeRoot;
-	WriteData(PosPg, MPageSize, X);
-	FreeRoot = PosPg >> MPageShft;
-}
-
 std::string FandTFile::Read(int32_t pos)
 {
 	std::string s;
@@ -660,6 +623,43 @@ void FandTFile::Write(size_t position, size_t count, char* buffer)
 		Rest = MPageSize;
 	}
 	WriteData(position, count, &buffer[offset]);
+}
+
+int FandTFile::NewPage(bool NegL)
+{
+	int PosPg;
+	unsigned char X[MPageSize]{ 0 };
+	int* L = (int*)&X;
+	if (FreeRoot != 0) {
+		PosPg = FreeRoot << MPageShft;
+		ReadData(PosPg, 4, &FreeRoot);
+		if (FreeRoot > MaxPage) {
+			Err(888, false);
+			FreeRoot = 0;
+			goto label1;
+		}
+	}
+	else {
+	label1:
+		MaxPage++;
+		MLen += MPageSize;
+		PosPg = MaxPage << MPageShft;
+		//pos = eofPos;			// NE
+		eofPos += MPageSize;		// prodlouzim soubor o logickou stranku
+		//TruncH(this->Handle, eofPos);			// kvuli FANDu i o fyzickou
+	}
+	//FillChar(X, MPageSize, 0); 
+	if (NegL) *L = -510;
+	WriteData(PosPg, MPageSize, X);
+	return PosPg;
+}
+
+void FandTFile::ReleasePage(int PosPg)
+{
+	unsigned char X[MPageSize]{ 0 };
+	*(int32_t*)X = FreeRoot;
+	WriteData(PosPg, MPageSize, X);
+	FreeRoot = PosPg >> MPageShft;
 }
 
 void FandTFile::GetMLen()
