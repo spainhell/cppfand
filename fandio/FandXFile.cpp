@@ -6,14 +6,15 @@
 #include "../Core/FileD.h"
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
-#include "XWorkFile.h"
+#include "../Core/obaseww.h"
 
 
-FandXFile::FandXFile(Fand0File* parent): XWFile(parent)
+FandXFile::FandXFile(Fand0File* parent) //: XWFile(parent)
 {
+	_parent = parent;
 }
 
-FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent): XWFile(parent)
+FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent) //: XWFile(parent)
 {
 	NRecs = orig.NRecs;
 	NRecsAbs = orig.NRecsAbs;
@@ -82,6 +83,18 @@ void FandXFile::SetNotValid(int recs, unsigned char keys)
 	SaveCache(0, _parent->Handle);
 }
 
+void FandXFile::TestErr()
+{
+	if (HandleError != 0) {
+		Err(700 + HandleError);
+	}
+}
+
+int FandXFile::UsedFileSize()
+{
+	return (MaxPage + 1) << XPageShft;
+}
+
 void FandXFile::ClearUpdLock()
 {
 	UpdLockCnt = 0;
@@ -117,5 +130,31 @@ void FandXFile::CloseFile()
 				MyDeleteFile(CPath);
 			}
 		}
+	}
+}
+
+void FandXFile::WrPage(XPage* P, int pageNr, bool serialize)
+{
+	if (serialize) {
+		P->Serialize();
+	}
+	if (UpdLockCnt > 0) Err(645);
+	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
+	WriteData(pageNr << XPageShft, 1, &P->IsLeaf);
+	WriteData((pageNr << XPageShft) + 1, 4, &P->GreaterPage);
+	WriteData((pageNr << XPageShft) + 5, 2, &P->NItems);
+	WriteData((pageNr << XPageShft) + 7, XPageSize - 7, P->A);
+}
+
+void FandXFile::Err(unsigned short N)
+{
+	if (_parent == XWork.GetParent()) {
+		SetMsgPar(FandWorkXName);
+		RunError(N);
+	}
+	else {
+		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
+		FileMsg(_parent->GetFileD(), N, 'X');
+		CloseGoExit(_parent);
 	}
 }

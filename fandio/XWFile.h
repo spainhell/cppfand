@@ -23,6 +23,7 @@ public:
 	void WrPage(XXPage* p, int pageNr);
 	int NewPage(XPage* P);
 	void ReleasePage(XPage* P, int N);
+	Fand0File* GetParent();
 
 protected:
 	Fand0File* _parent;

@@ -110,3 +110,8 @@ void XWFile::ReleasePage(XPage* P, int N)
 	//FreeRoot = N;
 	//WrPage(P, N);
 }
+
+Fand0File* XWFile::GetParent()
+{
+	return _parent;
+}

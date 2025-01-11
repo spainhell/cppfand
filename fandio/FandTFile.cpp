@@ -116,11 +116,14 @@ void FandTFile::RdPrefix(bool check)
 	MaxPage = T.MaxPage; // 4B
 	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
 
-	if (!IsWork
-		&& (_parent->GetFileD() == Chpt)
-		&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(Version, T.Version, 4) != _equ))) {
-		CompileAll = true;
-	}
+	if (!IsWork) { CompileAll = true; }
+
+	//if (!IsWork
+	//	&& (_parent->GetFileD() == Chpt)
+	//	&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(Version, T.Version, 4) != _equ))) {
+	//	CompileAll = true;
+	//}
+
 	if (T.old_max_page == 0xffff) {
 		GetMLen();
 		ML = MLen;
@@ -142,10 +145,12 @@ void FandTFile::RdPrefix(bool check)
 			if (!check) FS = ML;
 		}
 	}
+
 	if (IRec >= 0x6000) {
 		IRec = IRec - 0x2000;
 		if (!IsWork && (_parent->file_type == FileType::RDB)) LicenseNr = T.LicNr;
 	}
+
 	if (IRec >= 0x4000) {
 		IRec = IRec - 0x4000;
 		RandSeed = ML + T.Time;
@@ -174,8 +179,10 @@ void FandTFile::RdPrefix(bool check)
 		PwCode = std::string(&T.PwNew[0], 20);
 		Pw2Code = std::string(&T.PwNew[20], 20);
 	}
+
 	PwCode = Coding::Code(PwCode);
 	Pw2Code = Coding::Code(Pw2Code);
+
 	if ((FreePart < MPageSize) || (FreePart > ML) || (FS < ML) ||
 		(FreeRoot > MaxPage) || (MaxPage == 0)) {
 		Err(893, false);
@@ -185,6 +192,7 @@ void FandTFile::RdPrefix(bool check)
 		FreePart = NewPage(true);
 		SetUpdateFlag(); //SetUpdHandle(Handle);
 	}
+
 	eofPos = (MaxPage + 1) * MPageSize;
 	srand(RS);
 }
