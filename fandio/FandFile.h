@@ -19,7 +19,7 @@ public:
 	bool HasUpdateFlag() const;
 
 protected:
-	bool _updateFlag;
+	bool update_flag;
 
 private:
 	size_t ReadWriteData(FileOperation operation, size_t position, size_t count, void* buf) const;

@@ -7,7 +7,7 @@
 FandFile::FandFile()
 {
 	Handle = nullptr;
-	_updateFlag = false;
+	update_flag = false;
 }
 
 FandFile::~FandFile()
@@ -26,17 +26,17 @@ size_t FandFile::WriteData(size_t position, size_t count, void* buf)
 
 void FandFile::SetUpdateFlag()
 {
-	_updateFlag = true;
+	update_flag = true;
 }
 
 void FandFile::ClearUpdateFlag()
 {
-	_updateFlag = false;
+	update_flag = false;
 }
 
 bool FandFile::HasUpdateFlag() const
 {
-	return _updateFlag;
+	return update_flag;
 }
 
 size_t FandFile::ReadWriteData(FileOperation operation, size_t position, size_t count, void* buf) const

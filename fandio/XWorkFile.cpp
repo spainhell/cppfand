@@ -17,6 +17,13 @@ XWorkFile::XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK)
 	xwFile = AK[0]->GetXFile(parent);
 }
 
+XWorkFile::~XWorkFile()
+{
+	MaxWSize = WBaseSize;
+	TruncF(Handle, HandleError, MaxWSize);
+	FlushF(Handle, HandleError);
+}
+
 void XWorkFile::Main(char Typ, void* record)
 {
 	xPage = new XPage();

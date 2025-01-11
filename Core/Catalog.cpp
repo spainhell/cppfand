@@ -124,32 +124,36 @@ FieldDescr* Catalog::CatalogVolumeField()
 	return cat_volume_;
 }
 
-bool Catalog::OldToNewCat(int& FilSz)
+bool Catalog::OldToNewCat(int& file_size)
 {
-	struct stX { int NRecs; WORD  RecLen; } x;
-	int off, offNew;
-	uint8_t a[91]; // budeme cislovat od 1, jako v Pascalu (a:array[1..90] of byte;)
+	struct stX { int32_t NRecs; uint16_t RecLen; } x;
+	uint8_t buf[512];
 
-	auto result = false;
-	bool cached = cat_file_->FF->NotCached();
-	if (cat_file_->FF->file_type != FileType::CAT) return result;
-	cat_file_->FF->ReadData(0, 6, &x); //ReadCache(cat_file_->FF, cached, 0, 6, &x);
-	if (x.RecLen != 106) return result;
+	if (cat_file_->FF->file_type != FileType::CAT) return false;
+
+	cat_file_->FF->ReadData(0, 4, &x.NRecs);
+	cat_file_->FF->ReadData(4, 2, &x.RecLen);
+
+	if (x.RecLen != 106) return false;
+
 	x.RecLen = 107;
-	cat_file_->FF->WriteData(0, 6, &x); //WriteCache(cat_file_->FF, cached, 0, 6, &x);
-	for (int i = x.NRecs; i >= 1; i--) {
-		off = 6 + (i - 1) * 106;
-		offNew = off + (i - 1);
-		cat_file_->FF->ReadData(off + 16, 90, a); //ReadCache(cat_file_->FF, cached, off + 16, 90, a);
-		cat_file_->FF->WriteData(offNew + 17, 90, a); //WriteCache(cat_file_->FF, cached, offNew + 17, 90, a);
-		a[17] = 0;
-		cat_file_->FF->ReadData(off, 16, a); //ReadCache(cat_file_->FF, cached, off, 16, a);
-		cat_file_->FF->WriteData(offNew, 17, a); //WriteCache(cat_file_->FF, cached, offNew, 17, a);
+	cat_file_->FF->WriteData(0, 4, &x.NRecs);
+	cat_file_->FF->WriteData(4, 2, &x.RecLen);
+
+	for (int32_t i = x.NRecs; i >= 1; i--) {
+		int32_t off = 6 + (i - 1) * 106;
+		int32_t offNew = off + (i - 1);
+		cat_file_->FF->ReadData(off + 16, 90, buf);
+		cat_file_->FF->WriteData(offNew + 17, 90, buf);
+		buf[17] = 0;
+		cat_file_->FF->ReadData(off, 16, buf);
+		cat_file_->FF->WriteData(offNew, 17, buf);
 	}
+
 	cat_file_->FF->NRecs = x.NRecs;
-	FilSz = x.NRecs * 107 + 6;
-	result = true;
-	return result;
+	file_size = x.NRecs * 107 + 6;
+
+	return true;
 }
 
 int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)

@@ -8,6 +8,7 @@ class XWorkFile
 {
 public:
 	XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK);
+	~XWorkFile();
 
 	HANDLE Handle = nullptr;
 	unsigned short RecLen = 0, MaxOnWPage = 0, WPageSize = 0;

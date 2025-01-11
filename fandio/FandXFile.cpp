@@ -9,15 +9,12 @@
 #include "../Core/obaseww.h"
 
 
-FandXFile::FandXFile(Fand0File* parent) //: XWFile(parent)
+FandXFile::FandXFile(Fand0File* parent)
 {
-	if (parent == nullptr) {
-		RunError(903);
-	}
 	_parent = parent;
 }
 
-FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent) //: XWFile(parent)
+FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent)
 {
 	_parent = parent;
 	NRecs = orig.NRecs;
@@ -107,13 +104,23 @@ void FandXFile::ClearUpdLock()
 int FandXFile::XFNotValid(int recs, unsigned char keys)
 {
 	if (Handle == nullptr) {
-		//RunError(903);
+		RunError(903);
 		return 903;
 	}
 	else {
 		SetNotValid(recs, keys);
 		return 0;
 	}
+}
+
+bool FandXFile::Cached() const
+{
+	return !NotCached();
+}
+
+bool FandXFile::NotCached() const
+{
+	return (this != &XWork) && _parent->NotCached();
 }
 
 void FandXFile::CloseFile()

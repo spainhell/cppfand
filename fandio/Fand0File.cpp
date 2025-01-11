@@ -623,7 +623,7 @@ void Fand0File::WrPrefix()
 	struct { int NRs; unsigned short RLen; } Pfx6 = { 0, 0 };
 	struct { unsigned short NRs; unsigned short RLen; } Pfx8 = { 0, 0 };
 
-	if (_updateFlag) {
+	if (update_flag) {
 		const bool not_cached = NotCached();
 		switch (file_type) {
 		case FileType::FAND8: {
@@ -650,7 +650,7 @@ void Fand0File::WrPrefix()
 
 void Fand0File::WrPrefixes()
 {
-	if (_updateFlag) {
+	if (update_flag) {
 		WrPrefix();
 	}
 
@@ -661,7 +661,7 @@ void Fand0File::WrPrefixes()
 	if (file_type == FileType::INDEX 
 		&& XF->Handle != nullptr
 		/*{ call from CopyDuplF }*/
-		&& (XF->HasUpdateFlag() || _updateFlag)) {
+		&& (XF->HasUpdateFlag() || update_flag)) {
 		XF->WrPrefix(NRecs, _parent->GetNrKeys());
 	}
 }
@@ -716,7 +716,7 @@ LockMode Fand0File::RewriteFile(bool append)
 
 void Fand0File::ClearUpdateFlag()
 {
-	_updateFlag = false;
+	update_flag = false;
 
 	if (file_type == FileType::INDEX) {
 		XF->ClearUpdateFlag();
@@ -1342,7 +1342,10 @@ void Fand0File::IndexFileProc(bool Compress)
 		}
 		SubstDuplF(FD2, false);
 		NRecs = FD2->FF->NRecs;
-		XFNotValid();
+		int xf_res = XFNotValid();
+		if (xf_res != 0) {
+			RunError(xf_res);
+		}
 		delete FD2; FD2 = nullptr;
 	}
 	XF->NoCreate = false;

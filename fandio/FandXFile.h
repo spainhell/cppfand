@@ -33,6 +33,8 @@ public:
 	int UsedFileSize();
 	void ClearUpdLock();
 	int32_t XFNotValid(int recs, unsigned char keys);
+	bool Cached() const;
+	bool NotCached() const;
 	void CloseFile();
 
 	void RdPage(XPage* P, int pageNr);
