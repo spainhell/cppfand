@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "Rdb.h"
 #include "../fandio/Fand0File.h"
 
@@ -54,6 +56,7 @@ public:
 	size_t WriteRec(size_t rec_nr, void* record) const;
 
 	uint8_t* GetRecSpace() const;
+	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
 
 	// delete 'T' from working file if exists
 	void ClearRecSpace(void* record);

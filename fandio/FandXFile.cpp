@@ -11,11 +11,15 @@
 
 FandXFile::FandXFile(Fand0File* parent) //: XWFile(parent)
 {
+	if (parent == nullptr) {
+		RunError(903);
+	}
 	_parent = parent;
 }
 
 FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent) //: XWFile(parent)
 {
+	_parent = parent;
 	NRecs = orig.NRecs;
 	NRecsAbs = orig.NRecsAbs;
 	NotValid = orig.NotValid;
@@ -133,6 +137,18 @@ void FandXFile::CloseFile()
 	}
 }
 
+void FandXFile::RdPage(XPage* P, int pageNr)
+{
+	P->Clean();
+	if ((pageNr == 0) || (pageNr > MaxPage)) Err(831);
+	// puvodne se nacitalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
+	ReadData(pageNr << XPageShft, 1, &P->IsLeaf);
+	ReadData((pageNr << XPageShft) + 1, 4, &P->GreaterPage);
+	ReadData((pageNr << XPageShft) + 5, 2, &P->NItems);
+	ReadData((pageNr << XPageShft) + 7, XPageSize - 7, P->A);
+	P->Deserialize();
+}
+
 void FandXFile::WrPage(XPage* P, int pageNr, bool serialize)
 {
 	if (serialize) {
@@ -146,9 +162,45 @@ void FandXFile::WrPage(XPage* P, int pageNr, bool serialize)
 	WriteData((pageNr << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
+void FandXFile::WrPage(XXPage* p, int pageNr)
+{
+	if (UpdLockCnt > 0) Err(645);
+	WriteData(pageNr << XPageShft, 1, &p->IsLeaf);
+	WriteData((pageNr << XPageShft) + 1, 4, &p->GreaterPage);
+	WriteData((pageNr << XPageShft) + 5, 2, &p->NItems);
+	WriteData((pageNr << XPageShft) + 7, XPageSize - 7, p->A);
+}
+
+int FandXFile::NewPage(XPage* P)
+{
+	int result = 0;
+	if (FreeRoot != 0) {
+		result = FreeRoot;
+		RdPage(P, FreeRoot);
+		FreeRoot = P->GreaterPage;
+	}
+	else {
+		MaxPage++;
+		if (MaxPage > 0x1fffff) {
+			Err(887);
+		}
+		result = MaxPage;
+	}
+	P->Clean();
+	return result;
+}
+
+void FandXFile::ReleasePage(XPage* P, int N)
+{
+	P->Clean();
+	P->GreaterPage = FreeRoot;
+	FreeRoot = N;
+	WrPage(P, N);
+}
+
 void FandXFile::Err(unsigned short N)
 {
-	if (_parent == XWork.GetParent()) {
+	if (this == &XWork) {
 		SetMsgPar(FandWorkXName);
 		RunError(N);
 	}

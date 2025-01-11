@@ -29,7 +29,7 @@ extern FileD* HelpFD;
 // r483
 extern structXPath XPath[20];
 extern WORD XPathN;
-extern XWFile XWork;
+extern FandXFile XWork;
 extern FandTFile TWork;
 extern int ClpBdPos;
 extern bool IsTestRun;

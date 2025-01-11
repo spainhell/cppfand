@@ -173,7 +173,6 @@
     <ClInclude Include="locks.h" />
     <ClInclude Include="sort.h" />
     <ClInclude Include="TextFile.h" />
-    <ClInclude Include="WorkFile.h" />
     <ClInclude Include="WPage.h" />
     <ClInclude Include="WRec.h" />
     <ClInclude Include="XItem.h" />
@@ -183,7 +182,6 @@
     <ClInclude Include="XPage.h" />
     <ClInclude Include="XScan.h" />
     <ClInclude Include="XString.h" />
-    <ClInclude Include="XWFile.h" />
     <ClInclude Include="XWKey.h" />
     <ClInclude Include="XWorkFile.h" />
     <ClInclude Include="XXPage.h" />
@@ -203,7 +201,6 @@
     <ClCompile Include="locks.cpp" />
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="TextFile.cpp" />
-    <ClCompile Include="WorkFile.cpp" />
     <ClCompile Include="WPage.cpp" />
     <ClCompile Include="WRec.cpp" />
     <ClCompile Include="XItem.cpp" />
@@ -213,7 +210,6 @@
     <ClCompile Include="XPage.cpp" />
     <ClCompile Include="XScan.cpp" />
     <ClCompile Include="XString.cpp" />
-    <ClCompile Include="XWFile.cpp" />
     <ClCompile Include="XWKey.cpp" />
     <ClCompile Include="XWorkFile.cpp" />
     <ClCompile Include="XXPage.cpp" />

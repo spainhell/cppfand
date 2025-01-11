@@ -116,13 +116,13 @@ void FandTFile::RdPrefix(bool check)
 	MaxPage = T.MaxPage; // 4B
 	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
 
-	if (!IsWork) { CompileAll = true; }
+	//if (!IsWork) { CompileAll = true; }
 
-	//if (!IsWork
-	//	&& (_parent->GetFileD() == Chpt)
-	//	&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(Version, T.Version, 4) != _equ))) {
-	//	CompileAll = true;
-	//}
+	if (!IsWork
+		&& (_parent->GetFileD() == Chpt)
+		&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(Version, T.Version, 4) != _equ))) {
+		CompileAll = true;
+	}
 
 	if (T.old_max_page == 0xffff) {
 		GetMLen();

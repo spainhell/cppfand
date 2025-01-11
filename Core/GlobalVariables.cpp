@@ -23,7 +23,7 @@ std::string LockModeTxt[9] = { "NULL", "NOEXCL", "NODEL", "NOCR", "RD", "WR", "C
 structXPath XPath[20];
 WORD XPathN;
 
-XWFile XWork(nullptr);
+FandXFile XWork(nullptr);
 FandTFile TWork(nullptr);
 int ClpBdPos = 0;
 bool IsTestRun = false;

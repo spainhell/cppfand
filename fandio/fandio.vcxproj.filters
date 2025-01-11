@@ -51,9 +51,6 @@
     <ClInclude Include="XString.h">
       <Filter>Header Files\Indexes</Filter>
     </ClInclude>
-    <ClInclude Include="XWFile.h">
-      <Filter>Header Files\Indexes</Filter>
-    </ClInclude>
     <ClInclude Include="XWKey.h">
       <Filter>Header Files\Indexes</Filter>
     </ClInclude>
@@ -64,9 +61,6 @@
       <Filter>Header Files\Indexes</Filter>
     </ClInclude>
     <ClInclude Include="sort.h">
-      <Filter>Header Files\Indexes</Filter>
-    </ClInclude>
-    <ClInclude Include="WorkFile.h">
       <Filter>Header Files\Indexes</Filter>
     </ClInclude>
     <ClInclude Include="WPage.h">
@@ -137,9 +131,6 @@
     <ClCompile Include="sort.cpp">
       <Filter>Source Files\Indexes</Filter>
     </ClCompile>
-    <ClCompile Include="WorkFile.cpp">
-      <Filter>Source Files\Indexes</Filter>
-    </ClCompile>
     <ClCompile Include="WPage.cpp">
       <Filter>Source Files\Indexes</Filter>
     </ClCompile>
@@ -165,9 +156,6 @@
       <Filter>Source Files\Indexes</Filter>
     </ClCompile>
     <ClCompile Include="XString.cpp">
-      <Filter>Source Files\Indexes</Filter>
-    </ClCompile>
-    <ClCompile Include="XWFile.cpp">
       <Filter>Source Files\Indexes</Filter>
     </ClCompile>
     <ClCompile Include="XWKey.cpp">

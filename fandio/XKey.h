@@ -2,6 +2,7 @@
 #include <string>
 #include "XString.h"
 
+class FandXFile;
 class FileD;
 class XWFile;
 class XPage;
@@ -21,7 +22,7 @@ public:
 	unsigned char IndexLen = 0;
 	int NR = 0; // { used only by XWKey }
 
-	XWFile* GetXFile(FileD* file_d);
+	FandXFile* GetXFile(FileD* file_d);
 	int NRecs();
 	bool Search(FileD* file_d, XString& XX, bool AfterEqu, int& RecNr);
 	bool Search(FileD* file_d, std::string X, bool AfterEqu, int& RecNr);

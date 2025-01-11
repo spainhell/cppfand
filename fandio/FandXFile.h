@@ -1,5 +1,11 @@
 #pragma once
-#include "XWFile.h"
+
+#include <cstdint>
+#include "FandFile.h"
+#include "XPage.h"
+#include "XXPage.h"
+
+class Fand0File;
 
 class FandXFile : public FandFile
 {
@@ -7,7 +13,7 @@ public:
 	FandXFile(Fand0File* parent);
 	FandXFile(const FandXFile& orig) = delete;
 	FandXFile(const FandXFile& orig, Fand0File* parent);
-	~FandXFile(); //override;
+	~FandXFile() override;
 
 	int32_t NRecs = 0;     // valid records count
 	int32_t NRecsAbs = 0;  // all record count (include deleted from .000 file)
@@ -29,10 +35,15 @@ public:
 	int32_t XFNotValid(int recs, unsigned char keys);
 	void CloseFile();
 
+	void RdPage(XPage* P, int pageNr);
+	void WrPage(XPage* P, int pageNr, bool serialize = true);
+	void WrPage(XXPage* p, int pageNr);
+	int NewPage(XPage* P);
+	void ReleasePage(XPage* P, int N);
+
+	void Err(unsigned short N);
+
 private:
 	Fand0File* _parent;
-
-	void WrPage(XPage* P, int pageNr, bool serialize = true);
-	void Err(unsigned short N);
 };
 

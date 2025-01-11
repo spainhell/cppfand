@@ -1,6 +1,5 @@
 #include "XXPage.h"
 
-#include "XWFile.h"
 #include "XWorkFile.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"

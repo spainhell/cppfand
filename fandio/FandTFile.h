@@ -2,8 +2,6 @@
 #include <string>
 
 #include "FandFile.h"
-#include "../Common/FileEnums.h"
-#include "../Common/LongStr.h"
 
 typedef void* HANDLE;
 class Fand0File;

@@ -911,13 +911,11 @@ int Fand0File::CreateIndexFile()
 		if (XF->NotValid) {
 			XF->SetEmpty(NRecs, _parent->GetNrKeys());
 			std::vector<KeyInD*> empty;
-			XScan* scan = new XScan(_parent, nullptr, empty, false);
-			BYTE* record = _parent->GetRecSpace();
-			scan->Reset(nullptr, false, record);
-			XWorkFile* XW = new XWorkFile(_parent, scan, _parent->Keys);
-			XW->Main('X', record);
-			delete[] record; record = nullptr;
-			delete XW; XW = nullptr;
+			std::unique_ptr<XScan> scan = std::make_unique<XScan>(_parent, nullptr, empty, false);
+			std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
+			scan->Reset(nullptr, false, record.get());
+			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys);
+			XW->Main('X', record.get());
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
 			if (!SaveCache(0, Handle)) GoExit(MsgLine);
@@ -1137,13 +1135,11 @@ void Fand0File::GenerateNew000File(XScan* x, void* record)
 
 void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 {
-	BYTE* record = _parent->GetRecSpace();
 	std::vector<XKey*> xw_keys;
 	xw_keys.push_back(K);
-	XWorkFile* XW = new XWorkFile(_parent, Scan, xw_keys);
-	XW->Main(Typ, record);
-	delete XW; XW = nullptr;
-	delete[] record; record = nullptr;
+	std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
+	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys);
+	XW->Main(Typ, record.get());
 }
 
 void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ)
