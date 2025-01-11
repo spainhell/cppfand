@@ -110,6 +110,17 @@ uint8_t* FileD::GetRecSpace() const
 	return result;
 }
 
+std::unique_ptr<uint8_t[]> FileD::GetRecSpaceUnique() const
+{
+	size_t length = FF->RecLen + 2;
+	// 0. BYTE in front (.X00) -> Valid Record Flag (but it's calculated in RecLen for index file)
+	// 1. BYTE in the end -> Work Flag
+	// 2. BYTE in the end -> Update Flag
+	std::unique_ptr<uint8_t[]> result(new uint8_t[length]);
+	memset(result.get(), '\0', length);
+	return result;
+}
+
 /// <summary>
 /// Deletes all text fields in the record from the TWork file
 /// </summary>

@@ -36,7 +36,7 @@ XKey::XKey(const XKey& orig)
  * \brief Returns working or regular index file
  * \return Pointer to working or regular index file
  */
-XWFile* XKey::GetXFile(FileD* file_d)
+FandXFile* XKey::GetXFile(FileD* file_d)
 {
 	if (InWork) return &XWork;
 	return file_d->FF->XF;

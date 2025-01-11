@@ -31,7 +31,7 @@ public:
 	FieldDescr* CatalogPathNameField();
 	FieldDescr* CatalogVolumeField();
 
-	bool OldToNewCat(int& FilSz);
+	bool OldToNewCat(int& file_size);
 
 	int GetCatalogIRec(const std::string& name, bool multilevel);
 	void GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std::string& volume) const;

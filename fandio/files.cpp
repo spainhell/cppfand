@@ -134,72 +134,10 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 	return result;
 }
 
-bool OpenF2(FileD* file_d, const std::string& path)
+void check_T_file(FileD* file_d, int file_size)
 {
-	wwmix ww;
-	
-	LockMode md = NullMode;
-	int FS = FileSizeH(file_d->FF->Handle);
-	file_d->FF->NRecs = 0;
-
-	bool result = false;
-	int n;
-	WORD rLen;
-
-	if (FS < file_d->FF->FirstRecPos) {
-		goto label1;
-	}
-
-	rLen = file_d->FF->RdPrefix();
-	n = (FS - file_d->FF->FirstRecPos) / file_d->FF->RecLen;
-	
-
-	if (rLen != 0xffff) {
-		if (file_d->IsDynFile) {
-			file_d->FF->Close(); //CloseClearH(file_d->FF);
-			return result;
-		}
-		else {
-			if (catalog->OldToNewCat(FS)) {
-				goto label3;
-			}
-			FileMsg(file_d, 883, ' ');
-			int l = file_d->FF->NRecs * rLen + file_d->FF->FirstRecPos;
-			if (l == FS || !PromptYN(885)) {
-				CloseGoExit(file_d->FF);
-			}
-			if (file_d->FF->NRecs == 0 || l >> CachePageShft != FS >> CachePageShft) {
-				WrLLF10Msg(886);
-				file_d->FF->NRecs = n;
-			}
-			goto label2;
-		}
-	}
-	else {
-	}
-
-	if (n < file_d->FF->NRecs) {
-		SetPathAndVolume(file_d);
-		SetMsgPar(CPath);
-		if (PromptYN(882)) {
-			file_d->FF->NRecs = n;
-		label1:
-			if (file_d->FF->IsShared() && (file_d->FF->LMode < ExclMode)) {
-				file_d->ChangeLockMode(ExclMode, 0, false);
-			}
-			file_d->FF->LMode = ExclMode;
-		label2:
-			file_d->FF->SetUpdateFlag(); //SetUpdHandle(file_d->FF->Handle);
-			file_d->FF->WrPrefix();
-		}
-		else {
-			CloseGoExit(file_d->FF);
-		}
-	}
-
-label3:
 	if (file_d->FF->TF != nullptr) {
-		if (FS < file_d->FF->FirstRecPos) {
+		if (file_size < file_d->FF->FirstRecPos) {
 			file_d->FF->TF->SetEmpty();
 		}
 		else {
@@ -213,9 +151,12 @@ label3:
 			}
 		}
 	}
+}
 
+void check_X_file(FileD* file_d, int file_size)
+{
 	if (file_d->FF->file_type == FileType::INDEX) {
-		if (FS < file_d->FF->FirstRecPos) {
+		if (file_size < file_d->FF->FirstRecPos) {
 			file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
 		}
 		else {
@@ -229,7 +170,7 @@ label3:
 					|| (ff->XF->NRecsAbs != ff->NRecs)
 					|| (ff->XF->FreeRoot > ff->XF->MaxPage)
 					|| ((ff->XF->MaxPage + 1) << XPageShft) > FileSizeH(ff->XF->Handle))
-					|| (ff->XF->NrKeys != 0) && (ff->XF->NrKeys != file_d->GetNrKeys()))
+				|| (ff->XF->NrKeys != 0) && (ff->XF->NrKeys != file_d->GetNrKeys()))
 			{
 
 				if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
@@ -245,6 +186,76 @@ label3:
 			}
 		}
 	}
+}
+
+void lock_excl_and_write_prefix(FileD* file_d)
+{
+	if (file_d->FF->IsShared() && (file_d->FF->LMode < ExclMode)) {
+		file_d->ChangeLockMode(ExclMode, 0, false);
+	}
+	file_d->FF->LMode = ExclMode;
+	file_d->FF->SetUpdateFlag();
+	file_d->FF->WrPrefix();
+}
+
+bool OpenF2(FileD* file_d, const std::string& path)
+{
+	int file_size = FileSizeH(file_d->FF->Handle);
+	file_d->FF->NRecs = 0;
+
+	if (file_size < file_d->FF->FirstRecPos) {
+		lock_excl_and_write_prefix(file_d);
+	}
+	else {
+		uint16_t rLen = file_d->FF->RdPrefix();
+		int32_t n = (file_size - file_d->FF->FirstRecPos) / file_d->FF->RecLen;
+
+		if (rLen != 0xffff) {
+			if (file_d->IsDynFile) {
+				file_d->FF->Close(); //CloseClearH(file_d->FF);
+				return false;
+			}
+			else {
+				if (catalog->OldToNewCat(file_size)) {
+					check_T_file(file_d, file_size);
+					check_X_file(file_d, file_size);
+					file_d->SeekRec(0);
+					return true;
+				}
+
+				FileMsg(file_d, 883, ' ');
+				int l = file_d->FF->NRecs * rLen + file_d->FF->FirstRecPos;
+
+				if (l == file_size || !PromptYN(885)) {
+					CloseGoExit(file_d->FF);
+				}
+
+				if (file_d->FF->NRecs == 0 || l >> CachePageShft != file_size >> CachePageShft) {
+					WrLLF10Msg(886);
+					file_d->FF->NRecs = n;
+				}
+
+				file_d->FF->SetUpdateFlag();
+				file_d->FF->WrPrefix();
+			}
+		}
+		else {
+			if (n < file_d->FF->NRecs) {
+				SetPathAndVolume(file_d);
+				SetMsgPar(CPath);
+				if (PromptYN(882)) {
+					file_d->FF->NRecs = n;
+					lock_excl_and_write_prefix(file_d);
+				}
+				else {
+					CloseGoExit(file_d->FF);
+				}
+			}
+		}
+	}
+
+	check_T_file(file_d, file_size);
+	check_X_file(file_d, file_size);
 
 	file_d->SeekRec(0);
 	return true;

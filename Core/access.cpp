@@ -16,15 +16,9 @@
 
 void CloseGoExit(Fand0File* fand_file)
 {
-	fand_file->Close(); //CloseClearH(fand_file);
+	fand_file->Close();
 	GoExit(MsgLine);
 }
-
-//BYTE ByteMask[_MAX_INT_DIG];
-
-//const BYTE FixS = 8;
-//BYTE Fix[FixS];
-//BYTE RealMask[DblS + 1];
 
 void TestCPathError()
 {
@@ -42,17 +36,19 @@ bool LinkLastRec(FileD* file_d, int& N, bool WithT, BYTE** newRecord)
 	LockMode md = file_d->NewLockMode(RdMode);
 	auto result = true;
 #ifdef FandSQL
-	if (file_d->IsSQLFile)
-	{
+	if (file_d->IsSQLFile) {
 		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1;
-		else goto label1;
+		else {
+			file_d->ZeroAllFlds(*newRecord, false);
+			result = false;
+			N = 1;
+		}
 	}
 	else
 #endif
 	{
 		N = file_d->FF->NRecs;
 		if (N == 0) {
-		label1:
 			file_d->ZeroAllFlds(*newRecord, false);
 			result = false;
 			N = 1;
@@ -84,10 +80,12 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 		int n = 0;
 		LockMode md = file_d->NewLockMode(WrMode);
 		BYTE* rec = nullptr;
+
 		if (!LinkLastRec(file_d, n, true, &rec)) {
 			file_d->IncNRecs(1);
 			file_d->WriteRec(n, rec);
 		}
+
 		AssgnFrml(file_d, rec, field_d, frml, true, add);
 		file_d->WriteRec(n, rec);
 		file_d->OldLockMode(md);

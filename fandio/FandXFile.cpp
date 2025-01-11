@@ -6,15 +6,17 @@
 #include "../Core/FileD.h"
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
-#include "XWorkFile.h"
+#include "../Core/obaseww.h"
 
 
-FandXFile::FandXFile(Fand0File* parent): XWFile(parent)
+FandXFile::FandXFile(Fand0File* parent)
 {
+	_parent = parent;
 }
 
-FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent): XWFile(parent)
+FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent)
 {
+	_parent = parent;
 	NRecs = orig.NRecs;
 	NRecsAbs = orig.NRecsAbs;
 	NotValid = orig.NotValid;
@@ -82,6 +84,18 @@ void FandXFile::SetNotValid(int recs, unsigned char keys)
 	SaveCache(0, _parent->Handle);
 }
 
+void FandXFile::TestErr()
+{
+	if (HandleError != 0) {
+		Err(700 + HandleError);
+	}
+}
+
+int FandXFile::UsedFileSize()
+{
+	return (MaxPage + 1) << XPageShft;
+}
+
 void FandXFile::ClearUpdLock()
 {
 	UpdLockCnt = 0;
@@ -90,13 +104,23 @@ void FandXFile::ClearUpdLock()
 int FandXFile::XFNotValid(int recs, unsigned char keys)
 {
 	if (Handle == nullptr) {
-		//RunError(903);
+		RunError(903);
 		return 903;
 	}
 	else {
 		SetNotValid(recs, keys);
 		return 0;
 	}
+}
+
+bool FandXFile::Cached() const
+{
+	return !NotCached();
+}
+
+bool FandXFile::NotCached() const
+{
+	return (this != &XWork) && _parent->NotCached();
 }
 
 void FandXFile::CloseFile()
@@ -117,5 +141,79 @@ void FandXFile::CloseFile()
 				MyDeleteFile(CPath);
 			}
 		}
+	}
+}
+
+void FandXFile::RdPage(XPage* P, int pageNr)
+{
+	P->Clean();
+	if ((pageNr == 0) || (pageNr > MaxPage)) Err(831);
+	// puvodne se nacitalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
+	ReadData(pageNr << XPageShft, 1, &P->IsLeaf);
+	ReadData((pageNr << XPageShft) + 1, 4, &P->GreaterPage);
+	ReadData((pageNr << XPageShft) + 5, 2, &P->NItems);
+	ReadData((pageNr << XPageShft) + 7, XPageSize - 7, P->A);
+	P->Deserialize();
+}
+
+void FandXFile::WrPage(XPage* P, int pageNr, bool serialize)
+{
+	if (serialize) {
+		P->Serialize();
+	}
+	if (UpdLockCnt > 0) Err(645);
+	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
+	WriteData(pageNr << XPageShft, 1, &P->IsLeaf);
+	WriteData((pageNr << XPageShft) + 1, 4, &P->GreaterPage);
+	WriteData((pageNr << XPageShft) + 5, 2, &P->NItems);
+	WriteData((pageNr << XPageShft) + 7, XPageSize - 7, P->A);
+}
+
+void FandXFile::WrPage(XXPage* p, int pageNr)
+{
+	if (UpdLockCnt > 0) Err(645);
+	WriteData(pageNr << XPageShft, 1, &p->IsLeaf);
+	WriteData((pageNr << XPageShft) + 1, 4, &p->GreaterPage);
+	WriteData((pageNr << XPageShft) + 5, 2, &p->NItems);
+	WriteData((pageNr << XPageShft) + 7, XPageSize - 7, p->A);
+}
+
+int FandXFile::NewPage(XPage* P)
+{
+	int result = 0;
+	if (FreeRoot != 0) {
+		result = FreeRoot;
+		RdPage(P, FreeRoot);
+		FreeRoot = P->GreaterPage;
+	}
+	else {
+		MaxPage++;
+		if (MaxPage > 0x1fffff) {
+			Err(887);
+		}
+		result = MaxPage;
+	}
+	P->Clean();
+	return result;
+}
+
+void FandXFile::ReleasePage(XPage* P, int N)
+{
+	P->Clean();
+	P->GreaterPage = FreeRoot;
+	FreeRoot = N;
+	WrPage(P, N);
+}
+
+void FandXFile::Err(unsigned short N)
+{
+	if (this == &XWork) {
+		SetMsgPar(FandWorkXName);
+		RunError(N);
+	}
+	else {
+		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
+		FileMsg(_parent->GetFileD(), N, 'X');
+		CloseGoExit(_parent);
 	}
 }
