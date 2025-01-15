@@ -1252,11 +1252,12 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	MyDeleteFile(orig_path);
 	TestDelErr(orig_path);
 
-	// copy data from TempFD
-	RecLen = TempFD->FF->RecLen;
-	file_type = TempFD->FF->file_type;
-	FirstRecPos = TempFD->FF->FirstRecPos;
-	Drive = TempFD->FF->Drive;
+	// TODO: aren't same?
+	//// copy data from TempFD
+	//RecLen = TempFD->FF->RecLen;
+	//file_type = TempFD->FF->file_type;
+	//FirstRecPos = TempFD->FF->FirstRecPos;
+	//Drive = TempFD->FF->Drive;
 
 	// rename temp file to regular
 	std::string temp_path = SetTempCExt(_parent, '0', false);
@@ -1292,6 +1293,8 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 		SetUpdateFlag(); //SetUpdHandle(TF->Handle);
 		//if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
 	}
+
+	RdPrefixes();
 }
 
 void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)

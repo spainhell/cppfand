@@ -547,6 +547,9 @@ void FileCopy(CopyD* CD)
 	}
 	else if (CD->FD1 != nullptr) {
 		if (CD->FD2 != nullptr) {
+			if (CD->FD1->Name == "DOPISYMM" || CD->FD1->Name == "PRACSML") {
+				printf("");
+			}
 			MakeMerge(CD);
 		}
 		else {
@@ -587,6 +590,7 @@ void MakeMerge(CopyD* CD)
 	}
 
 	catch (std::exception& e) {
+		printf("EXCEPTION: MakeMerge: %s", e.what());
 	}
 }
 

@@ -541,7 +541,7 @@ void DeleteRecProc(Instr_recs* PD)
 	}
 	LockMode md = CFile->NewLockMode(DelMode);
 	if (PD->ByKey) {
-		if (!CFile->SerchXKey(PD->Key, x, n)) {
+		if (!CFile->SearchXKey(PD->Key, x, n)) {
 			CFile->OldLockMode(md);
 			delete[] CRecPtr;
 			return;
@@ -675,7 +675,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			}
 			N = lv->FD->FF->NRecs;
 		}
-		else if (!lv->FD->SerchXKey(k, x, N)) {
+		else if (!lv->FD->SearchXKey(k, x, N)) {
 			if (IsRead) {
 				//CFile->DelTFlds(CRecPtr);
 				lv->FD->ZeroAllFlds(lv->record, true);

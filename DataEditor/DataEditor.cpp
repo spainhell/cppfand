@@ -4703,14 +4703,15 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 {
 	bool upd = false;
 	bool b = false, b2 = false, lkd = false;
-	uint8_t* p = nullptr;
+	std::unique_ptr<uint8_t[]> p;
 	WORD d = 0; LockMode md; /*float t;*/
 
 	auto result = false;
 	file_d_->FF->WasWrRec = false;
 	if (HasTF) {
-		p = file_d_->GetRecSpace();
-		Move(record_, p, file_d_->FF->RecLen);
+		p = file_d_->GetRecSpaceUnique();
+		//Move(record_, p.get(), file_d_->FF->RecLen);
+		memcpy(p.get(), record_, file_d_->FF->RecLen);
 	}
 	SetEdRecNoEtc(0);
 	lkd = edit_->IsLocked;
@@ -4747,15 +4748,18 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	if (!params_->WasUpdated && !lkd) UnLockRec(edit_);
 	if (Displ && upd) DisplAllWwRecs();
 	if (Displ) NewDisplLL = true;
+
 	result = true;
+
 	if (HasTF) {
 		for (FieldDescr* f : file_d_->FldD) {
 			if ((f->field_type == FieldType::TEXT) && ((f->Flg & f_Stored) != 0) &&
-				(*(int*)(p + f->Displ) == *(int*)(edit_->OldRecPtr) + f->Displ))
+				(*(int*)(p.get() + f->Displ) == *(int*)(edit_->OldRecPtr) + f->Displ))
 				params_->NoDelTFlds = true;
 		}
-		delete[] p; p = nullptr;
+		//delete[] p; p = nullptr;
 	}
+
 	return result;
 }
 

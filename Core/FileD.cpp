@@ -427,17 +427,15 @@ bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 	return FF->SearchKey(XX, Key, NN, record);
 }
 
-bool FileD::SerchXKey(XKey* K, XString& X, int& N)
+bool FileD::SearchXKey(XKey* K, XString& X, int& N)
 {
 	if (FF->file_type == FileType::INDEX) {
 		FF->TestXFExist();
 		return K->SearchInterval(this, X, false, N);
 	}
 	else {
-		BYTE* record = GetRecSpace();
-		bool result = SearchKey(X, K, N, record);
-		delete[] record; record = nullptr;
-		return result;
+		std::unique_ptr<uint8_t[]> record = GetRecSpaceUnique();
+		return SearchKey(X, K, N, record.get());
 	}
 }
 
@@ -457,6 +455,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	newFile->IRec = 0;
 	newFile->FF->Eof = true;
 	newFile->FF->UMode = Exclusive;
+	newFile->FF->SetUpdateFlag();
 
 	// create index file
 	if (newFile->FF->file_type == FileType::INDEX) {
@@ -467,19 +466,21 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 		newFile->FF->XF = new FandXFile(newFile->FF);
 		newFile->FF->XF->Handle = nullptr;
 		newFile->FF->XF->NoCreate = true;
+		newFile->FF->XF->SetUpdateFlag();
 		/*else xfile name identical with orig file*/
 	}
 
 	// create text file
 	if (createTextFile && (newFile->FF->TF != nullptr)) {
 		newFile->FF->TF = new FandTFile(newFile->FF);
-		*newFile->FF->TF = *FF->TF;
+		//*newFile->FF->TF = *FF->TF;
 		std::string path_t = SetTempCExt(this, 'T', net);
-		newFile->FF->TF->Handle = OpenH(path_t, _isOverwriteFile, Exclusive);
+		//newFile->FF->TF->Handle = OpenH(path_t, _isOverwriteFile, Exclusive);
+		newFile->FF->TF->Create(path_t);
 		newFile->FF->TF->TestErr();
 		newFile->FF->TF->CompileAll = true;
 		newFile->FF->TF->SetEmpty();
-
+		newFile->FF->TF->SetUpdateFlag();
 	}
 	return newFile;
 }

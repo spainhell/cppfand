@@ -1295,32 +1295,37 @@ bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD
 	return result;
 }
 
-bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z, void* record)
+bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, FrmlElem* Z, void* record)
 {
-	FileD* TFD02;
-	FandTFile* TF02;
-	int TF02Pos;
+	FileD* src_file;
+	FandTFile* src_T_file;
+	int src_T_pos;
+
+	if (dst_file->FF->TF != dst_T_file)
+	{
+		printf("!!!");
+	}
 
 	bool result;
-	if (TF->Format == FandTFile::DbtFormat || TF->Format == FandTFile::FptFormat) {
+	if (dst_T_file->Format == FandTFile::DbtFormat || dst_T_file->Format == FandTFile::FptFormat) {
 		result = false;
 	}
 	else if (Z->Op == _gettxt) {
-		std::string text = GetTxt(file_d, (FrmlElem16*)Z, record);
-		file_d->saveS(F, text, record);
-		pos = file_d->loadT(F, record);
+		std::string text = GetTxt(dst_file, (FrmlElem16*)Z, record);
+		dst_file->saveS(F, text, record);
+		pos = dst_file->loadT(F, record);
 		result = true;
 	}
-	else if (CanCopyT(file_d, F, Z, &TF02, &TFD02, TF02Pos, record) && (TF02->Format == TF->Format)) {
+	else if (CanCopyT(dst_file, F, Z, &src_T_file, &src_file, src_T_pos, record) && (src_T_file->Format == dst_T_file->Format)) {
 		LockMode md1 = NullMode, md2 = NullMode;
-		if (!TF02->IsWork) md2 = TFD02->NewLockMode(RdMode);
-		if (!TF->IsWork) md1 = file_d->NewLockMode(WrMode);
+		if (!src_T_file->IsWork) md2 = src_file->NewLockMode(RdMode);
+		if (!dst_T_file->IsWork) md1 = dst_file->NewLockMode(WrMode);
 
-		std::string s = TF02->Read(TF02Pos);
-		pos = TF->Store(s);
+		std::string s = src_T_file->Read(src_T_pos);
+		pos = dst_T_file->Store(s);
 
-		if (!TF02->IsWork) TFD02->OldLockMode(md2);
-		if (!TF->IsWork) file_d->OldLockMode(md1);
+		if (!src_T_file->IsWork) src_file->OldLockMode(md2);
+		if (!dst_T_file->IsWork) dst_file->OldLockMode(md1);
 		result = true;
 	}
 	else {
@@ -1345,6 +1350,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 			}
 
 			int pos = 0;
+
 			if (TryCopyT(file_d, field_d, tf, pos, X, record)) {
 				if (deleteT && !work) {
 					file_d->FF->DelTFld(field_d, record);
