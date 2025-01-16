@@ -229,7 +229,7 @@ void AssignRecFld(Instr_assign* PD)
 void SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
 {
 	LockMode md = FD->NewLockMode(ExclMode);
-	FD->FF->SortAndSubst(SK);
+	FD->SortByKey(SK);
 	FD->OldLockMode(md);
 	SaveFiles();
 }
@@ -1473,7 +1473,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 		}
 		case PInstrCode::_indexfile: {
 			Instr_indexfile* iPD = (Instr_indexfile*)instr;
-			iPD->IndexFD->FF->IndexFileProc(iPD->Compress);
+			iPD->IndexFD->IndexesMaintenance(iPD->Compress);
 			break;
 		}
 		case PInstrCode::_display: {

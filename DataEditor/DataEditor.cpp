@@ -3293,7 +3293,7 @@ void DataEditor::Sorting()
 	}
 
 	try {
-		file_d_->FF->SortAndSubst(SKRoot);
+		file_d_->SortByKey(SKRoot);
 		edit_->EdUpdated = true;
 	}
 	catch (std::exception&) {

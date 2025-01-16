@@ -1152,11 +1152,8 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ
 		XKey* k = Scan->Key;
 		n = k->IndexLen;
 
-		//KeyFldD* kf = SK;
-		//while (kf != nullptr) {
 		for (KeyFldD* kf : SK) {
 			n += kf->FldD->NBytes;
-			//kf = kf->pChain;
 		}
 
 		if (n > 255) {
@@ -1165,17 +1162,12 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ
 			return;
 		}
 
-		//kf = k->KFlds;
 		std::vector<KeyFldD*> kfroot;
-		//KeyFldD* kf2 = nullptr;
-		//while (kf != nullptr) {
+
 		for (KeyFldD* kf : k->KFlds) {
-			//kf2 = new KeyFldD();
-			//*kf2 = *kf;
-			//ChainLast(kfroot, kf2);
-			//kf = kf->pChain;
 			kfroot.push_back(kf);
 		}
+
 		if (SK.size() > kfroot.size()) {
 			for (size_t i = 0; i < SK.size(); i++) {
 				kfroot.push_back(SK[i]);
@@ -1194,25 +1186,24 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ
 
 void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 {
-	BYTE* record = _parent->GetRecSpace();
+	std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
 
 	std::vector<KeyInD*> empty;
 	XScan* Scan = new XScan(_parent, nullptr, empty, false);
-	Scan->Reset(nullptr, false, record);
+	Scan->Reset(nullptr, false, record.get());
 	ScanSubstWIndex(Scan, SK, 'S');
 	FileD* FD2 = _parent->OpenDuplicateF(false);
 	RunMsgOn('S', Scan->NRecs);
-	Scan->GetRec(record);
+	Scan->GetRec(record.get());
 
 	// write data to a file .100
-	FD2->FF->GenerateNew000File(Scan, record);
+	FD2->FF->GenerateNew000File(Scan, record.get());
 
 	SubstDuplF(FD2, false);
 	Scan->Close();
 	RunMsgOff();
 
 	delete FD2; FD2 = nullptr;
-	delete[] record; record = nullptr;
 }
 
 void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
@@ -1232,7 +1223,6 @@ void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
 
 void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 {
-	//bool net;
 	int result = XFNotValid();
 	if (result != 0) {
 		RunError(result);
@@ -1252,13 +1242,6 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	MyDeleteFile(orig_path);
 	TestDelErr(orig_path);
 
-	// TODO: aren't same?
-	//// copy data from TempFD
-	//RecLen = TempFD->FF->RecLen;
-	//file_type = TempFD->FF->file_type;
-	//FirstRecPos = TempFD->FF->FirstRecPos;
-	//Drive = TempFD->FF->Drive;
-
 	// rename temp file to regular
 	std::string temp_path = SetTempCExt(_parent, '0', false);
 	SaveCache(0, TempFD->FF->Handle);
@@ -1267,18 +1250,6 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	Handle = OpenH(orig_path, _isOldFile, UMode);
 	_parent->FullPath = orig_path;
 	SetUpdateFlag(); //SetUpdHandle(Handle);
-
-	//// copy Index File
-	//delete XF; XF = nullptr;
-	//if (TempFD->FF->XF != nullptr) {
-	//	XF = new FandXFile(*TempFD->FF->XF, this);
-	//}
-
-	//// copy Text File
-	//delete TF; TF = nullptr;
-	//if (TempFD->FF->TF != nullptr) {
-	//	TF = new FandTFile(*TempFD->FF->TF, this);
-	//}
 
 	if ((TempFD->FF->TF != nullptr) && DelTF) {
 		CloseClearH(&TF->Handle);
@@ -1358,141 +1329,6 @@ void Fand0File::IndexFileProc(bool Compress)
 	delete[] record; record = nullptr;
 }
 
-// /// \brief Copies T from one .T00 file to another. Files should be locked before calling this function!
-// /// \param destT00File destination T file - should be locked in WrMode
-// /// \param srcT00File source T file - should be locked in RdMode
-// /// \param srcT00Pos position of T in source T file
-// /// \return position of T in destination T file
-//int Fand0File::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos)
-//{
-//	WORD l = 0;
-//	int pos = 0;
-//
-//	BYTE page_buffer[MPageSize + 1]{ 0 };
-//	const uint16_t* ll = reinterpret_cast<uint16_t*>(page_buffer);
-//
-//	int result = 0;
-//
-//	if (srcT00Pos == 0) {
-//		return 0; // mark
-//	}
-//
-//	// read length of text
-//	srcT00File->ReadData(srcT00Pos, 2, &l);
-//	if (l <= MPageSize - 2) { // short text
-//		if (l == 0) {
-//			return 0; // mark
-//		}
-//
-//		// read text from source T file
-//		srcT00File->ReadData(srcT00Pos + 2, l, page_buffer);
-//		int16_t rest = static_cast<int16_t>(MPageSize - destT00File->FreePart % MPageSize);
-//
-//		// find place for new short text
-//		if (rest >= l + 2) {
-//			// 2B length + text fits into current page
-//			pos = destT00File->FreePart;
-//		}
-//		else {
-//			// start on new page
-//			pos = destT00File->NewPage(false);
-//			destT00File->FreePart = pos;
-//			rest = MPageSize;
-//		}
-//
-//		if (rest <= l + 4) {
-//			destT00File->FreePart = destT00File->NewPage(false);
-//		}
-//		else {
-//			destT00File->FreePart += l + 2;
-//			rest = l + 4 - rest;
-//			destT00File->WriteData(destT00File->FreePart, 2, & rest);
-//		}
-//
-//		// write length and text to destination T file
-//		destT00File->WriteData(pos, 2, &l);
-//		destT00File->WriteData(pos + 2, l, page_buffer);
-//		// return position of new text in destination T file
-//		result = pos;
-//		return result;
-//	}
-//
-//	if ((srcT00Pos % MPageSize) != 0) {
-//		// it's not short text, and it is not on the beginning of the page
-//		srcT00File->Err(889, false);
-//		result = 0;
-//		return result;
-//	}
-//
-//	// process long text
-//	srcT00File->ReadData(srcT00Pos, MPageSize, page_buffer);
-//	bool first = true;
-//	bool end = false;
-//
-//	while (!end) {
-//		end = true;
-//		if (l > MaxLStrLen + 1) {
-//			// l > 65001
-//			srcT00File->Err(889, false);
-//			result = 0;
-//			return result;
-//		}
-//		const bool isLongTxt = (l == MaxLStrLen + 1); // length is 65001
-//		if (isLongTxt) l--;
-//		l += 2;
-//
-//		while (true) {
-//			if (first) {
-//				// always create new page for first part of long text
-//				pos = destT00File->NewPage(false);
-//				result = pos;
-//				first = false;
-//			}
-//
-//			if ((l > MPageSize) || isLongTxt) {
-//				// the page buffer contains both source and destination data
-//				// - only position of next page is written to the end of the page
-//
-//				// get position of next page in source T file
-//				srcT00Pos = *reinterpret_cast<int*>(&page_buffer[MPageSize - 4]);
-//				// get new page for next part of long text in destination T file
-//				const int next_pos = destT00File->NewPage(false);
-//				// write position of next page to the end of current page in destination T file
-//				*reinterpret_cast<int*>(&page_buffer[MPageSize - 4]) = next_pos;
-//				// write current page to destination T file
-//				destT00File->WriteData(pos, MPageSize, page_buffer);
-//				pos = next_pos;
-//
-//				if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > srcT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
-//					srcT00File->Err(888, false);
-//					result = 0;
-//					return result;
-//				}
-//
-//				// read next part of long text from source T file
-//				srcT00File->ReadData(srcT00Pos, MPageSize, page_buffer);
-//				if ((l <= MPageSize)) {
-//					// last part of long text, page is not full
-//					l = *ll;
-//					end = false;
-//					break;
-//				}
-//				else {
-//					// MPageSize - 4 has been written to the destination T file
-//					l -= MPageSize - 4;
-//					continue;
-//				}
-//			}
-//			break;
-//		}
-//	}
-//
-//	// write last part of long text
-//	destT00File->WriteData(pos, MPageSize, page_buffer);
-//
-//	return result;
-//}
-
 void Fand0File::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 {
 	CFile = file_d;
@@ -1551,7 +1387,6 @@ label4:
 	if (!tf->IsWork) TFD02->OldLockMode(md2);
 	CFile = file_d;
 }
-
 
 double Fand0File::DBF_RforD(FieldDescr* field_d, uint8_t* source)
 {

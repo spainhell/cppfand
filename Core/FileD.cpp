@@ -248,6 +248,20 @@ void FileD::AssignNRecs(bool Add, int N)
 	OldLockMode(md);
 }
 
+void FileD::SortByKey(std::vector<KeyFldD*>& keys) const
+{
+	if (FF != nullptr) {
+		FF->SortAndSubst(keys);
+	}
+}
+
+void FileD::IndexesMaintenance(bool remove_deleted)
+{
+	if (FF != nullptr) {
+		FF->IndexFileProc(remove_deleted);
+	}
+}
+
 bool FileD::loadB(FieldDescr* field_d, void* record)
 {
 	bool result;

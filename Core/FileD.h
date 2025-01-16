@@ -69,6 +69,9 @@ public:
 	void DeleteRec(int n, void* record) const;
 	void RecallRec(int recNr, void* record);
 	void AssignNRecs(bool Add, int N);
+
+	void SortByKey(std::vector<KeyFldD*>& keys) const;
+	void IndexesMaintenance(bool remove_deleted);
 		
 	bool loadB(FieldDescr* field_d, void* record);
 	double loadR(FieldDescr* field_d, void* record);
@@ -112,7 +115,6 @@ public:
 	void DeleteDuplicateF(FileD* TempFD);
 	void ZeroAllFlds(void* record, bool delTFields);
 	void CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields);
-
 	void DelAllDifTFlds(void* record, void* comp_record);
 
 	bool IsActiveRdb();

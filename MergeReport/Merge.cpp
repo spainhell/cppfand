@@ -942,9 +942,6 @@ void Merge::OpenOutp()
 
 void Merge::CloseInpOutp()
 {
-	//OutpFD* OD = OutpFDRoot;
-	//while (OD != nullptr) {
-
 	for (OutpFD* OD : OutpFDRoot) {
 		FileD* fd = OD->FD;
 		OD->FD->ClearRecSpace(OD->RecPtr);
@@ -964,7 +961,6 @@ void Merge::CloseInpOutp()
 				fd->OldLockMode(OD->Md);
 			}
 		}
-		//OD = OD->pChain;
 	}
 
 	for (short i = 1; i <= MaxIi; i++) {
