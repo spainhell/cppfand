@@ -30,7 +30,7 @@ public:
     WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
 	             bool star, bool upd, bool ret, unsigned int Delta); // r86
     int CRec();
-	void UpdateEdTFld(LongStr* S);
+	void UpdateEdTFld(std::string& S);
     bool StartExit(EdExitD* X, bool Displ);
     bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F);
     std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);

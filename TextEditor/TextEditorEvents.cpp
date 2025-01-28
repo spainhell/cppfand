@@ -398,7 +398,7 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<EdExitD*>& ExitD, int& fs, LongStr*& sp, WORD key)
 {
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
-	for (auto& X : ExitD) {
+	for (EdExitD*& X : ExitD) {
 		if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 			editor->TestKod();
 			IndexT = editor->SetInd(textIndex, positionOnActualLine);
@@ -428,17 +428,17 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 				delete[] editor->_textT;
 				editor->_textT = T2;
 
-				sp->A = editor->_textT;
-				sp->LL = (WORD)editor->_lenT;
+				std::string data = std::string(editor->_textT, editor->_lenT);
+
 				if (TypeT == LocalT) {
 					TWork.Delete(*LocalPPtr);
-					std::string data = std::string(sp->A, sp->LL);
 					*LocalPPtr = TWork.Store(data);
 				}
 				else if (UpdatT) {
-					data_editor->UpdateEdTFld(sp);
+					data_editor->UpdateEdTFld(data);
 					UpdatT = false;
 				}
+
 				delete sp; sp = nullptr;
 				break;
 			}
@@ -1161,8 +1161,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			}
 			case _KW_: {
 				I1 = editor->blocks->BegBLn; I2 = editor->blocks->BegBPos;
-					I3 = editor->blocks->EndBLn; I = editor->blocks->EndBPos;
-					bb = TypeB;
+				I3 = editor->blocks->EndBLn; I = editor->blocks->EndBPos;
+				bb = TypeB;
 				if (!editor->BlockExist()) {
 					editor->blocks->BegBLn = 1; editor->blocks->EndBLn = 0x7FFF;
 					editor->blocks->BegBPos = 1; editor->blocks->EndBPos = 0xFF;

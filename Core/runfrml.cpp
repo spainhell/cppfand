@@ -1300,13 +1300,8 @@ bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, F
 	FileD* src_file;
 	FandTFile* src_T_file;
 	int src_T_pos;
-
-	if (dst_file->FF->TF != dst_T_file)
-	{
-		printf("!!!");
-	}
-
 	bool result;
+
 	if (dst_T_file->Format == FandTFile::DbtFormat || dst_T_file->Format == FandTFile::FptFormat) {
 		result = false;
 	}
@@ -1331,6 +1326,7 @@ bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, F
 	else {
 		result = false;
 	}
+
 	return result;
 }
 

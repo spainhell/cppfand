@@ -3733,13 +3733,13 @@ void DataEditor::SetCRec(int I)
 	RdRec(CRec(), record_);
 }
 
-void DataEditor::UpdateEdTFld(LongStr* S)
+void DataEditor::UpdateEdTFld(std::string& S)
 {
 	LockMode md;
 	if (!params_->EdRecVar) md = file_d_->NewLockMode(WrMode);
 	SetWasUpdated(file_d_->FF, edit_->NewRecPtr);
 	file_d_->FF->DelDifTFld((*CFld)->FldD, edit_->NewRecPtr, edit_->OldRecPtr);
-	file_d_->saveLongS((*CFld)->FldD, S, edit_->NewRecPtr);
+	file_d_->saveS((*CFld)->FldD, S, edit_->NewRecPtr);
 	if (!params_->EdRecVar) {
 		file_d_->OldLockMode(md);
 	}
@@ -3785,7 +3785,7 @@ bool DataEditor::EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& B
 	size_t TxtPos = 0; // vychozi pozice zobrazeni textu (index 1. znaku v editoru)
 	WORD CtrlMsgNr = 0;
 	WORD C = 0, LastLen = 0;
-	LongStr* S = nullptr;
+	std::string s;
 	char Kind = '\0';
 	LockMode md;
 	void* p = nullptr;
@@ -3843,14 +3843,11 @@ label1:
 	OldTxtPos = TxtPos;
 	if (Ed) LockRec(false);
 	if ((F->Flg & f_Stored) != 0) {
-		S = file_d_->loadLongS(F, record_);
+		s = file_d_->loadS(F, record_);
 		if (Ed) Kind = 'T';
 	}
 	else {
-		std::string std_s = RunString(file_d_, F->Frml, record_);
-		S = new LongStr(std_s.length());
-		S->LL = std_s.length();
-		memcpy(S->A, std_s.c_str(), S->LL);
+		s = RunString(file_d_, F->Frml, record_);
 	}
 label2:
 	if (params_->TTExit) {
@@ -3863,11 +3860,11 @@ label2:
 	Upd = false;
 	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
 	result =
-		editor->EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
+		editor->EditText(Kind, MemoT, HdTxt, ErrMsg, s, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
 	ErrMsg = "";
 	heslo = gc->LexWord;
-	LastLen = S->LL;
+	LastLen = s.length();
 	if (EdBreak == 0xffff) {
 		C = Event.Pressed.KeyCombination();
 	}
@@ -3889,7 +3886,6 @@ label2:
 		break;
 	}
 	case 'U': {
-		delete S; S = nullptr;
 		TxtXY = 0;
 		goto label1;
 		break;
@@ -3898,14 +3894,12 @@ label2:
 	screen.Window(1, 1, TxtCols, TxtRows);
 
 	if (WasUpd) {
-		UpdateEdTFld(S);
+		UpdateEdTFld(s);
 	}
 
 	if ((OldTxtPos != TxtPos) && !Srch) {
 		UpdateTxtPos(TxtPos);
 	}
-
-	delete S; S = nullptr;
 
 	if (Ed && !params_->WasUpdated) {
 		UnLockRec(edit_);
@@ -4701,24 +4695,25 @@ void DataEditor::SetEdRecNoEtc(int RNr)
 
 bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 {
-	bool upd = false;
-	bool b = false, b2 = false, lkd = false;
 	std::unique_ptr<uint8_t[]> p;
-	WORD d = 0; LockMode md; /*float t;*/
+	/*float t;*/
 
-	auto result = false;
+	bool result = false;
 	file_d_->FF->WasWrRec = false;
+
 	if (HasTF) {
 		p = file_d_->GetRecSpaceUnique();
-		//Move(record_, p.get(), file_d_->FF->RecLen);
 		memcpy(p.get(), record_, file_d_->FF->RecLen);
 	}
+
 	SetEdRecNoEtc(0);
-	lkd = edit_->IsLocked;
+	bool lkd = edit_->IsLocked;
+
 	if (!lkd && !LockRec(false)) return result;
-	b = params_->WasUpdated;
+
+	bool b = params_->WasUpdated;
 	EdUpdated = b;
-	b2 = file_d_->HasRecordUpdateFlag(record_);
+	bool b2 = file_d_->HasRecordUpdateFlag(record_);
 	SetWasUpdated(file_d_->FF, record_);
 	file_d_->ClearRecordUpdateFlag(record_);
 
@@ -4729,7 +4724,7 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	// some methods use RunString "_edfile" to identify caller
 	EditDRoot = edit_;
 
-	md = file_d_->FF->LMode;
+	LockMode md = file_d_->FF->LMode;
 
 	//EditD* EE = WriteParamsToE();                            /*t = currtime;*/
 
@@ -4738,12 +4733,15 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	//ReadParamsFromE(EE);
 
 	file_d_->NewLockMode(md);
-	upd = file_d_->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
+	bool upd = file_d_->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
+
 	if (file_d_->HasRecordUpdateFlag(record_)) {
 		b = true;
 		upd = true;
 	}
+
 	params_->WasUpdated = b;
+
 	if (b2) file_d_->SetRecordUpdateFlag(record_);
 	if (!params_->WasUpdated && !lkd) UnLockRec(edit_);
 	if (Displ && upd) DisplAllWwRecs();
@@ -4753,11 +4751,9 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 
 	if (HasTF) {
 		for (FieldDescr* f : file_d_->FldD) {
-			if ((f->field_type == FieldType::TEXT) && ((f->Flg & f_Stored) != 0) &&
-				(*(int*)(p.get() + f->Displ) == *(int*)(edit_->OldRecPtr) + f->Displ))
+			if ((f->field_type == FieldType::TEXT) && f->isStored() && (p.get() == edit_->OldRecPtr))
 				params_->NoDelTFlds = true;
 		}
-		//delete[] p; p = nullptr;
 	}
 
 	return result;

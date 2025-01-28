@@ -1978,13 +1978,13 @@ void UpdateUTxt()
 	size_t TxtPos = 1;
 	TextAttr = screen.colors.tNorm;
 	int OldPos = CFile->loadT(ChptTxt, CRecPtr);
-	LongStr* S = CFile->loadLongS(ChptTxt, CRecPtr);
+	std::string s = CFile->loadS(ChptTxt, CRecPtr);
 
 	if (CRdb->Encrypted) {
-		Coding::CodingLongStr(CFile, S);
+		s = Coding::CodingString(CFile, s);
 	}
 
-	gc->SetInpLongStr(S, false);
+	gc->SetInpStdStr(s, false);
 	MarkStore(p);
 	RdUserId(false);
 	ReleaseStore(&p);
@@ -1993,18 +1993,16 @@ void UpdateUTxt()
 	while (true) {
 		try {
 			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
-			editor->SimpleEditText('T', "", "", S, 0x7FFF, TxtPos, Upd);
-			gc->SetInpLongStr(S, false);
+			editor->SimpleEditText('T', "", "", s, 0x7FFF, TxtPos, Upd);
+			gc->SetInpStdStr(s, false);
 			MarkStore(p);
 			RdUserId(false);
 			ReleaseStore(&p);
 			b = false;
 			if (Upd) {
-				std::string store = std::string(S->A, S->LL);
-				StoreChptTxt(ChptTxt, store, true);
+				StoreChptTxt(ChptTxt, s, true);
 				CFile->WriteRec(1, CRecPtr);
 			}
-			delete S; S = nullptr;
 			break;
 		}
 		catch (std::exception& ex) {

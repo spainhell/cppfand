@@ -3016,7 +3016,7 @@ TextEditor::~TextEditor()
 	this->_screen = nullptr;
 }
 
-bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, size_t pMaxLen,
+bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, std::string& text, size_t pMaxLen,
 	size_t& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
@@ -3026,9 +3026,12 @@ bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::str
 	TypeT = pTxtType;
 	NameT = pName;
 	ErrMsg = pErrMsg;
-	_textT = pLS->A;
+
+	_lenT = text.length(); //_lenT = pLS->LL;
+	_textT = new char[_lenT]; //_textT = pLS->A;
+	memcpy(_textT, text.c_str(), _lenT);
+
 	MaxLenT = pMaxLen;
-	_lenT = pLS->LL;
 	IndexT = pInd;
 	ScrT = pScr & 0xFFFF;
 	positionOnActualLine = pScr >> 16;
@@ -3063,21 +3066,26 @@ bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::str
 	if (Mode != HelpM) { TextAttr = TxtColor; }
 	pUpdat = UpdatT;
 	pSrch = SrchT;
-	pLS->LL = _lenT;
-	pLS->A = _textT;
+
+	//pLS->LL = _lenT;
+	//pLS->A = _textT;
+	text = std::string(_textT, _lenT);
+	delete[] _textT;
+	_textT = nullptr;
+
 	pInd = IndexT;
 	pScr = ScrT + ((int)positionOnActualLine << 16);
 	EdOk = oldEdOK;
 	return EditT;
 }
 
-void TextEditor::SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* pLS, size_t MaxLen, size_t& Ind, bool& Updat)
+void TextEditor::SimpleEditText(char pMode, std::string pErrMsg, std::string pName, std::string& text, size_t MaxLen, size_t& Ind, bool& Updat)
 {
 	bool Srch = false;
 	int Scr = 0;
 	std::vector<WORD> emptyBreakKeys;
 	std::vector<EdExitD*> emptyExitD;
-	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), pLS, MaxLen, Ind, Scr,
+	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), text, MaxLen, Ind, Scr,
 		emptyBreakKeys, emptyExitD, Srch, Updat, 0, 0, nullptr);
 }
 
@@ -3112,7 +3120,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 	bool Loc = false;
 	size_t Ind = 0, oldInd = 0;
 	int oldTxtxy = 0;
-	LongStr* LS = nullptr;
+	std::string s;
 	std::string compErrTxt;
 
 	if (Atr == 0) {
@@ -3132,27 +3140,21 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 
 	try {
 		Loc = (locVar != nullptr);
-		//LocalPPtr = locVar;
+
 		if (!Loc) {
 			MaxLenT = 0xFFF0; _lenT = 0;
-			//Part.UpdP = false;
 			TxtPath = CPath; TxtVol = CVol;
 			// zacatek prace se souborem
 			OpenTxtFh(Mode);
 			ReadTextFile();
 			SimplePrintHead();
-			//while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) {
-			//	RdNextPart();
-			//}
-			Ind = TxtPos; // -Part.PosP;
+			Ind = TxtPos;
 		}
 		else {
-			LS = new LongStr(locVar->length()); // TWork.ReadLongStr(1, *LP);
-			LS->LL = locVar->length();
 			Ind = TxtPos;
-			memcpy(LS->A, locVar->c_str(), LS->LL);
-			//L = StoreInTWork(LS);
+			s = *locVar;
 		}
+
 		oldInd = Ind;
 		oldTxtxy = Txtxy;
 
@@ -3160,28 +3162,28 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 			Srch = false;
 			Upd = false;
 			if (!Loc) {
-				LongStr* LS2 = new LongStr(_textT, _lenT);
+				std::string LS2 = std::string(_textT, _lenT);
 				std::vector<WORD> brkKeys = { __F1, __F6, __F9, __ALT_F10 };
 				EditText(Mode, FileT, TxtPath, ErrMsg, LS2, 0xFFF0, Ind, Txtxy,
 					brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
-				_textT = LS2->A;
-				_lenT = LS2->LL;
+
+				delete[] _textT;
+				_lenT = LS2.length();
+				_textT = new char[_lenT];
+				memcpy(_textT, LS2.c_str(), _lenT);
 			}
 			else {
 				std::vector<WORD> brkKeys = { __F1, __F6 };
-				EditText(Mode, LocalT, "", ErrMsg, LS, MaxLStrLen, Ind, Txtxy,
+				EditText(Mode, LocalT, "", ErrMsg, s, MaxLStrLen, Ind, Txtxy,
 					brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
 			}
 			TxtPos = Ind; // +Part.PosP;
 			if (Upd) EdUpdated = true;
 			WORD KbdChar = Event.Pressed.KeyCombination();
+
 			if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
 				// UNDO CHANGES
-				//ReleaseStore(LS);
-				//LS = TWork.ReadLongStr(1, L);
-				delete LS;
-				LS = new LongStr(locVar->length()); // TWork.ReadLongStr(1, *LP);
-				memcpy(LS->A, locVar->c_str(), LS->LL);
+				s = *locVar;
 
 				if (KbdChar == __ALT_EQUAL) {
 					Event.Pressed.UpdateKey(__ESC);
@@ -3193,19 +3195,20 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 					continue;
 				}
 			}
+
 			if (!Loc) {
 				// v originale: ReleaseStore(T) - tady ale smazani pri opetovnem spusteni editoru zpusobuje chybu
 				// napr. po navratu z Helpu ...
 				// delete[] _textT;
 				// _textT = nullptr;
 			}
+
 			if (EdBreak == 0xFFFF) {
 				switch (KbdChar) {
 				case __F9: {
 					if (Loc) {
-						//TWork.Delete(*LP);
-						//*LP = StoreInTWork(LS);
-						*locVar = std::string(LS->A, LS->LL);
+
+						*locVar = s;
 					}
 					else {
 						//RdPart();
@@ -3251,8 +3254,14 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 					continue;
 				}
 			}
-			if (!Loc && (Size < 1)) MyDeleteFile(TxtPath);
-			if (Loc && (KbdChar == __ESC)) LS->LL = _lenT;
+
+			if (!Loc && (Size < 1)) {
+				MyDeleteFile(TxtPath);
+			}
+
+			if (Loc && (KbdChar == __ESC)) {
+				// TODO: why? s.length() = _lenT;
+			}
 
 		label4:
 			if (IsCompileErr) {
@@ -3262,9 +3271,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 				WrLLF10Msg(110);
 			}
 			if (Loc) {
-				*locVar = std::string(LS->A, LS->LL);
-				delete LS;
-				LS = nullptr;
+				*locVar = s;
 			}
 			if (w3 != 0) {
 				PopW(w3, (WFlags & WNoPop) == 0);
@@ -3294,12 +3301,10 @@ void TextEditor::ViewPrinterTxt()
 	EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
 
-void TextEditor::ViewHelpText(std::string& s, size_t& TxtPos)
+void TextEditor::ViewHelpText(std::string& text, size_t& text_pos)
 {
 	// make copy of text from std::string because it changes in EditText()
-	char* helpText = new char[s.length()];
-	memcpy(helpText, s.c_str(), s.length());
-	auto S = std::make_unique<LongStr>(helpText, s.length());
+	std::string s = text;
 
 	try {
 		bool Srch = false;
@@ -3317,11 +3322,11 @@ void TextEditor::ViewHelpText(std::string& s, size_t& TxtPos)
 
 			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
 			editor->InitHelpViewEditor(); // set colors
-			editor->EditText(HelpM, MemoT, "", "", S.get(), 0xFFF0, TxtPos, Scr,
+			editor->EditText(HelpM, MemoT, "", "", s, 0xFFF0, text_pos, Scr,
 				brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
 
 			if (Event.Pressed.KeyCombination() == __F6) {
-				PrintArray(S->A, S->LL, true);
+				PrintArray((char*)s.c_str(), s.length(), true);
 				continue;
 			}
 			break;
