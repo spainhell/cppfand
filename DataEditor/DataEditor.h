@@ -95,7 +95,7 @@ private:
     void IVon();
     void SetRecAttr(WORD I);
     void DisplTabDupl();
-    void DisplSysLine();
+    void DisplaySystemLine();
     void DisplBool();
     void DisplAllWwRecs();
     void SetNewWwRecAttr();

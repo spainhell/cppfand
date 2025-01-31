@@ -1,5 +1,7 @@
 #include "DataEditor.h"
 #include <memory>
+#include <regex>
+
 #include "../TextEditor/TextEditor.h"
 #include "../TextEditor/EditorHelp.h"
 #include "EditReader.h"
@@ -25,6 +27,7 @@
 #include "../Logging/Logging.h"
 #include "../MergeReport/ReportGenerator.h"
 #include "../Common/textfunc.h"
+#include "../Common/exprcmp.h"
 #include "../Common/compare.h"
 #include "../Drivers/constants.h"
 #include "../Core/DateTime.h"
@@ -1074,13 +1077,16 @@ void DataEditor::SetCPage(WORD& c_page, ERecTxtD** rt)
 	}
 }
 
-
+/// <summary>
+/// Print the record number to the system line (1st line of the screen)
+/// </summary>
+/// <param name="N">record number</param>
 void DataEditor::DisplRecNr(int N)
 {
 	if (edit_->RecNrLen > 0) {
-		screen.GotoXY(edit_->RecNrPos, 1);
+		//screen.GotoXY(edit_->RecNrPos, 1);
 		TextAttr = screen.colors.fNorm;
-		screen.ScrFormatWrText(edit_->RecNrPos, 1, "%*i", edit_->RecNrLen, N);
+		screen.ScrFormatWrText(edit_->RecNrPos + 1, 1, "%*i", edit_->RecNrLen, N);
 	}
 }
 
@@ -1232,41 +1238,34 @@ void DataEditor::DisplTabDupl()
 	}
 }
 
-void DataEditor::DisplSysLine()
+void DataEditor::DisplaySystemLine()
 {
-	WORD i = 0, j = 0;
-	pstring m, s, x, z;
-	bool point = false;
-	s = edit_->Head;
-	if (s == "") return;
+	if (edit_->Head.empty()) return;
+
 	screen.GotoXY(1, 1);
 	TextAttr = screen.colors.fNorm;
 	ClrEol(TextAttr);
-	i = 1; x = "";
-	while (i <= s.length())
-		if (s[i] == '_') {
-			m = "";
-			point = false;
-			while ((i <= s.length()) && (s[i] == '_' || s[i] == '.')) {
-				if (s[i] == '.') point = true;
-				m.Append(s[i]); i++;
-			}
-			if (point) {
-				if (m == "__.__.__") x = x + StrDate(Today(), "DD.MM.YY");
-				else if (m == "__.__.____") x = x + StrDate(Today(), "DD.MM.YYYY");
-				else x = x + m;
-			}
-			else if (m.length() == 1) x = x + m;
-			else {
-				edit_->RecNrLen = m.length();
-				edit_->RecNrPos = i - m.length();
-				for (j = 1; j <= m.length(); j++) x.Append(' ');
-			}
-		}
-		else { x.Append(s[i]); i++; }
-	if (x.length() > TxtCols) x[0] = (char)TxtCols;
-	//printf("%s", x.c_str());
-	screen.ScrWrText(1, 1, x.c_str());
+
+	std::string sys_line = edit_->Head;
+
+	std::regex regex_full_date("(__\\.__\\.____)", std::regex_constants::icase);
+	std::regex regex_short_date("(__\\.__\\.__)", std::regex_constants::icase);
+	std::regex regex_rec_nr("(_{2,})", std::regex_constants::icase);
+	std::smatch sm;
+
+	sys_line = std::regex_replace(sys_line, regex_full_date, StrDate(Today(), "DD.MM.YYYY"));
+	sys_line = std::regex_replace(sys_line, regex_short_date, StrDate(Today(), "DD.MM.YY"));
+	if (std::regex_search(sys_line, sm, regex_rec_nr)) {
+		edit_->RecNrLen = (uint8_t)sm[0].length();
+		edit_->RecNrPos = (uint8_t)sm.prefix().length();
+		sys_line = sm.prefix().str() + std::string(sm[0].length(), ' ') + sm.suffix().str();
+	}
+
+	if (sys_line.length() > TxtCols) {
+		sys_line = sys_line.substr(0, TxtCols);
+	}
+
+	screen.ScrWrText(1, 1, sys_line.c_str());
 	DisplRecNr(CRec());
 }
 
@@ -1404,7 +1403,7 @@ void DataEditor::DisplEditWw()
 
 	WriteWFrame(edit_->WFlags, edit_->Top, "", TextAttr);
 	screen.Window(1, 1, TxtCols, TxtRows);
-	DisplSysLine();
+	DisplaySystemLine();
 	DisplBool();
 	screen.GotoXY(edit_->FrstCol, edit_->FrstRow);
 	WriteSL(edit_->HdTxt);

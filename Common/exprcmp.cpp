@@ -13,7 +13,7 @@ bool CmpStringWithMask(const std::string& value, std::string mask)
 
 std::string RegexFromString(std::string mask)
 {
-	if (mask.length() == 0) return "";
+	if (mask.empty()) return "";
 
 	// puvodni "\" je v reg. vyrazu r"\\"
 	size_t index = mask.find('\\'); /* \ -> \\ */
