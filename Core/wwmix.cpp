@@ -710,7 +710,7 @@ label3:
 		goto label1;
 	}
 
-	vector<string> dirItems = directoryItems(d, ne);
+	vector<string> dirItems = directoryItems(d, ne, true);
 	for (string& item : dirItems) {
 		PutSelect(item);
 	}

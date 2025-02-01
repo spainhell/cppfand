@@ -96,3 +96,7 @@ typedef std::array<BYTE, 4> TPrTimeOut;
 void OpenWorkH();
 
 void NonameStartFunction();
+
+
+// UCTOxx methods
+int32_t RunFndFilesExe(std::string cmd_line);

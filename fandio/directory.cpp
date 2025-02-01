@@ -56,12 +56,22 @@ string getDirectory(string fullPath, char pathDelim)
 	return dir;
 }
 
-vector<string> directoryItems(const string& path, string mask)
+vector<string> directoryItems(const string& path_with_mask)
+{
+	std::filesystem::path p = path_with_mask;
+	return directoryItems(p.parent_path().string(), p.filename().string(), false);
+}
+
+vector<string> directoryItems(const string& path, string mask, bool add_parent_dir)
 {
 	vector<string> result;
-	if (path != parentDirectory(path)) result.push_back("\\..");
-	for (const auto& entry : fs::directory_iterator(path)) {
-		auto fileName = entry.path().filename().string();
+
+	if (add_parent_dir && path != parentDirectory(path)) {
+		result.push_back("\\..");
+	}
+
+	for (const filesystem::directory_entry& entry : fs::directory_iterator(path)) {
+		std::string fileName = entry.path().filename().string();
 		if (entry.is_directory()) {
 			result.push_back("\\" + fileName);
 		}
@@ -71,9 +81,11 @@ vector<string> directoryItems(const string& path, string mask)
 			}
 		}
 	}
+
 	if (result.size() > 1) {
 		sort(result.begin() + 1, result.end());
 	}
+
 	return result;
 }
 

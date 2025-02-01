@@ -158,13 +158,13 @@ void TzFile::GetDirs(LongStr* Mask)
 
 	//slRoot = nullptr;
 	WORD l = Mask->LL;
-	WORD j = 1;
+	WORD j = 0;
 	do {
-		while ((j <= l) && (Mask->A[j] == ' ' || Mask->A[j] == ',')) {
+		while ((j < l) && (Mask->A[j] == ' ' || Mask->A[j] == ',')) {
 			j++;
 		}
 		n = l - j + 1;
-		for (WORD i = j; i <= l; i++) {
+		for (WORD i = j; i < l; i++) {
 			if (Mask->A[i] == ' ' || Mask->A[i] == ',') {
 				n = i - j;
 				break;

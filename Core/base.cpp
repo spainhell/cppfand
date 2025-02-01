@@ -11,6 +11,7 @@
 #include <vector>
 #include "obaseww.h"
 #include <iostream>
+#include <regex>
 
 #include "Cfg.h"
 #include "Compiler.h"
@@ -21,6 +22,7 @@
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
 #include "../Logging/Logging.h"
+#include "../fandio/directory.h"
 
 
 Video video;
@@ -725,27 +727,32 @@ int MemoryAvailable()
 
 bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_memory, bool load_font, bool text_mode)
 {
-	Logging* log = Logging::getInstance();
-
-	char psBuffer[128];
-	FILE* pPipe;
-
-	std::string cmd = path.empty() ? cmd_line : path + " " + cmd_line;
-	log->log(loglevel::INFO, "OSshell() calling command '%s'", cmd.c_str());
-
-	if ((pPipe = _popen(cmd.c_str(), "rt")) == nullptr)
-		return false;
-
-
-	while (fgets(psBuffer, 128, pPipe)) {
-		puts(psBuffer);
-	}
-
-	if (feof(pPipe)) {
-		LastExitCode = _pclose(pPipe);
+	if (path == "FNDFILES.EXE") {
+		LastExitCode = RunFndFilesExe(cmd_line);
 	}
 	else {
-		LastExitCode = -1;
+		Logging* log = Logging::getInstance();
+
+		char psBuffer[128];
+		FILE* pPipe;
+
+		std::string cmd = path.empty() ? cmd_line : path + " " + cmd_line;
+		log->log(loglevel::INFO, "OSshell() calling command '%s'", cmd.c_str());
+
+		if ((pPipe = _popen(cmd.c_str(), "rt")) == nullptr)
+			return false;
+
+
+		while (fgets(psBuffer, 128, pPipe)) {
+			puts(psBuffer);
+		}
+
+		if (feof(pPipe)) {
+			LastExitCode = _pclose(pPipe);
+		}
+		else {
+			LastExitCode = -1;
+		}
 	}
 
 	return true;
@@ -870,4 +877,41 @@ void NonameStartFunction()
 	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
 	FandResName = MyFExpand("FAND.RES", "FANDRES");
 	resFile.Open(FandResName);
+}
+
+int32_t RunFndFilesExe(std::string cmd_line)
+{
+	std::vector<std::string> args;
+
+	std::regex pattern("(\\\".*?\\\")|(\\S+)", std::regex_constants::icase);
+	auto words_begin = std::sregex_iterator(cmd_line.begin(), cmd_line.end(), pattern);
+	auto words_end = std::sregex_iterator();
+
+	for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+		std::smatch match = *i;
+		args.push_back(match.str());
+	}
+
+	if (args.size() != 3) {
+		return 1;
+	}
+
+	std::vector<std::string> items = directoryItems(args[1]);
+	std::string buf;
+	for (size_t i = 0; i < items.size(); i++) {
+		if (i > 0) buf += "\r\n";
+		buf += items[i];
+	}
+
+	HANDLE output = OpenH(args[2], _isOverwriteFile, Exclusive);
+
+	if (output == nullptr) {
+		return 2; // blocked file
+	}
+	else {
+		WriteH(output, buf.length(), (int8_t*)buf.c_str());
+		CloseH(&output);
+	}
+
+	return 0;
 }
