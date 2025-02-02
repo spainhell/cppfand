@@ -893,7 +893,7 @@ int32_t RunFndFilesExe(std::string cmd_line)
 	}
 
 	if (args.size() != 3) {
-		return 1;
+		return 1; // bad params
 	}
 
 	std::vector<std::string> items = directoryItems(args[1]);

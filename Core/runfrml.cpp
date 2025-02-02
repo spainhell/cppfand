@@ -216,7 +216,7 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 		auto iX = (FrmlElemFunction*)X;
 		std::string s = RunString(file_d, iX->P1, record);
 		DWORD error;
-		result = GetDiskFree(toupper(s[0]) - '@', error);
+		result = GetDiskFree(s[0], error);
 		break;
 	}
 #ifdef FandSQL

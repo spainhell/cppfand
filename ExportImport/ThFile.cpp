@@ -7,7 +7,7 @@
 
 WORD iBuf = 0;
 
-ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress, ThFile* F) : TcFile(aCompress)
+ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, bool aCompress, ThFile* F) : TcFile(aCompress)
 {
 	mode = AMode;
 	DWORD access_mode = 0;
@@ -92,7 +92,7 @@ ThFile::~ThFile()
 void ThFile::ReadBuf()
 {
 	if (Handle != INVALID_HANDLE_VALUE) {
-		lBuf = ReadH(Handle, BUFFER_SIZE, Buf);
+		lBuf = ReadH(Handle, BufSize, buffer1);
 		if (lBuf == 0) this->eof = true;
 		Size = lBuf;
 	}
@@ -106,13 +106,13 @@ void ThFile::WriteBuf(bool cond)
 {
 	if (Handle != INVALID_HANDLE_VALUE) {
 		//lBuf = fwrite(Buf, 1, lBuf, Handle);
-		WriteH(Handle, lBuf, Buf);
+		WriteH(Handle, lBuf, buffer1);
 	}
 }
 
 void ThFile::ClearBuf()
 {
-	memset(Buf, 0, sizeof(*Buf));
+	memset(buffer1, 0, sizeof(*buffer1));
 	lBuf = 16384;
 }
 
@@ -129,7 +129,7 @@ char ThFile::ForwChar()
 {
 	char result;
 label1:
-	if (iBuf < lBuf) result = (char)Buf[iBuf];
+	if (iBuf < lBuf) result = (char)buffer1[iBuf];
 	else {
 		ReadBuf();
 		if (eof) result = 0x1A;
@@ -143,7 +143,7 @@ char ThFile::RdChar()
 	char result;
 label1:
 	if (iBuf < lBuf) {
-		result = (char)Buf[iBuf];
+		result = (char)buffer1[iBuf];
 		iBuf++;
 	}
 	else {
@@ -272,8 +272,8 @@ bool ThFile::TestErr152()
 
 void ThFile::WrChar(char C)
 {
-	if (lBuf == BUFFER_SIZE) WriteBuf(false);
-	Buf[lBuf] = C;
+	if (lBuf == BufSize) WriteBuf(false);
+	buffer1[lBuf] = C;
 	lBuf++;
 }
 

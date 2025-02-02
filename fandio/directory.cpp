@@ -70,7 +70,7 @@ vector<string> directoryItems(const string& path, string mask, bool add_parent_d
 		result.push_back("\\..");
 	}
 
-	for (const filesystem::directory_entry& entry : fs::directory_iterator(path)) {
+	for (const fs::directory_entry& entry : fs::directory_iterator(path)) {
 		std::string fileName = entry.path().filename().string();
 		if (entry.is_directory()) {
 			result.push_back("\\" + fileName);
@@ -82,8 +82,13 @@ vector<string> directoryItems(const string& path, string mask, bool add_parent_d
 		}
 	}
 
-	if (result.size() > 1) {
-		sort(result.begin() + 1, result.end());
+	if (!result.empty()) {
+		if (add_parent_dir && result.size() > 1) {
+			sort(result.begin() + 1, result.end());
+		}
+		else {
+			ranges::sort(result);
+		}
 	}
 
 	return result;

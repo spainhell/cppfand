@@ -368,7 +368,7 @@ void Cpy(HANDLE h, int sz, ThFile* F2)
 		if (sz - i > F2->BufSize) n = F2->BufSize;
 		else n = sz - i;
 		i += n;
-		ReadH(h, n, F2->Buf);
+		ReadH(h, n, F2->buffer1);
 		TestCFileError(CFile);
 		F2->lBuf = n;
 		F2->WriteBuf(false);
@@ -488,38 +488,38 @@ void MakeCopy(CopyD* CD)
 		}
 
 		while (!F1.eof) {
-			memcpy(F2.Buf, F1.Buf, F1.lBuf);
+			memcpy(F2.buffer1, F1.buffer1, F1.lBuf);
 			F2.lBuf = F1.lBuf;
 			switch (CD->Mode) {
 			case 1: {
-				ConvKamenLatin(F2.Buf, F2.lBuf, true);
+				ConvKamenLatin(F2.buffer1, F2.lBuf, true);
 				break;
 			}
 			case 2: {
-				ConvKamenLatin(F2.Buf, F2.lBuf, false);
+				ConvKamenLatin(F2.buffer1, F2.lBuf, false);
 				break;
 			}
 			case 3: {
-				ConvToNoDiakr(F2.Buf, F2.lBuf, TVideoFont::foKamen);
+				ConvToNoDiakr(F2.buffer1, F2.lBuf, TVideoFont::foKamen);
 				break;
 			}
 			case 4: {
-				ConvToNoDiakr(F2.Buf, F2.lBuf, TVideoFont::foLatin2);
+				ConvToNoDiakr(F2.buffer1, F2.lBuf, TVideoFont::foLatin2);
 				break;
 			}
 			case 5: {
 				std::string code_table = resFile.Get(LatToWinCp);
-				ConvWinCp(F2.Buf, code_table, F2.lBuf);
+				ConvWinCp(F2.buffer1, code_table, F2.lBuf);
 				break;
 			}
 			case 6: {
 				std::string code_table = resFile.Get(KamToWinCp);
-				ConvWinCp(F2.Buf, code_table, F2.lBuf);
+				ConvWinCp(F2.buffer1, code_table, F2.lBuf);
 				break;
 			}
 			case 7: {
 				std::string code_table = resFile.Get(WinCpToLat);
-				ConvWinCp(F2.Buf, code_table, F2.lBuf);
+				ConvWinCp(F2.buffer1, code_table, F2.lBuf);
 				break;
 			}
 			default: break;
@@ -616,12 +616,12 @@ void BackUp(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 
 void BackupM(Instr_backup* PD)
 {
-	std::string s;
+	std::string mask;
 	void* p = nullptr;
 
 	MarkStore(p);
 	if (PD->IsBackup) {
-		s = RunString(CFile, PD->bmMasks, CRecPtr);
+		mask = RunString(CFile, PD->bmMasks, CRecPtr);
 	}
 	TzFile* F = new TzFile(PD->IsBackup, PD->NoCompress, PD->bmSubDir, PD->bmOverwr,
 		PD->BrCatIRec, RunString(CFile, PD->bmDir, CRecPtr));
@@ -629,11 +629,7 @@ void BackupM(Instr_backup* PD)
 	try {
 		LastExitCode = 1;
 		if (PD->IsBackup) {
-			LongStr* x = new LongStr(s.length());
-			x->LL = s.length();
-			memcpy(x->A, s.c_str(), x->LL);
-			F->Backup(x);
-			delete x; x = nullptr;
+			F->Backup(mask);
 		}
 		else {
 			F->Restore();

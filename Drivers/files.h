@@ -79,4 +79,4 @@ bool SetFileAttr(const std::string& path, DWORD& error, long attributes);
 /**
  *
  */
-long GetDiskFree(char drive, DWORD& error);
+long GetDiskFree(char drive_letter, DWORD& error);

@@ -61,7 +61,7 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	Path = FExpand(Path);
 	FSplit(Path, Dir, n, e);
 	Ext = ".000";
-	DrvNm = Dir[0];
+	drive_letter = Dir[0];
 	MountVol(true);
 	gc->SetInpStr(numbers);
 	gc->RdLex();
@@ -140,7 +140,7 @@ void TbFile::BackupH()
 			if (sz - i > BufSize) n = BufSize;
 			else n = sz - i;
 			i += n;
-			ReadH(h, n, Buf);
+			ReadH(h, n, buffer1);
 			lBuf = n;
 			WriteBuf(false);
 			RunMsgN(i);

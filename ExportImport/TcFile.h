@@ -1,7 +1,7 @@
 #pragma once
-#include "../Common/typeDef.h"
+#include <cstdint>
 
-const size_t BUFFER_SIZE = 16384;
+#include "../Common/typeDef.h"
 
 const WORD RingBufSz = 4096;
 const BYTE MaxMatchLen = 18;
@@ -19,17 +19,23 @@ class TcFile {
 public:
 	TcFile(BYTE aCompress);
 	virtual ~TcFile();
-	size_t lBuf = BUFFER_SIZE;
-	BYTE* Buf = new BYTE[BUFFER_SIZE]{ '\0' };
-	BYTE* Buf2 = nullptr;
-	WORD iBuf = 0, iBuf2 = 0, lBuf2 = 0, BufSize = 0, BufSize2 = 0;
+
+	size_t iBuf = 0, iBuf2 = 0;
+	size_t lBuf = 0, lBuf2 = 0;
+	size_t BufSize = 0, BufSize2 = 0;
+
+	uint8_t* buffer1 = nullptr;
+	uint8_t* buffer2 = nullptr;
+
 	bool eof = false, eof2 = false;
-	BYTE Compress = 0; BYTE CodeMask = 0;
+
+	bool Compress = 0;
+	BYTE CodeMask = 0;
 	WORD CodeMaskW = 0, lCode = 0, lInput = 0, nToRead = 0, iRingBuf = 0, jRingBuf = 0;
 	WORD MatchPos = 0, MatchLen = 0; // set by InsertNode
 	BYTE CodeBuf[17]{ 0 }; // [0]=8 flags:"1"=unencoded byte,"0"=position/length word
 	TXBuf* XBuf = nullptr;
-	int MyDiskFree(bool Floppy, BYTE Drive);
+	int32_t MyDiskFree(bool floppy, char drive_letter);
 	void InsertNode(short r);
 	void DeleteNode(short p);
 	void WriteCodeBuf();

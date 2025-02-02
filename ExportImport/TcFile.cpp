@@ -7,36 +7,45 @@
 TcFile::TcFile(BYTE aCompress)
 {
 	Compress = aCompress;
-	if (Compress == 0) {
-		BufSize = 4 * RingBufSz; BufSize2 = BufSize;
-		Buf = new BYTE[BufSize];
-		Buf2 = Buf;
+	if (!Compress) {
+		BufSize = 4 * RingBufSz;
+		BufSize2 = BufSize;
+		buffer1 = new BYTE[BufSize];
+		buffer2 = buffer1;
 	}
 	else {
-		BufSize = RingBufSz; BufSize2 = 4 * BufSize;
+		BufSize = RingBufSz;
+		BufSize2 = 4 * BufSize;
 		XBuf = new TXBuf(); // GetStore(sizeof(TXBuf));
-		Buf = new BYTE[BufSize];
-		Buf2 = new BYTE[BufSize2];
+		buffer1 = new BYTE[BufSize];
+		buffer2 = new BYTE[BufSize2];
 	}
 }
 
 TcFile::~TcFile()
 {
-	delete[] Buf;
-	if (Compress != 0) {
-		delete[] Buf2;
+	delete[] buffer1;
+	if (Compress) {
+		delete[] buffer2;
 	}
 }
 
-int TcFile::MyDiskFree(bool Floppy, BYTE Drive)
+int32_t TcFile::MyDiskFree(bool floppy, char drive_letter)
 {
-	if (spec.WithDiskFree || Floppy) {
+	int32_t result;
+
+	if (spec.WithDiskFree || floppy) {
 		DWORD error;
-		return GetDiskFree(Drive, error);
+		result = GetDiskFree(drive_letter, error); // in MB
+		if (result > 2048) {
+			result = 0x7fffffff;
+		}
 	}
 	else {
-		return 0x7fffffff;
+		result = 0x7fffffff;
 	}
+
+	return result;
 }
 
 void TcFile::InsertNode(short r)
@@ -110,7 +119,7 @@ void TcFile::WriteCodeBuf()
 {
 	for (size_t i = 0; i <= lCode - 1; i++) {
 		if (lBuf2 >= BufSize2) WriteBuf2();
-		Buf2[lBuf2] = (char)CodeBuf[i];
+		buffer2[lBuf2] = (char)CodeBuf[i];
 		lBuf2++;
 	}
 	CodeBuf[0] = 0;
@@ -120,7 +129,7 @@ void TcFile::WriteCodeBuf()
 
 void TcFile::InitBufOutp()
 {
-	if (Compress != 0) {
+	if (Compress) {
 		/*asm les bx, Self; les bx, es: [bx] .TcFile.XBuf; lea di, es: [bx] .TXBuf.LSon;
 		mov cx, 3 * (RingBufSz + 1) + 256; cld; mov ax, Leer; rep stosw;
 		lea di, es: [bx] .TXBuf.RingBuf; mov cx, RingBufSz; mov ax, 0; rep stosb;*/
@@ -141,7 +150,7 @@ void TcFile::WriteBuf(bool isLast)
 {
 	short i = 0, j = 0; BYTE c = 0;
 
-	if (Compress == 0) {
+	if (!Compress) {
 		lBuf2 = lBuf;
 		WriteBuf2();
 		lBuf = 0;
@@ -150,7 +159,7 @@ void TcFile::WriteBuf(bool isLast)
 	i = 0;
 	if (lInput == 0) { /*initialization phase */
 		while ((lInput < MaxMatchLen) && (i < lBuf)) {
-			XBuf->RingBuf[RingBufSz - MaxMatchLen + lInput] = Buf[i];
+			XBuf->RingBuf[RingBufSz - MaxMatchLen + lInput] = buffer1[i];
 			i++;
 			lInput++;
 		}
@@ -176,7 +185,7 @@ label1:
 				}
 				goto label1;
 			}
-			c = Buf[i]; i++; nToRead--;
+			c = buffer1[i]; i++; nToRead--;
 			DeleteNode(jRingBuf);
 			XBuf->RingBuf[jRingBuf] = c;
 			if (jRingBuf < MaxMatchLen - 1) {
@@ -216,7 +225,7 @@ void TcFile::WriteBuf2()
 
 void TcFile::InitBufInp()
 {
-	if (Compress != 0) {
+	if (Compress) {
 		FillChar(XBuf->RingBuf, RingBufSz - MaxMatchLen, 0);
 		iRingBuf = RingBufSz - MaxMatchLen;
 		CodeMaskW = 0;
@@ -235,7 +244,7 @@ void TcFile::ReadBuf()
 
 	lBuf = 0; iBuf = 0;
 	if (eof) return;
-	if (Compress == 0) {
+	if (!Compress) {
 		ReadBuf2();
 		if (eof2) { eof = true; return; }
 		lBuf = lBuf2;
@@ -247,29 +256,29 @@ label1:
 	CodeMaskW = CodeMaskW >> 1;
 	if ((CodeMaskW & 256) == 0) {
 		if (iBuf2 >= lBuf2) { ReadBuf2(); if (eof2) goto label2; }
-		CodeMaskW = Buf2[iBuf2] || 0xff00;
+		CodeMaskW = buffer2[iBuf2] || 0xff00;
 		iBuf2++;
 	}  /*hi:count eight*/
 	if ((CodeMaskW & 1) != 0) {
 		if (iBuf2 >= lBuf2) { ReadBuf2(); if (eof2) goto label2; }
-		c = Buf2[iBuf2];
+		c = buffer2[iBuf2];
 		iBuf2++;
-		Buf[lBuf] = (char)c; lBuf++;
+		buffer1[lBuf] = (char)c; lBuf++;
 		XBuf->RingBuf[iRingBuf] = c;
 		iRingBuf = (iRingBuf + 1) & (RingBufSz - 1);
 	}
 	else {
 		if (iBuf2 >= lBuf2) { ReadBuf2(); if (eof2) goto label2; }
-		wLo = Buf2[iBuf2];
+		wLo = buffer2[iBuf2];
 		iBuf2++;
 		if (iBuf2 >= lBuf2) { ReadBuf2(); if (eof2) goto label2; }
-		wHi = Buf2[iBuf2];
+		wHi = buffer2[iBuf2];
 		iBuf2++;
 		MatchPos = wLo || ((wHi & 0xf0) << 4);
 		MatchLen = (wHi & 0x0f) + MinMatchLen;
 		for (i = 0; i <= MatchLen - 1; i++) {
 			c = XBuf->RingBuf[(MatchPos + i) & (RingBufSz - 1)];
-			Buf[lBuf] = (char)c;
+			buffer1[lBuf] = (char)c;
 			lBuf++;
 			XBuf->RingBuf[iRingBuf] = c;
 			iRingBuf = (iRingBuf + 1) & (RingBufSz - 1);

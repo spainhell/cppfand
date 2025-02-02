@@ -9,7 +9,7 @@ enum class InOutMode { _inp, _outp, _append };
 class ThFile : public TcFile
 {
 public:
-	ThFile(std::string APath, WORD CatIRec, InOutMode AMode, BYTE aCompress, ThFile* F);
+	ThFile(std::string APath, WORD CatIRec, InOutMode AMode, bool aCompress, ThFile* F);
 	~ThFile() override;
 
 	HANDLE Handle = INVALID_HANDLE_VALUE;
