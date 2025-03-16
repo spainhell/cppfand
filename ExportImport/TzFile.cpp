@@ -168,7 +168,7 @@ void TzFile::Get1Dir(int D, int& DLast)
 
 	// process subdirs
 	for (std::string subdir : dirs) {
-		i = StoreDirD(RDir + subdir + "\'");
+		i = StoreDirD(RDir + subdir + "\\");
 		StoreWPtr(DLast, i);
 		DLast = i;
 	}
