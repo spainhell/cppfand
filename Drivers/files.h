@@ -16,7 +16,7 @@ HANDLE OpenF(const std::string& path, DWORD& error, DWORD access_mode, DWORD sha
 
 DWORD ReadF(HANDLE hFile, void* buffer, size_t length, DWORD& error);
 
-bool WriteF(HANDLE hFile, void* buffer, size_t length, DWORD& error);
+bool WriteF(HANDLE hFile, const void* buffer, size_t length, DWORD& error);
 
 /**
  * \brief Set File Pointer

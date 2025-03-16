@@ -54,10 +54,12 @@ void TzFile::StoreWPtr(int Pos, int N)
 	WriteH(WorkHandle, 4, &N);
 }
 
-int TzFile::StoreWStr(pstring s)
+int TzFile::StoreWStr(const std::string& s)
 {
 	SeekH(WorkHandle, WPos);
-	WriteH(WorkHandle, s.length() + 1, &s);
+	uint8_t len = (uint8_t)s.length();
+	WriteH(WorkHandle, 1, &len);
+	WriteH(WorkHandle, s.length(), s.c_str());
 	int result = WPos - WBase;
 	WPos += s.length() + 1;
 	return result;
@@ -71,14 +73,20 @@ int TzFile::ReadWPtr(int Pos)
 	return n;
 }
 
-pstring TzFile::ReadWStr(int& Pos)
+std::string TzFile::ReadWStr(int& Pos)
 {
-	pstring s;
 	SeekH(WorkHandle, WBase + Pos);
-	ReadH(WorkHandle, 1, &s);
-	ReadH(WorkHandle, s.length(), &s[1]);
-	Pos += s.length() + 1;
-	return s;
+
+	// get length of the string
+	uint8_t len;
+	ReadH(WorkHandle, 1, &len);
+
+	// create buffer and read the string
+	char buffer[256];
+	ReadH(WorkHandle, len, buffer);
+
+	Pos += len + 1;
+	return std::string(buffer, len);
 }
 
 int TzFile::StoreDirD(std::string RDir)
@@ -111,189 +119,91 @@ label1:
 	}
 }
 
-/*void TzFile::Get1Dir(std::vector<std::string>& Msk, int D, int& DLast)
+void TzFile::Get1Dir(int D, int& DLast)
 {
-	SearchRec SR;
-	PathStr p;
-	int i, n;
-	pstring RDir;
-	StringList sl;
+	std::vector<std::string> dirs;
 
-	i = D + 12;
-	RDir = ReadWStr(i);
-	p = Dir + RDir + "*.*";
-	FindFirst(p + 00, 0, SR);
-	n = 0;
+	int i = D + 12;
+	std::string RDir = ReadWStr(i);
+	std::string path_str_p = Dir + RDir + "*.*";
+
+	int n = 0;
+
 	if (!(DosError() == 0 || DosError() == 18)) {
-		SetMsgPar(p);
+		SetMsgPar(path_str_p);
 		RunError(904);
 	}
-	while (DosError() == 0) {
-		if (Msk == nullptr) {
-		label1:
-			i = StoreWStr(SR.name);
-			if (n == 0) StoreWPtr(D + 4, i);
-			n++;
-		}
-		else {
-			sl = Msk;
-			while (sl != nullptr) {
-				if (EqualsMask(SR.name[1], length(SR.name), sl->S)) goto label1;
-				sl = (StringListEl*)sl->pChain;
-			}
-		}
-		FindNext(SR);
-	}
-	StoreWPtr(D + 8, n);
-	StoreWPtr(DLast, 0);
-	if (!SubDirOpt) return;
-	FindFirst(p + 00, Directory, SR);
-	while (DosError() == 0) {
-		if (((SR.Attr && Directory) == Directory) && (SR.name[1] != '.')) {
-			i = StoreDirD(RDir + SR.name + "\'");
-			StoreWPtr(DLast, i);
-			DLast = i;
-		}
-		FindNext(SR);
-	}
-}*/
 
-void TzFile::GetFilesInDir(const std::string& main_dir, const std::string& sub_dir)
-{
-	for (const fs::directory_entry& entry : fs::directory_iterator(main_dir + sub_dir)) {
+	for (const fs::directory_entry& entry : fs::directory_iterator(Dir + RDir)) {
 		std::string fileName = entry.path().filename().string();
-		if (entry.is_directory()) {
-			if (SubDirOpt) {
-				GetFilesInDir(main_dir, sub_dir + fileName + '\\');
-			}
+		if (entry.is_directory() && SubDirOpt) {
+			// add subdir to the list if subdir processing is enabled
+			dirs.push_back(fileName);
 		}
 		else {
-			for (const std::string& mask : v_masks_) {
-				if (CmpStringWithMask(fileName, mask)) {
-					paths_[sub_dir].push_back(fileName);
-					break;
+			// process file
+			if (v_masks_.empty()) {
+				i = StoreWStr(fileName);
+				if (n == 0) StoreWPtr(D + 4, i);
+				n++;
+			}
+			else {
+				for (std::string mask : v_masks_) {
+					if (CmpStringWithMask(fileName, mask)) {
+						i = StoreWStr(fileName);
+						if (n == 0) StoreWPtr(D + 4, i);
+						n++;
+						break;
+					}
+					else {
+						continue;
+					}
 				}
 			}
 		}
 	}
-}
 
-void TzFile::WriteSubdirFiles(const std::vector<std::string>& files, uint32_t& index)
-{
-	for (size_t i = 0; i < files.size(); i++) {
-		std::string file_name = files.at(i);
-		uint8_t path_len = file_name.length() <= 255 ? (uint8_t)file_name.length() : 255;
-		WriteH(Handle, 1, &path_len);
-		WriteH(Handle, path_len, (char*)file_name.c_str());
-		index += path_len + 1;
+	StoreWPtr(D + 8, n);
+	StoreWPtr(DLast, 0);
+
+	// process subdirs
+	for (std::string subdir : dirs) {
+		i = StoreDirD(RDir + subdir + "\'");
+		StoreWPtr(DLast, i);
+		DLast = i;
 	}
 }
 
-void TzFile::WriteSubdirRecord(const std::string& sub_dir, uint32_t& index, uint32_t next_rec_address, uint32_t file_desr_address, uint32_t files_count)
-{
-	WriteH(Handle, 4, &next_rec_address);
-	WriteH(Handle, 4, &file_desr_address);
-	WriteH(Handle, 4, &files_count);
-
-	uint8_t path_len = sub_dir.length() <= 255 ? (uint8_t)sub_dir.length() : 255;
-	WriteH(Handle, 1, &path_len);
-	WriteH(Handle, path_len, (char*)sub_dir.c_str());
-
-	// 4B next record, 4B files list address, 4B files count, 1B for path length, path length
-	index += 13 + path_len;
-}
-
+//void TzFile::GetFilesInDir(const std::string& main_dir, const std::string& sub_dir)
+//{
+//	for (const fs::directory_entry& entry : fs::directory_iterator(main_dir + sub_dir)) {
+//		std::string fileName = entry.path().filename().string();
+//		if (entry.is_directory()) {
+//			if (SubDirOpt) {
+//				GetFilesInDir(main_dir, sub_dir + fileName + '\\');
+//			}
+//		}
+//		else {
+//			for (const std::string& mask : v_masks_) {
+//				if (CmpStringWithMask(fileName, mask)) {
+//					paths_[sub_dir].push_back(fileName);
+//					break;
+//				}
+//			}
+//		}
+//	}
+//}
 
 void TzFile::GetDirs()
 {
-	paths_.clear();
-
-	GetFilesInDir(Dir, "");
-
-	// calculate total size of the header
-	uint32_t header_size = 0;
-	for (const auto& path : paths_) {
-		header_size += 13 + path.first.length();
-		for (const auto& file : path.second) {
-			header_size += file.length() + 1;
-		}
-	}
-
-	uint32_t index = 0;
-	SeekH(Handle, 0);
-	WriteH(Handle, 4, &header_size);
-	index += 4;
-
-	for (const auto& path : paths_) {
-		if (path.first.empty()) {
-			if (path == *paths_.rbegin()) {
-				// this is the last item in the map -> next record address is 0, files list are stored immediately after the header
-				WriteSubdirRecord(path.first, index, 0, 13, path.second.size());
-			}
-			else {
-				// calculate size of all files
-				uint32_t files_size = 0;
-				for (const auto& file : path.second) {
-					files_size += file.length() + 1;
-				}
-				WriteSubdirRecord(path.first, index, files_size, 13, path.second.size());
-			}
-			// for root directory files are stored immediately after the header
-			WriteSubdirFiles(path.second, index);
-		}
-		else {
-			if (path == *paths_.rbegin()) {
-
-			}
-			else
-			{
-				
-			}
-			WriteSubdirRecord(path.first, index, 0, 0, path.second.size());
-		}
-	}
-
-
-
-
-	//std::vector<std::string> slRoot;
-	//std::vector<std::string> sl;
-	//pstring s;
-	//WORD n;
-
-	////slRoot = nullptr;
-	//WORD l = mask.length();
-	//WORD j = 0;
-	//do {
-	//	while ((j < l) && (mask[j] == ' ' || mask[j] == ',')) {
-	//		j++;
-	//	}
-	//	n = l - j + 1;
-	//	for (WORD i = j; i < l; i++) {
-	//		if (mask[i] == ' ' || mask[i] == ',') {
-	//			n = i - j;
-	//			break;
-	//		}
-	//		if (n > 0) {
-	//			n = MinW(n, 255);
-	//			//sl = new StringListEl(); // GetZStore(5 + n);
-	//			//ChainLast(slRoot, sl);
-	//			//Move(&Mask->A[j], &sl->S[1], n);
-	//			//sl->S[0] = char(n);
-	//			std::string item = std::string(&mask[j], n);
-	//			slRoot.push_back(item);
-	//			j += n;
-	//		}
-	//	}
-	//} while (n != 0);
-	//int d = StoreDirD("");
-	//int dLast = d;
-	//do {
-	//	Get1Dir(slRoot, d, dLast);
-	//	d = ReadWPtr(d);
-	//} while (d != 0);
-	//SeekH(WorkHandle, WBase);
-	//WrH(WorkHandle, WPos - WBase);
+	int d = StoreDirD("");
+	int dLast = d;
+	do {
+		Get1Dir(d, dLast);
+		d = ReadWPtr(d);
+	} while (d != 0);
+	SeekH(WorkHandle, WBase);
+	WrH(WorkHandle, WPos - WBase);
 }
 
 void TzFile::Reset()
@@ -405,12 +315,17 @@ void TzFile::ProcFileList()
 
 	int d = 0;
 	MarkStore(p);
-
-	for (auto& dir_pair : paths_)
-	{
-		for (size_t i = 0; i < dir_pair.second.size(); i++) {
-			std::string f_name = dir_pair.second.at(i);
-			CPath = FExpand(dir_pair.first + f_name);
+	do {
+		int dNext = ReadWPtr(d);
+		int n = ReadWPtr(d + 8);
+		int i = d + 12;
+		std::string r_dir = ReadWStr(i);
+		SetDir(r_dir);
+		i = ReadWPtr(d + 4);
+		while (n > 0) {
+			std::string file_name = ReadWStr(i);
+			n--;
+			CPath = FExpand(file_name);
 			CVol = "";
 			if (IsBackup) {
 				h = OpenH(CPath, _isOldFile, RdOnly);
@@ -423,42 +338,23 @@ void TzFile::ProcFileList()
 					h = OpenH(CPath, _isNewFile, Exclusive);
 					if (HandleError == 80) {
 						SetMsgPar(CPath);
-						if (PromptYN(780)) {
-							h = OpenH(CPath, _isOverwriteFile, Exclusive);
-						}
+						if (PromptYN(780)) h = OpenH(CPath, _isOverwriteFile, Exclusive);
 						else {
 							skp = true;
-							RdH(h, skp);
-							CloseH(&h);
-							break;
+							goto label1;
 						}
 					}
 				}
-				else {
-					h = OpenH(CPath, _isOverwriteFile, Exclusive);
-				}
+				else h = OpenH(CPath, _isOverwriteFile, Exclusive);
 				TestCPathError();
+			label1:
 				RdH(h, skp);
 			}
 			CloseH(&h);
 		}
-	}
-
-
-}
-
-void TzFile::ParseMask(const std::string& mask)
-{
-	v_masks_.clear();
-
-	std::regex pattern("(\\\".*?\\\")|(\\S+)", std::regex_constants::icase);
-	auto words_begin = std::sregex_iterator(mask.begin(), mask.end(), pattern);
-	auto words_end = std::sregex_iterator();
-
-	for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
-		std::smatch match = *i;
-		v_masks_.push_back(match.str());
-	}
+		d = dNext;
+		ReleaseStore(&p);
+	} while (d != 0);
 }
 
 void TzFile::Backup(std::string& mask)
@@ -484,4 +380,18 @@ void TzFile::Restore()
 		ProcFileList();
 	}
 	RunMsgOff();
+}
+
+void TzFile::ParseMask(const std::string& mask)
+{
+	v_masks_.clear();
+
+	std::regex pattern("(\\\".*?\\\")|(\\S+)", std::regex_constants::icase);
+	auto words_begin = std::sregex_iterator(mask.begin(), mask.end(), pattern);
+	auto words_end = std::sregex_iterator();
+
+	for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+		std::smatch match = *i;
+		v_masks_.push_back(match.str());
+	}
 }

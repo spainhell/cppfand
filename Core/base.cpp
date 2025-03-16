@@ -451,7 +451,7 @@ WORD ReadLongH(FILE* handle, int bytes, void* buffer)
 	return WORD(readed);
 }
 
-size_t WriteH(HANDLE handle, size_t length, void* buffer)
+size_t WriteH(HANDLE handle, size_t length, const void* buffer)
 {
 	if (handle == nullptr) {
 		RunError(706);
