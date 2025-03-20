@@ -4,7 +4,7 @@
 
 void FileCopy(CopyD* CD);
 void MakeMerge(CopyD* CD);
-void BackUp(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel);
+void BackUp(bool IsBackup, bool compress, WORD Ir, bool NoCancel);
 void BackupM(Instr_backup* PD);
 void CheckFile(FileD* FD);
 void CodingCRdb(EditD* edit, bool rotate);

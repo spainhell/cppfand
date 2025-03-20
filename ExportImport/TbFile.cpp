@@ -9,7 +9,7 @@
 FileD* x_FD = nullptr;
 WORD x_I = 0;
 
-TbFile::TbFile(bool noCompress) : TyFile()
+TbFile::TbFile(bool compress) : TyFile(compress)
 {
 	Size = 0;
 	OrigSize = 0;

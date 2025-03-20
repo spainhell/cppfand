@@ -1,7 +1,7 @@
 #include "TyFile.h"
 #include "../Core/constants.h"
 
-TyFile::TyFile(): TcFile(false)
+TyFile::TyFile(bool compress): TcFile(compress)
 {
 }
 

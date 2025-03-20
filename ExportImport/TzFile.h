@@ -10,7 +10,7 @@ typedef void* HANDLE;
 class TzFile : public TyFile
 {
 public:
-    TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, int Ir, pstring aDir);
+    TzFile(bool BkUp, bool compress, bool SubDirO, bool OverwrO, int Ir, std::string& aDir);
     int WBase, WPos;
     HANDLE Handle;
     int SpaceOnDisk, Size, OrigSize;

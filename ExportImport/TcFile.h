@@ -17,7 +17,7 @@ struct TXBuf {
 
 class TcFile {
 public:
-	TcFile(BYTE aCompress);
+	TcFile(bool compress);
 	virtual ~TcFile();
 
 	size_t iBuf = 0, iBuf2 = 0;
@@ -29,7 +29,7 @@ public:
 
 	bool eof = false, eof2 = false;
 
-	bool Compress = 0;
+	bool Compress = false;
 	BYTE CodeMask = 0;
 	WORD CodeMaskW = 0, lCode = 0, lInput = 0, nToRead = 0, iRingBuf = 0, jRingBuf = 0;
 	WORD MatchPos = 0, MatchLen = 0; // set by InsertNode

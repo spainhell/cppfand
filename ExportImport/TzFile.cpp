@@ -11,11 +11,12 @@
 
 namespace fs = std::filesystem;
 
-TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, int Ir, pstring aDir)
+TzFile::TzFile(bool BkUp, bool compress, bool SubDirO, bool OverwrO, int Ir, std::string& aDir) : TyFile(compress)
 {
 	SaveFiles();
 	ForAllFDs(ForAllFilesOperation::close_passive_fd);
 	//if NoCompr then inherited init(0) else inherited init(1);
+	Compress = compress;
 	IsBackup = BkUp;
 	SubDirOpt = SubDirO;
 	OverwrOpt = OverwrO;

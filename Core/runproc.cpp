@@ -1553,7 +1553,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 		}
 		case PInstrCode::_backup: {
 			auto iPD = (Instr_backup*)instr;
-			BackUp(iPD->IsBackup, iPD->NoCompress, iPD->BrCatIRec, iPD->BrNoCancel);
+			BackUp(iPD->IsBackup, !iPD->NoCompress, iPD->BrCatIRec, iPD->BrNoCancel);
 			break;
 		}
 		case PInstrCode::_backupm: {

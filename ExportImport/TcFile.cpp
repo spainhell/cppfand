@@ -4,9 +4,9 @@
 #include "../Drivers/files.h"
 
 
-TcFile::TcFile(BYTE aCompress)
+TcFile::TcFile(bool compress)
 {
-	Compress = aCompress;
+	Compress = compress;
 	if (!Compress) {
 		BufSize = 4 * RingBufSz;
 		BufSize2 = BufSize;
@@ -27,6 +27,7 @@ TcFile::~TcFile()
 	delete[] buffer1;
 	if (Compress) {
 		delete[] buffer2;
+		delete XBuf;
 	}
 }
 
@@ -52,8 +53,8 @@ void TcFile::InsertNode(short r)
 {
 	short res = 1;
 	size_t i = 0;
-	auto key = &XBuf->RingBuf[r];
-	auto p = RingBufSz + 1 + key[0];
+	uint8_t* key = &XBuf->RingBuf[r];
+	int p = RingBufSz + 1 + key[0];
 	XBuf->RSon[r] = Leer;
 	XBuf->LSon[r] = Leer;
 	MatchLen = 0;
@@ -130,9 +131,9 @@ void TcFile::WriteCodeBuf()
 void TcFile::InitBufOutp()
 {
 	if (Compress) {
-		/*asm les bx, Self; les bx, es: [bx] .TcFile.XBuf; lea di, es: [bx] .TXBuf.LSon;
+		/*asm les bx, Self; les bx, es: [bx] .TcFile.XBuf; lea di, es: [bx] .TXBuf->LSon;
 		mov cx, 3 * (RingBufSz + 1) + 256; cld; mov ax, Leer; rep stosw;
-		lea di, es: [bx] .TXBuf.RingBuf; mov cx, RingBufSz; mov ax, 0; rep stosb;*/
+		lea di, es: [bx] .TXBuf->RingBuf; mov cx, RingBufSz; mov ax, 0; rep stosb;*/
 
 		CodeBuf[0] = 0;
 		lCode = 1;
@@ -175,8 +176,8 @@ label1:
 			else {
 				while (nToRead > 0) {
 					DeleteNode(jRingBuf);
-					jRingBuf = (jRingBuf + 1) and (RingBufSz - 1);
-					iRingBuf = (iRingBuf + 1) and (RingBufSz - 1);
+					jRingBuf = (jRingBuf + 1) & (RingBufSz - 1);
+					iRingBuf = (iRingBuf + 1) & (RingBufSz - 1);
 					lInput--;
 					nToRead--;
 					if ((lInput != 0)) {

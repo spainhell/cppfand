@@ -5,7 +5,7 @@
 class TyFile : public TcFile
 {
 public:
-    TyFile();
+    TyFile(bool compress);
     char drive_letter = '\0';
 	std::string Vol;
     std::string Path;

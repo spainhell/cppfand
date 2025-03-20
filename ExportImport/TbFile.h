@@ -9,7 +9,7 @@ typedef void* HANDLE;
 class TbFile : TyFile
 {
 public:
-	TbFile(bool noCompress);
+	TbFile(bool compress);
 	~TbFile();
 
 	HANDLE Handle = nullptr;

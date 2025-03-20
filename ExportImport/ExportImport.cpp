@@ -594,9 +594,9 @@ void MakeMerge(CopyD* CD)
 	}
 }
 
-void BackUp(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
+void BackUp(bool IsBackup, bool compress, WORD Ir, bool NoCancel)
 {
-	TbFile* F = new TbFile(NoCompress);
+	TbFile* F = new TbFile(compress);
 
 	try {
 		LastExitCode = 1;
@@ -623,8 +623,9 @@ void BackupM(Instr_backup* PD)
 	if (PD->IsBackup) {
 		mask = RunString(CFile, PD->bmMasks, CRecPtr);
 	}
-	TzFile* F = new TzFile(PD->IsBackup, PD->NoCompress, PD->bmSubDir, PD->bmOverwr,
-		PD->BrCatIRec, RunString(CFile, PD->bmDir, CRecPtr));
+
+	std::string aDir = RunString(CFile, PD->bmDir, CRecPtr);
+	TzFile* F = new TzFile(PD->IsBackup, !PD->NoCompress, PD->bmSubDir, PD->bmOverwr, PD->BrCatIRec, aDir);
 
 	try {
 		LastExitCode = 1;

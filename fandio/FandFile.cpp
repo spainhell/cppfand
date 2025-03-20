@@ -44,17 +44,13 @@ size_t FandFile::ReadWriteData(FileOperation operation, size_t position, size_t 
 	Logging* log = Logging::getInstance();
 	size_t result = 0;
 
-	short PgeIdx = 0, PgeRest = 0;
-	WORD err = 0; int PgeNo = 0;
-	//CachePage* Z = nullptr;
+	WORD err = 0;
 
 	if (Handle == nullptr) {
 		RunError(706);
 		return result;
 	}
 
-	// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
-	//log->log(loglevel::DEBUG, "RdWrCache() non cached file 0x%p operation.", handle);
 	SeekH(Handle, position);
 
 	if (operation == READ) {
