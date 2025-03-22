@@ -3,6 +3,7 @@
 
 #include "Rdb.h"
 #include "../fandio/Fand0File.h"
+#include "../fandio/locks.h" // to be visible in other parts of code
 
 class FieldDescr;
 class Additive;

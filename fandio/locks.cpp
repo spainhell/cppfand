@@ -1,15 +1,17 @@
 #include "locks.h"
 
 #include "files.h"
-#include "../Core/GlobalVariables.h"
-#include "../Core/access.h"
+//#include "../Core/GlobalVariables.h"
+//#include "../Core/access.h"
 #include "../Core/obaseww.h"
 
-void RunErrorM(FileD* file_d, LockMode Md, WORD N)
-{
-	OldLMode(file_d, Md);
-	RunError(N);
-}
+//void RunErrorM(FileD* file_d, LockMode Md, WORD N)
+//{
+//	OldLMode(file_d, Md);
+//	RunError(N);
+//}
+
+std::string LockModeTxt[9] = { "NULL", "NOEXCL", "NODEL", "NOCR", "RD", "WR", "CR", "DEL", "EXCL" };
 
 #ifdef FandNetV
 // const int TransLock = 0x0A000501;  /* locked while state transition */
@@ -59,14 +61,14 @@ bool UnLockH(HANDLE Handle, int Pos, WORD Len)
 	return true;
 }
 
-void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len)
+void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len, uint16_t lan_node)
 {
 	__int32 n = 0;
 	switch (Mode) {       /* hi=how much BYTEs, low= first BYTE */
-	case NoExclMode: n = 0x00010000 + LANNode; break;
-	case NoDelMode: n = 0x00010100 + LANNode; break;
-	case NoCrMode: n = 0x00010200 + LANNode; break;
-	case RdMode: n = 0x00010300 + LANNode; break;
+	case NoExclMode: n = 0x00010000 + lan_node; break;
+	case NoDelMode: n = 0x00010100 + lan_node; break;
+	case NoCrMode: n = 0x00010200 + lan_node; break;
+	case RdMode: n = 0x00010300 + lan_node; break;
 	case WrMode: n = 0x00FF0300; break;
 	case CrMode: n = 0x01FF0200; break;
 	case DelMode: n = 0x02FF0100; break;
@@ -77,12 +79,7 @@ void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len)
 	Len = n >> 16;
 }
 
-void ResetFileUpdH(FileD* file_d)
-{
-	file_d->FF->ClearUpdateFlag(); //ResetUpdHandle(file_d->FF->Handle);
-}
-
-bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
+bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, WORD Kind, bool RdPref, uint16_t lan_node)
 {
 	int oldpos; WORD oldlen, d;
 	bool result = false;
@@ -103,7 +100,7 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 			// ClearCacheCFile(); - this method does not exist anymore (we don't use a cache)
 		}
 		if (Mode < WrMode) {
-			ResetFileUpdH(fileD);
+			fileD->FF->ClearUpdateFlag();
 		}
 	}
 	int w = 0;
@@ -120,7 +117,7 @@ label1:
 			else {
 				d = spec.NetDelay;
 				SetPathAndVolume(fileD);
-				SetMsgPar(CPath, LockModeTxt[Mode]);
+				SetMsgPar(path, LockModeTxt[Mode]);
 				int w1 = PushWrLLMsg(825, Kind == 1);
 				if (w == 0) {
 					w = w1;
@@ -137,13 +134,13 @@ label1:
 			return result;
 		}
 	if (oldmode != NullMode) {
-		ModeLockBnds(oldmode, oldpos, oldlen);
+		ModeLockBnds(oldmode, oldpos, oldlen, lan_node);
 		UnLockH(h, oldpos, oldlen);
 	}
 	if (Mode != NullMode) {
 		WORD len;
 		__int32 pos;
-		ModeLockBnds(Mode, pos, len);
+		ModeLockBnds(Mode, pos, len, lan_node);
 		if (!TryLockH(h, pos, len)) {
 			if (oldmode != NullMode) {
 				TryLockH(h, oldpos, oldlen);
@@ -175,16 +172,16 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 }
 #endif
 
-void OldLMode(FileD* fileD, LockMode Mode)
+void OldLMode(FileD* fileD, std::string& path, LockMode Mode, uint16_t lan_node)
 {
 #ifdef FandSQL
 	if (fileD->IsSQLFile) { fileD->LMode = Mode; return; }
 #endif
 	if (fileD->FF->Handle == nullptr) return;
-	if (Mode != fileD->FF->LMode) ChangeLMode(fileD, Mode, 0, true);
+	if (Mode != fileD->FF->LMode) ChangeLMode(fileD, path, Mode, 0, true, lan_node);
 }
 
-bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind)
+bool TryLMode(FileD* fileD, std::string& path, LockMode Mode, LockMode& OldMode, WORD Kind, uint16_t lan_node)
 {
 	bool result = true;
 #ifdef FandSQL
@@ -195,26 +192,25 @@ bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind)
 #endif
 	{
 		if (fileD->FF->Handle == nullptr) {
-			OpenCreateF(fileD, CPath, Shared);
+			OpenCreateF(fileD, path, Shared);
 		}
 		OldMode = fileD->FF->LMode;
 		if (Mode > fileD->FF->LMode) {
-			result = ChangeLMode(fileD, Mode, Kind, true);
+			result = ChangeLMode(fileD, path, Mode, Kind, true, lan_node);
 		}
 	}
 	return result;
 }
 
-LockMode NewLMode(FileD* fileD, LockMode Mode)
+LockMode NewLMode(FileD* fileD, std::string& path, LockMode Mode, uint16_t lan_node)
 {
 	LockMode md;
-	TryLMode(fileD, Mode, md, 0);
+	TryLMode(fileD, path, Mode, md, 0, lan_node);
 	return md;
 }
 
-bool TryLockN(Fand0File* fand_file, int N, WORD Kind)
+bool TryLockN(Fand0File* fand_file, std::string& path, int N, WORD Kind)
 {
-	int w1;
 	WORD m;
 	std::string XTxt = "CrX";
 	auto result = true;
@@ -232,10 +228,10 @@ bool TryLockN(Fand0File* fand_file, int N, WORD Kind)
 				m = 826;
 				if (N == 0) {
 					SetPathAndVolume(fand_file->GetFileD());
-					SetMsgPar(CPath, XTxt);
+					SetMsgPar(path, XTxt);
 					m = 825;
 				}
-				w1 = PushWrLLMsg(m, Kind == 1);
+				int w1 = PushWrLLMsg(m, Kind == 1);
 				if (w == 0) {
 					w = w1;
 				}

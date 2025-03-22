@@ -6,7 +6,6 @@
 #include "../fandio/files.h"
 #include "../fandio/XKey.h"
 #include "../Logging/Logging.h"
-#include "../fandio/locks.h"
 
 
 FileD::FileD(FType f_type)
@@ -363,27 +362,27 @@ void FileD::Save()
 
 void FileD::OldLockMode(LockMode mode)
 {
-	OldLMode(this, mode);
+	OldLMode(this, CPath, mode, LANNode);
 }
 
 LockMode FileD::NewLockMode(LockMode mode)
 {
-	return NewLMode(this, mode);
+	return NewLMode(this, CPath, mode, LANNode);
 }
 
 bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, WORD kind)
 {
-	return TryLMode(this, mode, old_mode, kind);
+	return TryLMode(this, CPath, mode, old_mode, kind, LANNode);
 }
 
 bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
 {
-	return ChangeLMode(this, mode, kind, rd_pref);
+	return ChangeLMode(this, CPath, mode, kind, rd_pref, LANNode);
 }
 
 bool FileD::Lock(int n, WORD kind)
 {
-	return TryLockN(this->FF, n, kind);
+	return TryLockN(this->FF, CPath, n, kind);
 }
 
 void FileD::Unlock(int n)

@@ -18,8 +18,6 @@ Catalog* catalog = nullptr;
 FileD* HelpFD;
 //size_t InpArrLen, CurrPos, OldErrPos;
 
-std::string LockModeTxt[9] = { "NULL", "NOEXCL", "NODEL", "NOCR", "RD", "WR", "CR", "DEL", "EXCL" };
-
 structXPath XPath[20];
 WORD XPathN;
 
