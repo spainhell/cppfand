@@ -8,7 +8,6 @@ public:
 
 	void static Code(void* data, size_t length);
 
-	void static CodingLongStr(FileD* file_d, LongStr* S);
 	[[nodiscard]] std::string static CodingString(FileD* file_d, const std::string& S);
 
 	/// <summary>

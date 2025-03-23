@@ -279,7 +279,19 @@ void ThFile::WrChar(char C)
 
 void ThFile::WrString(std::string S)
 {
-	for (size_t i = 0; i < S.length(); i++) WrChar(S[i]);
+	for (size_t i = 0; i < S.length(); i++) {
+		WrChar(S[i]);
+	}
+}
+
+void ThFile::WrString(std::string S, bool WithDelim)
+{
+	if (WithDelim) WrChar('\'');
+	for (size_t i = 0; i < S.length(); i++) {
+		WrChar(S[i]);
+		if (WithDelim && (S[i] == '\'')) WrChar('\'');
+	}
+	if (WithDelim) WrChar('\'');
 }
 
 void ThFile::WrLongStr(LongStr* S, bool WithDelim)

@@ -479,7 +479,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 				else {
 					throw("Check implementation! EditDRoot is probably not set.");
 					CRecPtr = EditDRoot->NewRecPtr;
-					sp = CFile->loadLongS((*data_editor->CFld)->FldD, CRecPtr);
+					//sp = CFile->loadLongS((*data_editor->CFld)->FldD, CRecPtr);
 				}
 				editor->_lenT = sp->LL;
 				// _textT = (CharArr*)(sp)

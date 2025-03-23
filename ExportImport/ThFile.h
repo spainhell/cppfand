@@ -47,6 +47,7 @@ public:
 	void WrChar(char C);
 	//void WriteBuf2();
 	void WrString(std::string S);
+	void WrString(std::string S, bool WithDelim);
 	void WrLongStr(LongStr* S, bool WithDelim);
 
 private:

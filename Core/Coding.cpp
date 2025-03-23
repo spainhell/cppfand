@@ -20,19 +20,6 @@ void Coding::Code(void* data, size_t length)
 	}
 }
 
-void Coding::CodingLongStr(FileD* file_d, LongStr* S)
-{
-	if (file_d->FF->TF->LicenseNr == 0) {
-		Code(S->A, S->LL);
-	}
-	else {
-		std::string coded_input = std::string(S->A, S->LL);
-		std::string decoded_input = Coding::XDecode(coded_input);
-		S->LL = decoded_input.size();
-		memcpy(S->A, decoded_input.c_str(), decoded_input.length());
-	}
-}
-
 std::string Coding::CodingString(FileD* file_d, const std::string& S)
 {
 	if (file_d->FF->TF->LicenseNr == 0) {

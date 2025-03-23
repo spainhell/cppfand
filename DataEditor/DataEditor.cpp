@@ -2892,11 +2892,9 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		case 2: {
 			// are old and new text positions same?
 			if ((*(int*)((char*)edit_->OldRecPtr + ChptTxt->Displ) == *(int*)((char*)record_ + ChptTxt->Displ)) && PromptYN(157)) {
-				s = file_d_->loadLongS(ChptTxt, record_);
 				TWork.Delete(ClpBdPos);
-				std::string data = std::string(s->A, s->LL);
+				std::string data = file_d_->loadS(ChptTxt, record_);
 				ClpBdPos = TWork.Store(data);
-				delete s; s = nullptr;
 			}
 			UndoRecord();
 			goto label1;

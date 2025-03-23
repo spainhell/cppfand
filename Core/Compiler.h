@@ -42,7 +42,6 @@ public:
 	std::string Error(short N);
 	void SetInpStr(std::string& s);
 	void SetInpStdStr(std::string& s, bool ShowErr);
-	void SetInpLongStr(LongStr* S, bool ShowErr);
 	void SetInpTTPos(FileD* file_d, int Pos, bool Decode);
 	void SetInpTT(RdbPos* rdb_pos, bool FromTxt);
 	void SetInpTTxtPos(FileD* file_d);

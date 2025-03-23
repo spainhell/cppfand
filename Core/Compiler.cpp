@@ -139,19 +139,6 @@ void Compiler::SetInpStdStr(std::string& s, bool ShowErr)
 	InpRdbPos.i_rec = 0;
 }
 
-void Compiler::SetInpLongStr(LongStr* S, bool ShowErr)
-{
-	input_string = std::string(S->A, S->LL);
-
-	if (input_string.empty()) ForwChar = 0x1A;
-	else ForwChar = input_string[0];
-
-	input_pos = 0;
-	InpRdbPos.rdb = nullptr;
-	if (ShowErr) InpRdbPos.rdb = nullptr; // TODO: tady bylo InpRdbPos.rdb:=ptr(0,1);
-	InpRdbPos.i_rec = 0;
-}
-
 void Compiler::SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 {
 	std::string raw_data = file_d->FF->TF->Read(Pos);
@@ -173,12 +160,7 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 {
 	if (rdb_pos->i_rec == 0) {
 		std::string run_str = RunString(CFile, (FrmlElem*)rdb_pos->rdb, CRecPtr);
-		// std::string cannot be used here!
-		// it's deleted on the end of this method!
-		LongStr* run_long_str = new LongStr(run_str.length());
-		run_long_str->LL = run_str.length();
-		memcpy(run_long_str->A, run_str.c_str(), run_long_str->LL);
-		SetInpLongStr(run_long_str, true);
+		SetInpStdStr(run_str, true);
 		return;
 	}
 	InpRdbPos = *rdb_pos;

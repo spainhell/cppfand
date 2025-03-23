@@ -216,9 +216,9 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			}
 			case FieldType::TEXT: {
 				if (Opt == CpOption::cpVar) {
-					x = CFile->loadLongS(F, CRecPtr);
-					F2->WrLongStr(x, true);
-					delete x;
+					std::string xs = CFile->loadS(F, CRecPtr);
+					F2->WrString(xs, true);
+					// delete x;
 				}
 				break;
 			}

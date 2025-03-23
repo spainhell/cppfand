@@ -298,17 +298,6 @@ std::string FileD::loadS(FieldDescr* field_d, void* record)
 	return result;
 }
 
-LongStr* FileD::loadLongS(FieldDescr* field_d, void* record)
-{
-	std::string s = loadS(field_d, record);
-
-	LongStr* result = new LongStr(s.length());
-	result->LL = s.length();
-	memcpy(result->A, s.c_str(), s.length());
-
-	return result;
-}
-
 int FileD::loadT(FieldDescr* field_d, void* record)
 {
 	return FF->loadT(field_d, record);
