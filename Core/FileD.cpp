@@ -371,7 +371,51 @@ bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
 
 bool FileD::Lock(int n, WORD kind)
 {
-	return TryLockN(this->FF, CPath, n, kind);
+	//TryLockN(Fand0File* fand_file, std::string& path, int N, WORD Kind)
+	//this->FF, CPath, n, kind
+
+	WORD m;
+	std::string XTxt = "CrX";
+	auto result = true;
+
+#ifdef FandSQL
+	if (fand_file->_parent->IsSQLFile) return result;
+#endif
+
+#ifdef FandNetV
+	if (!FF->IsShared()) return result;
+	int w = 0;
+	while (true) {
+		if (!TryLockH(FF->Handle, RecLock + n, 1)) {
+			if (kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
+				m = 826;
+				if (n == 0) {
+					SetPathAndVolume(FF->GetFileD());
+					SetMsgPar(CPath, XTxt);
+					m = 825;
+				}
+				int w1 = PushWrLLMsg(m, kind == 1);
+				if (w == 0) {
+					w = w1;
+				}
+				else {
+					PopW(w1, false);
+				}
+				/*beep; don't disturb*/
+				if (KbdTimer(spec.NetDelay, kind)) {
+					continue;
+				}
+			}
+			result = false;
+		}
+		if (w != 0) {
+			PopW(w);
+		}
+		break;
+	}
+#endif
+
+	return result;
 }
 
 void FileD::Unlock(int n)

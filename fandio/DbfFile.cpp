@@ -75,7 +75,7 @@ void DbfFile::WrDBaseHd(FileD* file_d)
 int DbfFile::MakeDbfDcl(pstring Nm)
 {
 	DBaseHeader Hd; DBaseField Fd;
-	char c;
+	char c = '\0';
 	pstring s(80);
 	pstring s1(10);
 

@@ -209,52 +209,6 @@ LockMode NewLMode(FileD* fileD, std::string& path, LockMode Mode, uint16_t lan_n
 	return md;
 }
 
-bool TryLockN(Fand0File* fand_file, std::string& path, int N, WORD Kind)
-{
-	WORD m;
-	std::string XTxt = "CrX";
-	auto result = true;
-
-#ifdef FandSQL
-	if (fand_file->_parent->IsSQLFile) return result;
-#endif
-
-#ifdef FandNetV
-	if (!fand_file->IsShared()) return result;
-	int w = 0;
-	while (true) {
-		if (!TryLockH(fand_file->Handle, RecLock + N, 1)) {
-			if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
-				m = 826;
-				if (N == 0) {
-					SetPathAndVolume(fand_file->GetFileD());
-					SetMsgPar(path, XTxt);
-					m = 825;
-				}
-				int w1 = PushWrLLMsg(m, Kind == 1);
-				if (w == 0) {
-					w = w1;
-				}
-				else {
-					PopW(w1, false);
-				}
-				/*beep; don't disturb*/
-				if (KbdTimer(spec.NetDelay, Kind)) {
-					continue;
-				}
-			}
-			result = false;
-		}
-		if (w != 0) {
-			PopW(w);
-		}
-		break;
-	}
-#endif
-
-	return result;
-}
-
 void UnLockN(Fand0File* fand_file, int N)
 {
 #ifdef FandSQL
