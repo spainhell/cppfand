@@ -9,7 +9,7 @@
 class FieldDescr;
 class Additive;
 
-enum class FType
+enum class DataFileType
 {
 	FandFile,
 	DBF,
@@ -22,14 +22,14 @@ enum class FType
 class FileD
 {
 public:
-	FileD(FType f_type);
+	FileD(DataFileType f_type);
 	FileD(const FileD& orig);
 	~FileD();
 
 	std::string Name;
 	std::string FullPath;
 
-	FType FileType;
+	DataFileType FileType;
 
 	Fand0File* FF = nullptr;	// FandFile reference
 	DbfFile* DbfF = nullptr;	// DBF file reference
@@ -120,6 +120,7 @@ public:
 	void DelAllDifTFlds(void* record, void* comp_record);
 
 	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
+	void SetHCatTyp(FandFileType fand_file_type);
 
 	bool IsActiveRdb();
 

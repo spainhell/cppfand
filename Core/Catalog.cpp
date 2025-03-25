@@ -129,7 +129,7 @@ bool Catalog::OldToNewCat(int& file_size)
 	struct stX { int32_t NRecs; uint16_t RecLen; } x;
 	uint8_t buf[512];
 
-	if (cat_file_->FF->file_type != FileType::CAT) return false;
+	if (cat_file_->FF->file_type != FandFileType::CAT) return false;
 
 	cat_file_->FF->ReadData(0, 4, &x.NRecs);
 	cat_file_->FF->ReadData(4, 2, &x.RecLen);

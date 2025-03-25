@@ -890,7 +890,7 @@ void Compiler::RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vec
 	AcceptKeyWord("OF");
 	FileD* f = RdFileName();
 	if (typ == 'i') {
-		if (f->FF->file_type != FileType::INDEX) {
+		if (f->FF->file_type != FandFileType::INDEX) {
 			OldError(108);
 		}
 		kf1.clear();
@@ -938,7 +938,6 @@ void Compiler::RdLocDcl(LocVarBlock* LVB, bool IsParList, bool WithRecVar, char 
 	stSaveState* p = nullptr;
 	KeyFldD* kf = nullptr;
 	std::vector<KeyFldD*> kf1;
-	FileType FDTyp = FileType::UNKNOWN;
 	std::vector<LocVar*> newVars;
 
 	while (true) {
@@ -1013,18 +1012,26 @@ void Compiler::RdLocDcl(LocVarBlock* LVB, bool IsParList, bool WithRecVar, char 
 				}
 				else {
 					if (fd != nullptr) OldError(26);
-					FDTyp = FileType::FAND16;
+					DataFileType data_file_type = DataFileType::FandFile;
+					FandFileType fand_file_type = FandFileType::FAND16;
 					if (Lexem == '.') {
 						RdLex();
 						TestIdentif();
-						if (EquUpCase("X", LexWord)) FDTyp = FileType::INDEX;
-						else if (EquUpCase("DBF", LexWord)) FDTyp = FileType::DBF;
-						else Error(185);
+						if (EquUpCase("X", LexWord)) {
+							fand_file_type = FandFileType::INDEX;
+						}
+						else if (EquUpCase("DBF", LexWord)) {
+							data_file_type = DataFileType::DBF;
+							fand_file_type = FandFileType::DBF;
+						}
+						else {
+							Error(185);
+						}
 						RdLex();
 					}
 					TestLex('[');
 					p = SaveCompState();
-					FileD* f = RdFileD(lv->name, FDTyp, "$");
+					FileD* f = RdFileD(lv->name, data_file_type, fand_file_type, "$");
 					CRdb->v_files.push_back(f);
 					TestLex(']');
 					lv->FD = f; // here was lv->FD = CFile
@@ -1372,7 +1379,7 @@ XKey* Compiler::RdViewKey(FileD* file_d)
 	}
 	Error(109);
 label1:
-	if (file_d->FF->file_type != FileType::INDEX)
+	if (file_d->FF->file_type != FandFileType::INDEX)
 #ifdef FandSQL
 		if (file_d->typSQLFile) Error(24); else
 #endif
@@ -1484,16 +1491,16 @@ void Compiler::CompileRecLen(FileD* file_d)
 {
 	WORD l = 0;
 	WORD n = 0;
-	if ((file_d->FF->file_type == FileType::INDEX || file_d->FF->file_type == FileType::DBF)) {
+	if ((file_d->FF->file_type == FandFileType::INDEX || file_d->FF->file_type == FandFileType::DBF)) {
 		l = 1;
 	}
 	for (auto& F : file_d->FldD) {
 		switch (file_d->FF->file_type) {
-		case FileType::FAND8: {
+		case FandFileType::FAND8: {
 			if (F->field_type == FieldType::DATE) F->NBytes = 2;
 			break;
 		}
-		case FileType::DBF: {
+		case FandFileType::DBF: {
 			switch (F->field_type) {
 			case FieldType::FIXED: {
 				F->NBytes = F->L - 1;
@@ -1519,11 +1526,11 @@ void Compiler::CompileRecLen(FileD* file_d)
 	}
 	file_d->FF->RecLen = l;
 	switch (file_d->FF->file_type) {
-	case FileType::FAND8: {
+	case FandFileType::FAND8: {
 		file_d->FF->FirstRecPos = 4;
 		break;
 	}
-	case FileType::DBF: {
+	case FandFileType::DBF: {
 		file_d->FF->FirstRecPos = (n + 1) * 32 + 1;
 		break;
 	}
@@ -2397,7 +2404,7 @@ FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
 
-		if ((processing_F->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) {
+		if ((processing_F->FF->file_type != FandFileType::INDEX) || (CViewKey == nullptr)) {
 			OldError(118);
 		}
 

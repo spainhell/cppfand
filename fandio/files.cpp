@@ -78,7 +78,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 		while (true) {
 			file_d->FF->TF->Handle = OpenH(CPath, _isOldFile, file_d->FF->UMode);
 			if (HandleError == 2) {
-				if (file_d->FileType == FType::DBF && file_d->DbfF->TF->Format == DbfTFile::DbtFormat) {
+				if (file_d->FileType == DataFileType::DBF && file_d->DbfF->TF->Format == DbfTFile::DbtFormat) {
 					file_d->DbfF->TF->Format = DbfTFile::FptFormat;
 					CExt = ".FPT";
 					CPath = CDir + CName + CExt;
@@ -102,7 +102,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 	}
 
 	// open index file (*.X__)
-	if (file_d->FF->file_type == FileType::INDEX) {
+	if (file_d->FF->file_type == FandFileType::INDEX) {
 		CPath = CExtToX(CDir, CName, CExt);
 		while (true) {
 			file_d->FF->XF->Handle = OpenH(CPath, _isOldFile, file_d->FF->UMode);
@@ -142,7 +142,7 @@ void check_T_file(FileD* file_d, int file_size)
 		}
 		else {
 			file_d->FF->TF->RdPrefix(true);
-			if ((file_d->FF->file_type == FileType::RDB)
+			if ((file_d->FF->file_type == FandFileType::RDB)
 				&& !file_d->IsActiveRdb()
 				&& !Coding::HasPassword(file_d, 1, ""))
 			{
@@ -155,7 +155,7 @@ void check_T_file(FileD* file_d, int file_size)
 
 void check_X_file(FileD* file_d, int file_size)
 {
-	if (file_d->FF->file_type == FileType::INDEX) {
+	if (file_d->FF->file_type == FandFileType::INDEX) {
 		if (file_size < file_d->FF->FirstRecPos) {
 			file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
 		}
@@ -273,7 +273,7 @@ void CreateF(FileD* file_d)
 		file_d->FF->TF->Create(path);
 	}
 
-	if (file_d->FF->file_type == FileType::INDEX) {
+	if (file_d->FF->file_type == FandFileType::INDEX) {
 		path = CExtToX(CDir, CName, CExt);
 		file_d->FF->XF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
 		file_d->FF->XF->TestErr(); /*SetNotValid*/
@@ -293,7 +293,7 @@ bool OpenCreateF(FileD* file_d, const std::string& path, FileUseMode UM)
 			SaveCache(0, file_d->FF->Handle);
 			CloseClearH(&file_d->FF->Handle);
 
-			if (file_d->FF->file_type == FileType::INDEX) {
+			if (file_d->FF->file_type == FandFileType::INDEX) {
 				CloseClearH(&file_d->FF->XF->Handle);
 			}
 
@@ -369,7 +369,7 @@ std::string SetPathAndVolume(FileD* file_d, char pathDelim)
 	bool isRdb = false;
 
 	CVol = "";
-	if (file_d->FF->file_type == FileType::CAT) {
+	if (file_d->FF->file_type == FandFileType::CAT) {
 		CDir = GetEnv("FANDCAT");
 		if (CDir.empty()) {
 			CDir = TopDataDir.empty() ? TopRdbDir : TopDataDir;
@@ -387,9 +387,9 @@ std::string SetPathAndVolume(FileD* file_d, char pathDelim)
 		goto label4;
 	}
 	switch (file_d->FF->file_type) {
-	case FileType::RDB: CExt = ".RDB"; break;
-	case FileType::FAND8: CExt = ".DTA"; break;
-	case FileType::DBF: CExt = ".DBF"; break;
+	case FandFileType::RDB: CExt = ".RDB"; break;
+	case FandFileType::FAND8: CExt = ".DTA"; break;
+	case FandFileType::DBF: CExt = ".DBF"; break;
 	default: CExt = ".000";
 	}
 	if (SetContextDir(file_d, CDir, isRdb)) goto label2;
@@ -455,15 +455,15 @@ std::string SetTempCExt(FileD* file_d, char typ, bool isNet)
 	if (typ == 'T') {
 		Nr = '2';
 		switch (file_d->FF->file_type) {
-		case FileType::RDB: CExt = ".TTT"; break;
-		case FileType::DBF: CExt = ".DBT"; break;
+		case FandFileType::RDB: CExt = ".TTT"; break;
+		case FandFileType::DBF: CExt = ".DBT"; break;
 		}
 	}
 	else {
 		Nr = '1';
 		switch (file_d->FF->file_type) {
-		case FileType::RDB: CExt = ".RDB"; break;
-		case FileType::DBF: CExt = ".DBF"; break;
+		case FandFileType::RDB: CExt = ".RDB"; break;
+		case FandFileType::DBF: CExt = ".DBF"; break;
 		}
 	}
 	if (CExt.length() < 2) CExt = ".0";

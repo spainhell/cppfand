@@ -296,7 +296,7 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 		newD->FldD = F;
 		newD->L = F->L;
 		if (newD->L > maxcol) newD->L = maxcol;
-		if ((edit_->FD->FF->file_type == FileType::CAT) && (newD->L > 44)) newD->L = 44; /*catalog pathname*/
+		if ((edit_->FD->FF->file_type == FandFileType::CAT) && (newD->L > 44)) newD->L = 44; /*catalog pathname*/
 		FldLen = newD->L;
 		if (F->field_type == FieldType::TEXT) newD->L = 1;
 		L = F->Name.length();
@@ -685,7 +685,7 @@ void EditReader::RdDepChkImpl(EditD* edit)
 {
 	std::string s;
 	switch (edit->FD->FF->file_type) {
-	case FileType::RDB: {
+	case FandFileType::RDB: {
 		ReadMessage(53);
 		s = MsgLine;
 		gc->ResetCompilePars();
@@ -693,7 +693,7 @@ void EditReader::RdDepChkImpl(EditD* edit)
 		RdUDLI(edit->FD);
 		break;
 	}
-	case FileType::CAT: {
+	case FandFileType::CAT: {
 		ReadMessage(54);
 		s = MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
@@ -942,12 +942,12 @@ std::string EditReader::StandardHead(EditD* edit)
 	else {
 		s = edit->FD->Name;
 		switch (edit->FD->FF->file_type) {
-		case FileType::INDEX: {
+		case FandFileType::INDEX: {
 			if (!edit->VK->Alias.empty()) s = s + "/" + edit->VK->Alias;
 			break;
 		}
-		case FileType::RDB: s += ".RDB"; break;
-		case FileType::FAND8: s += ".DTA"; break;
+		case FandFileType::RDB: s += ".RDB"; break;
+		case FandFileType::FAND8: s += ".DTA"; break;
 		default:;
 		}
 	}

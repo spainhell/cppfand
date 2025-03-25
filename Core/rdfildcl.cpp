@@ -528,7 +528,7 @@ void RdFieldDList(FileD* file_d, bool stored)
 			Z = gc->RdFrml(FTyp, nullptr);
 		}
 		F = RdFieldDescr(name, stored);
-		if ((file_d->FF->file_type == FileType::DBF) && stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
+		if ((file_d->FF->file_type == FandFileType::DBF) && stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
 			gc->OldError(86);
 		}
 
@@ -536,7 +536,7 @@ void RdFieldDList(FileD* file_d, bool stored)
 		//ChainLast(file_d->FldD.front(), F);
 
 		if (stored) {
-			if (file_d->FF->file_type == FileType::FAND8) {
+			if (file_d->FF->file_type == FandFileType::FAND8) {
 				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) gc->OldError(35);
 				else if ((F->field_type == FieldType::FIXED) && (F->NBytes > 5)) gc->OldError(36);
 			}
@@ -565,7 +565,7 @@ void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 			break;
 		}
 
-		if (file_d->FF->file_type == FileType::INDEX) {
+		if (file_d->FF->file_type == FandFileType::INDEX) {
 			for (XKey* K : file_d->Keys) {
 				computed = false;
 				bool continueWithNextK = false;
@@ -603,12 +603,12 @@ void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 }
 
 
-FileD* RdFileD_Journal(const std::string& FileName, FileType FDTyp)
+FileD* RdFileD_Journal(const std::string& FileName, FandFileType fand_file_type)
 {
 	FileD* FD = gc->RdFileName();
 	if (gc->Lexem == ';') gc->RdLex();
 	SetMsgPar(FileName);
-	if (FDTyp != FileType::FAND16) gc->OldError(103);
+	if (fand_file_type != FandFileType::FAND16) gc->OldError(103);
 	if (gc->Lexem != 0x1A) gc->Error(40);
 #ifdef FandSQL
 	if (isSql || v_files->typSQLFile) OldError(155);
@@ -629,7 +629,7 @@ FileD* RdFileD_Journal(const std::string& FileName, FileType FDTyp)
 	journal->Reset();
 	journal->Name = FileName;
 	journal->IsJournal = true;
-	SetHCatTyp(journal, FDTyp);
+	journal->SetHCatTyp(fand_file_type);
 	if (!PrevCompInp.empty()) {
 		journal->ChptPos = OrigInp()->InpRdbPos;
 	}
@@ -656,7 +656,7 @@ FileD* RdFileD_Journal(const std::string& FileName, FileType FDTyp)
 	return journal;
 }
 
-FileD* RdFileD_Like(const std::string& FileName, FileType FDTyp)
+FileD* RdFileD_Like(const std::string& FileName, FandFileType FDTyp)
 {
 	std::string Prefix = FileName;
 	FileD* FD = gc->RdFileName();
@@ -691,9 +691,9 @@ FileD* RdFileD_Like(const std::string& FileName, FileType FDTyp)
 	}
 
 	like->IsHlpFile = false;
-	if (!(FDTyp == FileType::FAND16
-		|| FDTyp == FileType::INDEX)
-		|| !(like->FF->file_type == FileType::FAND16 || like->FF->file_type == FileType::INDEX)
+	if (!(FDTyp == FandFileType::FAND16
+		|| FDTyp == FandFileType::INDEX)
+		|| !(like->FF->file_type == FandFileType::FAND16 || like->FF->file_type == FandFileType::INDEX)
 		) {
 		gc->OldError(106);
 	}
@@ -714,7 +714,7 @@ FileD* RdFileD_Like(const std::string& FileName, FileType FDTyp)
 
 // z ulohy vycte kapilotu 'F', prip. dynamickou definici 'F'
 // vraci ukazatel na FileD, protoze se muze v metode vytvorit novy objekt!!!
-FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
+FileD* RdFileD(std::string FileName, DataFileType data_file_type, FandFileType fand_file_type, std::string Ext)
 {
 	void* p = nullptr;
 	FileD* file_d = nullptr; // new created FileD; will be returned from this method
@@ -727,28 +727,28 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 
 	if (gc->IsKeyWord("JOURNALOF")) {
 		isJournal = true;
-		file_d = RdFileD_Journal(FileName, FDTyp);
+		file_d = RdFileD_Journal(FileName, fand_file_type);
 		CRdb->v_files.push_back(file_d);
 		//ChainLast(FileDRoot, file_d);
 		MarkStore(p);
 		//goto label1;
 	}
 	else if (gc->IsKeyWord("LIKE")) {
-		file_d = RdFileD_Like(FileName, FDTyp);
+		file_d = RdFileD_Like(FileName, fand_file_type);
 	}
 	else {
-		file_d = new FileD(FType::FandFile);
+		file_d = new FileD(data_file_type);
 	}
 
 	if (!isJournal) {
 		file_d->Name = FileName;
 		gc->processing_F = file_d;
-		SetHCatTyp(file_d, FDTyp);
+		file_d->SetHCatTyp(fand_file_type);
 		HasTT = false;
 		if ((file_d->OrigFD == nullptr) || !(gc->Lexem == 0x1A || gc->Lexem == '#' || gc->Lexem == ']')) {
 			RdFieldDList(file_d, true);
 		}
-		GetTFileD(file_d, FDTyp);
+		GetTFileD(file_d, fand_file_type);
 		std::deque<LinkD*> LDOld = LinkDRoot;
 
 		// TODO: v originale je to jinak, saha si to na nasl. promenne za PrevCompInp
@@ -783,12 +783,12 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		}
 
 		if (isSql && !file_d->Keys.empty()) {
-			file_d->FF->file_type = FileType::INDEX;
+			file_d->FF->file_type = FandFileType::INDEX;
 		}
 		GetXFileD(file_d);
 		gc->CompileRecLen(file_d);
 		SetLDIndexRoot(file_d, LDOld);
-		if ((file_d->FF->file_type == FileType::INDEX) && file_d->Keys.empty()) {
+		if ((file_d->FF->file_type == FandFileType::INDEX) && file_d->Keys.empty()) {
 			gc->Error(107);
 		}
 		if ((gc->Lexem == '#') && (gc->ForwChar == 'A')) {
@@ -942,7 +942,7 @@ void RdKeyD(FileD* file_d)
 		LinkDRoot.push_front(L);
 
 		if (gc->Lexem == '!') {
-			if (file_d->FF->file_type != FileType::INDEX
+			if (file_d->FF->file_type != FandFileType::INDEX
 #ifdef FandSQL
 				&& !file_d->typSQLFile
 #endif
@@ -993,7 +993,7 @@ void RdKeyD(FileD* file_d)
 
 void CheckDuplAlias(FileD* file_d, pstring name)
 {
-	if (file_d->FF->file_type != FileType::INDEX
+	if (file_d->FF->file_type != FandFileType::INDEX
 #ifdef FandSQL
 		&& !file_d->typSQLFile
 #endif
@@ -1252,19 +1252,7 @@ void RdAssign(Additive* AD)
 	if (FTyp != AD->Field->frml_type) gc->OldError(12);
 }
 
-/// smaze Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat catalog
-void SetHCatTyp(FileD* file_d, FileType FDTyp)
-{
-	file_d->FF->Handle = nullptr;
-	file_d->FF->file_type = FDTyp;
-	file_d->CatIRec = catalog->GetCatalogIRec(file_d->Name, file_d->FF->file_type == FileType::RDB/*multilevel*/);
-#ifdef FandSQL
-	typSQLFile = isSql;
-	SetIsSQLFile();
-#endif
-}
-
-void GetTFileD(FileD* file_d, FileType file_type)
+void GetTFileD(FileD* file_d, FandFileType file_type)
 {
 	// TODO: DBF! predelat na zaklade podminky pro DBF:
 
@@ -1276,14 +1264,14 @@ void GetTFileD(FileD* file_d, FileType file_type)
 
 	file_d->FF->TF->Handle = nullptr;
 
-	if (file_type == FileType::DBF) {
+	if (file_type == FandFileType::DBF) {
 		file_d->DbfF->TF->Format = DbfTFile::DbtFormat;
 	}
 }
 
 void GetXFileD(FileD* file_d)
 {
-	if (file_d->FF->file_type != FileType::INDEX) {
+	if (file_d->FF->file_type != FandFileType::INDEX) {
 		if (file_d->FF->XF != nullptr) {
 			gc->OldError(104);
 		}

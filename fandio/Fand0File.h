@@ -10,7 +10,7 @@ class XWKey;
 class XScan;
 class FileD;
 
-enum class FileType
+enum class FandFileType
 {
 	UNKNOWN,
 	FAND8,
@@ -35,7 +35,7 @@ public:
 	bool WasWrRec = false;
 	bool WasRdOnly = false;
 	bool Eof = false;
-	FileType file_type = FileType::UNKNOWN;       // 8 = Fand 8; 6 = Fand 16; X = .X; 0 = RDB; C = CAT 
+	FandFileType file_type = FandFileType::UNKNOWN;       // 8 = Fand 8; 6 = Fand 16; X = .X; 0 = RDB; C = CAT 
 
 	FandXFile* XF = nullptr;
 	FandTFile* TF = nullptr;

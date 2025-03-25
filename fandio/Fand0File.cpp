@@ -107,7 +107,7 @@ void Fand0File::DelAllDifTFlds(void* record, void* comp_record)
 int Fand0File::UsedFileSize()
 {
 	int n = NRecs * RecLen + FirstRecPos;
-	if (file_type == FileType::DBF) n++;
+	if (file_type == FandFileType::DBF) n++;
 	return n;
 }
 
@@ -137,7 +137,7 @@ void Fand0File::Reset()
 	NRecs = 0;
 	FirstRecPos = 0;
 	WasWrRec = false; WasRdOnly = false; Eof = false;
-	file_type = FileType::UNKNOWN;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
+	file_type = FandFileType::UNKNOWN;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
 	Handle = nullptr;
 	ClearUpdateFlag();
 	TF = nullptr;
@@ -154,7 +154,7 @@ void Fand0File::IncNRecs(int n)
 #endif
 	NRecs += n;
 	SetUpdateFlag(); //SetUpdHandle(Handle);
-	if (file_type == FileType::INDEX) {
+	if (file_type == FandFileType::INDEX) {
 		XF->SetUpdateFlag(); //SetUpdHandle(XF->Handle);
 	}
 }
@@ -163,7 +163,7 @@ void Fand0File::DecNRecs(int n)
 {
 	NRecs -= n;
 	SetUpdateFlag(); //SetUpdHandle(Handle);
-	if (file_type == FileType::INDEX) {
+	if (file_type == FandFileType::INDEX) {
 		XF->SetUpdateFlag(); //SetUpdHandle(XF->Handle);
 	}
 	WasWrRec = true;
@@ -187,7 +187,7 @@ bool Fand0File::loadB(FieldDescr* field_d, void* record)
 	bool result = false;
 	unsigned char* CP = (unsigned char*)record + field_d->Displ;
 
-	if (file_type == FileType::DBF) {
+	if (file_type == FandFileType::DBF) {
 		result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
 	}
 	else if ((*CP == '\0') || (*CP == 0xFF)) { //x0FF is NULL value
@@ -203,7 +203,7 @@ double Fand0File::loadR(FieldDescr* field_d, void* record)
 	uint8_t* source = static_cast<uint8_t*>(record) + field_d->Displ;
 	double result = 0.0;
 
-	if (file_type == FileType::DBF) {
+	if (file_type == FandFileType::DBF) {
 		result = DBF_RforD(field_d, source);
 	}
 	else {
@@ -219,7 +219,7 @@ double Fand0File::loadR(FieldDescr* field_d, void* record)
 			break;
 		}
 		case FieldType::DATE: { // DATUM DD.MM.YY
-			if (file_type == FileType::FAND8) {
+			if (file_type == FandFileType::FAND8) {
 				if (*reinterpret_cast<int16_t*>(source) == 0) result = 0.0;
 				else result = *reinterpret_cast<int16_t*>(source) + FirstDate;
 			}
@@ -317,7 +317,7 @@ int Fand0File::loadT(FieldDescr* F, void* record)
 	//short err = 0;
 	char* source = (char*)record + F->Displ;
 
-	if (file_type == FileType::DBF) {
+	if (file_type == FandFileType::DBF) {
 		// tvarime se, ze CRecPtr je pstring ...
 		// TODO: toto je asi blbe, nutno opravit pred 1. pouzitim
 		//pstring* s = (pstring*)CRecPtr;
@@ -334,7 +334,7 @@ void Fand0File::saveB(FieldDescr* field_d, bool b, void* record)
 {
 	char* pB = (char*)record + field_d->Displ;
 	if ((field_d->field_type == FieldType::BOOL) && ((field_d->Flg & f_Stored) != 0)) {
-		if (file_type == FileType::DBF) {
+		if (file_type == FandFileType::DBF) {
 			if (b) *pB = 'T';
 			else *pB = 'F';
 		}
@@ -350,7 +350,7 @@ void Fand0File::saveR(FieldDescr* field_d, double r, void* record)
 		WORD m = field_d->M;
 		switch (field_d->field_type) {
 		case FieldType::FIXED: {
-			if (file_type == FileType::DBF) {
+			if (file_type == FandFileType::DBF) {
 				std::string s;
 				if ((field_d->Flg & f_Comma) != 0) r = r / Power10[m];
 				str(r, field_d->NBytes, field_d->M, s);
@@ -364,12 +364,12 @@ void Fand0File::saveR(FieldDescr* field_d, double r, void* record)
 		}
 		case FieldType::DATE: {
 			switch (file_type) {
-			case FileType::FAND8: {
+			case FandFileType::FAND8: {
 				if (trunc(r) == 0) *(long*)&pRec = 0;
 				else *(long*)pRec = trunc(r - FirstDate);
 				break;
 			}
-			case FileType::DBF: {
+			case FandFileType::DBF: {
 				std::string s = StrDate(r, "YYYYMMDD");
 				memcpy(pRec, s.c_str(), s.length());
 				break;
@@ -492,7 +492,7 @@ int Fand0File::saveT(FieldDescr* field_d, int pos, void* record)
 	char* source = (char*)record + field_d->Displ;
 	int* LP = (int*)source;
 	if ((field_d->field_type == FieldType::TEXT) && ((field_d->Flg & f_Stored) != 0)) {
-		if (file_type == FileType::DBF) {
+		if (file_type == FandFileType::DBF) {
 			if (pos == 0) {
 				FillChar(source, 10, ' ');
 			}
@@ -569,14 +569,14 @@ uint16_t Fand0File::RdPrefix()
 	uint16_t result = 0xffff;
 
 	switch (file_type) {
-	case FileType::FAND8: {
+	case FandFileType::FAND8: {
 		ReadData(0, 2, &X8.NRs);
 		ReadData(2, 2, &X8.RLen);
 		NRecs = X8.NRs;
 		if (RecLen != X8.RLen) { return X8.RLen; }
 		break;
 	}
-	case FileType::DBF: {
+	case FandFileType::DBF: {
 		ReadData(0, 1, &XD.Ver);
 		ReadData(1, 1, &XD.Date[0]);
 		ReadData(2, 1, &XD.Date[1]);
@@ -593,7 +593,7 @@ uint16_t Fand0File::RdPrefix()
 		ReadData(0, 4, &X6.NRs);
 		ReadData(4, 2, &X6.RLen);
 		NRecs = abs(X6.NRs);
-		if ((X6.NRs < 0) && (file_type != FileType::INDEX) || (X6.NRs > 0) && (file_type == FileType::INDEX)
+		if ((X6.NRs < 0) && (file_type != FandFileType::INDEX) || (X6.NRs > 0) && (file_type == FandFileType::INDEX)
 			|| (RecLen != X6.RLen)) {
 			return X6.RLen;
 		}
@@ -626,7 +626,7 @@ void Fand0File::WrPrefix()
 	if (update_flag) {
 		const bool not_cached = NotCached();
 		switch (file_type) {
-		case FileType::FAND8: {
+		case FandFileType::FAND8: {
 			Pfx8.RLen = RecLen;
 			Pfx8.NRs = static_cast<unsigned short>(NRecs);
 			WriteData(0, 2, &Pfx8.NRs);
@@ -635,7 +635,7 @@ void Fand0File::WrPrefix()
 		}
 		default: {
 			Pfx6.RLen = RecLen;
-			if (file_type == FileType::INDEX) Pfx6.NRs = -NRecs;
+			if (file_type == FandFileType::INDEX) Pfx6.NRs = -NRecs;
 			else Pfx6.NRs = NRecs;
 			WriteData(0, 4, &Pfx6.NRs);
 			WriteData(4, 2, &Pfx6.RLen);
@@ -654,7 +654,7 @@ void Fand0File::WrPrefixes()
 		TF->WrPrefix();
 	}
 
-	if (file_type == FileType::INDEX 
+	if (file_type == FandFileType::INDEX 
 		&& XF->Handle != nullptr
 		/*{ call from CopyDuplF }*/
 		&& (XF->HasUpdateFlag() || update_flag)) {
@@ -674,7 +674,7 @@ void Fand0File::TruncFile()
 		TruncF(TF->Handle, HandleError, TF->UsedFileSize());
 		TF->TestErr();
 	}
-	if (file_type == FileType::INDEX) {
+	if (file_type == FandFileType::INDEX) {
 		int sz = XF->UsedFileSize();
 		if (XF->NotValid) sz = 0;
 		TruncF(XF->Handle, HandleError, sz);
@@ -705,7 +705,7 @@ LockMode Fand0File::RewriteFile(bool append)
 		RunError(notValid);
 	}
 
-	if (file_type == FileType::INDEX) XF->NoCreate = true;
+	if (file_type == FandFileType::INDEX) XF->NoCreate = true;
 	if (TF != nullptr) TF->SetEmpty();
 	return result;
 }
@@ -714,7 +714,7 @@ void Fand0File::ClearUpdateFlag()
 {
 	update_flag = false;
 
-	if (file_type == FileType::INDEX) {
+	if (file_type == FandFileType::INDEX) {
 		XF->ClearUpdateFlag();
 	}
 
@@ -726,7 +726,7 @@ void Fand0File::ClearUpdateFlag()
 void Fand0File::SaveFile()
 {
 	WrPrefixes();
-	if (file_type == FileType::INDEX) {
+	if (file_type == FandFileType::INDEX) {
 		XF->NoCreate = false;
 	}
 	//if (IsUpdHandle(Handle)) {
@@ -758,7 +758,7 @@ void Fand0File::CloseFile()
 	TruncFile();
 
 	// close index file
-	if (file_type == FileType::INDEX && XF != nullptr) {
+	if (file_type == FandFileType::INDEX && XF != nullptr) {
 		XF->CloseFile();
 	}
 
@@ -774,7 +774,7 @@ void Fand0File::CloseFile()
 	}
 	LMode = NullMode;
 
-	if (!IsShared() && (NRecs == 0) && (file_type != FileType::DBF)) {
+	if (!IsShared() && (NRecs == 0) && (file_type != FandFileType::DBF)) {
 		std::string path = SetPathAndVolume(_parent);
 		MyDeleteFile(path);
 	}
@@ -796,7 +796,7 @@ void Fand0File::CloseFile()
 void Fand0File::Close()
 {
 	CloseH(&Handle);
-	if (file_type == FileType::INDEX) {
+	if (file_type == FandFileType::INDEX) {
 		CloseH(&XF->Handle);
 	}
 	if (TF != nullptr) {
@@ -837,12 +837,12 @@ bool Fand0File::HasRecordUpdateFlag(void* record)
 
 bool Fand0File::DeletedFlag(void* record)
 {
-	if (file_type == FileType::INDEX) {
+	if (file_type == FandFileType::INDEX) {
 		if (((BYTE*)record)[0] == 0) return false;
 		else return true;
 	}
 
-	if (file_type == FileType::DBF) {
+	if (file_type == FandFileType::DBF) {
 		if (((BYTE*)record)[0] != '*') return false;
 		else return true;
 	}
@@ -854,8 +854,8 @@ void Fand0File::ClearDeletedFlag(void* record)
 {
 	BYTE* ptr = (BYTE*)record;
 	switch (file_type) {
-	case FileType::INDEX: { ptr[0] = 0; break; }
-	case FileType::DBF: { ptr[0] = ' '; break; }
+	case FandFileType::INDEX: { ptr[0] = 0; break; }
+	case FandFileType::DBF: { ptr[0] = ' '; break; }
 	}
 }
 
@@ -863,8 +863,8 @@ void Fand0File::SetDeletedFlag(void* record)
 {
 	BYTE* ptr = (BYTE*)record;
 	switch (file_type) {
-	case FileType::INDEX: { ptr[0] = 1; break; }
-	case FileType::DBF: { ptr[0] = '*'; break; }
+	case FandFileType::INDEX: { ptr[0] = 1; break; }
+	case FandFileType::DBF: { ptr[0] = '*'; break; }
 	}
 }
 
@@ -1008,7 +1008,7 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 
 int Fand0File::XNRecs(std::vector<XKey*>& K)
 {
-	if (file_type == FileType::INDEX && !K.empty()) {
+	if (file_type == FandFileType::INDEX && !K.empty()) {
 		TestXFExist();
 		return XF->NRecs;
 	}

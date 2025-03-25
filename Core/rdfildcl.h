@@ -21,7 +21,7 @@ extern bool isSql;
 
 void TestDupl(FileD* FD);
 void RdFieldDList(FileD* file_d, bool Stored);
-[[nodiscard]] FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext);
+[[nodiscard]] FileD* RdFileD(std::string FileName, DataFileType data_file_type, FandFileType fand_file_type, std::string Ext);
 void RdKeyD(FileD* file_d);
 void CheckDuplAlias(FileD* file_d, pstring name);
 void LookForK(FileD* file_d, pstring* Name, FileD* F);
@@ -33,7 +33,6 @@ void RdKumul();
 void RdRoleField(Additive* AD);
 void RdImper(Additive* AD);
 void RdAssign(Additive* AD);
-void SetHCatTyp(FileD* file_d, FileType FDTyp);
-void GetTFileD(FileD* file_d, FileType file_type);
+void GetTFileD(FileD* file_d, FandFileType file_type);
 void GetXFileD(FileD* file_d);
 CompInpD* OrigInp();

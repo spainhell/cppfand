@@ -559,7 +559,7 @@ void DeleteRecProc(Instr_recs* PD)
 	if (PD->AdUpd && !CFile->DeletedFlag(CRecPtr)) {
 		LastExitCode = (!RunAddUpdate(CFile, '-', nullptr, nullptr, CRecPtr));
 	}
-	if (CFile->FF->file_type == FileType::INDEX) {
+	if (CFile->FF->file_type == FandFileType::INDEX) {
 		if (!CFile->DeletedFlag(CRecPtr)) CFile->FF->DeleteXRec(n, true, CRecPtr);
 	}
 	else {
@@ -596,7 +596,7 @@ void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, void* new_data)
 		}
 	}
 
-	if (file_d->FF->file_type == FileType::INDEX) {
+	if (file_d->FF->file_type == FandFileType::INDEX) {
 		file_d->FF->OverWrXRec(rec_nr, old_data, new_data, new_data);
 	}
 	else {
@@ -705,7 +705,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	else {
 		lv->FD->CopyRec(lv->record, record1, false);
 		if (app) {
-			if (lv->FD->FF->file_type == FileType::INDEX) {
+			if (lv->FD->FF->file_type == FandFileType::INDEX) {
 				lv->FD->RecallRec(N, record1);
 			}
 			else {
@@ -1145,7 +1145,7 @@ void ResetCatalog()
 		for (size_t i = 1; i < CRdb->v_files.size(); i++) {
 			FileD* f = CRdb->v_files[i];
 			f->CloseFile();
-			f->CatIRec = catalog->GetCatalogIRec(f->Name, f->FF->file_type == FileType::RDB);
+			f->CatIRec = catalog->GetCatalogIRec(f->Name, f->FF->file_type == FandFileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
@@ -1164,7 +1164,7 @@ void PortOut(bool IsWord, WORD Port, WORD What)
 void RecallRecProc(Instr_recs* PD)
 {
 	CFile = PD->RecFD;
-	if (CFile->FF->file_type != FileType::INDEX) return;
+	if (CFile->FF->file_type != FandFileType::INDEX) return;
 	int N = RunInt(CFile, PD->RecNr, CRecPtr);
 	CRecPtr = CFile->GetRecSpace();
 	LockMode md = CFile->NewLockMode(CrMode);
@@ -1653,7 +1653,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = gc->input_string;
-	if (srcCode.find("proc(Tyden,(evalr('VetaD.'+ef)));") != std::string::npos) {
+	if (srcCode.find("EXPDBF:file.DBF[") != std::string::npos) {
 		printf("");
 	}
 #endif
@@ -1692,7 +1692,7 @@ void CallProcedure(Instr_proc* PD)
 				const auto state = gc->SaveCompState();
 				std::string code = RunString(CFile, PD->TArg[i].TxtFrml, CRecPtr);
 				gc->SetInpStdStr(code, true);
-				CFile = RdFileD(PD->TArg[i].Name, FileType::FAND16, "$");
+				CFile = RdFileD(PD->TArg[i].Name, DataFileType::FandFile, FandFileType::FAND16, "$");
 				CRdb->v_files.push_back(CFile);
 				gc->RestoreCompState(state);
 			}

@@ -1331,7 +1331,7 @@ bool RdViewOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 	else if (compiler->IsOpt("JOURNAL")) {
 		EO->Journal = compiler->RdFileName();
 		WORD l = EO->Journal->FF->RecLen - 13;
-		if (file_d->FF->file_type == FileType::INDEX) {
+		if (file_d->FF->file_type == FandFileType::INDEX) {
 			l++;
 		}
 		if (file_d->FF->RecLen != l) {
@@ -1550,7 +1550,7 @@ void RdProcCall(Compiler* compiler, Instr** pinstr)
 		compiler->RdLex();
 		auto iPD = (Instr_checkfile*)*pinstr;
 		iPD->cfFD = compiler->RdFileName();
-		if (iPD->cfFD != nullptr && (iPD->cfFD->FF->file_type == FileType::FAND8 || iPD->cfFD->FF->file_type == FileType::DBF)
+		if (iPD->cfFD != nullptr && (iPD->cfFD->FF->file_type == FandFileType::FAND8 || iPD->cfFD->FF->file_type == FandFileType::DBF)
 #ifdef FandSQL
 			|| PD->cfFD->typSQLFile
 #endif
@@ -2108,7 +2108,7 @@ bool RdX(Compiler* compiler, FileD* FD)
 	if ((compiler->Lexem == '.') && (FD != nullptr)) {
 		compiler->RdLex();
 		compiler->AcceptKeyWord("X");
-		if (FD->FF->file_type != FileType::INDEX) compiler->OldError(108);
+		if (FD->FF->file_type != FandFileType::INDEX) compiler->OldError(108);
 		result = true;
 	}
 	return result;
@@ -2328,7 +2328,7 @@ Instr* RdIndexfile(Compiler* compiler)
 	auto PD = new Instr_indexfile(); // GetPD(_indexfile, 5);
 	compiler->RdLex();
 	PD->IndexFD = compiler->RdFileName();
-	if (PD->IndexFD->FF->file_type != FileType::INDEX) compiler->OldError(108);
+	if (PD->IndexFD->FF->file_type != FandFileType::INDEX) compiler->OldError(108);
 	if (compiler->Lexem == ',') {
 		compiler->RdLex();
 		compiler->AcceptKeyWord("COMPRESS");
@@ -2786,7 +2786,7 @@ Instr_assign* RdAssign(Compiler* compiler)
 			}
 			else if (FD == nullptr) compiler->OldError(9);
 			else if (compiler->IsKeyWord("NRECS")) {
-				if (FD->FF->file_type == FileType::RDB) { compiler->OldError(127); }
+				if (FD->FF->file_type == FandFileType::RDB) { compiler->OldError(127); }
 				PD = new Instr_assign(PInstrCode::_asgnnrecs);
 				PD->FD = FD;
 				FTyp = 'R';
@@ -2816,7 +2816,7 @@ Instr_assign* RdAssign(Compiler* compiler)
 		F = compiler->RdFldName(FD);
 		PD->FldD = F;
 		if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
-		PD->Indexarg = (FD->FF->file_type == FileType::INDEX) && compiler->IsKeyArg(F, FD);
+		PD->Indexarg = (FD->FF->file_type == FandFileType::INDEX) && compiler->IsKeyArg(F, FD);
 		compiler->RdAssignFrml(F->frml_type, PD->Add, &PD->Frml, nullptr);
 	}
 	else if (compiler->FindLocVar(&LVBD, &LV)) {

@@ -132,7 +132,7 @@ void FandTFile::RdPrefix(bool check)
 
 	if (IRec >= 0x6000) {
 		IRec = IRec - 0x2000;
-		if (!IsWork && (_parent->file_type == FileType::RDB)) LicenseNr = T.LicNr;
+		if (!IsWork && (_parent->file_type == FandFileType::RDB)) LicenseNr = T.LicNr;
 	}
 
 	if (IRec >= 0x4000) {
@@ -497,7 +497,7 @@ void FandTFile::CloseFile()
 			Handle = nullptr;
 			ClearUpdateFlag();
 		}
-		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FileType::DBF)) {
+		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FandFileType::DBF)) {
 			SetPathAndVolume(_parent->GetFileD());
 			CPath = _parent->GetFileD()->CExtToT(CDir, CName, CExt);
 			MyDeleteFile(CPath);

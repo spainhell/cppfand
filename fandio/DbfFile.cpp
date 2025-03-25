@@ -19,9 +19,6 @@ DbfFile::~DbfFile()
 
 void DbfFile::WrPrefix()
 {
-	struct { int NRs; unsigned short RLen; } Pfx6 = { 0, 0 };
-	struct { unsigned short NRs; unsigned short RLen; } Pfx8 = { 0, 0 };
-
 	if (update_flag) {
 		WriteHeader();
 	}

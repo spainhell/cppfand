@@ -9,12 +9,16 @@
 #include "../Logging/Logging.h"
 
 
-FileD::FileD(FType f_type)
+FileD::FileD(DataFileType f_type)
 {
 	this->FileType = f_type;
 	switch (f_type) {
-	case FType::FandFile: {
+	case DataFileType::FandFile: {
 		this->FF = new Fand0File(this);
+		break;
+	}
+	case DataFileType::DBF: {
+		this->DbfF = new DbfFile(this);
 		break;
 	}
 	default:;
@@ -211,7 +215,7 @@ void FileD::AssignNRecs(bool Add, int N)
 		FF->TF->SetEmpty();
 	}
 
-	if (FF->file_type == FileType::INDEX) {
+	if (FF->file_type == FandFileType::INDEX) {
 		if (N == 0) {
 			FF->NRecs = 0;
 			FF->SetUpdateFlag(); //SetUpdHandle(FF->Handle);
@@ -477,7 +481,7 @@ bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 
 bool FileD::SearchXKey(XKey* K, XString& X, int& N)
 {
-	if (FF->file_type == FileType::INDEX) {
+	if (FF->file_type == FandFileType::INDEX) {
 		FF->TestXFExist();
 		return K->SearchInterval(this, X, false, N);
 	}
@@ -506,7 +510,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	newFile->FF->SetUpdateFlag();
 
 	// create index file
-	if (newFile->FF->file_type == FileType::INDEX) {
+	if (newFile->FF->file_type == FandFileType::INDEX) {
 		if (newFile->FF->XF != nullptr) {
 			delete newFile->FF->XF;
 			newFile->FF->XF = nullptr;
@@ -573,7 +577,7 @@ void FileD::CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields)
 				bool src_is_work = HasTWorkFlag(src_record);
 				bool dst_is_work = HasTWorkFlag(dst_record);
 
-				if (FileType == FType::DBF) {
+				if (FileType == DataFileType::DBF) {
 					// if (src_t00_file->Format != FandTFile::T00Format)
 					std::string s = loadS(f, src_record);
 					saveS(f, s, dst_record);
@@ -662,6 +666,22 @@ std::string FileD::CExtToT(const std::string& dir, const std::string& name, std:
 		ext[1] = 'T';
 	}
 	return dir + name + ext;
+}
+
+void FileD::SetHCatTyp(FandFileType fand_file_type)
+{
+	/// smaze Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat catalog
+	if (FileType == DataFileType::FandFile) {
+		FF->Handle = nullptr;
+		FF->file_type = fand_file_type;
+	}
+
+	CatIRec = catalog->GetCatalogIRec(Name, FF != nullptr && FF->file_type == FandFileType::RDB /*multilevel*/);
+
+#ifdef FandSQL
+	typSQLFile = isSql;
+	SetIsSQLFile();
+#endif
 }
 
 bool FileD::IsActiveRdb()

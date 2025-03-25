@@ -509,11 +509,11 @@ void ReportGenerator::WrLevel(std::string& report, int Level)
 	}
 	WrStr(report, ";\r\n");
 	int col = 1;
-	if (CFile->FF->file_type == FileType::RDB) WrChar(report, 0x11);
+	if (CFile->FF->file_type == FandFileType::RDB) WrChar(report, 0x11);
 
 	for (size_t i = 0; i < PFldDs.size(); i++) {
 		PFldD* d = &PFldDs[i];
-		if ((CFile->FF->file_type == FileType::RDB) && (i + 1 == PFldDs.size())) {
+		if ((CFile->FF->file_type == FandFileType::RDB) && (i + 1 == PFldDs.size())) {
 			WrChar(report, 0x11);
 		}
 		if (d->NxtLine) {

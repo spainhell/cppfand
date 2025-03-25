@@ -336,7 +336,7 @@ int RecNoFun(FileD* file_d, FrmlElemRecNo* Z, void* record)
 	BYTE* newRecord = funcFD->GetRecSpace();
 	if (funcFD->FF->NRecs > 0) {
 		bool b;
-		if (funcFD->FF->file_type == FileType::INDEX) {
+		if (funcFD->FF->file_type == FandFileType::INDEX) {
 			funcFD->FF->TestXFExist();
 			b = k->SearchInterval(funcFD, x, false, n);
 		}
@@ -368,7 +368,7 @@ int AbsLogRecNoFun(FileD* file_d, FrmlElemRecNo* Z, void* record)
 		funcFD->OldLockMode(md);
 		return result;
 	}
-	if (funcFD->FF->file_type == FileType::INDEX) {
+	if (funcFD->FF->file_type == FandFileType::INDEX) {
 		funcFD->FF->TestXFExist();
 		if (Z->Op == _recnolog) {
 			BYTE* newRecord = funcFD->GetRecSpace();

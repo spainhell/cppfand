@@ -113,7 +113,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT, void* record, BYTE** newRecord)
 #endif
 	const LockMode md = to_FD->NewLockMode(RdMode);
 	bool lu;
-	if (to_FD->FF->file_type == FileType::INDEX) {
+	if (to_FD->FF->file_type == FandFileType::INDEX) {
 		to_FD->FF->TestXFExist();
 		lu = K->SearchInterval(to_FD, x, false, N);
 	}
@@ -212,7 +212,7 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 				break;
 			}
 			case ForAllFilesOperation::close_passive_fd: {
-				if ((f->FF->file_type != FileType::RDB) && (f->FF->LMode == NullMode)) {
+				if ((f->FF->file_type != FandFileType::RDB) && (f->FF->LMode == NullMode)) {
 					f->CloseFile();
 				}
 				break;

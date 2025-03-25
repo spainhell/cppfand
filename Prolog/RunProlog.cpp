@@ -68,7 +68,7 @@ void RunProlog::RunIndexy()
 			module_name = module_name.substr(1, module_name.size() - 2);
 		}
 
-		std::vector<std::string> files = GetFilesInModule(module_name, FileType::INDEX);
+		std::vector<std::string> files = GetFilesInModule(module_name, FandFileType::INDEX);
 
 		// prepare source code
 		std::string output = "BEGIN\r";
@@ -100,7 +100,7 @@ void RunProlog::RunTexty()
 			module_name = module_name.substr(1, module_name.size() - 2);
 		}
 
-		std::vector<FileD*> file_descs = GetFileDescsInModule(module_name, FileType::UNKNOWN);
+		std::vector<FileD*> file_descs = GetFileDescsInModule(module_name, FandFileType::UNKNOWN);
 		std::vector<std::string> files = GetFilesWithStoredTexts(file_descs);
 
 		// prepare source code
@@ -141,7 +141,7 @@ FileD* RunProlog::FindFile(std::string file_name)
 	return nullptr;
 }
 
-std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, FileType file_type)
+std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, FandFileType file_type)
 {
 	std::vector<std::string> result;
 
@@ -151,7 +151,7 @@ std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, F
 		if (!R->v_files.empty() && EquUpCase(R->v_files[0]->Name, module_name)) {
 			// skip the first file, which is the module itself
 			for (size_t i = 1; i < R->v_files.size(); i++) {
-				if (R->v_files[i]->FF->file_type == FileType::UNKNOWN) {
+				if (R->v_files[i]->FF->file_type == FandFileType::UNKNOWN) {
 					result.push_back(R->v_files[i]->Name);
 				}
 				else if (R->v_files[i]->FF->file_type == file_type) {
@@ -171,7 +171,7 @@ std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, F
 	return result;
 }
 
-std::vector<FileD*> RunProlog::GetFileDescsInModule(std::string& module_name, FileType file_type)
+std::vector<FileD*> RunProlog::GetFileDescsInModule(std::string& module_name, FandFileType file_type)
 {
 	std::vector<FileD*> result;
 
@@ -184,7 +184,7 @@ std::vector<FileD*> RunProlog::GetFileDescsInModule(std::string& module_name, Fi
 				if (R->v_files[i]->IsHlpFile) {
 					continue;
 				}
-				else if (file_type == FileType::UNKNOWN) {
+				else if (file_type == FandFileType::UNKNOWN) {
 					result.push_back(R->v_files[i]);
 				}
 				else if (R->v_files[i]->FF->file_type == file_type) {

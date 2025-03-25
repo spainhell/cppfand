@@ -890,7 +890,7 @@ void Merge::WriteOutp(std::vector<OutpRD*>& v_outputs)
 #endif
 				{
 					CFile->PutRec(CRecPtr);
-					if (OD->Append && (CFile->FF->file_type == FileType::INDEX)) {
+					if (OD->Append && (CFile->FF->file_type == FandFileType::INDEX)) {
 						CFile->FF->TryInsertAllIndexes(CFile->IRec, CRecPtr);
 					}
 				}

@@ -270,7 +270,7 @@ void ImportTxt(CopyD* CD)
 #endif
 			{
 				CFile->PutRec(CRecPtr);
-				if (CD->Append && (CFile->FF->file_type == FileType::INDEX)) {
+				if (CD->Append && (CFile->FF->file_type == FandFileType::INDEX)) {
 					CFile->FF->TryInsertAllIndexes(CFile->IRec, CRecPtr);
 				}
 			}
@@ -678,9 +678,9 @@ void CheckFile(FileD* FD)
 	ReadH(h, 2, &Prfx.RecLen);
 	fs = FileSizeH(h);
 	CloseH(&h);
-	if ((FD->FF->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->FF->file_type != FileType::INDEX) ||
+	if ((FD->FF->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->FF->file_type != FandFileType::INDEX) ||
 		((fs - FD->FF->FirstRecPos) / Prfx.RecLen < Prfx.NRecs) ||
-		(Prfx.NRecs > 0) && (FD->FF->file_type == FileType::INDEX)) {
+		(Prfx.NRecs > 0) && (FD->FF->file_type == FandFileType::INDEX)) {
 		LastExitCode = 3;
 		return;
 	}

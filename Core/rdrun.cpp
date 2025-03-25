@@ -213,7 +213,7 @@ bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, BYT
 #endif
 		{
 			file_d->ClearDeletedFlag(*linkedRecord);
-			if ((ld != nullptr) && (file_d->FF->file_type == FileType::INDEX)) {
+			if ((ld != nullptr) && (file_d->FF->file_type == FandFileType::INDEX)) {
 				CrIndRec(file_d, *linkedRecord);
 				n = file_d->FF->NRecs;
 			}
