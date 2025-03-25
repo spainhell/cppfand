@@ -633,10 +633,6 @@ void Fand0File::WrPrefix()
 			WriteData(2, 2, &Pfx8.RLen);
 			break;
 		}
-		case FileType::DBF: {
-			DbfFile::WrDBaseHd(this->_parent); // TODO: doplnit parametry
-			break;
-		}
 		default: {
 			Pfx6.RLen = RecLen;
 			if (file_type == FileType::INDEX) Pfx6.NRs = -NRecs;

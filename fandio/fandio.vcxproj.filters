@@ -111,6 +111,9 @@
     <ClInclude Include="FandFile.h">
       <Filter>Header Files\FandFiles</Filter>
     </ClInclude>
+    <ClInclude Include="DbfTFile.h">
+      <Filter>Header Files\DbfFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fandio.cpp">
@@ -190,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="FandFile.cpp">
       <Filter>Source Files\FandFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="DbfTFile.cpp">
+      <Filter>Source Files\DbfFiles</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

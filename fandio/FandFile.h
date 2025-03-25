@@ -22,6 +22,6 @@ protected:
 	bool update_flag;
 
 private:
-	size_t ReadWriteData(FileOperation operation, size_t position, size_t count, void* buf) const;
+	size_t read_write_data(FileOperation operation, size_t position, size_t count, void* buf) const;
 };
 

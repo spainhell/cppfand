@@ -54,6 +54,7 @@ FileD::FileD(const FileD& orig)
 FileD::~FileD()
 {
 	delete FF;
+	//delete DbfF;
 
 	for (FieldDescr* field_d : FldD) {
 		delete field_d;

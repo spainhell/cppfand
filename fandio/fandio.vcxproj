@@ -162,6 +162,7 @@
     <ClInclude Include="DBaseField.h" />
     <ClInclude Include="DBaseHeader.h" />
     <ClInclude Include="DbfFile.h" />
+    <ClInclude Include="DbfTFile.h" />
     <ClInclude Include="directory.h" />
     <ClInclude Include="Fand0File.h" />
     <ClInclude Include="FandFile.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="DBaseField.cpp" />
     <ClCompile Include="DBaseHeader.cpp" />
     <ClCompile Include="DbfFile.cpp" />
+    <ClCompile Include="DbfTFile.cpp" />
     <ClCompile Include="directory.cpp" />
     <ClCompile Include="Fand0File.cpp" />
     <ClCompile Include="FandFile.cpp" />

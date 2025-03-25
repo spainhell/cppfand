@@ -1,15 +1,32 @@
 #include "DbfFile.h"
 
 #include "DBaseHeader.h"
-#include "../Common/FileEnums.h"
 #include "../Core/FieldDescr.h"
-#include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
 #include "../Common/textfunc.h"
 #include "../Core/DateTime.h"
 
-void DbfFile::WrDBaseHd(FileD* file_d)
+
+DbfFile::DbfFile(FileD* parent)
+{
+	_parent = parent;
+}
+
+DbfFile::~DbfFile()
+{
+}
+
+void DbfFile::WrPrefix()
+{
+	struct { int NRs; unsigned short RLen; } Pfx6 = { 0, 0 };
+	struct { unsigned short NRs; unsigned short RLen; } Pfx8 = { 0, 0 };
+
+	if (update_flag) {
+		WriteHeader();
+	}
+}
+
+void DbfFile::WriteHeader()
 {
 	unsigned short m, d, y;
 	const char CtrlZ = '\x1a';
@@ -18,7 +35,7 @@ void DbfFile::WrDBaseHd(FileD* file_d)
 	DBaseHeader* dbf_header = new DBaseHeader();
 	//unsigned short n = 0;
 
-	for (FieldDescr* F : file_d->FldD) {
+	for (FieldDescr* F : _parent->FldD) {
 		if (F->isStored()) {
 			//n++;
 			DBaseField* actual = new DBaseField();
@@ -38,49 +55,49 @@ void DbfFile::WrDBaseHd(FileD* file_d)
 		}
 	}
 
-	if (file_d->FF->TF != nullptr) {
-		if (file_d->FF->TF->Format == FandTFile::FptFormat) dbf_header->Ver = 0xf5;
-		else dbf_header->Ver = 0x83;
-	}
-	else {
-		dbf_header->Ver = 0x03;
-	}
+	//if (TF != nullptr) {
+	//	if (TF->Format == DbfTFile::FptFormat) dbf_header->Ver = 0xF5;
+	//	else dbf_header->Ver = 0x83;
+	//}
+	//else {
+	//	dbf_header->Ver = 0x03;
+	//}
 
-	dbf_header->RecLen = file_d->FF->RecLen;
+	dbf_header->RecLen = RecLen;
 	SplitDate(Today(), d, m, y);
 	dbf_header->Date[0] = static_cast<uint8_t>(y - 1900);
 	dbf_header->Date[1] = static_cast<uint8_t>(m);
 	dbf_header->Date[2] = static_cast<uint8_t>(d);
-	dbf_header->NRecs = file_d->FF->NRecs;
-	dbf_header->HdLen = file_d->FF->FirstRecPos;
+	dbf_header->NRecs = NRecs;
+	dbf_header->HdLen = FirstRecPos;
 
-	file_d->FF->WriteData(0, dbf_header->GetDataLength(), dbf_header->GetData());
+	WriteData(0, dbf_header->GetDataLength(), dbf_header->GetData());
 
 
 	size_t index = dbf_header->GetDataLength();
 
 	for (DBaseField* F : dbf_header->flds) {
-		file_d->FF->WriteData(index, F->GetDataLength(), F->GetData());
+		WriteData(index, F->GetDataLength(), F->GetData());
 		index += F->GetDataLength();
 	}
 
-	file_d->FF->WriteData(index, 1, (void*)&CtrlD);
+	WriteData(index, 1, (void*)&CtrlD);
 
-	file_d->FF->WriteData(dbf_header->NRecs * dbf_header->RecLen + dbf_header->HdLen, 1, (void*)&CtrlZ);
+	WriteData(dbf_header->NRecs * dbf_header->RecLen + dbf_header->HdLen, 1, (void*)&CtrlZ);
 
 	delete dbf_header;
 	dbf_header = nullptr;
 }
 
-int DbfFile::MakeDbfDcl(pstring Nm)
+int DbfFile::MakeDbfDcl(std::string& name)
 {
 	DBaseHeader Hd; DBaseField Fd;
 	char c = '\0';
 	pstring s(80);
 	pstring s1(10);
 
-	CPath = FExpand(Nm + ".DBF"); CVol = "";
-	int i = catalog->GetCatalogIRec(Nm, true);
+	CPath = FExpand(name + ".DBF"); CVol = "";
+	int i = catalog->GetCatalogIRec(name, true);
 
 	if (i != 0) {
 		CVol = catalog->GetVolume(i);
@@ -127,4 +144,9 @@ int DbfFile::MakeDbfDcl(pstring Nm)
 	CFile->saveLongS(ChptTxt, t, CRecPtr);
 	CloseH(&h);
 	return 0;
+}
+
+void DbfFile::ClearUpdateFlag()
+{
+	FandFile::ClearUpdateFlag();
 }

@@ -3,6 +3,7 @@
 
 #include "Rdb.h"
 #include "../fandio/Fand0File.h"
+#include "../fandio/DbfFile.h"
 #include "../fandio/locks.h" // to be visible in other parts of code
 
 class FieldDescr;
@@ -30,7 +31,8 @@ public:
 
 	FType FileType;
 
-	Fand0File* FF = nullptr;   // FandFile reference
+	Fand0File* FF = nullptr;	// FandFile reference
+	DbfFile* DbfF = nullptr;	// DBF file reference
 
 	int IRec = 0;
 	RdbPos ChptPos;           // zero for Rdb and v_files translated from string 

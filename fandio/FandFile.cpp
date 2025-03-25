@@ -15,13 +15,13 @@ FandFile::~FandFile()
 
 size_t FandFile::ReadData(size_t position, size_t count, void* buf) const
 {
-	return ReadWriteData(READ, position, count, buf);
+	return read_write_data(READ, position, count, buf);
 }
 
 size_t FandFile::WriteData(size_t position, size_t count, void* buf)
 {
 	SetUpdateFlag();
-	return ReadWriteData(WRITE, position, count, buf);
+	return read_write_data(WRITE, position, count, buf);
 }
 
 void FandFile::SetUpdateFlag()
@@ -39,7 +39,7 @@ bool FandFile::HasUpdateFlag() const
 	return update_flag;
 }
 
-size_t FandFile::ReadWriteData(FileOperation operation, size_t position, size_t count, void* buf) const
+size_t FandFile::read_write_data(FileOperation operation, size_t position, size_t count, void* buf) const
 {
 	Logging* log = Logging::getInstance();
 	size_t result = 0;
