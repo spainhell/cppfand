@@ -256,18 +256,10 @@ std::string CExtToX(const std::string dir, const std::string name, std::string e
 	return dir + name + ext;
 }
 
-std::string CExtToT(FandTFile* t_file, const std::string& dir, const std::string& name, std::string ext)
+std::string CExtToT(const std::string& dir, const std::string& name, std::string ext)
 {
 	if (EquUpCase(ext, ".RDB")) {
 		ext = ".TTT";
-	}
-	else if (EquUpCase(ext, ".DBF")) {
-		if (t_file->Format == FandTFile::FptFormat) {
-			ext = ".FPT";
-		}
-		else {
-			ext = ".DBT";
-		}
 	}
 	else {
 		ext[1] = 'T';

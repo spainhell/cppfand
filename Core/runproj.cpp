@@ -226,7 +226,7 @@ bool ChptDelFor(EditD* edit, RdbRecVars* X)
 			CExt = X->Ext;
 		}
 		MyDeleteFile(CDir + CName + CExt);
-		CPath = CExtToT(nullptr, CDir, CName, CExt);
+		CPath = CExtToT(CDir, CName, CExt);
 		MyDeleteFile(CPath);
 		if (X->FTyp == FileType::INDEX) {
 			CPath = CExtToX(CDir, CName, CExt);
@@ -286,7 +286,7 @@ void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 {
 	CExt = Old.Ext;
 	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
-	CPath = CExtToT(nullptr, CDir, CName, CExt);
+	CPath = CExtToT(CDir, CName, CExt);
 	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
 	CPath = CExtToX(CDir, CName, CExt);
 	if (Old.FTyp == FileType::INDEX) RenameFile56(Old.Name + CExt, New.Name + CExt, false);
@@ -1202,7 +1202,7 @@ void DeleteF(FileD* file_d)
 		MyDeleteFile(CPath);
 	}
 	if (file_d->FF->TF != nullptr) {
-		CPath = CExtToT(file_d->FF->TF, CDir, CName, CExt);
+		CPath = file_d->CExtToT(CDir, CName, CExt);
 		MyDeleteFile(CPath);
 	}
 }
@@ -1236,10 +1236,10 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		//CFile = fd_new;
 
 		/*TF->Format used*/
-		CPath = CExtToT(fd_new->FF->TF, CDir, CName, CExt);
+		CPath = fd_new->CExtToT(CDir, CName, CExt);
 		p = CPath;
 		SetPathAndVolume(fd_new);
-		CPath = CExtToT(fd_new->FF->TF, CDir, CName, CExt);
+		CPath = fd_new->CExtToT(CDir, CName, CExt);
 		RenameFile56(CPath, p, false);
 		result = true;
 	}

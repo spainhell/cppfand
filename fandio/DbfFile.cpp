@@ -5,6 +5,7 @@
 #include "../Core/GlobalVariables.h"
 #include "../Common/textfunc.h"
 #include "../Core/DateTime.h"
+#include "../Common/compare.h"
 
 
 DbfFile::DbfFile(FileD* parent)
@@ -146,7 +147,27 @@ int DbfFile::MakeDbfDcl(std::string& name)
 	return 0;
 }
 
+FileD* DbfFile::GetFileD()
+{
+	return _parent;
+}
+
 void DbfFile::ClearUpdateFlag()
 {
 	FandFile::ClearUpdateFlag();
+}
+
+std::string DbfFile::_extToT(const std::string& input_path)
+{
+	std::string dir, name, ext;
+	FSplit(input_path, dir, name, ext);
+
+	if (TF->Format == DbfTFile::FptFormat) {
+		ext = ".FPT";
+	}
+	else {
+		ext = ".DBT";
+	}
+
+	return dir + name + ext;
 }

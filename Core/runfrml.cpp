@@ -1302,16 +1302,16 @@ bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, F
 	int src_T_pos;
 	bool result;
 
-	if (dst_T_file->Format == FandTFile::DbtFormat || dst_T_file->Format == FandTFile::FptFormat) {
+	/* TODO: if (dst_T_file->Format == FandTFile::DbtFormat || dst_T_file->Format == FandTFile::FptFormat) {
 		result = false;
 	}
-	else if (Z->Op == _gettxt) {
+	else*/ if (Z->Op == _gettxt) {
 		std::string text = GetTxt(dst_file, (FrmlElem16*)Z, record);
 		dst_file->saveS(F, text, record);
 		pos = dst_file->loadT(F, record);
 		result = true;
 	}
-	else if (CanCopyT(dst_file, F, Z, &src_T_file, &src_file, src_T_pos, record) && (src_T_file->Format == dst_T_file->Format)) {
+	else if (CanCopyT(dst_file, F, Z, &src_T_file, &src_file, src_T_pos, record) /* TODO: && (src_T_file->Format == dst_T_file->Format)*/) {
 		LockMode md1 = NullMode, md2 = NullMode;
 		if (!src_T_file->IsWork) md2 = src_file->NewLockMode(RdMode);
 		if (!dst_T_file->IsWork) md1 = dst_file->NewLockMode(WrMode);

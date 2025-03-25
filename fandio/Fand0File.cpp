@@ -784,7 +784,7 @@ void Fand0File::CloseFile()
 		std::string path = SetPathAndVolume(_parent);
 		SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
 		if (TF != nullptr) {
-			path = CExtToT(TF, CDir, CName, CExt);
+			path = _parent->CExtToT(CDir, CName, CExt);
 			SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
 		}
 	}
@@ -1444,14 +1444,14 @@ std::string Fand0File::_extToT(const std::string& input_path)
 	std::string dir, name, ext;
 	FSplit(input_path, dir, name, ext);
 	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
-	else if (EquUpCase(ext, ".DBF")) {
+	/*else if (EquUpCase(ext, ".DBF")) {
 		if (TF->Format == FandTFile::FptFormat) {
 			ext = ".FPT";
 		}
 		else {
 			ext = ".DBT";
 		}
-	}
+	}*/
 	else if (ext.length() > 1) {
 		// at least '._'
 		ext[1] = 'T';

@@ -341,7 +341,7 @@ void FileMsg(FileD* file_d, int n, char Typ)
 {
 	SetPathAndVolume(file_d);
 	if (Typ == 'T') {
-		CPath = CExtToT(file_d->FF->TF, CDir, CName, CExt);
+		CPath = file_d->CExtToT(CDir, CName, CExt);
 	}
 	else if (Typ == 'X') {
 		CPath = CExtToX(CDir, CName, CExt);

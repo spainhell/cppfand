@@ -21,10 +21,13 @@ public:
 	void WrPrefix();
 	void WriteHeader();
 	int MakeDbfDcl(std::string& name);
-	
+
+	FileD* GetFileD();
+
 	void ClearUpdateFlag() override;
 
 private:
 	FileD* _parent;
+	std::string _extToT(const std::string& input_path);
 };
 

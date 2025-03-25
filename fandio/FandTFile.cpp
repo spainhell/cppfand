@@ -21,7 +21,6 @@ FandTFile::FandTFile(Fand0File* parent)
 FandTFile::FandTFile(const FandTFile& orig, Fand0File* parent)
 {
 	_parent = parent;
-	Format = orig.Format;
 }
 
 FandTFile::~FandTFile()
@@ -51,12 +50,7 @@ void FandTFile::TestErr() const
 
 int FandTFile::UsedFileSize() const
 {
-	if (Format == FptFormat) {
-		return FreePart * FptFormatBlockSize;
-	}
-	else {
-		return int(MaxPage + 1) << MPageShft;
-	}
+	return int(MaxPage + 1) << MPageShft;
 }
 
 bool FandTFile::NotCached() const
@@ -93,16 +87,6 @@ void FandTFile::RdPrefix(bool check)
 	ReadData(0, 512, header512);
 	srand(RS);
 	LicenseNr = 0;
-	if (Format == DbtFormat) {
-		MaxPage = *TNxtAvailPage - 1;
-		GetMLen();
-		return;
-	}
-	if (Format == FptFormat) {
-		//FreePart = SwapLong((*FptHd).FreePart);
-		FptFormatBlockSize = Swap((*FptHd).BlockSize);
-		return;
-	}
 
 	// nactena data jsou porad v poli, je nutne je nahrat do T
 	T.Load(header512);
@@ -201,82 +185,62 @@ void FandTFile::WrPrefix()
 {
 	FandTFilePrefix T;
 
-	switch (Format) {
-	case DbtFormat: {
-		int* TNxtAvailPage = (int*)&T;		/* .DBT */
-		memset(&T, ' ', sizeof(T));
-		*TNxtAvailPage = MaxPage + 1;
-		break;
-	}
-	case FptFormat: {
-		struct stFptHd { int FreePart = 0; unsigned short X = 0, BlockSize = 0; }; /* .FPT */
-		stFptHd* FptHd = (stFptHd*)&T;
-		memset(&T, 0, sizeof(T));
-		//(*FptHd).FreePart = SwapLong(FreePart);
-		//(*FptHd).BlockSize = Swap(FptFormatBlockSize);
-		break;
-	}
-	case T00Format: {
-		int RS = 0;
-		unsigned short n = 0;
-		unsigned short i = 0;
-		memset(&T, '@', sizeof(T));
-		std::string Pw = PwCode + Pw2Code;
-		Pw = Coding::Code(Pw);
-		RandSeed = RS;
-		if (LicenseNr != 0) {
-			for (i = 0; i < 20; i++) {
-				Pw[i] = static_cast<char>(Random(255));
-			}
+	int RS = 0;
+	unsigned short n = 0;
+	unsigned short i = 0;
+	memset(&T, '@', sizeof(T));
+	std::string Pw = PwCode + Pw2Code;
+	Pw = Coding::Code(Pw);
+	RandSeed = RS;
+	if (LicenseNr != 0) {
+		for (i = 0; i < 20; i++) {
+			Pw[i] = static_cast<char>(Random(255));
 		}
-		n = 0x4000;
-		T.Time = Random(100);
-		if (Pw.length() != 40) {
-			throw std::exception("Bad PwCode + Pw2Code length! Must be 40.");
-		}
-		memcpy(T.PwNew, Pw.c_str(), Pw.length());
-		RandSeed = MLen + T.Time; // srand(MLen + T.Time);
-		// for (i = 14; i < 511; i++) TX[i] = TX[i] ^ Random(255);
-		RandIntByBytes(T.FreeRoot);
-		RandIntByBytes(T.MaxPage);
-		RandReal48ByBytes(T.TimeStmp);
-		RandBooleanByBytes(T.HasCoproc);
-		RandArrayByBytes(T.Rsrvd2, 25);
-		RandArrayByBytes(T.Version, 4);
-		RandArrayByBytes(T.LicText, 105);
-		RandArrayByBytes(&T.Sum, 1);
-		RandArrayByBytes(T.X1, 295);
-		RandByteByBytes(T.LicNr);
-		RandArrayByBytes(T.X2, 11);
-		RandArrayByBytes(T.PwNew, 40);
+	}
+	n = 0x4000;
+	T.Time = Random(100);
+	if (Pw.length() != 40) {
+		throw std::exception("Bad PwCode + Pw2Code length! Must be 40.");
+	}
+	memcpy(T.PwNew, Pw.c_str(), Pw.length());
+	RandSeed = MLen + T.Time; // srand(MLen + T.Time);
+	// for (i = 14; i < 511; i++) TX[i] = TX[i] ^ Random(255);
+	RandIntByBytes(T.FreeRoot);
+	RandIntByBytes(T.MaxPage);
+	RandReal48ByBytes(T.TimeStmp);
+	RandBooleanByBytes(T.HasCoproc);
+	RandArrayByBytes(T.Rsrvd2, 25);
+	RandArrayByBytes(T.Version, 4);
+	RandArrayByBytes(T.LicText, 105);
+	RandArrayByBytes(&T.Sum, 1);
+	RandArrayByBytes(T.X1, 295);
+	RandByteByBytes(T.LicNr);
+	RandArrayByBytes(T.X2, 11);
+	RandArrayByBytes(T.PwNew, 40);
 
-		T.LicNr = LicenseNr;
-		if (LicenseNr != 0) {
-			unsigned char sum = 0;
-			n = 0x6000;
-			sum = T.LicNr;
-			for (i = 0; i < 105; i++) sum += T.LicText[i];
-			T.Sum = sum;
-		}
-		T.free_part = FreePart; // 8B
-		T.rsrvd1 = Reserved; // 1B
-		T.CompileProc = CompileProc; // 1B
-		T.CompileAll = CompileAll; // 1B
-		T.IRec = IRec; // 2B
-		T.FreeRoot = FreeRoot; // 4B
-		T.MaxPage = MaxPage; // 4B
-		T.TimeStmp = TimeStmp; // 6B Pascal
+	T.LicNr = LicenseNr;
+	if (LicenseNr != 0) {
+		unsigned char sum = 0;
+		n = 0x6000;
+		sum = T.LicNr;
+		for (i = 0; i < 105; i++) sum += T.LicText[i];
+		T.Sum = sum;
+	}
+	T.free_part = FreePart; // 8B
+	T.rsrvd1 = Reserved; // 1B
+	T.CompileProc = CompileProc; // 1B
+	T.CompileAll = CompileAll; // 1B
+	T.IRec = IRec; // 2B
+	T.FreeRoot = FreeRoot; // 4B
+	T.MaxPage = MaxPage; // 4B
+	T.TimeStmp = TimeStmp; // 6B Pascal
 
-		T.old_max_page = 0xffff;
-		T.signum = 1;
-		T.IRec += n;
-		memcpy(T.Version, Version, 4);
-		T.HasCoproc = HasCoproc;
-		RandSeed = RS;
-		break;
-	}
-	default:;
-	}
+	T.old_max_page = 0xffff;
+	T.signum = 1;
+	T.IRec += n;
+	memcpy(T.Version, Version, 4);
+	T.HasCoproc = HasCoproc;
+	RandSeed = RS;
 
 	unsigned char header512[512]{ 0 };
 	T.Save(header512);
@@ -285,29 +249,18 @@ void FandTFile::WrPrefix()
 
 void FandTFile::SetEmpty()
 {
-	unsigned char X[MPageSize];
-	short* XL = (short*)&X;
-	switch (Format) {
-	case DbtFormat: {
-		MaxPage = 0;
-		WrPrefix();
-		break;
-	}
-	case FptFormat: {
-		FreePart = 8; FptFormatBlockSize = 64;
-		WrPrefix();
-		break;
-	}
-	case T00Format: {
-		FreeRoot = 0; MaxPage = 1; FreePart = MPageSize; MLen = 2 * MPageSize;
-		WrPrefix();
-		memset(X, 0, MPageSize); //FillChar(X, MPageSize, 0); 
-		*XL = -510;
-		WriteData(MPageSize, MPageSize, X);
-		break;
-	}
-	default: break;
-	}
+	uint8_t X[MPageSize];
+	int16_t* XL = (int16_t*)&X;
+
+	FreeRoot = 0;
+	MaxPage = 1;
+	FreePart = MPageSize;
+	MLen = 2 * MPageSize;
+
+	WrPrefix();
+	memset(X, 0, MPageSize);
+	*XL = -510;
+	WriteData(MPageSize, MPageSize, X);
 }
 
 void FandTFile::Create(const std::string& path)
@@ -333,70 +286,32 @@ std::string FandTFile::Read(int32_t pos)
 {
 	std::string s;
 	pos -= LicenseNr;
+
 	if (pos <= 0) {
 		// OldTxt=-1 in RDB!
 		// return empty string
 	}
 	else {
-		switch (Format) {
-		case T00Format: {
-			if ((pos < MPageSize) || (pos >= MLen)) {
+		if ((pos < MPageSize) || (pos >= MLen)) {
+			Err(891, false);
+		}
+		else {
+			unsigned short len; // length of data
+			ReadData(pos, 2, &len);
+
+			if (len > MaxLStrLen + 1) {
+				// max length has been exceeded
 				Err(891, false);
 			}
+			else if (len == MaxLStrLen + 1) {
+				//auto check = GetLength(pos);
+				s = ReadLongBuffer(pos);
+			}
 			else {
-				unsigned short len; // length of data
-				ReadData(pos, 2, &len);
-
-				if (len > MaxLStrLen + 1) {
-					// max length has been exceeded
-					Err(891, false);
-				}
-				else if (len == MaxLStrLen + 1) {
-					//auto check = GetLength(pos);
-					s = ReadLongBuffer(pos);
-				}
-				else {
-					const std::unique_ptr<uint8_t[]> data = std::make_unique_for_overwrite<uint8_t[]>(len);
-					ReadBuffer(pos + 2, len, data.get());
-					s = std::string((char*)data.get(), len);
-				}
+				const std::unique_ptr<uint8_t[]> data = std::make_unique_for_overwrite<uint8_t[]>(len);
+				ReadBuffer(pos + 2, len, data.get());
+				s = std::string((char*)data.get(), len);
 			}
-			break;
-		}
-		case DbtFormat: {
-			LongStr* s = new LongStr(32768); //(LongStr*)GetStore(32770);
-			pos = pos << MPageShft;
-			unsigned l = 0;
-			char* p = s->A;
-			int offset = 0;
-
-			while (l <= 32768 - MPageSize) {
-				ReadData(pos, MPageSize, &p[offset]);
-				for (uint16_t i = 1; i <= MPageSize; i++) {
-					if (p[offset + i] == 0x1A) {
-						s->LL = l;
-						//ReleaseStore(&s->A[l + 1]);
-						//return s;
-						return "";
-					}
-					l++;
-				}
-				offset += MPageSize;
-				pos += MPageSize;
-			}
-			l--;
-			s->LL = l;
-			//ReleaseStore(&s->A[l + 1]);
-			break;
-			break;
-		}
-		case FptFormat: {
-			struct { int Typ = 0, Len = 0; } FptD;
-			pos = pos * FptFormatBlockSize;
-			ReadData(pos, sizeof(FptD), &FptD);
-			s = "";
-			break;
-		}
 		}
 	}
 
@@ -447,63 +362,27 @@ uint32_t FandTFile::Store(const std::string& data)
 
 	SetUpdateFlag(); //SetUpdHandle(Handle);
 
-	switch (Format) {
-	case T00Format: {
-		if (l > MaxLStrLen) {
-			// > 65000B
-			pos = NewPage(false);
-			WriteLongBuffer(pos, l, s);
-			//auto check = GetLength(pos);
-		}
-		else if (l > MPageSize - 2) {
-			// <= 65000B
-			pos = NewPage(false);
-			uint16_t data_len = (uint16_t)l;
-			WriteData(pos, 2, &data_len);
-			WriteBuffer(pos + 2, data_len, s);
-		}
-		else {
-			// short text
-			pos = PreparePositionForShortText(l);
-			uint16_t data_len = (uint16_t)l;
-			WriteData(pos, 2, &data_len);
-			WriteBuffer(pos + 2, data_len, s);
-		}
+	if (l > MaxLStrLen) {
+		// > 65000B
+		pos = NewPage(false);
+		WriteLongBuffer(pos, l, s);
+		//auto check = GetLength(pos);
+	}
+	else if (l > MPageSize - 2) {
+		// <= 65000B
+		pos = NewPage(false);
+		uint16_t data_len = (uint16_t)l;
+		WriteData(pos, 2, &data_len);
+		WriteBuffer(pos + 2, data_len, s);
+	}
+	else {
+		// short text
+		pos = PreparePositionForShortText(l);
+		uint16_t data_len = (uint16_t)l;
+		WriteData(pos, 2, &data_len);
+		WriteBuffer(pos + 2, data_len, s);
+	}
 
-		break;
-	}
-	case DbtFormat: {
-		pos = MaxPage + 1;
-		int N = pos << MPageShft;
-		if (l > 0x7fff) l = 0x7fff;
-		WriteData(N, l, s);
-		FillChar(X, MPageSize, ' ');
-		X[0] = 0x1A; X[1] = 0x1A;
-		int rest = MPageSize - (l + 2) % MPageSize;
-		WriteData(N + l, rest + 2, X);
-		MaxPage += (l + 2 + rest) / MPageSize;
-		break;
-	}
-	case FptFormat: {
-		pos = FreePart;
-		int N = FreePart * FptFormatBlockSize;
-		if (l > 0x7fff) l = 0x7fff;
-		FreePart = FreePart + (sizeof(FptD) + l - 1) / FptFormatBlockSize + 1;
-		//FptD.Len = SwapLong(l);
-		WriteData(N, sizeof(FptD), &FptD);
-		N += sizeof(FptD);
-		WriteData(N, l, s);
-		N += l;
-		l = FreePart * FptFormatBlockSize - N;
-		if (l > 0) {
-			unsigned char* p = new unsigned char[l];
-			FillChar(p, l, ' ');
-			WriteData(N, l, p);
-			delete[] p; p = nullptr;
-		}
-		break;
-	}
-	}
 	return pos;
 }
 
@@ -511,7 +390,7 @@ void FandTFile::Delete(int32_t pos)
 {
 	if (pos <= 0) return;
 
-	if ((Format != T00Format) || NotCached()) return;
+	if (/*(Format != T00Format) ||*/ NotCached()) return;
 
 	if ((pos < MPageSize) || (pos >= MLen)) {
 		Err(889, false);
@@ -620,7 +499,7 @@ void FandTFile::CloseFile()
 		}
 		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FileType::DBF)) {
 			SetPathAndVolume(_parent->GetFileD());
-			CPath = CExtToT(this, CDir, CName, CExt);
+			CPath = _parent->GetFileD()->CExtToT(CDir, CName, CExt);
 			MyDeleteFile(CPath);
 		}
 	}

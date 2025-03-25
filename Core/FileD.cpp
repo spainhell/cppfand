@@ -5,6 +5,7 @@
 #include "runfrml.h"
 #include "../fandio/files.h"
 #include "../fandio/XKey.h"
+#include "../Common/compare.h"
 #include "../Logging/Logging.h"
 
 
@@ -555,7 +556,7 @@ void FileD::ZeroAllFlds(void* record, bool delTFields)
 }
 
 /// \brief Copy complete record
-/// - for T: one of this files is always TWork
+/// - for T: one of these files is always TWork
 /// \param src_record source record
 /// \param dst_record destination record
 /// \param delTFields deletes the existing destination T first
@@ -565,33 +566,35 @@ void FileD::CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields)
 		this->FF->DelTFlds(dst_record);
 	}
 
-	//memcpy(dst_record, src_record, FF->RecLen);
 	for (FieldDescr* const& f : FldD) {
 		if (f->isStored()) {
 			switch (f->field_type) {
 			case FieldType::TEXT: {
-				FandTFile* src_t00_file = FF->TF;
-				FandTFile* dst_t00_file = FF->TF;
+				bool src_is_work = HasTWorkFlag(src_record);
+				bool dst_is_work = HasTWorkFlag(dst_record);
 
-				if (src_t00_file->Format != FandTFile::T00Format) {
+				if (FileType == FType::DBF) {
+					// if (src_t00_file->Format != FandTFile::T00Format)
 					std::string s = loadS(f, src_record);
 					saveS(f, s, dst_record);
 				}
-				else {
-					bool src_is_work = HasTWorkFlag(src_record);
-					bool dst_is_work = HasTWorkFlag(dst_record);
-
+				else
+				{
+					FandTFile* src_t00_file = nullptr;
+					FandTFile* dst_t00_file = nullptr;
 
 					if (src_is_work) {
 						src_t00_file = &TWork;
+						dst_t00_file = FF->TF;
 					}
 
 					if (dst_is_work) {
+						src_t00_file = FF->TF;
 						dst_t00_file = &TWork;
 					}
 
-					int src_pos = loadT(f, src_record);
-					int dst_pos = 0;
+					int32_t src_pos = loadT(f, src_record);
+					int32_t dst_pos = 0;
 
 					if (src_is_work && dst_is_work) {
 						// src and dest are in TWork
@@ -626,9 +629,10 @@ void FileD::CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields)
 
 					saveT(f, dst_pos, dst_record);
 				}
+
 				break;
 			}
-			default: 
+			default:
 				memcpy(&dst_record[f->Displ], &src_record[f->Displ], f->NBytes);
 				break;
 			}
@@ -639,6 +643,25 @@ void FileD::CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields)
 void FileD::DelAllDifTFlds(void* record, void* comp_record)
 {
 	this->FF->DelAllDifTFlds(record, comp_record);
+}
+
+std::string FileD::CExtToT(const std::string& dir, const std::string& name, std::string ext)
+{
+	if (EquUpCase(ext, ".RDB")) {
+		ext = ".TTT";
+	}
+	else if (EquUpCase(ext, ".DBF")) {
+		if (DbfF->TF->Format == DbfTFile::FptFormat) {
+			ext = ".FPT";
+		}
+		else {
+			ext = ".DBT";
+		}
+	}
+	else {
+		ext[1] = 'T';
+	}
+	return dir + name + ext;
 }
 
 bool FileD::IsActiveRdb()

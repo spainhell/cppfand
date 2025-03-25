@@ -29,8 +29,7 @@ public:
 	int MLen = 0;
 	std::string PwCode;
 	std::string Pw2Code;
-	enum eFormat { T00Format, DbtFormat, FptFormat } Format = T00Format;
-	unsigned short FptFormatBlockSize = 0;
+	
 	bool IsWork = false;
 	void Err(unsigned short n, bool ex) const;
 	void TestErr() const;
@@ -45,7 +44,7 @@ public:
 
 	std::string Read(int32_t pos);
 	uint32_t GetLength(int32_t pos);
-	uint32_t Store(const std::string& s);
+	uint32_t Store(const std::string& data);
 	void Delete(int32_t pos);
 
 private:

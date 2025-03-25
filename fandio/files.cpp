@@ -71,15 +71,15 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 
 	// open text file (.T__)
 	if (file_d->FF->TF != nullptr) {
-		CPath = CExtToT(file_d->FF->TF, CDir, CName, CExt);
+		CPath = file_d->CExtToT(CDir, CName, CExt);
 		if (file_d->FF->WasRdOnly) {
 			SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110); // 0x26 = archive + hidden + system
 		}
 		while (true) {
 			file_d->FF->TF->Handle = OpenH(CPath, _isOldFile, file_d->FF->UMode);
 			if (HandleError == 2) {
-				if (file_d->FF->TF->Format == file_d->FF->TF->DbtFormat) {
-					file_d->FF->TF->Format = file_d->FF->TF->FptFormat;
+				if (file_d->FileType == FType::DBF && file_d->DbfF->TF->Format == DbfTFile::DbtFormat) {
+					file_d->DbfF->TF->Format = DbfTFile::FptFormat;
 					CExt = ".FPT";
 					CPath = CDir + CName + CExt;
 					continue;
@@ -269,7 +269,7 @@ void CreateF(FileD* file_d)
 	file_d->FF->NRecs = 0;
 
 	if (file_d->FF->TF != nullptr) {
-		path = CExtToT(file_d->FF->TF, CDir, CName, CExt);
+		path = file_d->CExtToT(CDir, CName, CExt);
 		file_d->FF->TF->Create(path);
 	}
 
@@ -438,7 +438,7 @@ std::string SetPathForH(HANDLE handle)
 
 			if (fd->FF->TF != nullptr && fd->FF->TF->Handle == handle) {
 				SetPathAndVolume(fd);
-				CPath = CExtToT(fd->FF->TF, CDir, CName, CExt);
+				CPath = fd->CExtToT(CDir, CName, CExt);
 				return CPath;
 			}
 		}

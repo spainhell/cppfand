@@ -119,6 +119,8 @@ public:
 	void CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields);
 	void DelAllDifTFlds(void* record, void* comp_record);
 
+	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
+
 	bool IsActiveRdb();
 
 	static void CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files);

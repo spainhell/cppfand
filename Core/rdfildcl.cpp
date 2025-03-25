@@ -1266,6 +1266,8 @@ void SetHCatTyp(FileD* file_d, FileType FDTyp)
 
 void GetTFileD(FileD* file_d, FileType file_type)
 {
+	// TODO: DBF! predelat na zaklade podminky pro DBF:
+
 	if (!HasTT && (file_d->FF->TF == nullptr)) return;
 
 	if (file_d->FF->TF == nullptr) {
@@ -1275,7 +1277,7 @@ void GetTFileD(FileD* file_d, FileType file_type)
 	file_d->FF->TF->Handle = nullptr;
 
 	if (file_type == FileType::DBF) {
-		file_d->FF->TF->Format = FandTFile::DbtFormat;
+		file_d->DbfF->TF->Format = DbfTFile::DbtFormat;
 	}
 }
 
