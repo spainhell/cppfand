@@ -2,8 +2,11 @@
 
 #include <cstdlib>
 #include <cstring>
+
+#include "files.h"
 #include "../Core/access.h"
 #include "../Core/obaseww.h"
+#include "../Core/GlobalVariables.h"
 
 DbfTFile::DbfTFile(DbfFile* parent)
 {
@@ -201,6 +204,17 @@ uint32_t DbfTFile::Store(const std::string& data)
 void DbfTFile::Delete(int32_t pos)
 {
 	// for DBF this is not implemented
+}
+
+void DbfTFile::CloseFile()
+{
+	if (Handle != nullptr) {
+		CloseClearH(&Handle);
+		if (HandleError == 0) {
+			Handle = nullptr;
+			ClearUpdateFlag();
+		}
+	}
 }
 
 void DbfTFile::ClearUpdateFlag()

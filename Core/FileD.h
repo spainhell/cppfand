@@ -57,6 +57,7 @@ public:
 
 	size_t ReadRec(size_t rec_nr, void* record) const;
 	size_t WriteRec(size_t rec_nr, void* record) const;
+	int UsedFileSize() const;
 
 	uint8_t* GetRecSpace() const;
 	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;

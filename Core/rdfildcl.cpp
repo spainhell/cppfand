@@ -528,7 +528,7 @@ void RdFieldDList(FileD* file_d, bool stored)
 			Z = gc->RdFrml(FTyp, nullptr);
 		}
 		F = RdFieldDescr(name, stored);
-		if ((file_d->FF->file_type == FandFileType::DBF) && stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
+		if ((file_d->FileType == DataFileType::DBF) && stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
 			gc->OldError(86);
 		}
 

@@ -1022,7 +1022,7 @@ void Compiler::RdLocDcl(LocVarBlock* LVB, bool IsParList, bool WithRecVar, char 
 						}
 						else if (EquUpCase("DBF", LexWord)) {
 							data_file_type = DataFileType::DBF;
-							fand_file_type = FandFileType::DBF;
+							fand_file_type = FandFileType::UNKNOWN;
 						}
 						else {
 							Error(185);

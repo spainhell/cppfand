@@ -497,7 +497,7 @@ void FandTFile::CloseFile()
 			Handle = nullptr;
 			ClearUpdateFlag();
 		}
-		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FandFileType::DBF)) {
+		if ((!_parent->IsShared()) && (_parent->NRecs == 0)) {
 			SetPathAndVolume(_parent->GetFileD());
 			CPath = _parent->GetFileD()->CExtToT(CDir, CName, CExt);
 			MyDeleteFile(CPath);

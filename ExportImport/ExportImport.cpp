@@ -395,7 +395,7 @@ void ExportFD(CopyD* CD)
 			F2 = nullptr;
 		}
 		else {
-			Cpy(CFile->FF->Handle, CFile->FF->UsedFileSize(), F2);
+			Cpy(CFile->FF->Handle, CFile->UsedFileSize(), F2);
 		}
 
 		if (CFile->FF->TF != nullptr) {

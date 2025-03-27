@@ -30,6 +30,8 @@ public:
 	uint32_t Store(const std::string& data);
 	void Delete(int32_t pos);
 
+	void CloseFile();
+
 	void ClearUpdateFlag() override;
 
 private:

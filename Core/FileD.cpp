@@ -104,6 +104,27 @@ size_t FileD::WriteRec(size_t rec_nr, void* record) const
 	return this->FF->WriteRec(rec_nr, record);
 }
 
+int FileD::UsedFileSize() const
+{
+	int result = 0;
+
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = FF->UsedFileSize();
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->UsedFileSize();
+		break;
+	}
+	default: {
+		break;
+	}
+	}
+
+	return result;
+}
+
 uint8_t* FileD::GetRecSpace() const
 {
 	size_t length = FF->RecLen + 2;

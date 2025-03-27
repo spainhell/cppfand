@@ -17,8 +17,7 @@ enum class FandFileType
 	FAND16,
 	INDEX,
 	RDB,
-	CAT,
-	DBF
+	CAT
 };
 
 class Fand0File : public FandFile
@@ -53,7 +52,7 @@ public:
 	void DeleteRec(int n, void* record);
 	void DelAllDifTFlds(void* record, void* comp_record);
 
-	int UsedFileSize();
+	int UsedFileSize() const;
 	bool IsShared();
 	bool NotCached();
 	bool Cached();
@@ -132,7 +131,6 @@ public:
 
 private:
 	FileD* _parent;
-	double DBF_RforD(FieldDescr* field_d, uint8_t* source);
 	bool is_null_value(FieldDescr* field_d, uint8_t* record);
 
 	std::string _extToT(const std::string& input_path);
