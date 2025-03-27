@@ -128,6 +128,7 @@ public:
 
 	//static int CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos);
 	static void CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos);
+	std::string SetTempCExt(char typ, bool isNet) const;
 
 private:
 	FileD* _parent;

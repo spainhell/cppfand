@@ -121,7 +121,9 @@ public:
 	void DelAllDifTFlds(void* record, void* comp_record);
 
 	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
+	std::string SetTempCExt(char typ, bool isNet);
 	void SetHCatTyp(FandFileType fand_file_type);
+	void GetTFileD(bool has_tt);
 
 	bool IsActiveRdb();
 

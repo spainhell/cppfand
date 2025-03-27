@@ -1166,7 +1166,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	TestDelErr(orig_path);
 
 	// rename temp file to regular
-	std::string temp_path = SetTempCExt(_parent, '0', false);
+	std::string temp_path = SetTempCExt('0', false);
 	SaveCache(0, TempFD->FF->Handle);
 	CloseClearH(&TempFD->FF->Handle);
 	RenameFile56(temp_path, orig_path, true);
@@ -1181,7 +1181,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 		//*parent_tf = *ref_to_parent->FF->TF;
 		//ref_to_parent->FF->TF = parent_tf;
 		CloseClearH(&TempFD->FF->TF->Handle);
-		std::string temp_path_t = SetTempCExt(_parent, 'T', false);
+		std::string temp_path_t = SetTempCExt('T', false);
 		RenameFile56(temp_path_t, orig_path_T, true);
 		TF->Handle = OpenH(orig_path_T, _isOldFile, UMode);
 		SetUpdateFlag(); //SetUpdHandle(TF->Handle);
@@ -1195,7 +1195,7 @@ void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 {
 	TempFD->FF->WrPrefixes();
 	SaveCache(0, Handle);
-	SetTempCExt(_parent, '0', true);
+	SetTempCExt('0', true);
 	CopyH(TempFD->FF->Handle, Handle);
 
 	// TempFD has been deleted in CopyH -> set Handle to nullptr
@@ -1205,7 +1205,7 @@ void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 	if ((TF != nullptr) && DelTF) {
 		HANDLE h1 = TempFD->FF->TF->Handle;
 		HANDLE h2 = TF->Handle;
-		SetTempCExt(_parent, 'T', true);
+		SetTempCExt('T', true);
 		*TF = *TempFD->FF->TF;
 		TF->Handle = h2;
 		CopyH(h1, h2);
@@ -1309,6 +1309,37 @@ label3:
 label4:
 	if (!tf->IsWork) TFD02->OldLockMode(md2);
 	CFile = file_d;
+}
+
+std::string Fand0File::SetTempCExt(char typ, bool isNet) const
+{
+	char Nr;
+	if (typ == 'T') {
+		Nr = '2';
+		switch (file_type) {
+		case FandFileType::RDB: CExt = ".TTT"; break;
+		default: ;
+		}
+	}
+	else {
+		Nr = '1';
+		switch (file_type) {
+		case FandFileType::RDB: CExt = ".RDB"; break;
+		default: ;
+		}
+	}
+
+	if (CExt.length() < 2) CExt = ".0";
+	CExt[1] = Nr;
+
+	if (isNet) {
+		CPath = WrkDir + CName + CExt; /* work files are local */
+	}
+	else {
+		CPath = CDir + CName + CExt;
+	}
+
+	return CPath;
 }
 
 bool Fand0File::is_null_value(FieldDescr* field_d, uint8_t* record)

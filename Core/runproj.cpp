@@ -150,11 +150,15 @@ void GetRdbRecVars(const EditD* edit, void* record, RdbRecVars* X)
 			MarkBoth(p, p2);
 			if (RdFDSegment(0, X->OldTxt)) {
 				X->FTyp = file_d->FF->file_type;
-				if (file_d->IsSQLFile) X->Ext = ".SQL";
+				if (file_d->IsSQLFile) {
+					X->Ext = ".SQL";
+				}
+				else if (file_d->FileType == DataFileType::DBF) {
+					X->Ext = ".DBF";
+				}
 				else {
 					switch (X->FTyp) {
 					case FandFileType::RDB: X->Ext = ".RDB"; break;
-					case FandFileType::DBF: X->Ext = ".DBF"; break;
 					case FandFileType::FAND8: X->Ext = ".DTA"; break;
 					default: X->Ext = ".000"; break;
 					}

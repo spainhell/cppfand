@@ -343,6 +343,31 @@ void DbfFile::ClearUpdateFlag()
 	FandFile::ClearUpdateFlag();
 }
 
+std::string DbfFile::SetTempCExt(char typ, bool isNet) const
+{
+	char Nr;
+	if (typ == 'T') {
+		Nr = '2';
+		CExt = ".DBT";
+	}
+	else {
+		Nr = '1';
+		CExt = ".DBF";
+	}
+
+	if (CExt.length() < 2) CExt = ".0";
+	CExt[1] = Nr;
+
+	if (isNet) {
+		CPath = WrkDir + CName + CExt; /* work files are local */
+	}
+	else {
+		CPath = CDir + CName + CExt;
+	}
+
+	return CPath;
+}
+
 double DbfFile::DBF_RforD(FieldDescr* field_d, uint8_t* source)
 {
 	char* ptr = (char*)source;

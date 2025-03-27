@@ -48,6 +48,7 @@ public:
 	FileD* GetFileD();
 
 	void ClearUpdateFlag() override;
+	std::string SetTempCExt(char typ, bool isNet) const;
 
 private:
 	FileD* _parent;

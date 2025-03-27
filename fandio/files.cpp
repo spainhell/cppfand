@@ -166,7 +166,7 @@ void check_X_file(FileD* file_d, int file_size)
 
 			Fand0File* ff = file_d->FF;
 			if (
-				!ff->XF->NotValid && ((Signum != 0x04FF) 
+				!ff->XF->NotValid && ((Signum != 0x04FF)
 					|| (ff->XF->NRecsAbs != ff->NRecs)
 					|| (ff->XF->FreeRoot > ff->XF->MaxPage)
 					|| ((ff->XF->MaxPage + 1) << XPageShft) > FileSizeH(ff->XF->Handle))
@@ -386,12 +386,34 @@ std::string SetPathAndVolume(FileD* file_d, char pathDelim)
 		if (file_d->Name == "@") goto label3;
 		goto label4;
 	}
-	switch (file_d->FF->file_type) {
-	case FandFileType::RDB: CExt = ".RDB"; break;
-	case FandFileType::FAND8: CExt = ".DTA"; break;
-	case FandFileType::DBF: CExt = ".DBF"; break;
-	default: CExt = ".000";
+
+	switch (file_d->FileType) {
+	case DataFileType::FandFile: {
+		switch (file_d->FF->file_type) {
+		case FandFileType::RDB: {
+			CExt = ".RDB";
+			break;
+		}
+		case FandFileType::FAND8: {
+			CExt = ".DTA";
+			break;
+		}
+		default: {
+			CExt = ".000";
+			break;
+		}
+		}
+		break;
 	}
+	case DataFileType::DBF: {
+		CExt = ".DBF";
+		break;
+	}
+	default:
+		// other types don't have an extension
+		break;
+	}
+
 	if (SetContextDir(file_d, CDir, isRdb)) goto label2;
 	if (file_d == HelpFD) {
 		CDir = FandDir;
@@ -418,7 +440,7 @@ label4:
 	if (pathDelim == '\\') ReplaceChar(CDir, '/', '\\');
 	CPath = CDir + CName + CExt;
 	return CPath;
-	}
+}
 
 std::string SetPathForH(HANDLE handle)
 {
@@ -446,33 +468,5 @@ std::string SetPathForH(HANDLE handle)
 	}
 	ReadMessage(799);
 	CPath = MsgLine;
-	return CPath;
-}
-
-std::string SetTempCExt(FileD* file_d, char typ, bool isNet)
-{
-	char Nr;
-	if (typ == 'T') {
-		Nr = '2';
-		switch (file_d->FF->file_type) {
-		case FandFileType::RDB: CExt = ".TTT"; break;
-		case FandFileType::DBF: CExt = ".DBT"; break;
-		}
-	}
-	else {
-		Nr = '1';
-		switch (file_d->FF->file_type) {
-		case FandFileType::RDB: CExt = ".RDB"; break;
-		case FandFileType::DBF: CExt = ".DBF"; break;
-		}
-	}
-	if (CExt.length() < 2) CExt = ".0";
-	CExt[1] = Nr;
-	if (isNet) {
-		CPath = WrkDir + CName + CExt; /* work files are local */
-	}
-	else {
-		CPath = CDir + CName + CExt;
-	}
 	return CPath;
 }

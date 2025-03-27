@@ -519,7 +519,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	bool net = IsNetCVol();
 	FileD* newFile = new FileD(*this);
 
-	std::string path = SetTempCExt(this, '0', net);
+	std::string path = SetTempCExt('0', net);
 	CVol = "";
 	newFile->FullPath = path;
 	newFile->FF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
@@ -547,7 +547,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	if (createTextFile && (newFile->FF->TF != nullptr)) {
 		newFile->FF->TF = new FandTFile(newFile->FF);
 		//*newFile->FF->TF = *FF->TF;
-		std::string path_t = SetTempCExt(this, 'T', net);
+		std::string path_t = SetTempCExt('T', net);
 		//newFile->FF->TF->Handle = OpenH(path_t, _isOverwriteFile, Exclusive);
 		newFile->FF->TF->Create(path_t);
 		newFile->FF->TF->TestErr();
@@ -562,7 +562,7 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 {
 	CloseClearH(&TempFD->FF->Handle);
 	SetPathAndVolume(this);
-	SetTempCExt(this, '0', FF->IsShared());
+	SetTempCExt('0', FF->IsShared());
 	MyDeleteFile(CPath);
 }
 
@@ -689,6 +689,26 @@ std::string FileD::CExtToT(const std::string& dir, const std::string& name, std:
 	return dir + name + ext;
 }
 
+std::string FileD::SetTempCExt(char typ, bool isNet)
+{
+	std::string result;
+
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = FF->SetTempCExt(typ, isNet);
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->SetTempCExt(typ, isNet);
+		break;
+	}
+	default: break;
+		break;
+	}
+
+	return result;
+}
+
 void FileD::SetHCatTyp(FandFileType fand_file_type)
 {
 	/// smaze Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat catalog
@@ -703,6 +723,30 @@ void FileD::SetHCatTyp(FandFileType fand_file_type)
 	typSQLFile = isSql;
 	SetIsSQLFile();
 #endif
+}
+
+void FileD::GetTFileD(bool has_tt)
+{
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		if (!has_tt && (FF->TF == nullptr)) return;
+		if (FF->TF == nullptr) {
+			FF->TF = new FandTFile(FF);
+		}
+		FF->TF->Handle = nullptr;
+		break;
+	}
+	case DataFileType::DBF: {
+		if (!has_tt && (DbfF->TF == nullptr)) return;
+		if (DbfF->TF == nullptr) {
+			DbfF->TF = new DbfTFile(DbfF);
+		}
+		DbfF->TF->Handle = nullptr;
+		DbfF->TF->Format = DbfTFile::DbtFormat;
+		break;
+	}
+	default: break;
+	}
 }
 
 bool FileD::IsActiveRdb()

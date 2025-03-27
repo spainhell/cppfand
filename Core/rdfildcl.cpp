@@ -748,7 +748,7 @@ FileD* RdFileD(std::string FileName, DataFileType data_file_type, FandFileType f
 		if ((file_d->OrigFD == nullptr) || !(gc->Lexem == 0x1A || gc->Lexem == '#' || gc->Lexem == ']')) {
 			RdFieldDList(file_d, true);
 		}
-		GetTFileD(file_d, fand_file_type);
+		file_d->GetTFileD(HasTT);
 		std::deque<LinkD*> LDOld = LinkDRoot;
 
 		// TODO: v originale je to jinak, saha si to na nasl. promenne za PrevCompInp
@@ -1250,23 +1250,6 @@ void RdAssign(Additive* AD)
 	AD->Assign = true;
 	AD->Frml = gc->RdFrml(FTyp, nullptr);
 	if (FTyp != AD->Field->frml_type) gc->OldError(12);
-}
-
-void GetTFileD(FileD* file_d, FandFileType file_type)
-{
-	// TODO: DBF! predelat na zaklade podminky pro DBF:
-
-	if (!HasTT && (file_d->FF->TF == nullptr)) return;
-
-	if (file_d->FF->TF == nullptr) {
-		file_d->FF->TF = new FandTFile(file_d->FF);
-	}
-
-	file_d->FF->TF->Handle = nullptr;
-
-	if (file_type == FandFileType::DBF) {
-		file_d->DbfF->TF->Format = DbfTFile::DbtFormat;
-	}
 }
 
 void GetXFileD(FileD* file_d)

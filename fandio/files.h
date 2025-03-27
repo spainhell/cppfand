@@ -19,5 +19,3 @@ void TestCFileError(FileD* file_d);
 std::string SetPathMountVolumeSetNet(FileD* file_d, FileUseMode UM);
 std::string SetPathAndVolume(FileD* file_d, char pathDelim = '\\');
 std::string SetPathForH(HANDLE handle);
-
-std::string SetTempCExt(FileD* file_d, char typ, bool isNet);
