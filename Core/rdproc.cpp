@@ -1550,7 +1550,7 @@ void RdProcCall(Compiler* compiler, Instr** pinstr)
 		compiler->RdLex();
 		auto iPD = (Instr_checkfile*)*pinstr;
 		iPD->cfFD = compiler->RdFileName();
-		if (iPD->cfFD != nullptr && (iPD->cfFD->FF->file_type == FandFileType::FAND8 || iPD->cfFD->FF->file_type == FandFileType::DBF)
+		if (iPD->cfFD != nullptr && (iPD->cfFD->FileType == DataFileType::DBF || iPD->cfFD->FF->file_type == FandFileType::FAND8)
 #ifdef FandSQL
 			|| PD->cfFD->typSQLFile
 #endif

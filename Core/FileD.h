@@ -124,6 +124,7 @@ public:
 	std::string SetTempCExt(char typ, bool isNet);
 	void SetHCatTyp(FandFileType fand_file_type);
 	void GetTFileD(bool has_tt);
+	int32_t GetXFileD();
 
 	bool IsActiveRdb();
 

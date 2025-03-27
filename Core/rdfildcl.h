@@ -33,5 +33,4 @@ void RdKumul();
 void RdRoleField(Additive* AD);
 void RdImper(Additive* AD);
 void RdAssign(Additive* AD);
-void GetXFileD(FileD* file_d);
 CompInpD* OrigInp();

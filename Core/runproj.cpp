@@ -67,7 +67,7 @@ FandFileType ExtToTyp(const std::string& ext)
 		return FandFileType::FAND16;
 	else if (EquUpCase(ext, ".X")) return FandFileType::INDEX;
 	else if (EquUpCase(ext, ".DTA")) return FandFileType::FAND8;
-	else if (EquUpCase(ext, ".DBF")) return FandFileType::DBF;
+	// else if (EquUpCase(ext, ".DBF")) return FandFileType::DBF;
 	else if (EquUpCase(ext, ".RDB")) return FandFileType::RDB;
 	else return FandFileType::UNKNOWN;
 }

@@ -536,7 +536,7 @@ void RdFieldDList(FileD* file_d, bool stored)
 		//ChainLast(file_d->FldD.front(), F);
 
 		if (stored) {
-			if (file_d->FF->file_type == FandFileType::FAND8) {
+			if (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::FAND8) {
 				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) gc->OldError(35);
 				else if ((F->field_type == FieldType::FIXED) && (F->NBytes > 5)) gc->OldError(36);
 			}
@@ -785,7 +785,12 @@ FileD* RdFileD(std::string FileName, DataFileType data_file_type, FandFileType f
 		if (isSql && !file_d->Keys.empty()) {
 			file_d->FF->file_type = FandFileType::INDEX;
 		}
-		GetXFileD(file_d);
+
+		int32_t result = file_d->GetXFileD();
+		if (result != 0) {
+			gc->OldError(result);
+		}
+
 		gc->CompileRecLen(file_d);
 		SetLDIndexRoot(file_d, LDOld);
 		if ((file_d->FF->file_type == FandFileType::INDEX) && file_d->Keys.empty()) {
@@ -1250,22 +1255,6 @@ void RdAssign(Additive* AD)
 	AD->Assign = true;
 	AD->Frml = gc->RdFrml(FTyp, nullptr);
 	if (FTyp != AD->Field->frml_type) gc->OldError(12);
-}
-
-void GetXFileD(FileD* file_d)
-{
-	if (file_d->FF->file_type != FandFileType::INDEX) {
-		if (file_d->FF->XF != nullptr) {
-			gc->OldError(104);
-		}
-	}
-	else {
-		if (file_d->FF->XF == nullptr) {
-			file_d->FF->XF = new FandXFile(file_d->FF);
-		}
-
-		file_d->FF->XF->Handle = nullptr;
-	}
 }
 
 CompInpD* OrigInp()

@@ -749,6 +749,27 @@ void FileD::GetTFileD(bool has_tt)
 	}
 }
 
+int32_t FileD::GetXFileD()
+{
+	int32_t result = 0;
+
+	if (FF->file_type != FandFileType::INDEX) {
+		if (FF->XF != nullptr) {
+			//gc->OldError(104);
+			result = 104;
+		}
+	}
+	else {
+		if (FF->XF == nullptr) {
+			FF->XF = new FandXFile(FF);
+		}
+
+		FF->XF->Handle = nullptr;
+	}
+
+	return result;
+}
+
 bool FileD::IsActiveRdb()
 {
 	RdbD* R = CRdb;
