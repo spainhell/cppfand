@@ -97,6 +97,30 @@ int DbfFile::saveT(FieldDescr* field_d, int pos, void* record)
 	}
 }
 
+void DbfFile::DelTFld(FieldDescr* field_d, void* record)
+{
+	int pos = loadT(field_d, record);
+	if (pos == 0) return;
+
+	if (HasTWorkFlag(record)) {
+		TWork.Delete(pos);
+	}
+	else {
+		TF->Delete(pos);
+	}
+
+	saveT(field_d, 0, record);
+}
+
+void DbfFile::DelTFlds(void* record)
+{
+	for (FieldDescr* field : _parent->FldD) {
+		if (field->field_type == FieldType::TEXT && field->isStored()) {
+			DelTFld(field, record);
+		}
+	}
+}
+
 uint16_t DbfFile::RdPrefix()
 {
 	// NRs - celkovy pocet zaznamu v souboru;
@@ -261,6 +285,39 @@ int DbfFile::MakeDbfDcl(std::string& name)
 	return 0;
 }
 
+void DbfFile::CompileRecLen()
+{
+	WORD l = 1;
+	WORD n = 0;
+
+	for (FieldDescr* F : _parent->FldD) {
+		switch (F->field_type) {
+		case FieldType::FIXED: {
+			F->NBytes = F->L - 1;
+			break;
+		}
+		case FieldType::DATE: {
+			F->NBytes = 8;
+			break;
+		}
+		case FieldType::TEXT: {
+			F->NBytes = 10;
+			break;
+		}
+		default: break;
+		}
+
+		if (F->isStored()) {
+			F->Displ = l;
+			l += F->NBytes;
+			n++;
+		}
+	}
+
+	RecLen = l;
+	FirstRecPos = (n + 1) * 32 + 1;
+}
+
 int DbfFile::UsedFileSize() const
 {
 	int n = NRecs * RecLen + FirstRecPos + 1;
@@ -313,6 +370,19 @@ void DbfFile::CloseFile()
 			SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
 		}
 	}
+}
+
+void DbfFile::SetTWorkFlag(void* record) const
+{
+	BYTE* p = (BYTE*)record;
+	p[RecLen] = 1;
+}
+
+bool DbfFile::HasTWorkFlag(void* record) const
+{
+	BYTE* p = (BYTE*)record;
+	const bool workFlag = p[RecLen] == 1;
+	return workFlag;
 }
 
 bool DbfFile::DeletedFlag(void* record)

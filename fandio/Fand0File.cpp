@@ -104,6 +104,36 @@ void Fand0File::DelAllDifTFlds(void* record, void* comp_record)
 	}
 }
 
+void Fand0File::CompileRecLen()
+{
+	WORD l = 0;
+	WORD n = 0;
+	if (file_type == FandFileType::INDEX) {
+		l = 1;
+	}
+
+	for (FieldDescr* F : _parent->FldD) {
+		if (file_type == FandFileType::FAND8 && F->field_type == FieldType::DATE) {
+			F->NBytes = 2;
+		}
+
+		if (F->isStored()) {
+			F->Displ = l;
+			l += F->NBytes;
+			n++;
+		}
+	}
+
+	RecLen = l;
+
+	if (file_type == FandFileType::FAND8) {
+		FirstRecPos = 4;
+	}
+	else {
+		FirstRecPos = 6;
+	}
+}
+
 int Fand0File::UsedFileSize() const
 {
 	int n = NRecs * RecLen + FirstRecPos;
@@ -738,13 +768,13 @@ void Fand0File::Close()
 	}
 }
 
-void Fand0File::SetTWorkFlag(void* record)
+void Fand0File::SetTWorkFlag(void* record) const
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen] = 1;
 }
 
-bool Fand0File::HasTWorkFlag(void* record)
+bool Fand0File::HasTWorkFlag(void* record) const
 {
 	BYTE* p = (BYTE*)record;
 	const bool workFlag = p[RecLen] == 1;
@@ -1318,14 +1348,14 @@ std::string Fand0File::SetTempCExt(char typ, bool isNet) const
 		Nr = '2';
 		switch (file_type) {
 		case FandFileType::RDB: CExt = ".TTT"; break;
-		default: ;
+		default:;
 		}
 	}
 	else {
 		Nr = '1';
 		switch (file_type) {
 		case FandFileType::RDB: CExt = ".RDB"; break;
-		default: ;
+		default:;
 		}
 	}
 

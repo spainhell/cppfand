@@ -52,6 +52,7 @@ public:
 	void DeleteRec(int n, void* record);
 	void DelAllDifTFlds(void* record, void* comp_record);
 
+	void CompileRecLen();
 	int UsedFileSize() const;
 	bool IsShared();
 	bool NotCached();
@@ -91,8 +92,8 @@ public:
 	void CloseFile();
 	void Close();
 
-	void SetTWorkFlag(void* record);
-	bool HasTWorkFlag(void* record);
+	void SetTWorkFlag(void* record) const;
+	bool HasTWorkFlag(void* record) const;
 
 	void SetRecordUpdateFlag(void* record);
 	void ClearRecordUpdateFlag(void* record);

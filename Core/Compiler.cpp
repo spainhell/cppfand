@@ -1487,63 +1487,6 @@ bool Compiler::IsKeyArg(FieldDescr* F, FileD* FD)
 	return false;
 }
 
-void Compiler::CompileRecLen(FileD* file_d)
-{
-	WORD l = 0;
-	WORD n = 0;
-	if (file_d->FileType == DataFileType::DBF
-		|| (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::INDEX)) {
-		l = 1;
-	}
-
-	for (FieldDescr* F : file_d->FldD) {
-		if (file_d->FileType == DataFileType::DBF) {
-			switch (F->field_type) {
-			case FieldType::FIXED: {
-				F->NBytes = F->L - 1;
-				break;
-			}
-			case FieldType::DATE: {
-				F->NBytes = 8;
-				break;
-			}
-			case FieldType::TEXT: {
-				F->NBytes = 10;
-				break;
-			}
-			default: break;
-			}
-		}
-		else if (file_d->FileType == DataFileType::FandFile
-			&& file_d->FF->file_type == FandFileType::FAND8) {
-			if (F->field_type == FieldType::DATE) F->NBytes = 2;
-		}
-
-		if (F->isStored()) {
-			F->Displ = l;
-			l += F->NBytes;
-			n++;
-		}
-	}
-
-	file_d->FF->RecLen = l;
-
-	if (file_d->FileType == DataFileType::DBF) {
-		file_d->FF->FirstRecPos = (n + 1) * 32 + 1;
-	}
-	else {
-		switch (file_d->FF->file_type) {
-		case FandFileType::FAND8: {
-			file_d->FF->FirstRecPos = 4;
-			break;
-		}
-		default: {
-			file_d->FF->FirstRecPos = 6;
-			break;
-		}
-		}
-	}
-}
 
 void Compiler::TestBool(char FTyp)
 {

@@ -1047,16 +1047,13 @@ HANDLE OpenHForPutTxt(Instr_puttxt* PD)
 void PutTxt(Instr_puttxt* PD)
 {
 	HANDLE h = nullptr;
-	FrmlElem* z = nullptr;
 	std::string path;
-	z = PD->Txt;
+	FrmlElem* z = PD->Txt;
 
 	FileD* TFD02;
 	FandTFile* TF02;
 	int TF02Pos;
 
-	// TODO: this causes problem, file is never saved
-	// const bool canCopyT = false;
 	const bool canCopyT = CanCopyT(CFile, nullptr, z, &TF02, &TFD02, TF02Pos, CRecPtr);
 
 	if (canCopyT) {

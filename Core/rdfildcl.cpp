@@ -651,7 +651,7 @@ FileD* RdFileD_Journal(const std::string& FileName, FandFileType fand_file_type)
 		}
 	}
 
-	gc->CompileRecLen(journal);
+	journal->CompileRecLen();
 
 	return journal;
 }
@@ -791,9 +791,11 @@ FileD* RdFileD(std::string FileName, DataFileType data_file_type, FandFileType f
 			gc->OldError(result);
 		}
 
-		gc->CompileRecLen(file_d);
+		file_d->CompileRecLen();
 		SetLDIndexRoot(file_d, LDOld);
-		if ((file_d->FF->file_type == FandFileType::INDEX) && file_d->Keys.empty()) {
+		if (file_d->FileType == DataFileType::FandFile
+			&& file_d->FF->file_type == FandFileType::INDEX
+			&& file_d->Keys.empty()) {
 			gc->Error(107);
 		}
 		if ((gc->Lexem == '#') && (gc->ForwChar == 'A')) {

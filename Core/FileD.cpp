@@ -127,10 +127,23 @@ int FileD::UsedFileSize() const
 
 uint8_t* FileD::GetRecSpace() const
 {
-	size_t length = FF->RecLen + 2;
-	// 0. BYTE in front (.X00) -> Valid Record Flag (but it's calculated in RecLen for index file)
+	size_t length;
+	// 0. BYTE in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
 	// 1. BYTE in the end -> Work Flag
 	// 2. BYTE in the end -> Update Flag
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		length = FF->RecLen + 2;
+		break;
+	case DataFileType::DBF:
+		length = DbfF->RecLen + 2;
+		break;
+	default:
+		length = 0;
+		break;
+	}
+
 	uint8_t* result = new uint8_t[length];
 	memset(result, '\0', length);
 	return result;
@@ -138,10 +151,23 @@ uint8_t* FileD::GetRecSpace() const
 
 std::unique_ptr<uint8_t[]> FileD::GetRecSpaceUnique() const
 {
-	size_t length = FF->RecLen + 2;
-	// 0. BYTE in front (.X00) -> Valid Record Flag (but it's calculated in RecLen for index file)
+	size_t length;
+	// 0. BYTE in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
 	// 1. BYTE in the end -> Work Flag
 	// 2. BYTE in the end -> Update Flag
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		length = FF->RecLen + 2;
+		break;
+	case DataFileType::DBF:
+		length = DbfF->RecLen + 2;
+		break;
+	default:
+		length = 0;
+		break;
+	}
+
 	std::unique_ptr<uint8_t[]> result(new uint8_t[length]);
 	memset(result.get(), '\0', length);
 	return result;
@@ -162,6 +188,21 @@ void FileD::ClearRecSpace(void* record)
 				}
 			}
 		}
+	}
+}
+
+void FileD::CompileRecLen() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->CompileRecLen();
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->CompileRecLen();
+		break;
+	}
+	default: break;
 	}
 }
 
@@ -457,12 +498,35 @@ void FileD::RunErrorM(LockMode mode)
 
 void FileD::SetTWorkFlag(void* record)
 {
-	FF->SetTWorkFlag(record);
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->SetTWorkFlag(record);
+		break;
+	case DataFileType::DBF:
+		DbfF->SetTWorkFlag(record);
+		break;
+	default:
+		break;
+	}
 }
 
 bool FileD::HasTWorkFlag(void* record)
 {
-	return FF->HasTWorkFlag(record);
+	bool result;
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		result = FF->HasTWorkFlag(record);
+		break;
+	case DataFileType::DBF:
+		result = DbfF->HasTWorkFlag(record);
+		break;
+	default:
+		result = false;
+		break;
+	}
+
+	return result;
 }
 
 void FileD::SetRecordUpdateFlag(void* record)
@@ -482,20 +546,52 @@ bool FileD::HasRecordUpdateFlag(void* record)
 
 bool FileD::DeletedFlag(void* record)
 {
-	return FF->DeletedFlag(record);
+	bool result;
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		result = FF->DeletedFlag(record);
+		break;
+	case DataFileType::DBF:
+		result = DbfF->DeletedFlag(record);
+		break;
+	default:
+		result = false;
+		break;
+	}
+
+	return result;
 }
 
-void FileD::ClearDeletedFlag(void* record)
+void FileD::ClearDeletedFlag(void* record) const
 {
-	FF->ClearDeletedFlag(record);
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->ClearDeletedFlag(record);
+		break;
+	case DataFileType::DBF:
+		DbfF->ClearDeletedFlag(record);
+		break;
+	default:
+		break;
+	}
 }
 
-void FileD::SetDeletedFlag(void* record)
+void FileD::SetDeletedFlag(void* record) const
 {
-	FF->SetDeletedFlag(record);
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->SetDeletedFlag(record);
+		break;
+	case DataFileType::DBF:
+		DbfF->SetDeletedFlag(record);
+		break;
+	default:
+		break;
+	}
 }
 
-bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
+bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record) const
 {
 	return FF->SearchKey(XX, Key, NN, record);
 }
@@ -568,11 +664,24 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 
 void FileD::ZeroAllFlds(void* record, bool delTFields)
 {
-	if (delTFields) {
-		this->FF->DelTFlds(record);
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		if (delTFields) {
+			this->FF->DelTFlds(record);
+		}
+		memset(record, 0, FF->RecLen);
+		break;
+	}
+	case DataFileType::DBF: {
+		if (delTFields) {
+			this->DbfF->DelTFlds(record);
+		}
+		memset(record, 0, DbfF->RecLen);
+		break;
+	}
+	default:;
 	}
 
-	memset(record, 0, FF->RecLen);
 	for (FieldDescr* F : FldD) {
 		if (F->isStored() && (F->field_type == FieldType::ALFANUM)) {
 			saveS(F, "", record);
@@ -753,18 +862,20 @@ int32_t FileD::GetXFileD()
 {
 	int32_t result = 0;
 
-	if (FF->file_type != FandFileType::INDEX) {
-		if (FF->XF != nullptr) {
-			//gc->OldError(104);
-			result = 104;
+	if (FileType == DataFileType::FandFile) {
+		if (FF->file_type != FandFileType::INDEX) {
+			if (FF->XF != nullptr) {
+				//gc->OldError(104);
+				result = 104;
+			}
 		}
-	}
-	else {
-		if (FF->XF == nullptr) {
-			FF->XF = new FandXFile(FF);
-		}
+		else {
+			if (FF->XF == nullptr) {
+				FF->XF = new FandXFile(FF);
+			}
 
-		FF->XF->Handle = nullptr;
+			FF->XF->Handle = nullptr;
+		}
 	}
 
 	return result;

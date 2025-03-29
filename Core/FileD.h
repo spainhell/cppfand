@@ -64,6 +64,7 @@ public:
 
 	// delete 'T' from working file if exists
 	void ClearRecSpace(void* record);
+	void CompileRecLen() const;
 
 	void IncNRecs(int n);
 	void DecNRecs(int n);
@@ -108,10 +109,10 @@ public:
 	bool HasRecordUpdateFlag(void* record);
 
 	bool DeletedFlag(void* record);
-	void ClearDeletedFlag(void* record);
-	void SetDeletedFlag(void* record);
+	void ClearDeletedFlag(void* record) const;
+	void SetDeletedFlag(void* record) const;
 
-	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record);
+	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record) const;
 	bool SearchXKey(XKey* K, XString& X, int& N);
 
 	FileD* OpenDuplicateF(bool createTextFile);

@@ -30,16 +30,23 @@ public:
 	void saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
+	void DelTFld(FieldDescr* field_d, void* record);
+	void DelTFlds(void* record);
+
 	uint16_t RdPrefix();
 	void WrPrefix();
 	void WrPrefixes();
 	void WriteHeader();
 	int MakeDbfDcl(std::string& name);
 
+	void CompileRecLen();
 	int UsedFileSize() const;
 
 	void TruncFile();
 	void CloseFile();
+
+	void SetTWorkFlag(void* record) const;
+	bool HasTWorkFlag(void* record) const;
 
 	bool DeletedFlag(void* record);
 	void ClearDeletedFlag(void* record);

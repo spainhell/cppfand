@@ -99,7 +99,6 @@ public:
 	KeyFldD* RdKF(FileD* FD);
 	WORD RdKFList(std::vector<KeyFldD*>& KFRoot, FileD* FD);
 	bool IsKeyArg(FieldDescr* F, FileD* FD);
-	void CompileRecLen(FileD* file_d);
 	stSaveState* SaveCompState();
 	void RestoreCompState(stSaveState* p);
 	void CFileLikeFD(FileD* FD, WORD MsgNr);
