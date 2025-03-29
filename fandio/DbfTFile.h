@@ -21,6 +21,7 @@ public:
 	enum eDbtFormat { DbtFormat, FptFormat } Format = DbtFormat;
 
 	void Err(unsigned short n, bool ex) const;
+	void TestErr() const;
 	int UsedFileSize() const;
 	void RdPrefix(bool check);
 	void WrPrefix();
@@ -30,11 +31,14 @@ public:
 	uint32_t Store(const std::string& data);
 	void Delete(int32_t pos);
 
+	void Create(const std::string& path);
 	void CloseFile();
-
 	void ClearUpdateFlag() override;
 
 private:
 	DbfFile* _parent;
 	void GetMLen();
+
+	long eofPos = 0;
 };
+

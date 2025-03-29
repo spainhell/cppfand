@@ -517,7 +517,8 @@ void DbfFile::TruncFile()
 		TruncF(TF->Handle, HandleError, TF->UsedFileSize());
 		if (HandleError != 0) {
 			FileMsg(GetFileD(), 700 + HandleError, 'T');
-			CloseGoExit(GetFileD()->FF);
+			GetFileD()->Close();
+			GoExit(MsgLine);
 		}
 	}
 }

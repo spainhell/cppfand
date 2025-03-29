@@ -14,12 +14,6 @@
 #include "../Common/compare.h"
 
 
-void CloseGoExit(Fand0File* fand_file)
-{
-	fand_file->Close();
-	GoExit(MsgLine);
-}
-
 void TestCPathError()
 {
 	if (HandleError != 0) {

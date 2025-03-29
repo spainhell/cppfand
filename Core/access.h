@@ -38,7 +38,5 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 //void CloseClearH(FandFile* fand_file);
 void TestCPathError();
 
-void CloseGoExit(Fand0File* fand_file);
-
 std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
 std::string CExtToX(std::string dir, std::string name, std::string ext);

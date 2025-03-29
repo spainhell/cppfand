@@ -20,7 +20,15 @@ DbfTFile::~DbfTFile()
 void DbfTFile::Err(unsigned short n, bool ex) const
 {
 	FileMsg(_parent->GetFileD(), n, 'T');
-	if (ex) CloseGoExit(_parent->GetFileD()->FF);
+	if (ex) {
+		_parent->GetFileD()->Close();
+		GoExit(MsgLine);
+	}
+}
+
+void DbfTFile::TestErr() const
+{
+	if (HandleError != 0) Err(700 + HandleError, true);
 }
 
 int DbfTFile::UsedFileSize() const
@@ -204,6 +212,26 @@ uint32_t DbfTFile::Store(const std::string& data)
 void DbfTFile::Delete(int32_t pos)
 {
 	// for DBF this is not implemented
+}
+
+void DbfTFile::Create(const std::string& path)
+{
+	Handle = OpenH(path, _isOverwriteFile, Exclusive);
+	TestErr();
+	//IRec = 1;
+	LicenseNr = 0;
+
+	/*PwCode = "";
+	PwCode = AddTrailChars(PwCode, '@', 20);
+	PwCode = Coding::Code(PwCode);
+
+	Pw2Code = "";
+	Pw2Code = AddTrailChars(Pw2Code, '@', 20);
+	Pw2Code = Coding::Code(Pw2Code);*/
+
+	eofPos = 2 * MPageSize;
+
+	SetEmpty();
 }
 
 void DbfTFile::CloseFile()

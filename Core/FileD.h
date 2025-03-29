@@ -98,26 +98,29 @@ public:
 	void saveS(FieldDescr* field_d, const std::string& s, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record) const;
 
+	void SetDrive(BYTE drive) const;
 	void SetUpdateFlag() const;
 	void Close() const;
 	void CloseFile() const;
-	void Save();
+	void Save() const;
+
+	void CreateT(const std::string& path) const;
 
 	FileUseMode GetUMode() const;
-	LockMode GetLMode();
-	LockMode GetExLMode();
-	LockMode GetTaLMode();
+	LockMode GetLMode() const;
+	LockMode GetExLMode() const;
+	LockMode GetTaLMode() const;
 
-	void SetUMode(FileUseMode mode);
-	void SetLMode(LockMode mode);
-	void SetExLMode(LockMode mode);
-	void SetTaLMode(LockMode mode);
+	void SetUMode(FileUseMode mode) const;
+	void SetLMode(LockMode mode) const;
+	void SetExLMode(LockMode mode) const;
+	void SetTaLMode(LockMode mode) const;
 
 	void OldLockMode(LockMode mode);
 	LockMode NewLockMode(LockMode mode);
 	bool TryLockMode(LockMode mode, LockMode& old_mode, WORD kind);
 	bool ChangeLockMode(LockMode mode, WORD kind, bool rd_pref);
-	bool Lock(int n, WORD kind);
+	bool Lock(int n, WORD kind) const;
 	void Unlock(int n);
 	void RunErrorM(LockMode mode);
 
@@ -134,6 +137,7 @@ public:
 
 	uint16_t RdPrefix() const;
 	void WrPrefix() const;
+	void WrPrefixes() const;
 
 	bool HasIndexFile() const;
 	bool HasTextFile() const;

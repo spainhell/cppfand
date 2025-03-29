@@ -39,7 +39,10 @@ void FandTFile::Err(unsigned short n, bool ex) const
 	}
 	else {
 		FileMsg(_parent->GetFileD(), n, 'T');
-		if (ex) CloseGoExit(_parent->GetFileD()->FF);
+		if (ex) {
+			_parent->GetFileD()->Close();
+			GoExit(MsgLine);
+		}
 	}
 }
 

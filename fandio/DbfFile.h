@@ -19,6 +19,7 @@ public:
 	uint16_t RecLen = 0;
 	uint16_t NRecs = 0;
 	uint16_t FirstRecPos = 0;
+	unsigned char Drive = 0;           // 1=A, 2=B, else 0
 	bool WasWrRec = false;
 	bool WasRdOnly = false;
 	bool Eof = false;

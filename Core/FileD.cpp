@@ -752,6 +752,20 @@ int FileD::saveT(FieldDescr* field_d, int pos, void* record) const
 	return result;
 }
 
+void FileD::SetDrive(BYTE drive) const
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->Drive = drive;
+		break;
+	case DataFileType::DBF:
+		DbfF->Drive = drive;
+		break;
+	default:
+		break;
+	}
+}
+
 void FileD::SetUpdateFlag() const
 {
 	switch (FileType) {
@@ -794,7 +808,7 @@ void FileD::CloseFile() const
 	}
 }
 
-void FileD::Save()
+void FileD::Save() const
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -802,6 +816,20 @@ void FileD::Save()
 		break;
 	case DataFileType::DBF:
 		if (DbfF != nullptr) DbfF->SaveFile();
+		break;
+	default:
+		break;
+	}
+}
+
+void FileD::CreateT(const std::string& path) const
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->TF->Create(path);
+		break;
+	case DataFileType::DBF:
+		DbfF->TF->Create(path);
 		break;
 	default:
 		break;
@@ -827,30 +855,39 @@ FileUseMode FileD::GetUMode() const
 	return mode;
 }
 
-LockMode FileD::GetLMode()
+LockMode FileD::GetLMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->LMode;
 	else return NullMode;
 }
 
-LockMode FileD::GetExLMode()
+LockMode FileD::GetExLMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->ExLMode;
 	else return NullMode;
 }
 
-LockMode FileD::GetTaLMode()
+LockMode FileD::GetTaLMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->TaLMode;
 	else return NullMode;
 }
 
-void FileD::SetUMode(FileUseMode mode)
+void FileD::SetUMode(FileUseMode mode) const
 {
-	if (FileType == DataFileType::FandFile) FF->UMode = mode;
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->UMode = mode;
+		break;
+	case DataFileType::DBF:
+		DbfF->UMode = mode;
+		break;
+	default:
+		break;
+	}
 }
 
-void FileD::SetLMode(LockMode mode)
+void FileD::SetLMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->LMode = mode;
@@ -860,7 +897,7 @@ void FileD::SetLMode(LockMode mode)
 	}
 }
 
-void FileD::SetExLMode(LockMode mode)
+void FileD::SetExLMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->ExLMode = mode;
@@ -870,7 +907,7 @@ void FileD::SetExLMode(LockMode mode)
 	}
 }
 
-void FileD::SetTaLMode(LockMode mode)
+void FileD::SetTaLMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->TaLMode = mode;
@@ -920,7 +957,7 @@ bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
 	}
 }
 
-bool FileD::Lock(int n, WORD kind)
+bool FileD::Lock(int n, WORD kind) const
 {
 	if (FileType == DataFileType::FandFile) {
 		WORD m;
@@ -1139,6 +1176,20 @@ void FileD::WrPrefix() const
 		break;
 	case DataFileType::DBF:
 		DbfF->WrPrefix();
+		break;
+	default:
+		break;
+	}
+}
+
+void FileD::WrPrefixes() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->WrPrefixes();
+		break;
+	case DataFileType::DBF:
+		DbfF->WrPrefixes();
 		break;
 	default:
 		break;

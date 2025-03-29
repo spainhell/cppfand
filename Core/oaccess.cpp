@@ -264,7 +264,7 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 
 		for (FileD* f : R->v_files) {
 			if (file_d == f) {
-				if ((file_d == R->help_file) || (file_d->FF->file_type == FandFileType::RDB)) {
+				if ((file_d == R->help_file) || (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::RDB)) {
 					//.RDB
 					dir = R->RdbDir;
 				}
