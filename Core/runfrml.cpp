@@ -1302,16 +1302,13 @@ bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, F
 	int src_T_pos;
 	bool result;
 
-	/* TODO: if (dst_T_file->Format == FandTFile::DbtFormat || dst_T_file->Format == FandTFile::FptFormat) {
-		result = false;
-	}
-	else*/ if (Z->Op == _gettxt) {
+	if (Z->Op == _gettxt) {
 		std::string text = GetTxt(dst_file, (FrmlElem16*)Z, record);
 		dst_file->saveS(F, text, record);
 		pos = dst_file->loadT(F, record);
 		result = true;
 	}
-	else if (CanCopyT(dst_file, F, Z, &src_T_file, &src_file, src_T_pos, record) /* TODO: && (src_T_file->Format == dst_T_file->Format)*/) {
+	else if (CanCopyT(dst_file, F, Z, &src_T_file, &src_file, src_T_pos, record)) {
 		LockMode md1 = NullMode, md2 = NullMode;
 		if (!src_T_file->IsWork) md2 = src_file->NewLockMode(RdMode);
 		if (!dst_T_file->IsWork) md1 = dst_file->NewLockMode(WrMode);
@@ -1335,19 +1332,19 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 	switch (field_d->frml_type) {
 	case 'S': {
 		if (field_d->field_type == FieldType::TEXT) {
-			FandTFile* tf;
+			FandTFile* tf = nullptr;
 
-			bool work = file_d->FF->HasTWorkFlag(record);
+			bool work = file_d->HasTWorkFlag(record);
 			if (work) {
 				tf = &TWork;
 			}
-			else {
+			else if (file_d->FileType == DataFileType::FandFile) {
 				tf = file_d->FF->TF;
 			}
 
 			int pos = 0;
 
-			if (TryCopyT(file_d, field_d, tf, pos, X, record)) {
+			if (file_d->FileType == DataFileType::FandFile && TryCopyT(file_d, field_d, tf, pos, X, record)) {
 				if (deleteT && !work) {
 					file_d->FF->DelTFld(field_d, record);
 				}
@@ -1356,7 +1353,17 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 			else {
 				std::string s = RunString(file_d, X, record);
 				if (deleteT && !work) {
-					file_d->FF->DelTFld(field_d, record);
+					switch (file_d->FileType) {
+					case DataFileType::FandFile: {
+						file_d->FF->DelTFld(field_d, record);
+						break;
+					}
+					case DataFileType::DBF: {
+						file_d->DbfF->DelTFld(field_d, record);
+						break;
+					}
+					default: break;
+					}
 				}
 				file_d->saveS(field_d, s, record);
 			}

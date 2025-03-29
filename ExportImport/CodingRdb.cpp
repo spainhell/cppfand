@@ -258,7 +258,8 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 		Coding::Code(s->A, l);
 	}
 label2:
-	CFile->saveLongS(F, s, CRecPtr);
+	const std::string str(s->A, s->LL);
+	CFile->saveS(F, str, CRecPtr);
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
 }

@@ -18,7 +18,19 @@ public:
 	uint16_t RecLen = 0;
 	uint16_t NRecs = 0;
 	uint16_t FirstRecPos = 0;
+	bool WasWrRec = false;
 	bool WasRdOnly = false;
+	bool Eof = false;
+
+	size_t ReadRec(size_t rec_nr, void* record);
+	size_t WriteRec(size_t rec_nr, void* record);
+	void CreateRec(int n, void* record);
+	void DeleteRec(int n, void* record);
+	void DelAllDifTFlds(void* record, void* comp_record);
+
+	void IncNRecs(int n);
+	void DecNRecs(int n);
+	void PutRec(void* record, int& i_rec);
 
 	bool loadB(FieldDescr* field_d, void* record);
 	double loadR(FieldDescr* field_d, void* record);
@@ -32,6 +44,7 @@ public:
 
 	void DelTFld(FieldDescr* field_d, void* record);
 	void DelTFlds(void* record);
+	void DelDifTFld(FieldDescr* field_d, void* record, void* comp_record);
 
 	uint16_t RdPrefix();
 	void WrPrefix();
@@ -43,10 +56,15 @@ public:
 	int UsedFileSize() const;
 
 	void TruncFile();
+	void SaveFile();
 	void CloseFile();
 
 	void SetTWorkFlag(void* record) const;
 	bool HasTWorkFlag(void* record) const;
+
+	void SetRecordUpdateFlag(void* record);
+	void ClearRecordUpdateFlag(void* record);
+	bool HasRecordUpdateFlag(void* record);
 
 	bool DeletedFlag(void* record);
 	void ClearDeletedFlag(void* record);

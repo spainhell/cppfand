@@ -5,6 +5,7 @@
 #include "../Core/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Common/textfunc.h"
+#include "../Core/Coding.h"
 #include "../Core/DateTime.h"
 #include "../Common/compare.h"
 #include "../Core/obaseww.h"
@@ -19,6 +20,70 @@ DbfFile::~DbfFile()
 {
 }
 
+size_t DbfFile::ReadRec(size_t rec_nr, void* record)
+{
+	return ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+}
+
+size_t DbfFile::WriteRec(size_t rec_nr, void* record)
+{
+	WasWrRec = true;
+	return WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+}
+
+void DbfFile::CreateRec(int n, void* record)
+{
+	IncNRecs(1);
+	BYTE* tmp = _parent->GetRecSpace();
+	for (int i = NRecs - 1; i >= n; i--) {
+		ReadRec(i, tmp);
+		WriteRec(i + 1, tmp);
+	}
+	delete[] tmp;
+	tmp = nullptr;
+	WriteRec(n, record);
+}
+
+void DbfFile::DeleteRec(int n, void* record)
+{
+	DelAllDifTFlds(record, nullptr);
+	for (int i = n; i <= NRecs - 1; i++) {
+		ReadRec(i + 1, record);
+		WriteRec(i, record);
+	}
+	DecNRecs(1);
+}
+
+void DbfFile::DelAllDifTFlds(void* record, void* comp_record)
+{
+	for (auto& F : _parent->FldD) {
+		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
+			DelDifTFld(F, record, comp_record);
+		}
+	}
+}
+
+void DbfFile::IncNRecs(int n)
+{
+	NRecs += n;
+	SetUpdateFlag();
+}
+
+void DbfFile::DecNRecs(int n)
+{
+	NRecs -= n;
+	SetUpdateFlag();
+	WasWrRec = true;
+}
+
+void DbfFile::PutRec(void* record, int& i_rec)
+{
+	NRecs++;
+	WriteData(i_rec * RecLen + FirstRecPos, RecLen, record);
+	i_rec++;
+	Eof = true;
+}
+
 bool DbfFile::loadB(FieldDescr* field_d, void* record)
 {
 	uint8_t* CP = (uint8_t*)record + field_d->Displ;
@@ -29,6 +94,45 @@ double DbfFile::loadR(FieldDescr* field_d, void* record)
 {
 	uint8_t* source = static_cast<uint8_t*>(record) + field_d->Displ;
 	return DBF_RforD(field_d, source);
+}
+
+std::string DbfFile::loadS(FieldDescr* field_d, void* record)
+{
+	char* source = (char*)record + field_d->Displ;
+	std::string S;
+	int pos = 0;
+	LockMode md;
+	WORD l = field_d->L;
+	switch (field_d->field_type)
+	{
+	case FieldType::ALFANUM: {		// znakovy retezec max. 255 znaku
+		S = std::string(source, l);
+		if (field_d->isEncrypted()) {
+			S = Coding::Code(S);
+		}
+		if (!S.empty() && S[0] == '\0') {
+			S = RepeatString(' ', l);
+		}
+		break;
+	}
+	case FieldType::NUMERIC: {		// ciselny retezec max. 79 znaku
+		// not supported in DBF
+		break;
+	}
+	case FieldType::TEXT: { // volny text max. 65k
+		if (HasTWorkFlag(record)) {
+			S = TWork.Read(loadT(field_d, record));
+		}
+		else {
+			S = TF->Read(loadT(field_d, record));
+		}
+		if (field_d->isEncrypted()) {
+			S = Coding::Code(S);
+		}
+		break;
+	}
+	}
+	return S;
 }
 
 int DbfFile::loadT(FieldDescr* F, void* record)
@@ -75,6 +179,72 @@ void DbfFile::saveR(FieldDescr* field_d, double r, void* record)
 	}
 }
 
+void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record)
+{
+	const BYTE LeftJust = 1;
+	BYTE* pRec = (BYTE*)record + field_d->Displ;
+
+	if (field_d->isStored()) {
+		short L = field_d->L;
+		short M = field_d->M;
+		switch (field_d->field_type) {
+		case FieldType::ALFANUM: {
+			s = s.substr(0, field_d->L); // delka retezce je max. field_d->L
+			if (M == LeftJust) {
+				// doplnime mezery zprava
+				memcpy(pRec, s.c_str(), s.length()); // probiha kontrola max. delky retezce
+				memset(&pRec[s.length()], ' ', field_d->L - s.length());
+			}
+			else {
+				// doplnime mezery zleva
+				memset(pRec, ' ', field_d->L - s.length());
+				memcpy(&pRec[field_d->L - s.length()], s.c_str(), s.length());
+			}
+			if ((field_d->Flg & f_Encryp) != 0) {
+				Coding::Code(pRec, L);
+			}
+			break;
+		}
+		case FieldType::NUMERIC: {
+			// not suported in DBF
+			break;
+		}
+		case FieldType::TEXT: {
+			if (int previous = loadT(field_d, record)) {
+				// there already exists a text -> delete it
+				if (HasTWorkFlag(record)) {
+					TWork.Delete(previous);
+				}
+				else {
+					TF->Delete(previous);
+				}
+			}
+
+			if (s.empty()) {
+				saveT(field_d, 0, record);
+			}
+			else {
+				if (field_d->isEncrypted() != 0) {
+					s = Coding::Code(s);
+				}
+				if (HasTWorkFlag(record)) {
+					int pos = TWork.Store(s);
+					saveT(field_d, pos, record);
+				}
+				else {
+					int pos = TF->Store(s);
+					saveT(field_d, pos, record);
+				}
+			}
+			break;
+		}
+		}
+	}
+	else {
+		// field is not stored
+	}
+}
+
 
 int DbfFile::saveT(FieldDescr* field_d, int pos, void* record)
 {
@@ -118,6 +288,15 @@ void DbfFile::DelTFlds(void* record)
 		if (field->field_type == FieldType::TEXT && field->isStored()) {
 			DelTFld(field, record);
 		}
+	}
+}
+
+void DbfFile::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
+{
+	const int n1 = loadT(field_d, comp_record);
+	const int n2 = loadT(field_d, record);
+	if (n1 != n2) {
+		DelTFld(field_d, record);
 	}
 }
 
@@ -230,7 +409,8 @@ void DbfFile::WriteHeader()
 
 int DbfFile::MakeDbfDcl(std::string& name)
 {
-	DBaseHeader Hd; DBaseField Fd;
+	DBaseHeader Hd;
+	DBaseField Fd;
 	char c = '\0';
 	pstring s(80);
 	pstring s1(10);
@@ -280,7 +460,8 @@ int DbfFile::MakeDbfDcl(std::string& name)
 		Move(&s[1], p, s.length());
 		t->LL += s.length();
 	}
-	CFile->saveLongS(ChptTxt, t, CRecPtr);
+	const std::string str(t->A, t->LL);
+	CFile->saveS(ChptTxt, str, CRecPtr);
 	CloseH(&h);
 	return 0;
 }
@@ -341,6 +522,11 @@ void DbfFile::TruncFile()
 	}
 }
 
+void DbfFile::SaveFile()
+{
+	WrPrefixes();
+}
+
 /// <summary>
 /// Close the file with saving changes (prefixes, ...)
 /// </summary>
@@ -383,6 +569,24 @@ bool DbfFile::HasTWorkFlag(void* record) const
 	BYTE* p = (BYTE*)record;
 	const bool workFlag = p[RecLen] == 1;
 	return workFlag;
+}
+
+void DbfFile::SetRecordUpdateFlag(void* record)
+{
+	BYTE* p = (BYTE*)record;
+	p[RecLen + 1] = 1;
+}
+
+void DbfFile::ClearRecordUpdateFlag(void* record)
+{
+	BYTE* p = (BYTE*)record;
+	p[RecLen + 1] = 0;
+}
+
+bool DbfFile::HasRecordUpdateFlag(void* record)
+{
+	BYTE* p = (BYTE*)record;
+	return p[RecLen + 1] == 1;
 }
 
 bool DbfFile::DeletedFlag(void* record)

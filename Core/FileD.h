@@ -52,6 +52,7 @@ public:
 	std::vector<Additive*> Add;
 	std::vector<std::string> ViewNames;  // after each string BYTE string with user codes 
 
+	int GetNRecs();
 	WORD GetNrKeys();
 	void Reset();
 
@@ -86,12 +87,16 @@ public:
 	void saveB(FieldDescr* field_d, bool b, void* record);
 	void saveR(FieldDescr* field_d, double r, void* record);
 	void saveS(FieldDescr* field_d, const std::string& s, void* record);
-	void saveLongS(FieldDescr* field_d, LongStr* ls, void* record);
-	int saveT(FieldDescr* field_d, int pos, void* record);
+	int saveT(FieldDescr* field_d, int pos, void* record) const;
 
 	void SetUpdateFlag();
 	void CloseFile();
 	void Save();
+
+	FileUseMode GetUMode();
+	LockMode GetLMode();
+	LockMode GetExLMode();
+	LockMode GetTaLMode();
 
 	void OldLockMode(LockMode mode);
 	LockMode NewLockMode(LockMode mode);

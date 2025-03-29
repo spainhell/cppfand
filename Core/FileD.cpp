@@ -66,6 +66,25 @@ FileD::~FileD()
 	}
 }
 
+int FileD::GetNRecs()
+{
+	int result;
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		result = FF->NRecs;
+		break;
+	case DataFileType::DBF:
+		result = DbfF->NRecs;
+		break;
+	default:
+		result = 0;
+		break;
+	}
+
+	return result;
+}
+
 WORD FileD::GetNrKeys()
 {
 	return static_cast<WORD>(Keys.size());
@@ -96,12 +115,46 @@ void FileD::Reset()
 /// <param name="record">ukazatel na buffer</param>
 size_t FileD::ReadRec(size_t rec_nr, void* record) const
 {
-	return this->FF->ReadRec(rec_nr, record);
+	size_t result;
+
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = FF->ReadRec(rec_nr, record);
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->ReadRec(rec_nr, record);
+		break;
+	}
+	default: {
+		result = 0;
+		break;
+	}
+	}
+
+	return result;
 }
 
 size_t FileD::WriteRec(size_t rec_nr, void* record) const
 {
-	return this->FF->WriteRec(rec_nr, record);
+	size_t result;
+
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = FF->WriteRec(rec_nr, record);
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->WriteRec(rec_nr, record);
+		break;
+	}
+	default: {
+		result = 0;
+		break;
+	}
+	}
+
+	return result;
 }
 
 int FileD::UsedFileSize() const
@@ -208,49 +261,121 @@ void FileD::CompileRecLen() const
 
 void FileD::IncNRecs(int n)
 {
-	this->FF->IncNRecs(n);
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		this->FF->IncNRecs(n);
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->IncNRecs(n);
+		break;
+	}
+	default: break;
+	}
 }
 
 void FileD::DecNRecs(int n)
 {
-	this->FF->DecNRecs(n);
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->DecNRecs(n);
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->DecNRecs(n);
+		break;
+	}
+	default: break;
+	}
 }
 
 void FileD::SeekRec(int n)
 {
-	IRec = n;
-	if (FF->XF == nullptr) {
-		FF->Eof = (n >= FF->NRecs);
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		IRec = n;
+		if (FF->XF == nullptr) {
+			FF->Eof = (n >= FF->NRecs);
+		}
+		else {
+			FF->Eof = (n >= FF->XF->NRecs);
+		}
+		break;
 	}
-	else {
-		FF->Eof = (n >= FF->XF->NRecs);
+	case DataFileType::DBF: {
+		IRec = n;
+		DbfF->Eof = (n >= DbfF->NRecs);
+		break;
+	}
+	default: break;
 	}
 }
 
 void FileD::CreateRec(int n, void* record) const
 {
-	this->FF->CreateRec(n, record);
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->CreateRec(n, record);
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->CreateRec(n, record);
+		break;
+	}
+	default: break;
+	}
 }
 
 void FileD::PutRec(void* record)
 {
-	this->FF->PutRec(record, IRec);
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->PutRec(record, IRec);
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->PutRec(record, IRec);
+		break;
+	}
+	default: break;
+	}
 }
 
 void FileD::DeleteRec(int n, void* record) const
 {
-	this->FF->DeleteRec(n, record);
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->DeleteRec(n, record);
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->DeleteRec(n, record);
+		break;
+	}
+	default: break;
+	}
 }
 
 void FileD::RecallRec(int recNr, void* record)
 {
-	FF->TestXFExist();
-	FF->XF->NRecs++;
-	for (auto& K : Keys) {
-		K->Insert(this, recNr, false, record);
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->TestXFExist();
+		FF->XF->NRecs++;
+		for (auto& K : Keys) {
+			K->Insert(this, recNr, false, record);
+		}
+		FF->ClearDeletedFlag(record);
+		WriteRec(recNr, record);
+		break;
 	}
-	FF->ClearDeletedFlag(record);
-	WriteRec(recNr, record);
+	case DataFileType::DBF: {
+		DbfF->ClearDeletedFlag(record);
+		WriteRec(recNr, record);
+		break;
+	}
+	default: break;
+	}
 }
 
 void FileD::AssignNRecs(bool Add, int N)
@@ -332,163 +457,321 @@ void FileD::IndexesMaintenance(bool remove_deleted)
 bool FileD::loadB(FieldDescr* field_d, void* record)
 {
 	bool result;
+
 	if (field_d->isStored()) {
-		result = FF->loadB(field_d, record);
+		switch (FileType) {
+		case DataFileType::FandFile:
+			result = FF->loadB(field_d, record);
+			break;
+		case DataFileType::DBF:
+			result = DbfF->loadB(field_d, record);
+			break;
+		default:
+			result = false;
+			break;
+		}
 	}
-	else
-	{
+	else {
 		result = RunBool(this, field_d->Frml, record);
 	}
+
 	return result;
 }
 
 double FileD::loadR(FieldDescr* field_d, void* record)
 {
 	double result;
+
 	if (field_d->isStored()) {
-		result = FF->loadR(field_d, record);
+		switch (FileType) {
+		case DataFileType::FandFile:
+			result = FF->loadR(field_d, record);
+			break;
+		case DataFileType::DBF:
+			result = DbfF->loadR(field_d, record);
+			break;
+		default:
+			result = 0.0;
+			break;
+		}
 	}
 	else {
 		result = RunReal(this, field_d->Frml, record);
 	}
+
 	return result;
 }
 
 std::string FileD::loadS(FieldDescr* field_d, void* record)
 {
 	std::string result;
+
 	if (field_d->isStored()) {
-		result = FF->loadS(field_d, record);
+		switch (FileType) {
+		case DataFileType::FandFile:
+			result = FF->loadS(field_d, record);
+			break;
+		case DataFileType::DBF:
+			result = DbfF->loadS(field_d, record);
+			break;
+		default:
+			result = "";
+			break;
+		}
 	}
 	else {
 		result = RunString(this, field_d->Frml, record);
 	}
+
 	return result;
 }
 
 int FileD::loadT(FieldDescr* field_d, void* record)
 {
-	return FF->loadT(field_d, record);
-}
+	int result;
 
-void FileD::saveB(FieldDescr* field_d, bool b, void* record)
-{
-	FF->saveB(field_d, b, record);
-}
-
-void FileD::saveR(FieldDescr* field_d, double r, void* record)
-{
-	FF->saveR(field_d, r, record);
-}
-
-void FileD::saveS(FieldDescr* field_d, const std::string& s, void* record)
-{
-	FF->saveS(this, field_d, s, record);
-}
-
-void FileD::saveLongS(FieldDescr* field_d, LongStr* ls, void* record)
-{
-	const std::string s(ls->A, ls->LL);
-	FF->saveS(this, field_d, s, record);
-}
-
-int FileD::saveT(FieldDescr* field_d, int pos, void* record)
-{
-	return FF->saveT(field_d, pos, record);
-}
-
-void FileD::SetUpdateFlag()
-{
-	FF->SetUpdateFlag();
-}
-
-void FileD::CloseFile()
-{
-	if (FF->Handle == nullptr) return;
-
-	FF->CloseFile();
-
-}
-
-void FileD::Save()
-{
-	if (FF != nullptr) {
-		FF->SaveFile();
-	}
-}
-
-void FileD::OldLockMode(LockMode mode)
-{
-	OldLMode(this, CPath, mode, LANNode);
-}
-
-LockMode FileD::NewLockMode(LockMode mode)
-{
-	return NewLMode(this, CPath, mode, LANNode);
-}
-
-bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, WORD kind)
-{
-	return TryLMode(this, CPath, mode, old_mode, kind, LANNode);
-}
-
-bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
-{
-	return ChangeLMode(this, CPath, mode, kind, rd_pref, LANNode);
-}
-
-bool FileD::Lock(int n, WORD kind)
-{
-	//TryLockN(Fand0File* fand_file, std::string& path, int N, WORD Kind)
-	//this->FF, CPath, n, kind
-
-	WORD m;
-	std::string XTxt = "CrX";
-	auto result = true;
-
-#ifdef FandSQL
-	if (fand_file->_parent->IsSQLFile) return result;
-#endif
-
-#ifdef FandNetV
-	if (!FF->IsShared()) return result;
-	int w = 0;
-	while (true) {
-		if (!TryLockH(FF->Handle, RecLock + n, 1)) {
-			if (kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
-				m = 826;
-				if (n == 0) {
-					SetPathAndVolume(FF->GetFileD());
-					SetMsgPar(CPath, XTxt);
-					m = 825;
-				}
-				int w1 = PushWrLLMsg(m, kind == 1);
-				if (w == 0) {
-					w = w1;
-				}
-				else {
-					PopW(w1, false);
-				}
-				/*beep; don't disturb*/
-				if (KbdTimer(spec.NetDelay, kind)) {
-					continue;
-				}
-			}
-			result = false;
-		}
-		if (w != 0) {
-			PopW(w);
-		}
+	switch (FileType) {
+	case DataFileType::FandFile:
+		result = FF->loadT(field_d, record);
+		break;
+	case DataFileType::DBF:
+		result = DbfF->loadT(field_d, record);
+		break;
+	default:
+		result = 0;
 		break;
 	}
-#endif
 
 	return result;
 }
 
+void FileD::saveB(FieldDescr* field_d, bool b, void* record)
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->saveB(field_d, b, record);
+		break;
+	case DataFileType::DBF:
+		DbfF->saveB(field_d, b, record);
+		break;
+	default:
+		break;
+	}
+}
+
+void FileD::saveR(FieldDescr* field_d, double r, void* record)
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->saveR(field_d, r, record);
+		break;
+	case DataFileType::DBF:
+		DbfF->saveR(field_d, r, record);
+		break;
+	default:
+		break;
+	}
+}
+
+void FileD::saveS(FieldDescr* field_d, const std::string& s, void* record)
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->saveS(this, field_d, s, record);
+		break;
+	case DataFileType::DBF:
+		DbfF->saveS(this, field_d, s, record);
+		break;
+	default:
+		break;
+	}
+}
+
+int FileD::saveT(FieldDescr* field_d, int pos, void* record) const
+{
+	int result;
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		result = FF->saveT(field_d, pos, record);
+		break;
+	case DataFileType::DBF:
+		result = DbfF->saveT(field_d, pos, record);
+		break;
+	default:
+		result = 0;
+		break;
+	}
+
+	return result;
+}
+
+void FileD::SetUpdateFlag()
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->SetUpdateFlag();
+		break;
+	case DataFileType::DBF:
+		DbfF->SetUpdateFlag();
+		break;
+	default:
+		break;
+	}
+}
+
+void FileD::CloseFile()
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		if (FF->Handle != nullptr) FF->CloseFile();
+		break;
+	case DataFileType::DBF:
+		if (DbfF->Handle != nullptr) DbfF->CloseFile();
+		break;
+	default:
+		break;
+	}
+}
+
+void FileD::Save()
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		if (FF != nullptr) FF->SaveFile();
+		break;
+	case DataFileType::DBF:
+		if (DbfF != nullptr) DbfF->SaveFile();
+		break;
+	default:
+		break;
+	}
+}
+
+FileUseMode FileD::GetUMode()
+{
+	if (FileType == DataFileType::FandFile) return FF->UMode;
+	else return Exclusive;
+}
+
+LockMode FileD::GetLMode()
+{
+	if (FileType == DataFileType::FandFile) return FF->LMode;
+	else return NullMode;
+}
+
+LockMode FileD::GetExLMode()
+{
+	if (FileType == DataFileType::FandFile) return FF->ExLMode;
+	else return NullMode;
+}
+
+LockMode FileD::GetTaLMode()
+{
+	if (FileType == DataFileType::FandFile) return FF->TaLMode;
+	else return NullMode;
+}
+
+void FileD::OldLockMode(LockMode mode)
+{
+	if (FileType == DataFileType::FandFile) {
+		OldLMode(this, CPath, mode, LANNode);
+	}
+	else {
+		// locks are not supported in other file types
+	}
+}
+
+LockMode FileD::NewLockMode(LockMode mode)
+{
+	if (FileType == DataFileType::FandFile) {
+		return NewLMode(this, CPath, mode, LANNode);
+	}
+	else {
+		return mode;
+	}
+}
+
+bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, WORD kind)
+{
+	if (FileType == DataFileType::FandFile) {
+		return TryLMode(this, CPath, mode, old_mode, kind, LANNode);
+	}
+	else {
+		return true;
+	}
+}
+
+bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
+{
+	if (FileType == DataFileType::FandFile) {
+		return ChangeLMode(this, CPath, mode, kind, rd_pref, LANNode);
+	}
+	else {
+		return true;
+	}
+}
+
+bool FileD::Lock(int n, WORD kind)
+{
+	if (FileType == DataFileType::FandFile) {
+		WORD m;
+		std::string XTxt = "CrX";
+		bool result = true;
+
+#ifdef FandSQL
+		if (fand_file->_parent->IsSQLFile) return result;
+#endif
+
+#ifdef FandNetV
+		if (!FF->IsShared()) return result;
+		int w = 0;
+		while (true) {
+			if (!TryLockH(FF->Handle, RecLock + n, 1)) {
+				if (kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
+					m = 826;
+					if (n == 0) {
+						SetPathAndVolume(FF->GetFileD());
+						SetMsgPar(CPath, XTxt);
+						m = 825;
+					}
+					int w1 = PushWrLLMsg(m, kind == 1);
+					if (w == 0) {
+						w = w1;
+					}
+					else {
+						PopW(w1, false);
+					}
+					/*beep; don't disturb*/
+					if (KbdTimer(spec.NetDelay, kind)) {
+						continue;
+					}
+				}
+				result = false;
+			}
+			if (w != 0) {
+				PopW(w);
+			}
+			break;
+		}
+#endif
+
+		return result;
+	}
+	else {
+		// locks are not supported in other file types
+		return true;
+	}
+}
+
 void FileD::Unlock(int n)
 {
-	UnLockN(this->FF, n);
+	if (FileType == DataFileType::FandFile) {
+		UnLockN(this->FF, n);
+	}
+	else {
+		// locks are not supported in other file types
+	}
 }
 
 void FileD::RunErrorM(LockMode mode)
@@ -531,17 +814,49 @@ bool FileD::HasTWorkFlag(void* record)
 
 void FileD::SetRecordUpdateFlag(void* record)
 {
-	FF->SetRecordUpdateFlag(record);
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->SetRecordUpdateFlag(record);
+		break;
+	case DataFileType::DBF:
+		DbfF->SetRecordUpdateFlag(record);
+		break;
+	default:
+		break;
+	}
 }
 
 void FileD::ClearRecordUpdateFlag(void* record)
 {
-	FF->ClearRecordUpdateFlag(record);
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->ClearRecordUpdateFlag(record);
+		break;
+	case DataFileType::DBF:
+		DbfF->ClearRecordUpdateFlag(record);
+		break;
+	default:
+		break;
+	}
 }
 
 bool FileD::HasRecordUpdateFlag(void* record)
 {
-	return FF->HasRecordUpdateFlag(record);
+	bool result;
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		result = FF->HasRecordUpdateFlag(record);
+		break;
+	case DataFileType::DBF:
+		result = DbfF->HasRecordUpdateFlag(record);
+		break;
+	default:
+		result = false;
+		break;
+	}
+
+	return result;
 }
 
 bool FileD::DeletedFlag(void* record)

@@ -620,7 +620,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	int N = 1;
 	XKey* k = PD->Key;
 	bool ad = PD->AdUpd;
-	LockMode md = lv->FD->FF->LMode;
+	LockMode md = lv->FD->GetLMode();
 	bool app = false;
 	BYTE* record1 = lv->FD->GetRecSpace();
 	if (PD->ByKey) {
@@ -656,7 +656,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 
 	if (PD->ByKey) {
 		if (k == nullptr/*IsParFile*/) {
-			if (lv->FD->FF->NRecs == 0) {
+			if (lv->FD->GetNRecs() == 0) {
 				if (IsRead) {
 				label0:
 					//CFile->DelTFlds(CRecPtr);
@@ -668,12 +668,14 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				else {
 				label1:
 					lv->FD->NewLockMode(CrMode);
-					lv->FD->FF->TestXFExist();
+					if (lv->FD->FileType == DataFileType::FandFile) {
+						lv->FD->FF->TestXFExist();
+					}
 					lv->FD->IncNRecs(1);
 					app = true;
 				}
 			}
-			N = lv->FD->FF->NRecs;
+			N = lv->FD->GetNRecs();
 		}
 		else if (!lv->FD->SearchXKey(k, x, N)) {
 			if (IsRead) {
@@ -691,13 +693,14 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		}
 	}
 	else {
-		if ((N <= 0) || (N > lv->FD->FF->NRecs)) {
+		if ((N <= 0) || (N > lv->FD->GetNRecs())) {
 			WORD msg = 641;
 			SetMsgPar(lv->name);
 			lv->FD->RunErrorM(md);
 			RunError(msg);
 		}
 	}
+
 	if (IsRead) {
 		lv->FD->ReadRec(N, record1);
 		lv->FD->CopyRec(record1, lv->record, true);
@@ -705,12 +708,13 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	else {
 		lv->FD->CopyRec(lv->record, record1, false);
 		if (app) {
-			if (lv->FD->FF->file_type == FandFileType::INDEX) {
+			if (lv->FD->FileType == DataFileType::FandFile && lv->FD->FF->file_type == FandFileType::INDEX) {
 				lv->FD->RecallRec(N, record1);
 			}
 			else {
 				lv->FD->WriteRec(N, record1);
 			}
+
 			if (ad) {
 				LastExitCode = !RunAddUpdate(lv->FD, '+', nullptr, nullptr, record1);
 			}
@@ -1037,10 +1041,14 @@ HANDLE OpenHForPutTxt(Instr_puttxt* PD)
 	SetTxtPathVol(PD->TxtPath1, PD->TxtCatIRec1);
 	TestMountVol(CPath[1]);
 	FileOpenMode m = _isOverwriteFile;
-	if (PD->App) m = _isOldNewFile;
+	if (PD->App) {
+		m = _isOldNewFile;
+	}
 	HANDLE h = OpenH(CPath, m, Exclusive);
 	TestCPathError();
-	if (PD->App) SeekH(h, FileSizeH(h));
+	if (PD->App) {
+		SeekH(h, FileSizeH(h));
+	}
 	return h;
 }
 
@@ -1053,6 +1061,10 @@ void PutTxt(Instr_puttxt* PD)
 	FileD* TFD02;
 	FandTFile* TF02;
 	int TF02Pos;
+
+	if (CFile->FileType != DataFileType::FandFile) {
+		throw std::exception("runproc.cpp PutTxt() not implemented for non-FandFile");
+	}
 
 	const bool canCopyT = CanCopyT(CFile, nullptr, z, &TF02, &TFD02, TF02Pos, CRecPtr);
 
