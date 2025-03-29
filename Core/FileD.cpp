@@ -85,9 +85,84 @@ int FileD::GetNRecs()
 	return result;
 }
 
+void FileD::SetNRecs(int recs)
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->NRecs = recs;
+		break;
+	case DataFileType::DBF:
+		DbfF->NRecs = recs;
+		break;
+	default:;
+	}
+}
+
+long FileD::GetFileSize()
+{
+	long result;
+
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = SizeF(FF->Handle, HandleError);
+		break;
+	}
+	case DataFileType::DBF: {
+		result = SizeF(DbfF->Handle, HandleError);
+		break;
+	}
+	default: {
+		result = -1;
+		break;
+	}
+	}
+
+	return result;
+}
+
 WORD FileD::GetNrKeys()
 {
 	return static_cast<WORD>(Keys.size());
+}
+
+unsigned short FileD::GetFirstRecPos()
+{
+	unsigned short result;
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = FF->FirstRecPos;
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->FirstRecPos;
+		break;
+	}
+	default: {
+		result = 0;
+		break;
+	}
+	}
+	return result;
+}
+
+uint16_t FileD::GetRecLen()
+{
+	uint16_t result;
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = FF->RecLen;
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->RecLen;
+		break;
+	}
+	default: {
+		result = 0;
+		break;
+	}
+	}
+	return result;
 }
 
 void FileD::Reset()
@@ -176,6 +251,77 @@ int FileD::UsedFileSize() const
 	}
 
 	return result;
+}
+
+bool FileD::GetWasRdOnly() const
+{
+	bool result;
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = FF->WasRdOnly;
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->WasRdOnly;
+		break;
+	}
+	default: {
+		result = false;
+		break;
+	}
+	}
+	return result;
+}
+
+void FileD::SetWasRdOnly(bool was_read_only) const
+{
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->WasRdOnly = was_read_only;
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->WasRdOnly = was_read_only;
+		break;
+	}
+	default: {
+		break;
+	}
+	}
+}
+
+void FileD::SetHandle(HANDLE handle)
+{
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->Handle = handle;
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->Handle = handle;
+		break;
+	}
+	default: {
+		break;
+	}
+	}
+}
+
+void FileD::SetHandleT(HANDLE handle)
+{
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->TF->Handle = handle;
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->TF->Handle = handle;
+		break;
+	}
+	default: {
+		break;
+	}
+	}
 }
 
 uint8_t* FileD::GetRecSpace() const
@@ -606,7 +752,7 @@ int FileD::saveT(FieldDescr* field_d, int pos, void* record) const
 	return result;
 }
 
-void FileD::SetUpdateFlag()
+void FileD::SetUpdateFlag() const
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -620,7 +766,21 @@ void FileD::SetUpdateFlag()
 	}
 }
 
-void FileD::CloseFile()
+void FileD::Close() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->Close();
+		break;
+	case DataFileType::DBF:
+		DbfF->Close();
+		break;
+	default:
+		break;
+	}
+}
+
+void FileD::CloseFile() const
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -648,10 +808,23 @@ void FileD::Save()
 	}
 }
 
-FileUseMode FileD::GetUMode()
+FileUseMode FileD::GetUMode() const
 {
-	if (FileType == DataFileType::FandFile) return FF->UMode;
-	else return Exclusive;
+	FileUseMode mode;
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		mode = FF->UMode;
+		break;
+	case DataFileType::DBF:
+		mode = DbfF->UMode;
+		break;
+	default:
+		mode = Exclusive;
+		break;
+	}
+
+	return mode;
 }
 
 LockMode FileD::GetLMode()
@@ -670,6 +843,41 @@ LockMode FileD::GetTaLMode()
 {
 	if (FileType == DataFileType::FandFile) return FF->TaLMode;
 	else return NullMode;
+}
+
+void FileD::SetUMode(FileUseMode mode)
+{
+	if (FileType == DataFileType::FandFile) FF->UMode = mode;
+}
+
+void FileD::SetLMode(LockMode mode)
+{
+	if (FileType == DataFileType::FandFile) {
+		FF->LMode = mode;
+	}
+	else {
+		// locks are not supported in other file types
+	}
+}
+
+void FileD::SetExLMode(LockMode mode)
+{
+	if (FileType == DataFileType::FandFile) {
+		FF->ExLMode = mode;
+	}
+	else {
+		// locks are not supported in other file types
+	}
+}
+
+void FileD::SetTaLMode(LockMode mode)
+{
+	if (FileType == DataFileType::FandFile) {
+		FF->TaLMode = mode;
+	}
+	else {
+		// locks are not supported in other file types
+	}
 }
 
 void FileD::OldLockMode(LockMode mode)
@@ -904,6 +1112,70 @@ void FileD::SetDeletedFlag(void* record) const
 	default:
 		break;
 	}
+}
+
+uint16_t FileD::RdPrefix() const
+{
+	uint16_t result;
+	switch (FileType) {
+	case DataFileType::FandFile:
+		result = FF->RdPrefix();
+		break;
+	case DataFileType::DBF:
+		result = DbfF->RdPrefix();
+		break;
+	default:
+		result = 0;
+		break;
+	}
+	return result;
+}
+
+void FileD::WrPrefix() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->WrPrefix();
+		break;
+	case DataFileType::DBF:
+		DbfF->WrPrefix();
+		break;
+	default:
+		break;
+	}
+}
+
+bool FileD::HasIndexFile() const
+{
+	bool result;
+
+	if (FileType == DataFileType::FandFile) {
+		result = (FF->XF != nullptr);
+	}
+	else {
+		result = false;
+	}
+
+	return result;
+}
+
+bool FileD::HasTextFile() const
+{
+	bool result;
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		result = (FF->TF != nullptr);
+		break;
+	case DataFileType::DBF:
+		result = (DbfF->TF != nullptr);
+		break;
+	default:
+		result = false;
+		break;
+	}
+
+	return result;
 }
 
 bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record) const
@@ -1204,6 +1476,37 @@ bool FileD::IsActiveRdb()
 		R = R->ChainBack;
 	}
 	return false;
+}
+
+bool FileD::IsOpen()
+{
+	bool result;
+
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = FF->Handle != nullptr;
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->Handle != nullptr;
+		break;
+	}
+	default:
+		result = false;
+		break;
+	}
+
+	return result;
+}
+
+bool FileD::IsShared()
+{
+	if (FileType == DataFileType::FandFile) {
+		return FF->IsShared();
+	}
+	else {
+		return false;
+	}
 }
 
 void FileD::CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files)

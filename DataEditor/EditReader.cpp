@@ -277,34 +277,35 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 	WORD L = 0, i = 0, m = 0, FldLen = 0;
 	pstring s = "";
 	std::vector<std::string> SLRoot;
-	//std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();  // TODO: this is not correct, but it works -> refactor!
-	//EFldD* PrevD = nullptr;
 	WORD NPages = 1; WORD Ln = 0;
 	WORD Col = edit_->FrstCol;
 	WORD maxcol = edit_->LastCol - edit_->FrstCol;
-	//while (FL != nullptr) {
+
 	for (FieldDescr* F : FL) {
-		//FieldDescr* F = FL->FldD;
-		//FL = (FieldListEl*)FL->pChain;
-		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
-		//D->pChain = new EFldD();
+		//if (F == nullptr) continue;
 		EFldD* newD = new EFldD();
 		edit_->FirstFld.push_back(newD);
-		//D = D->pChain;
-		//D->ChainBack = PrevD;
-		//PrevD = D;
 		newD->FldD = F;
 		newD->L = F->L;
-		if (newD->L > maxcol) newD->L = maxcol;
-		if ((edit_->FD->FF->file_type == FandFileType::CAT) && (newD->L > 44)) newD->L = 44; /*catalog pathname*/
+		if (newD->L > maxcol) {
+			newD->L = maxcol;
+		}
+		if (edit_->FD->FileType == DataFileType::FandFile 
+			&& edit_->FD->FF->file_type == FandFileType::CAT 
+			&& newD->L > 44) {
+			// catalog pathname
+			newD->L = 44;
+		}
 		FldLen = newD->L;
-		if (F->field_type == FieldType::TEXT) newD->L = 1;
+		if (F->field_type == FieldType::TEXT) {
+			newD->L = 1;
+		}
 		L = F->Name.length();
-		if (FldLen > L) L = FldLen;
+		if (FldLen > L) {
+			L = FldLen;
+		}
 		if (Col + L > edit_->LastCol) {
-			//SToSL(&SLRoot, s);
 			SLRoot.push_back(s);
-			//SToSL(&SLRoot, "");
 			SLRoot.push_back("");
 			Ln += 2;
 			if (Ln + 2 > edit_->Rows) {
@@ -317,22 +318,23 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 			s = "";
 		}
 		m = (L - F->Name.length() + 1) / 2;
-		for (i = 1; i <= m; i++) s.Append(' ');
+		for (i = 1; i <= m; i++) {
+			s.Append(' ');
+		}
 		s = s + F->Name;
 		m = L - F->Name.length() - m;
-		for (i = 1; i <= m + 1; i++) s.Append(' ');
+		for (i = 1; i <= m + 1; i++) {
+			s.Append(' ');
+		}
 		newD->Col = Col + (L - FldLen + 1) / 2;
 		newD->Ln = Ln + 2;
 		newD->Page = NPages;
 		Col += (L + 1);
 	}
-	//SToSL(&SLRoot, s);
 	SLRoot.push_back(s);
-	//SToSL(&SLRoot, "");
 	SLRoot.push_back("");
 	Ln += 2;
 	StoreRT(Ln, SLRoot, 1);
-	//D->pChain = nullptr;
 	edit_->LastFld = edit_->FirstFld.back();
 	edit_->NPages = NPages;
 	if (NPages == 1) {
@@ -344,12 +346,6 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 
 			er->SL.erase(er->SL.begin());
 			er->N = 1;
-
-			//D = edit_->FirstFld;
-			//while (D != nullptr) {
-			//	D->Ln--;
-			//	D = D->pChain;
-			//}
 
 			for (EFldD* D : edit_->FirstFld) {
 				D->Ln--;
@@ -365,7 +361,6 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) {
 				s.Append('-');
 			}
-			//SToSL(&er.SL, s);
 			er->SL.push_back(s);
 			er->N++;
 		}
@@ -683,33 +678,40 @@ EFldD* EditReader::LstUsedFld()
 
 void EditReader::RdDepChkImpl(EditD* edit)
 {
+	FileD* file_d = edit->FD;
 	std::string s;
-	switch (edit->FD->FF->file_type) {
-	case FandFileType::RDB: {
-		ReadMessage(53);
-		s = MsgLine;
-		gc->ResetCompilePars();
-		gc->SetInpStr(s);
-		RdUDLI(edit->FD);
-		break;
+
+	if (file_d->FileType == DataFileType::FandFile) {
+		switch (file_d->FF->file_type) {
+		case FandFileType::RDB: {
+			ReadMessage(53);
+			s = MsgLine;
+			gc->ResetCompilePars();
+			gc->SetInpStr(s);
+			RdUDLI(file_d);
+			break;
+		}
+		case FandFileType::CAT: {
+			ReadMessage(54);
+			s = MsgLine;
+			if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
+			ReadMessage(55);
+			s = s + MsgLine;
+			if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
+			s = s + "'";
+			gc->ResetCompilePars();
+			gc->SetInpStr(s);
+			RdUDLI(file_d);
+			break;
+		}
+		default: {
+			RdAllUDLIs(file_d);
+			break;
+		}
+		}
 	}
-	case FandFileType::CAT: {
-		ReadMessage(54);
-		s = MsgLine;
-		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
-		ReadMessage(55);
-		s = s + MsgLine;
-		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
-		s = s + "'";
-		gc->ResetCompilePars();
-		gc->SetInpStr(s);
-		RdUDLI(edit->FD);
-		break;
-	}
-	default: {
-		RdAllUDLIs(edit->FD);
-		break;
-	}
+	else {
+		RdAllUDLIs(file_d);
 	}
 }
 
@@ -941,14 +943,19 @@ std::string EditReader::StandardHead(EditD* edit)
 	else if (edit->params_->EdRecVar) s = "";
 	else {
 		s = edit->FD->Name;
-		switch (edit->FD->FF->file_type) {
-		case FandFileType::INDEX: {
-			if (!edit->VK->Alias.empty()) s = s + "/" + edit->VK->Alias;
-			break;
+		if (edit->FD->FileType == DataFileType::FandFile) {
+			switch (edit->FD->FF->file_type) {
+			case FandFileType::INDEX: {
+				if (!edit->VK->Alias.empty()) s = s + "/" + edit->VK->Alias;
+				break;
+			}
+			case FandFileType::RDB: s += ".RDB"; break;
+			case FandFileType::FAND8: s += ".DTA"; break;
+			default:;
+			}
 		}
-		case FandFileType::RDB: s += ".RDB"; break;
-		case FandFileType::FAND8: s += ".DTA"; break;
-		default:;
+		else {
+			// other DataFileTypes don't show an extension
 		}
 	}
 	s = s.substr(0, 16); // max. length is 16 chars

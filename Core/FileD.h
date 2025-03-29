@@ -53,12 +53,21 @@ public:
 	std::vector<std::string> ViewNames;  // after each string BYTE string with user codes 
 
 	int GetNRecs();
+	void SetNRecs(int recs);
+	long GetFileSize();
 	WORD GetNrKeys();
+	unsigned short GetFirstRecPos();
+	uint16_t GetRecLen();
 	void Reset();
 
 	size_t ReadRec(size_t rec_nr, void* record) const;
 	size_t WriteRec(size_t rec_nr, void* record) const;
 	int UsedFileSize() const;
+
+	bool GetWasRdOnly() const;
+	void SetWasRdOnly(bool was_read_only) const;
+	void SetHandle(HANDLE handle);
+	void SetHandleT(HANDLE handle);
 
 	uint8_t* GetRecSpace() const;
 	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
@@ -89,14 +98,20 @@ public:
 	void saveS(FieldDescr* field_d, const std::string& s, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record) const;
 
-	void SetUpdateFlag();
-	void CloseFile();
+	void SetUpdateFlag() const;
+	void Close() const;
+	void CloseFile() const;
 	void Save();
 
-	FileUseMode GetUMode();
+	FileUseMode GetUMode() const;
 	LockMode GetLMode();
 	LockMode GetExLMode();
 	LockMode GetTaLMode();
+
+	void SetUMode(FileUseMode mode);
+	void SetLMode(LockMode mode);
+	void SetExLMode(LockMode mode);
+	void SetTaLMode(LockMode mode);
 
 	void OldLockMode(LockMode mode);
 	LockMode NewLockMode(LockMode mode);
@@ -117,6 +132,12 @@ public:
 	void ClearDeletedFlag(void* record) const;
 	void SetDeletedFlag(void* record) const;
 
+	uint16_t RdPrefix() const;
+	void WrPrefix() const;
+
+	bool HasIndexFile() const;
+	bool HasTextFile() const;
+
 	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record) const;
 	bool SearchXKey(XKey* K, XString& X, int& N);
 
@@ -133,6 +154,8 @@ public:
 	int32_t GetXFileD();
 
 	bool IsActiveRdb();
+	bool IsOpen();
+	bool IsShared();
 
 	static void CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
 	static void CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files);

@@ -334,7 +334,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 			WrLLF10Msg(1002);
 			return result;
 		}
-		if (New.FTyp == FandFileType::UNKNOWN) {
+		if (!EquUpCase(New.Ext, ".DBF") && New.FTyp == FandFileType::UNKNOWN) {
 			WrLLF10Msg(1067);
 			return result;
 		}
@@ -1147,7 +1147,13 @@ FileD* RdF(FileD* file_d, std::string FileName)
 		int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
 		gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 	}
-	return RdFileD(name, DataFileType::FandFile, FDTyp, ext);
+
+	if (EquUpCase(ext, ".DBF")) {
+		return RdFileD(name, DataFileType::DBF, FDTyp, ext);
+	} else {
+		return RdFileD(name, DataFileType::FandFile, FDTyp, ext);
+	}
+	
 }
 
 FileD* RdOldF(FileD* file_d, const std::string& file_name)
@@ -1159,7 +1165,12 @@ FileD* RdOldF(FileD* file_d, const std::string& file_name)
 	int pos = file_d->loadT(ChptOldTxt, file_d->FF->RecPtr);
 	gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 
-	return RdFileD(name, DataFileType::FandFile, FDTyp, ext);
+	if (EquUpCase(ext, ".DBF")) {
+		return RdFileD(name, DataFileType::DBF, FDTyp, ext);
+	}
+	else {
+		return RdFileD(name, DataFileType::FandFile, FDTyp, ext);
+	}
 }
 
 bool EquStoredF(std::vector<FieldDescr*>& fields1, std::vector<FieldDescr*>& fields2)

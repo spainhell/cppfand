@@ -1,45 +1,45 @@
-#include "FandFile.h"
+#include "DataFileBase.h"
 #include "files.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 
 
-FandFile::FandFile()
+DataFileBase::DataFileBase()
 {
 	Handle = nullptr;
 	update_flag = false;
 }
 
-FandFile::~FandFile()
+DataFileBase::~DataFileBase()
 = default;
 
-size_t FandFile::ReadData(size_t position, size_t count, void* buf) const
+size_t DataFileBase::ReadData(size_t position, size_t count, void* buf) const
 {
 	return read_write_data(READ, position, count, buf);
 }
 
-size_t FandFile::WriteData(size_t position, size_t count, void* buf)
+size_t DataFileBase::WriteData(size_t position, size_t count, void* buf)
 {
 	SetUpdateFlag();
 	return read_write_data(WRITE, position, count, buf);
 }
 
-void FandFile::SetUpdateFlag()
+void DataFileBase::SetUpdateFlag()
 {
 	update_flag = true;
 }
 
-void FandFile::ClearUpdateFlag()
+void DataFileBase::ClearUpdateFlag()
 {
 	update_flag = false;
 }
 
-bool FandFile::HasUpdateFlag() const
+bool DataFileBase::HasUpdateFlag() const
 {
 	return update_flag;
 }
 
-size_t FandFile::read_write_data(FileOperation operation, size_t position, size_t count, void* buf) const
+size_t DataFileBase::read_write_data(FileOperation operation, size_t position, size_t count, void* buf) const
 {
 	Logging* log = Logging::getInstance();
 	size_t result = 0;

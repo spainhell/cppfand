@@ -219,7 +219,7 @@ void DbfTFile::CloseFile()
 
 void DbfTFile::ClearUpdateFlag()
 {
-	FandFile::ClearUpdateFlag();
+	DataFileBase::ClearUpdateFlag();
 }
 
 void DbfTFile::GetMLen()

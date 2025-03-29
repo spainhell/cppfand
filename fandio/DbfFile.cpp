@@ -558,6 +558,14 @@ void DbfFile::CloseFile()
 	}
 }
 
+void DbfFile::Close()
+{
+	CloseH(&Handle);
+	if (TF != nullptr) {
+		CloseH(&TF->Handle);
+	}
+}
+
 void DbfFile::SetTWorkFlag(void* record) const
 {
 	BYTE* p = (BYTE*)record;
@@ -614,7 +622,7 @@ FileD* DbfFile::GetFileD()
 
 void DbfFile::ClearUpdateFlag()
 {
-	FandFile::ClearUpdateFlag();
+	DataFileBase::ClearUpdateFlag();
 }
 
 std::string DbfFile::SetTempCExt(char typ, bool isNet) const

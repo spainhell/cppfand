@@ -1,13 +1,13 @@
 #pragma once
 
 #include <cstdint>
-#include "FandFile.h"
+#include "DataFileBase.h"
 #include "XPage.h"
 #include "XXPage.h"
 
 class Fand0File;
 
-class FandXFile : public FandFile
+class FandXFile : public DataFileBase
 {
 public:
 	FandXFile(Fand0File* parent);

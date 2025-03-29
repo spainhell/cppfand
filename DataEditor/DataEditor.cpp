@@ -1140,11 +1140,8 @@ void DataEditor::ReadParamsFromE(const EditD* edit)
 
 	CFld = edit->CFld;
 
-	if (file_d_->FF->XF != nullptr) HasIndex = true;
-	else HasIndex = false;
-
-	if (file_d_->FF->TF != nullptr) HasTF = true;
-	else HasTF = false;
+	HasIndex = file_d_->HasIndexFile();
+	HasTF = file_d_->HasTextFile();
 
 	SetCPage(CPage, &RT);
 }
@@ -1892,7 +1889,7 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 			p = LD->FromFD->GetRecSpace();
 			if (PNew != nullptr) {
 				p2 = LD->FromFD->GetRecSpace();
-		}
+			}
 			std::vector<KeyInD*> empty;
 			Scan = new XScan(LD->FromFD, k, empty, true);
 			Scan->ResetOwner(&xold, nullptr);
@@ -1937,8 +1934,8 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 			LD->FromFD->ClearRecSpace(p);
 
 			delete[] p; p = nullptr;
-	}
-} // for
+		}
+	} // for
 }
 
 void DataEditor::WrJournal(char Upd, void* RP, double Time)
@@ -2648,9 +2645,9 @@ bool DataEditor::OldRecDiffers()
 				(CompArea(Pchar(rec) + Displ, Pchar(edit_->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->pChain;
-}
+		}
 		goto label2;
-}
+	}
 	else
 #endif
 

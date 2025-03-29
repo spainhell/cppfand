@@ -20,7 +20,7 @@ enum class FandFileType
 	CAT
 };
 
-class Fand0File : public FandFile
+class Fand0File : public DataFileBase
 {
 public:
 	Fand0File(FileD* parent);

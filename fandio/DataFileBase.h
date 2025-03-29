@@ -3,11 +3,11 @@
 
 typedef void* HANDLE;
 
-class FandFile
+class DataFileBase
 {
 public:
-	FandFile();
-	virtual ~FandFile();
+	DataFileBase();
+	virtual ~DataFileBase();
 	
 	HANDLE Handle;
 

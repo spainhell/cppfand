@@ -2,11 +2,11 @@
 #include <cstdint>
 #include <string>
 
-#include "FandFile.h"
+#include "DataFileBase.h"
 
 class DbfFile;
 
-class DbfTFile : public FandFile
+class DbfTFile : public DataFileBase
 {
 public:
 	DbfTFile(DbfFile* parent);

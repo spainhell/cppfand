@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-#include "FandFile.h"
+#include "DataFileBase.h"
 
 typedef void* HANDLE;
 class Fand0File;
@@ -11,7 +11,7 @@ const unsigned short MPageSize = 512;
 const unsigned char XPageShft = 10;
 const unsigned char MPageShft = 9;
 
-class FandTFile : public FandFile
+class FandTFile : public DataFileBase
 {
 public:
 	FandTFile(Fand0File* parent);

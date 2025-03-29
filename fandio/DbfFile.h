@@ -1,19 +1,20 @@
 #pragma once
 #include <string>
 
-#include "FandFile.h"
+#include "DataFileBase.h"
 #include "DbfTFile.h"
 #include "../Core/FieldDescr.h"
 
 class FileD;
 
-class DbfFile : public FandFile
+class DbfFile : public DataFileBase
 {
 public:
 	DbfFile(FileD* parent);
 	~DbfFile() override;
 
 	DbfTFile* TF = nullptr;
+	FileUseMode UMode = Closed;
 
 	uint16_t RecLen = 0;
 	uint16_t NRecs = 0;
@@ -58,6 +59,7 @@ public:
 	void TruncFile();
 	void SaveFile();
 	void CloseFile();
+	void Close();
 
 	void SetTWorkFlag(void* record) const;
 	bool HasTWorkFlag(void* record) const;

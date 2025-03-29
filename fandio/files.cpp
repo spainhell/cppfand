@@ -15,15 +15,11 @@
 bool OpenF(FileD* file_d, const std::string& path, FileUseMode UM)
 {
 	bool result = true;
-	if (file_d->FF->Handle != nullptr) return result;
+	if (file_d->IsOpen()) return result;
 	if (OpenF1(file_d, path, UM)) {
-		if (
-#ifdef FandSQL
-			!IsSQLFile &&
-#endif
-			file_d->FF->IsShared()) {
+		if (file_d->IsShared()) {
 			file_d->ChangeLockMode(RdMode, 0, false);
-			file_d->FF->LMode = RdMode;
+			file_d->SetLMode(RdMode);
 		}
 		result = OpenF2(file_d, path);
 		file_d->OldLockMode(NullMode);
@@ -38,23 +34,24 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 {
 	WORD n;
 	bool result = true;
-	file_d->FF->LMode = NullMode;
+	file_d->SetLMode(NullMode);
 	SetPathMountVolumeSetNet(file_d, UM);
 	const bool b = (file_d == Chpt) || (file_d == catalog->GetCatalogFile());
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
 		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110);
 		if (HandleError == 5) HandleError = 79;
 		TestCFileError(file_d);
-		file_d->FF->WasRdOnly = true;
+		file_d->SetWasRdOnly(true);
 	}
 	while (true) {
-		file_d->FF->Handle = OpenH(CPath, _isOldFile, file_d->FF->UMode);
-		if ((HandleError != 0) && file_d->FF->WasRdOnly) {
+		HANDLE h = OpenH(CPath, _isOldFile, file_d->GetUMode());
+		file_d->SetHandle(h);
+		if ((HandleError != 0) && file_d->GetWasRdOnly()) {
 			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0b00100111) | 0b00000001 /*RdONly*/);
 			TestCFileError(file_d);
 		}
-		if ((HandleError == 5) && (file_d->FF->UMode == Exclusive)) {
-			file_d->FF->UMode = RdOnly;
+		if ((HandleError == 5) && (file_d->GetUMode() == Exclusive)) {
+			file_d->SetUMode(RdOnly);
 			continue;
 		}
 		if (HandleError == 2) {
@@ -70,13 +67,14 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 	TestCFileError(file_d);
 
 	// open text file (.T__)
-	if (file_d->FF->TF != nullptr) {
+	if (file_d->HasTextFile()) {
 		CPath = file_d->CExtToT(CDir, CName, CExt);
-		if (file_d->FF->WasRdOnly) {
+		if (file_d->GetWasRdOnly()) {
 			SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110); // 0x26 = archive + hidden + system
 		}
 		while (true) {
-			file_d->FF->TF->Handle = OpenH(CPath, _isOldFile, file_d->FF->UMode);
+			HANDLE h = OpenH(CPath, _isOldFile, file_d->GetUMode());
+			file_d->SetHandleT(h);
 			if (HandleError == 2) {
 				if (file_d->FileType == DataFileType::DBF && file_d->DbfF->TF->Format == DbfTFile::DbtFormat) {
 					file_d->DbfF->TF->Format = DbfTFile::FptFormat;
@@ -85,16 +83,22 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 					continue;
 				}
 				if (file_d->IsDynFile) {
-					CloseClearH(&file_d->FF->Handle);
+					if (file_d->FileType == DataFileType::FandFile) {
+						CloseClearH(&file_d->FF->Handle);
+					}
+					else if (file_d->FileType == DataFileType::DBF) {
+						CloseClearH(&file_d->DbfF->Handle);
+					}
 					result = false;
 					return result;
 				}
 			}
 			break;
 		}
+
 		if (HandleError != 0) {
 			n = HandleError;
-			file_d->FF->Close(); //CloseClearH(file_d->FF);
+			file_d->Close();
 			HandleError = n;
 			TestCPathError();
 			return result;
@@ -102,7 +106,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 	}
 
 	// open index file (*.X__)
-	if (file_d->FF->file_type == FandFileType::INDEX) {
+	if (file_d->HasIndexFile()) {
 		CPath = CExtToX(CDir, CName, CExt);
 		while (true) {
 			file_d->FF->XF->Handle = OpenH(CPath, _isOldFile, file_d->FF->UMode);
@@ -155,7 +159,7 @@ void check_T_file(FileD* file_d, int file_size)
 
 void check_X_file(FileD* file_d, int file_size)
 {
-	if (file_d->FF->file_type == FandFileType::INDEX) {
+	if (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::INDEX) {
 		if (file_size < file_d->FF->FirstRecPos) {
 			file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
 		}
@@ -186,6 +190,9 @@ void check_X_file(FileD* file_d, int file_size)
 			}
 		}
 	}
+	else {
+		// this data file doesn't have index file
+	}
 }
 
 void lock_excl_and_write_prefix(FileD* file_d)
@@ -200,19 +207,19 @@ void lock_excl_and_write_prefix(FileD* file_d)
 
 bool OpenF2(FileD* file_d, const std::string& path)
 {
-	int file_size = FileSizeH(file_d->FF->Handle);
-	file_d->FF->NRecs = 0;
+	int file_size = file_d->GetFileSize();
+	file_d->SetNRecs(0);
 
-	if (file_size < file_d->FF->FirstRecPos) {
+	if (file_size < file_d->GetFirstRecPos()) {
 		lock_excl_and_write_prefix(file_d);
 	}
 	else {
-		uint16_t rLen = file_d->FF->RdPrefix();
-		int32_t n = (file_size - file_d->FF->FirstRecPos) / file_d->FF->RecLen;
+		uint16_t rLen = file_d->RdPrefix();
+		int32_t n = (file_size - file_d->GetFirstRecPos()) / file_d->GetRecLen();
 
 		if (rLen != 0xffff) {
 			if (file_d->IsDynFile) {
-				file_d->FF->Close(); //CloseClearH(file_d->FF);
+				file_d->Close(); //CloseClearH(file_d->FF);
 				return false;
 			}
 			else {
@@ -224,27 +231,27 @@ bool OpenF2(FileD* file_d, const std::string& path)
 				}
 
 				FileMsg(file_d, 883, ' ');
-				int l = file_d->FF->NRecs * rLen + file_d->FF->FirstRecPos;
+				int l = file_d->GetNRecs() * rLen + file_d->GetFirstRecPos();
 
 				if (l == file_size || !PromptYN(885)) {
 					CloseGoExit(file_d->FF);
 				}
 
-				if (file_d->FF->NRecs == 0 || l >> CachePageShft != file_size >> CachePageShft) {
+				if (file_d->GetNRecs() == 0 || l >> CachePageShft != file_size >> CachePageShft) {
 					WrLLF10Msg(886);
-					file_d->FF->NRecs = n;
+					file_d->SetNRecs(n);
 				}
 
-				file_d->FF->SetUpdateFlag();
-				file_d->FF->WrPrefix();
+				file_d->SetUpdateFlag();
+				file_d->WrPrefix();
 			}
 		}
 		else {
-			if (n < file_d->FF->NRecs) {
+			if (n < file_d->GetNRecs()) {
 				SetPathAndVolume(file_d);
 				SetMsgPar(CPath);
 				if (PromptYN(882)) {
-					file_d->FF->NRecs = n;
+					file_d->SetNRecs(n);
 					lock_excl_and_write_prefix(file_d);
 				}
 				else {

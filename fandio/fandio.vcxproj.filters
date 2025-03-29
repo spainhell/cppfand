@@ -108,11 +108,11 @@
     <ClInclude Include="DBaseField.h">
       <Filter>Header Files\DbfFiles</Filter>
     </ClInclude>
-    <ClInclude Include="FandFile.h">
-      <Filter>Header Files\FandFiles</Filter>
-    </ClInclude>
     <ClInclude Include="DbfTFile.h">
       <Filter>Header Files\DbfFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="DataFileBase.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -191,11 +191,11 @@
     <ClCompile Include="DBaseField.cpp">
       <Filter>Source Files\DbfFiles</Filter>
     </ClCompile>
-    <ClCompile Include="FandFile.cpp">
-      <Filter>Source Files\FandFiles</Filter>
-    </ClCompile>
     <ClCompile Include="DbfTFile.cpp">
       <Filter>Source Files\DbfFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="DataFileBase.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
