@@ -138,64 +138,6 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 	return result;
 }
 
-void check_T_file(FileD* file_d, int file_size)
-{
-	if (file_d->HasTextFile()) {
-		if (file_size < file_d->GetFirstRecPos()) {
-			file_d->FF->TF->SetEmpty();
-		}
-		else {
-			file_d->FF->TF->RdPrefix(true);
-			if ((file_d->FF->file_type == FandFileType::RDB)
-				&& !file_d->IsActiveRdb()
-				&& !Coding::HasPassword(file_d, 1, ""))
-			{
-				FileMsg(file_d, 616, ' ');
-				file_d->Close();
-				GoExit(MsgLine);
-			}
-		}
-	}
-}
-
-void check_X_file(FileD* file_d, int file_size)
-{
-	if (file_d->HasIndexFile()) {
-		if (file_size < file_d->FF->FirstRecPos) {
-			file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
-		}
-		else {
-			WORD Signum = 0;
-			file_d->FF->XF->ReadData(0, 2, &Signum);
-			file_d->FF->XF->RdPrefix();
-
-			Fand0File* ff = file_d->FF;
-			if (
-				!ff->XF->NotValid && ((Signum != 0x04FF)
-					|| (ff->XF->NRecsAbs != ff->NRecs)
-					|| (ff->XF->FreeRoot > ff->XF->MaxPage)
-					|| ((ff->XF->MaxPage + 1) << XPageShft) > FileSizeH(ff->XF->Handle))
-				|| (ff->XF->NrKeys != 0) && (ff->XF->NrKeys != file_d->GetNrKeys()))
-			{
-
-				if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
-					FileMsg(file_d, 830, 'X');
-				}
-
-				if (ff->IsShared() && (ff->LMode < ExclMode)) {
-					file_d->ChangeLockMode(ExclMode, 0, false);
-				}
-
-				ff->LMode = ExclMode;
-				ff->XF->SetNotValid(ff->NRecs, file_d->GetNrKeys());
-			}
-		}
-	}
-	else {
-		// this data file doesn't have index file
-	}
-}
-
 void lock_excl_and_write_prefix(FileD* file_d)
 {
 	if (file_d->IsShared() && (file_d->GetLMode() < ExclMode)) {
@@ -225,8 +167,8 @@ bool OpenF2(FileD* file_d, const std::string& path)
 			}
 			else {
 				if (catalog->OldToNewCat(file_size)) {
-					check_T_file(file_d, file_size);
-					check_X_file(file_d, file_size);
+					file_d->CheckT(file_size);
+					file_d->CheckX(file_size);
 					file_d->SeekRec(0);
 					return true;
 				}
@@ -264,8 +206,8 @@ bool OpenF2(FileD* file_d, const std::string& path)
 		}
 	}
 
-	check_T_file(file_d, file_size);
-	check_X_file(file_d, file_size);
+	file_d->CheckT(file_size);
+	file_d->CheckX(file_size);
 
 	file_d->SeekRec(0);
 	return true;

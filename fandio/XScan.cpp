@@ -136,7 +136,7 @@ void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldM
 		Reset(nullptr, false, record);
 	}
 
-	if (FD->FF->NotCached()) {
+	if (FD->NotCached()) {
 		switch (Kind) {
 		case 0: {
 			m = NoCrMode;

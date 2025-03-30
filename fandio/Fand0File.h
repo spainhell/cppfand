@@ -55,15 +55,11 @@ public:
 	void CompileRecLen();
 	int UsedFileSize() const;
 	bool IsShared();
-	bool NotCached();
-	bool Cached();
 	void Reset();
 
 	void IncNRecs(int n);
 	void DecNRecs(int n);
 	void PutRec(void* record, int& i_rec);
-
-	size_t RecordSize();
 
 	bool loadB(FieldDescr* field_d, void* record);
 	double loadR(FieldDescr* field_d, void* record);

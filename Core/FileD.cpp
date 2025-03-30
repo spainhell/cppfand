@@ -1,5 +1,6 @@
 #include "FileD.h"
 
+#include "Coding.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
 #include "runfrml.h"
@@ -165,6 +166,21 @@ uint16_t FileD::GetRecLen()
 	return result;
 }
 
+void FileD::SetRecLen(uint16_t length)
+{
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->RecLen = length;
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->RecLen = length;
+		break;
+	}
+	default:;
+	}
+}
+
 void FileD::Reset()
 {
 	Name = "";
@@ -181,6 +197,26 @@ void FileD::Reset()
 	ViewNames.clear();  //after each string BYTE string with user codes 
 	Keys.clear();
 	Add.clear();
+}
+
+size_t FileD::GetRecordSize()
+{
+	size_t result;
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		result = FF->RecLen;
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->RecLen;
+		break;
+	}
+	default: {
+		result = 0;
+		break;
+	}
+	}
+	return result;
 }
 
 /// <summary>
@@ -324,6 +360,93 @@ void FileD::SetHandleT(HANDLE handle)
 	}
 }
 
+void FileD::CheckT(int file_size)
+{
+	if (HasTextFile()) {
+		switch (FileType) {
+		case DataFileType::FandFile: {
+			if (file_size < GetFirstRecPos()) {
+				FF->TF->SetEmpty();
+			}
+			else {
+				FF->TF->RdPrefix(true);
+				if ((FF->file_type == FandFileType::RDB)
+					&& !IsActiveRdb()
+					&& !Coding::HasPassword(this, 1, ""))
+				{
+					FileMsg(this, 616, ' ');
+					Close();
+					GoExit(MsgLine);
+				}
+			}
+			break;
+		}
+		case DataFileType::DBF: {
+			if (file_size < GetFirstRecPos()) {
+				DbfF->TF->SetEmpty();
+			}
+			else {
+				DbfF->TF->RdPrefix(true);
+				FileMsg(this, 616, ' ');
+				Close();
+				GoExit(MsgLine);
+			}
+			break;
+		}
+		default: {
+			// other types don't have a text file
+			break;
+		}
+		}
+	}
+}
+
+void FileD::CheckX(int file_size)
+{
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		if (HasIndexFile()) {
+			if (file_size < FF->FirstRecPos) {
+				FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
+			}
+			else {
+				WORD Signum = 0;
+				FF->XF->ReadData(0, 2, &Signum);
+				FF->XF->RdPrefix();
+
+				if (
+					!FF->XF->NotValid && ((Signum != 0x04FF)
+						|| (FF->XF->NRecsAbs != FF->NRecs)
+						|| (FF->XF->FreeRoot > FF->XF->MaxPage)
+						|| ((FF->XF->MaxPage + 1) << XPageShft) > FileSizeH(FF->XF->Handle))
+					|| (FF->XF->NrKeys != 0) && (FF->XF->NrKeys != GetNrKeys()))
+				{
+
+					if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
+						FileMsg(this, 830, 'X');
+					}
+
+					if (FF->IsShared() && (FF->LMode < ExclMode)) {
+						ChangeLockMode(ExclMode, 0, false);
+					}
+
+					FF->LMode = ExclMode;
+					FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
+				}
+			}
+		}
+		else {
+			// this data file doesn't have index file
+		}
+		break;
+	}
+	default: {
+		// other types don't have an index file
+		break;
+	}
+	}
+}
+
 uint8_t* FileD::GetRecSpace() const
 {
 	size_t length;
@@ -378,7 +501,7 @@ std::unique_ptr<uint8_t[]> FileD::GetRecSpaceUnique() const
 /// <param name="record">data record pointer</param>
 void FileD::ClearRecSpace(void* record)
 {
-	if (FF->TF != nullptr) {
+	if (HasTextFile()) {
 		if (HasTWorkFlag(record)) {
 			for (FieldDescr* f : FldD) {
 				if ((f->isStored()) && (f->field_type == FieldType::TEXT)) {
@@ -1414,7 +1537,18 @@ void FileD::CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields)
 
 void FileD::DelAllDifTFlds(void* record, void* comp_record)
 {
-	this->FF->DelAllDifTFlds(record, comp_record);
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		FF->DelAllDifTFlds(record, comp_record);
+		break;
+	}
+	case DataFileType::DBF: {
+		DbfF->DelAllDifTFlds(record, comp_record);
+		break;
+	}
+	default:
+		break;
+	}
 }
 
 std::string FileD::CExtToT(const std::string& dir, const std::string& name, std::string ext)
@@ -1558,6 +1692,20 @@ bool FileD::IsShared()
 	else {
 		return false;
 	}
+}
+
+bool FileD::NotCached()
+{
+	if (GetUMode() == Shared) goto label1;
+	if (GetUMode() != RdShared) return false;
+label1:
+	if (GetLMode() == ExclMode) return false;
+	return true;
+}
+
+bool FileD::Cached()
+{
+	return !NotCached();
 }
 
 void FileD::CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files)

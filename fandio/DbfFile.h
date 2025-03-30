@@ -65,11 +65,11 @@ public:
 	void SetTWorkFlag(void* record) const;
 	bool HasTWorkFlag(void* record) const;
 
-	void SetRecordUpdateFlag(void* record);
-	void ClearRecordUpdateFlag(void* record);
-	bool HasRecordUpdateFlag(void* record);
+	void SetRecordUpdateFlag(void* record) const;
+	void ClearRecordUpdateFlag(void* record) const;
+	bool HasRecordUpdateFlag(void* record) const;
 
-	bool DeletedFlag(void* record);
+	static bool DeletedFlag(void* record);
 	void ClearDeletedFlag(void* record);
 	void SetDeletedFlag(void* record);
 

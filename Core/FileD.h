@@ -58,7 +58,9 @@ public:
 	WORD GetNrKeys();
 	unsigned short GetFirstRecPos();
 	uint16_t GetRecLen();
+	void SetRecLen(uint16_t length);
 	void Reset();
+	size_t GetRecordSize();
 
 	size_t ReadRec(size_t rec_nr, void* record) const;
 	size_t WriteRec(size_t rec_nr, void* record) const;
@@ -68,6 +70,8 @@ public:
 	void SetWasRdOnly(bool was_read_only) const;
 	void SetHandle(HANDLE handle);
 	void SetHandleT(HANDLE handle);
+	void CheckT(int file_size);
+	void CheckX(int file_size);
 
 	uint8_t* GetRecSpace() const;
 	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
@@ -160,6 +164,8 @@ public:
 	bool IsActiveRdb();
 	bool IsOpen();
 	bool IsShared();
+	bool NotCached();
+	bool Cached();
 
 	static void CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
 	static void CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files);

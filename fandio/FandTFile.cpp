@@ -58,7 +58,7 @@ int FandTFile::UsedFileSize() const
 
 bool FandTFile::NotCached() const
 {
-	return !IsWork && _parent->NotCached();
+	return !IsWork && _parent->GetFileD()->NotCached();
 }
 
 bool FandTFile::Cached() const

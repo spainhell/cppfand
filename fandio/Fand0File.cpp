@@ -145,20 +145,6 @@ bool Fand0File::IsShared()
 	return (UMode == Shared) || (UMode == RdShared);
 }
 
-bool Fand0File::NotCached()
-{
-	if (UMode == Shared) goto label1;
-	if (UMode != RdShared) return false;
-label1:
-	if (LMode == ExclMode) return false;
-	return true;
-}
-
-bool Fand0File::Cached()
-{
-	return !NotCached();
-}
-
 void Fand0File::Reset()
 {
 	RecLen = 0;
@@ -204,11 +190,6 @@ void Fand0File::PutRec(void* record, int& i_rec)
 	WriteData(i_rec * RecLen + FirstRecPos, RecLen, record);
 	i_rec++;
 	Eof = true;
-}
-
-size_t Fand0File::RecordSize()
-{
-	return RecLen;
 }
 
 bool Fand0File::loadB(FieldDescr* field_d, void* record)
@@ -588,7 +569,7 @@ void Fand0File::WrPrefix()
 	struct { unsigned short NRs; unsigned short RLen; } Pfx8 = { 0, 0 };
 
 	if (update_flag) {
-		const bool not_cached = NotCached();
+		// const bool not_cached = NotCached();
 		switch (file_type) {
 		case FandFileType::FAND8: {
 			Pfx8.RLen = RecLen;

@@ -120,7 +120,7 @@ bool FandXFile::Cached() const
 
 bool FandXFile::NotCached() const
 {
-	return (this != &XWork) && _parent->NotCached();
+	return (this != &XWork) && _parent->GetFileD()->NotCached();
 }
 
 void FandXFile::CloseFile()

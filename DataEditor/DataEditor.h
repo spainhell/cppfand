@@ -194,7 +194,7 @@ private:
 
     WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt,
                    double& RR, bool del, bool upd, bool ret, unsigned int Delta);
-    void SetWasUpdated(Fand0File* fand_file, void* record);
+    void SetWasUpdated(FileD* file_d, void* record);
     void AssignFld(FieldDescr* F, FrmlElem* Z);
     bool TestMask(std::string& S, std::string Mask);
     void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R);

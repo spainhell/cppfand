@@ -351,11 +351,9 @@ void DbfFile::WriteHeader()
 	const char CtrlD = '\x0d';
 
 	DBaseHeader* dbf_header = new DBaseHeader();
-	//unsigned short n = 0;
 
 	for (FieldDescr* F : _parent->FldD) {
 		if (F->isStored()) {
-			//n++;
 			DBaseField* actual = new DBaseField();
 			dbf_header->flds.push_back(actual);
 			switch (F->field_type) {
@@ -373,13 +371,17 @@ void DbfFile::WriteHeader()
 		}
 	}
 
-	//if (TF != nullptr) {
-	//	if (TF->Format == DbfTFile::FptFormat) dbf_header->Ver = 0xF5;
-	//	else dbf_header->Ver = 0x83;
-	//}
-	//else {
-	//	dbf_header->Ver = 0x03;
-	//}
+	if (TF != nullptr) {
+		if (TF->Format == DbfTFile::FptFormat) {
+			dbf_header->Ver = 0xF5;
+		}
+		else {
+			dbf_header->Ver = 0x83;
+		}
+	}
+	else {
+		dbf_header->Ver = 0x03;
+	}
 
 	dbf_header->RecLen = RecLen;
 	SplitDate(Today(), d, m, y);
@@ -391,7 +393,6 @@ void DbfFile::WriteHeader()
 
 	WriteData(0, dbf_header->GetDataLength(), dbf_header->GetData());
 
-
 	size_t index = dbf_header->GetDataLength();
 
 	for (DBaseField* F : dbf_header->flds) {
@@ -400,7 +401,6 @@ void DbfFile::WriteHeader()
 	}
 
 	WriteData(index, 1, (void*)&CtrlD);
-
 	WriteData(dbf_header->NRecs * dbf_header->RecLen + dbf_header->HdLen, 1, (void*)&CtrlZ);
 
 	delete dbf_header;
@@ -409,11 +409,9 @@ void DbfFile::WriteHeader()
 
 int DbfFile::MakeDbfDcl(std::string& name)
 {
-	DBaseHeader Hd;
-	DBaseField Fd;
+	DBaseHeader dbf_header;
+	DBaseField dbf_field;
 	char c = '\0';
-	pstring s(80);
-	pstring s1(10);
 
 	CPath = FExpand(name + ".DBF"); CVol = "";
 	int i = catalog->GetCatalogIRec(name, true);
@@ -426,17 +424,16 @@ int DbfFile::MakeDbfDcl(std::string& name)
 
 	HANDLE h = OpenH(CPath, _isOldFile, RdOnly);
 	TestCPathError();
-	ReadH(h, 32, &Hd);
-	WORD n = (Hd.HdLen - 1) / 32 - 1;
-	LongStr* t = new LongStr(2);
-	t->LL = 0;
+	ReadH(h, 32, &dbf_header);
+	WORD n = (dbf_header.HdLen - 1) / 32 - 1;
+
+	std::string result;
 
 	for (i = 1; i <= n; i++) {
-		ReadH(h, 32, &Fd);
-		s = Fd.name;
+		ReadH(h, 32, &dbf_field);
+		result += dbf_field.name;
 
-		switch (Fd.typ)
-		{
+		switch (dbf_field.typ) {
 		case 'C': c = 'A'; break;
 		case 'D': c = 'D'; break;
 		case 'L': c = 'B'; break;
@@ -444,24 +441,33 @@ int DbfFile::MakeDbfDcl(std::string& name)
 		case 'N':
 		case 'F': c = 'F'; break;
 		}
-		s = s + ':' + c;
+		result += ':';
+		result += c;
+
+		std::string s1;
 
 		switch (c) {
-		case 'A': { str(Fd.len, s1); s = s + ',' + s1; break; }
+		case 'A': {
+			str(dbf_field.len, s1);
+			result += ',' + s1;
+			break;
+		}
 		case 'F': {
-			Fd.len -= Fd.dec;
-			if (Fd.dec != 0) Fd.len--;
-			str(Fd.len, s1); s = s + ',' + s1; str(Fd.dec, s1); s = s + '.' + s1;
+			dbf_field.len -= dbf_field.dec;
+			if (dbf_field.dec != 0) {
+				dbf_field.len--;
+			}
+			str(dbf_field.len, s1);
+			result += ',' + s1;
+			str(dbf_field.dec, s1);
+			result += '.' + s1;
 			break;
 		}
 		}
-		s = s + ';' + 0x0D + 0x0A; // ^M + ^J
-		BYTE* p = new BYTE[s.length()];
-		Move(&s[1], p, s.length());
-		t->LL += s.length();
+		result += ";\x0D\x0A"; // ^M + ^J
 	}
-	const std::string str(t->A, t->LL);
-	CFile->saveS(ChptTxt, str, CRecPtr);
+
+	_parent->saveS(ChptTxt, result, CRecPtr);
 	CloseH(&h);
 	return 0;
 }
@@ -507,7 +513,7 @@ int DbfFile::UsedFileSize() const
 
 void DbfFile::TruncFile()
 {
-	//if (UMode == RdOnly) return;
+	if (UMode == RdOnly) return;
 
 	TruncF(Handle, HandleError, UsedFileSize());
 	if (HandleError != 0) {
@@ -580,19 +586,19 @@ bool DbfFile::HasTWorkFlag(void* record) const
 	return workFlag;
 }
 
-void DbfFile::SetRecordUpdateFlag(void* record)
+void DbfFile::SetRecordUpdateFlag(void* record) const
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen + 1] = 1;
 }
 
-void DbfFile::ClearRecordUpdateFlag(void* record)
+void DbfFile::ClearRecordUpdateFlag(void* record) const
 {
 	BYTE* p = (BYTE*)record;
 	p[RecLen + 1] = 0;
 }
 
-bool DbfFile::HasRecordUpdateFlag(void* record)
+bool DbfFile::HasRecordUpdateFlag(void* record) const
 {
 	BYTE* p = (BYTE*)record;
 	return p[RecLen + 1] == 1;
