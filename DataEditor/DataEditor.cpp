@@ -3803,7 +3803,7 @@ bool DataEditor::EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& B
 	size_t TxtPos = 0; // vychozi pozice zobrazeni textu (index 1. znaku v editoru)
 	WORD CtrlMsgNr = 0;
 	WORD C = 0, LastLen = 0;
-	std::string s;
+	std::string edit_text;
 	char Kind = '\0';
 	LockMode md;
 	void* p = nullptr;
@@ -3861,11 +3861,11 @@ label1:
 	OldTxtPos = TxtPos;
 	if (Ed) LockRec(false);
 	if ((F->Flg & f_Stored) != 0) {
-		s = file_d_->loadS(F, record_);
+		edit_text = file_d_->loadS(F, record_);
 		if (Ed) Kind = 'T';
 	}
 	else {
-		s = RunString(file_d_, F->Frml, record_);
+		edit_text = RunString(file_d_, F->Frml, record_);
 	}
 label2:
 	if (params_->TTExit) {
@@ -3878,11 +3878,11 @@ label2:
 	Upd = false;
 	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
 	result =
-		editor->EditText(Kind, MemoT, HdTxt, ErrMsg, s, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
+		editor->EditText(Kind, MemoT, HdTxt, ErrMsg, edit_text, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
 	ErrMsg = "";
 	heslo = gc->LexWord;
-	LastLen = s.length();
+	LastLen = edit_text.length();
 	if (EdBreak == 0xffff) {
 		C = Event.Pressed.KeyCombination();
 	}
@@ -3912,7 +3912,7 @@ label2:
 	screen.Window(1, 1, TxtCols, TxtRows);
 
 	if (WasUpd) {
-		UpdateEdTFld(s);
+		UpdateEdTFld(edit_text);
 	}
 
 	if ((OldTxtPos != TxtPos) && !Srch) {
@@ -5241,12 +5241,11 @@ label81:
 				}
 				EdBr = EdBreak;
 				n = GetEdRecNo();
-				if (((IsNewRec
-					|| WriteCRec(true, Displ)) && ((EdBreak == 11))
+				if ((IsNewRec
+					|| WriteCRec(true, Displ)) && (EdBreak == 11)
 					|| params_->NoESCPrompt
 					|| (!spec.ESCverify && !params_->MustESCPrompt)
-					|| PromptYN(137))) {
-					//if ((IsNewRec || WriteCRec(true, Displ)) && ((EdBreak == 11) || NoESCPrompt || !spec.ESCverify && !MustESCPrompt || PromptYN(137))) {
+					|| PromptYN(137)) {
 					EdBreak = EdBr;
 					SetEdRecNoEtc(n);
 				label71:

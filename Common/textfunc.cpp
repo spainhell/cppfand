@@ -51,8 +51,9 @@ std::vector<std::string> GetAllLines(const std::string& input, size_t maxLineLen
 	return vStr;
 }
 
-std::vector<std::string> GetAllLinesWithEnds(std::string& input)
+std::vector<std::string> GetAllLinesWithEnds(std::string& input, bool& contains_LF)
 {
+	contains_LF = false;
 	std::vector<std::string> vStr;
 	size_t nextStart = 0;
 	for (size_t i = 0; i < input.length(); i++)	{
@@ -60,6 +61,7 @@ std::vector<std::string> GetAllLinesWithEnds(std::string& input)
 			// narazili jsme na konec radku
 			if (i < input.length() - 1 && input[i + 1] == '\n') {
 				// jedna se o CR+LF
+				contains_LF = true;
 				i++;
 			}
 			std::string nStr = input.substr(nextStart, i - nextStart + 1);
@@ -71,6 +73,25 @@ std::vector<std::string> GetAllLinesWithEnds(std::string& input)
 	vStr.push_back(nStr);
 
 	return vStr;
+}
+
+std::string JoinLines(const std::vector<std::string>& lines)
+{
+	std::string result;
+	result.reserve(lines.size() * 80);
+	for (const std::string& line : lines) {
+		result += line;
+	}
+	return result;
+}
+
+size_t GetTotalLength(const std::vector<std::string>& lines)
+{
+	size_t count = 0;
+	for (const std::string& line : lines) {
+		count += line.length();
+	}
+	return count;
 }
 
 /// odstrani znaky na konci retezce
@@ -260,18 +281,3 @@ std::vector<std::string> SplitString(const std::string& input, char delimiter)
 	std::string nStr = input.substr(nextStart, input.length() - nextStart);
 	return vStr;
 }
-
-//pstring GetDLine(void* Buf, WORD L, char C, WORD I) // I = 1 .. N
-//{
-//	std::string input((const char*)Buf, L);
-//	std::vector<std::string> lines;
-//	size_t pos = 0;
-//	while ((pos = input.find(C)) != std::string::npos) {
-//		std::string token = input.substr(0, pos);
-//		lines.push_back(token);
-//		input.erase(0, pos + 1); // smazani vc. oddelovace
-//	}
-//	lines.push_back(input); // pridame zbyvajici cast retezce
-//	if (I <= lines.size()) return lines[I - 1]; // Pascal cislovani od 1
-//	return "";
-//}

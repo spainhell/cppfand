@@ -5,7 +5,6 @@
 
 #include "Blocks.h"
 #include "../Core/base.h"
-
 #include "../Common/pstring.h"
 
 class FrmlElem;
@@ -13,6 +12,8 @@ class MergeReportBase;
 class Instr;
 struct EdExitD;
 class Instr_setedittxt;
+
+typedef std::string ColorOrd;
 
 struct MsgStr
 {
@@ -93,6 +94,7 @@ const WORD _KF_ = 0x0B06;
 const BYTE CountC = 7;
 
 class TextEditorEvents;
+class TextEditorScreen;
 
 class TextEditor
 {
@@ -115,17 +117,17 @@ public:
 	void SetEditTxt(Instr_setedittxt* PD);
 	void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg,
 	                short& pRightMarg);
-	void ViewHelpText(std::string& text, size_t& text_pos);
+	void ViewHelpText(const std::string& text, size_t& text_pos);
 
 	void InitTxtEditor();
 	void InitHelpViewEditor();
 
-	char* _textT = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
-	size_t _lenT = 0;                     // delka editovaneho textu;
 	uint8_t ColKey[CountC + 1]{ 0 };
 	std::string InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
 
 private:
+
+	std::vector<std::string> _lines;
 
 	TextEditorEvents* _events = nullptr;
 	TextEditorScreen* _screen = nullptr;
@@ -143,6 +145,7 @@ private:
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	WORD SetInd(WORD Ind, WORD Pos);
 	void SetBlockBound(int& BBPos, int& EBPos);
+	void ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p);
 	bool BlockHandle(int& fs, HANDLE W1, char Oper);
 	void BlockCopyMove(char Oper, void* P1, LongStr* sp);
 	bool BlockGrasp(char Oper, void* P1, LongStr* sp);
@@ -153,12 +156,11 @@ private:
 	void HelpLU(char dir);
 	void HelpRD(char dir);
 	void TestUpdFile();
-	void WrEndT();
+	//void WrEndT();
 	void KodLine();
 	void DekodLine(size_t lineStartIndex);
 	void FrameStep(BYTE& odir, PressedKey EvKeyC);
 	void Format(WORD& i, int First, int Last, WORD Posit, bool Rep);
-	void SetPart(int Idx);
 	void NextLine(bool WrScr);
 	void NewLine(char Mode);
 	WORD SetPredI();
@@ -183,20 +185,19 @@ private:
 	void WrEndL(bool Hard, int Row);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 	size_t WordNo(size_t I);
-	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
+	void Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void UpdScreen();
-	void PredPart();
 	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
 	size_t GetLine(size_t idx);
 	WORD CurrentLineFirstCharIndex(WORD index);
 	void NextPartDek();
+	ColorOrd SetColorOrd(size_t first, size_t last);
 	void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last);
 	bool FindString(WORD& I, WORD Len);
 	bool ReadTextFile();
 	//void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count);
 	void UpdateFile();
 	bool WordExist();
-	std::vector<std::string> GetLinesFromT();
 	void MoveIdx(int dir);
 	bool TestLastPos(WORD F, WORD T);
 	void DelChar();

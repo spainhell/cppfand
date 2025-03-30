@@ -4,10 +4,10 @@
 #include <memory>
 
 #include "TextEditorEvents.h"
+#include "TextEditorScreen.h"
 #include "../DataEditor/DataEditor.h"
 #include "../Core/Compiler.h"
 #include "EditorHelp.h"
-#include "TextEditorScreen.h"
 #include "../Drivers/constants.h"
 #include "../Core/GlobalVariables.h"
 #include "../Drivers/keyboard.h"
@@ -108,45 +108,6 @@ int AbsLenT = 0;
 //bool ChangePart;
 bool UpdPHead;
 
-std::vector<std::string> TextEditor::GetLinesFromT()
-{
-	// create std::string from _textT
-	std::string text(_textT, _lenT);
-	return GetAllLinesWithEnds(text);
-}
-
-char* GetTfromLines(std::vector<std::string>& lines, size_t& len)
-{
-	char* output = nullptr;
-	len = 0;
-
-	if (lines.empty()) {
-		// do nothing
-	}
-	else {
-		// calculate total length
-		for (auto& line : lines) {
-			len += line.length();
-		}
-
-		// generate string
-		std::string txt;
-		txt.reserve(len);
-		for (size_t i = 0; i < lines.size(); i++) {
-			txt += lines[i];
-		}
-
-		if (len != txt.length()) {
-			throw std::exception("Bad string size - OldEditor.cpp, method GetT");
-		}
-		// create c_str
-		output = new char[len + 1];
-		memcpy(output, txt.c_str(), len);
-		output[len] = '\0';
-	}
-	return output;
-}
-
 void MyWrLLMsg(std::string s)
 {
 	if (HandleError == 4) s = "";
@@ -192,17 +153,18 @@ void HMsgExit(std::string s)
 /// <returns>index of found character, input text length if not found</returns>
 size_t TextEditor::FindCharPosition(char c, size_t idx_from, size_t n)
 {
+	std::string txt = JoinLines(_lines);
 	size_t result = std::string::npos; // as not found
 	for (size_t j = 0; j < n; j++) {
-		for (size_t i = idx_from; i < _lenT; i++) {
-			if (_textT[i] == c) {
+		for (size_t i = idx_from; i < txt.length(); i++) {
+			if (txt[i] == c) {
 				result = i;
 				break;
 			}
 		}
 		idx_from = result + 1;
 	}
-	return result == std::string::npos ? _lenT : result;
+	return result == std::string::npos ? txt.length() : result;
 }
 
 bool TextEditor::TestOptStr(char c)
@@ -245,6 +207,7 @@ bool TextEditor::FindString(WORD& I, WORD Len)
 	if (!FindStr.empty())
 	{
 	label1:
+		std::string txt = JoinLines(_lines);
 		if (TestOptStr('~')) i1 = FindOrdChar(c, I, Len);
 		else if (TestOptStr('u')) i1 = FindUpcChar(c, I, Len);
 		else {
@@ -255,7 +218,7 @@ bool TextEditor::FindString(WORD& I, WORD Len)
 			return result;
 		}
 		s2 = FindStr;
-		Move(&_textT[I], &s1[1], FindStr.length());
+		//Move(&_textT[I], &s1[1], FindStr.length());
 		s1[0] = FindStr.length();
 		if (TestOptStr('~')) {
 			if (!SEquOrder(s1, s2)) {
@@ -274,7 +237,7 @@ bool TextEditor::FindString(WORD& I, WORD Len)
 			goto label1;
 		}
 		if (TestOptStr('w')) {
-			if (I > 1 && !Separ.count(_textT[I - 1]) || !Separ.count(_textT[I + FindStr.length()])) {
+			if (I > 1 && !Separ.count(txt[I - 1]) || !Separ.count(txt[I + FindStr.length()])) {
 				I++;
 				goto label1;
 			}
@@ -293,7 +256,7 @@ bool TextEditor::FindString(WORD& I, WORD Len)
  * \param last last index 0 .. N
  * \return index of control char or string::npos if not found
  */
-size_t FindCtrlChar(char* text, size_t textLen, size_t first, size_t last)
+size_t FindCtrlChar(const char* text, size_t textLen, size_t first, size_t last)
 {
 	if (last > textLen - 1) {
 		// koncovy index je za textem
@@ -340,21 +303,25 @@ bool TextEditor::ReadTextFile()
 {
 	// kompletne prepsano -> vycte cely soubor do promenne _textT
 
+	_lines.clear();
+
 	auto fileSize = GetFileSize(TxtFH, NULL);
-	_textT = new char[fileSize];
+	char* _textT = new char[fileSize];
 
 	DWORD dwBytesRead;
 	bool readResult = ReadFile(TxtFH, _textT, fileSize, &dwBytesRead, NULL);
 	if (!readResult) {
-		_lenT = 0;
 		HandleError = GetLastError();
 		SetMsgPar(TxtPath);
 		WrLLF10Msg(700 + HandleError);
 	}
 	else {
-		_lenT = fileSize;
+		std::string txt(_textT, fileSize);
+		_lines = GetAllLinesWithEnds(txt, HardL);
 		HandleError = 0;
 	}
+
+	delete[] _textT; _textT = nullptr;
 
 	return false; // return ChangePart
 }
@@ -445,6 +412,7 @@ void TextEditor::UpdateFile()
 	//	SetMsgPar(TxtPath);
 	//	WrLLF10Msg(700 + HandleError);
 	//}
+	std::string txt = JoinLines(_lines);
 
 	DWORD seekResult = SetFilePointer(TxtFH, 0, NULL, FILE_BEGIN);
 	if (seekResult == INVALID_SET_FILE_POINTER) {
@@ -453,7 +421,7 @@ void TextEditor::UpdateFile()
 		WrLLF10Msg(700 + HandleError);
 		return;
 	}
-	bool writeFile = WriteFile(TxtFH, _textT, _lenT, NULL, NULL);
+	bool writeFile = WriteFile(TxtFH, txt.c_str(), txt.length(), NULL, NULL);
 	if (!writeFile) {
 		HandleError = GetLastError();
 		SetMsgPar(TxtPath);
@@ -733,25 +701,25 @@ void TextEditor::TestUpdFile()
 	}
 }
 
-void TextEditor::WrEndT()
-{
-	// vytvori nove pole o delce puvodniho + 1,
-	// puvodni pole se do nej prekopiruje a na konec se vlozi '\0'
-	if (_lenT == 0) {
-		delete[] _textT;
-		_textT = new char[2]; // udelame pole o delce 2 -> mezera zakoncena \0
-		_textT[0] = ' ';
-		_textT[1] = '\0';
-		_lenT = 1;
-	}
-	else {
-		char* T2 = new char[_lenT + 1]; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
-		T2[_lenT] = '\0';
-		memcpy(T2, _textT, _lenT);
-		delete[] _textT;
-		_textT = T2;
-	}
-}
+//void TextEditor::WrEndT()
+//{
+//	// vytvori nove pole o delce puvodniho + 1,
+//	// puvodni pole se do nej prekopiruje a na konec se vlozi '\0'
+//	if (_lenT == 0) {
+//		delete[] _textT;
+//		_textT = new char[2]; // udelame pole o delce 2 -> mezera zakoncena \0
+//		_textT[0] = ' ';
+//		_textT[1] = '\0';
+//		_lenT = 1;
+//	}
+//	else {
+//		char* T2 = new char[_lenT + 1]; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
+//		T2[_lenT] = '\0';
+//		memcpy(T2, _textT, _lenT);
+//		delete[] _textT;
+//		_textT = T2;
+//	}
+//}
 
 void TextEditor::MoveIdx(int dir)
 {
@@ -764,23 +732,16 @@ void TextEditor::MoveIdx(int dir)
 	ScreenFirstLineNr += ml; // {****Edit***}
 }
 
-void TextEditor::PredPart()
-{
-	TestUpdFile();
-	//ChangePart = RdPredPart();
-	MoveIdx(-1);
-	WrEndT();
-}
-
 /// Counts the number of occurrences of a character;
 /// 'first' & 'last' are 0 .. N
 size_t TextEditor::CountChar(char C, size_t first, size_t last)
 {
+	std::string txt = JoinLines(_lines);
 	size_t count = 0;
-	if (first < _lenT) {
-		if (last >= _lenT) last = _lenT - 1;
+	if (first < txt.length()) {
+		if (last >= txt.length()) last = txt.length() - 1;
 		for (size_t i = first; i < last; i++) {
-			if (_textT[i] == C) count++;
+			if (txt[i] == C) count++;
 		}
 	}
 	else {
@@ -802,15 +763,16 @@ size_t TextEditor::GetLine(size_t idx)
 // vraci index 1. znaku na aktualnim radku (index = 0 .. N)
 WORD TextEditor::CurrentLineFirstCharIndex(WORD index)
 {
+	std::string txt = JoinLines(_lines);
 	WORD result = 0;
 	while (index > 0) {
-		if (_textT[index] == __CR) {
+		if (txt[index] == __CR) {
 			// jsme na '\r' -> prazdny radek
 			result = index;
 			break;
 		}
 
-		if (_textT[index - 1] == __CR || _textT[index - 1] == __LF) {
+		if (txt[index - 1] == __CR || txt[index - 1] == __LF) {
 			// predchozi znak je '\r' nebo '\n' -> jsme na 1. znaku radku
 			//index++;
 			//if (_textT[index] == _LF) index++;
@@ -829,7 +791,9 @@ void TextEditor::DekodLine(size_t lineStartIndex)
 	HardL = true;
 	NextLineStartIndex = lineStartIndex + lineLen + 1; // 1 = CR
 
-	if ((NextLineStartIndex < _lenT) && (_textT[NextLineStartIndex] == __LF)) {
+	std::string txt = JoinLines(_lines);
+
+	if ((NextLineStartIndex < txt.length()) && (txt[NextLineStartIndex] == __LF)) {
 		NextLineStartIndex++;
 	}
 	else {
@@ -845,7 +809,7 @@ void TextEditor::DekodLine(size_t lineStartIndex)
 				//TestLenText(&_textT, _lenT, LL, (int)LL + 1);
 				UpdatT = true;
 				//LL -= Part.MovI;
-				_textT[LL] = __CR;
+				txt[LL] = __CR;
 				NextLineStartIndex = lineStartIndex + lineLen + 1;
 			}
 		}
@@ -857,7 +821,7 @@ void TextEditor::DekodLine(size_t lineStartIndex)
 	FillChar(Arr, LineMaxSize, ' ');
 	if (lineLen > 0) {
 		// zkopiruj radek do Arr
-		memcpy(Arr, &_textT[lineStartIndex], lineLen);
+		memcpy(Arr, &txt[lineStartIndex], lineLen);
 	}
 
 	UpdatedL = false;
@@ -888,9 +852,11 @@ size_t TextEditor::GetLineNumber(size_t idx)
 
 WORD TextEditor::SetInd(WORD Ind, WORD Pos) // { line, pozice --> index}
 {
+	std::string txt = JoinLines(_lines);
+
 	WORD P = Ind == 0 ? 0 : Ind - 1;
-	if (Ind < _lenT) {
-		while ((Ind - P < Pos) && (_textT[Ind - 1] != __CR)) { Ind++; }
+	if (Ind < txt.length()) {
+		while ((Ind - P < Pos) && (txt[Ind - 1] != __CR)) { Ind++; }
 	}
 	return Ind;
 }
@@ -969,6 +935,8 @@ size_t TextEditor::GetLineStartIndex(size_t lineNr)
 
 	size_t result;
 
+	std::string txt = JoinLines(_lines);
+
 	if (lineNr <= 1) {
 		result = 0;
 	}
@@ -976,33 +944,18 @@ size_t TextEditor::GetLineStartIndex(size_t lineNr)
 		// hledame pozici za n-tym vyskytem _CR
 		size_t pos = FindCharPosition(__CR, 0, lineNr - 1) + 1;
 		// pokud je na nalezene pozici _LF, jdi o 1 dal
-		if (pos < _lenT && _textT[pos] == __LF) {
+		if (pos < txt.length() && txt[pos] == __LF) {
 			pos++;
 		}
 		result = pos;
 	}
 
-	if (_lenT == result) {
+	if (txt.length() == result) {
 		// jsme na konci textu
-		TextLineNr = GetLineNumber(_lenT);
+		TextLineNr = GetLineNumber(txt.length());
 	}
 
 	return result;
-}
-
-void TextEditor::SetPart(int Idx)
-{
-	//if ((Idx > Part.PosP) && (Idx < Part.PosP + _lenT) || (TypeT != FileT)) {
-	//	return;
-	//}
-	TestUpdFile();
-	delete[] _textT; _textT = nullptr;
-	ReadTextFile();
-	//while ((Idx > Part.PosP + Part.LenP) && !AllRd)
-	//{
-	//	ChangePart = RdNextPart();
-	//}
-	WrEndT();
 }
 
 void SetPartLine(int Ln)
@@ -1061,20 +1014,22 @@ bool ModPage(int RLine)
  * \param last index of the last char 0 .. n
  * \return ColorOrd string with colors
  */
-ColorOrd SetColorOrd(TextEditor* editor, size_t first, size_t last)
+ColorOrd TextEditor::SetColorOrd(size_t first, size_t last)
 {
+	std::string txt = JoinLines(_lines);
+
 	ColorOrd co;
-	size_t index = FindCtrlChar(editor->_textT, editor->_lenT, first, last);
+	size_t index = FindCtrlChar(txt.c_str(), txt.length(), first, last);
 	// if not found -> index = std::string::npos
 	while (index < last) {
-		size_t pp = co.find(editor->_textT[index]);
+		size_t pp = co.find(txt[index]);
 		if (pp != std::string::npos) {
 			co.erase(pp);
 		}
 		else {
-			co += editor->_textT[index];
+			co += txt[index];
 		}
-		index = FindCtrlChar(editor->_textT, editor->_lenT, index + 1, last);
+		index = FindCtrlChar(txt.c_str(), txt.length(), index + 1, last);
 	}
 	return co;
 }
@@ -1102,7 +1057,7 @@ void TextEditor::UpdScreen()
 
 		if (HelpScroll) {
 			//ColScr = Part.ColorP;
-			ColScr = SetColorOrd(this, 0, ScreenIndex);
+			ColScr = SetColorOrd(0, ScreenIndex);
 		}
 	}
 
@@ -1120,7 +1075,7 @@ void TextEditor::UpdScreen()
 	}
 	else if (Mode == HelpM) {
 		//co1 = Part.ColorP;
-		co1 = SetColorOrd(this, 0, textIndex);
+		co1 = SetColorOrd(0, textIndex);
 		_screen->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 1, co1, ColKey, TxtColor, InsPage);
 	}
 	else {
@@ -1138,8 +1093,10 @@ void TextEditor::UpdScreen()
 	InsPage = false;
 	ColorOrd co2 = ColScr;
 
+	std::string txt = JoinLines(_lines);
+
 	if (bScroll) {
-		while (_textT[index] == 0x0C) {
+		while (txt[index] == 0x0C) {
 			index++;
 		}
 	}
@@ -1148,9 +1105,9 @@ void TextEditor::UpdScreen()
 		// TODO: musi to tady byt?
 		// if (MyTestEvent()) return; // {tisk celeho okna}
 
-		if (bScroll && (index < _lenT)) {
+		if (bScroll && (index < txt.length())) {
 			if ((InsPg && (ModPage(r - rr + RScrL - 1))) || InsPage) {
-				_screen->EditWrline(PgStr.c_str(), _lenT, r, ColKey, TxtColor, BlockColor);
+				_screen->EditWrline(PgStr.c_str(), txt.length(), r, ColKey, TxtColor, BlockColor);
 				WrEndL(false, r);
 				if (InsPage) rr++;
 				InsPage = false;
@@ -1162,13 +1119,13 @@ void TextEditor::UpdScreen()
 			co2 = co1;
 			goto label1;
 		}
-		if (index < _lenT) {
+		if (index < txt.length()) {
 			// index je mensi nez delka textu -> porad je co tisknout
 			if (HelpScroll) {
-				_screen->ScrollWrline(&_textT[index], columnOffset, r, co2, ColKey, TxtColor, InsPage);
+				_screen->ScrollWrline(&txt[index], columnOffset, r, co2, ColKey, TxtColor, InsPage);
 			}
 			else {
-				_screen->EditWrline(&_textT[index], _lenT, r, ColKey, TxtColor, BlockColor);
+				_screen->EditWrline(&txt[index], txt.length(), r, ColKey, TxtColor, BlockColor);
 			}
 			if (InsPage) {
 				// najde konec radku, potrebujeme 1. znak dalsiho radku
@@ -1178,8 +1135,8 @@ void TextEditor::UpdScreen()
 				// najde konec radku, potrebujeme 1. znak dalsiho radku
 				index = FindCharPosition(__CR, index) + 1;
 			}
-			WrEndL((index < _lenT) && (_textT[index] == __LF), r);
-			if (index < _lenT && _textT[index] == __LF) {
+			WrEndL((index < txt.length()) && (txt[index] == __LF), r);
+			if (index < txt.length() && txt[index] == __LF) {
 				index++;
 			}
 		}
@@ -1190,7 +1147,7 @@ void TextEditor::UpdScreen()
 
 	label1:
 		r++;
-		if (index < _lenT && bScroll && (_textT[index] == 0x0C)) {
+		if (index < txt.length() && bScroll && (txt[index] == 0x0C)) {
 			InsPage = InsPg;
 			index++;
 		}
@@ -1249,10 +1206,7 @@ void TextEditor::KodLine()
 	size_t ArrLineLen = GetArrLineLength(); // Arr bez koncovych mezer
 	std::string ArrLine = std::string(Arr, ArrLineLen);
 
-	// create vector of strings from _textT
-	std::vector<std::string>allLines = GetLinesFromT();
-
-	if (TextLineNr == allLines.size()) {
+	if (TextLineNr == _lines.size()) {
 		// posledni radek (nepridavame konec radku)
 	}
 	else {
@@ -1264,15 +1218,10 @@ void TextEditor::KodLine()
 		}
 	}
 
-	allLines[TextLineNr - 1] = ArrLine;
+	_lines[TextLineNr - 1] = ArrLine;
 
 	//TestLenText(&_textT, _lenT, NextLineStartIndex, textIndex + LP);
 	UpdatT = true;
-
-	// create _textT back from vector
-	char* newT = GetTfromLines(allLines, _lenT);
-	delete[] _textT;
-	_textT = newT;
 
 	NextLineStartIndex = textIndex + ArrLine.length();
 	//LP = NextLineStartIndex - 1;
@@ -1311,7 +1260,7 @@ void TextEditor::ScrollPress()
 			PredScLn = blocks->LineAbs(TextLineNr);
 			PredScPos = positionOnActualLine;
 			if (UpdPHead) {
-				SetPart(1);
+				//SetPart(1);
 				SimplePrintHead();
 				DekFindLine(MaxL(L1, PHNum + 1));
 			}
@@ -1324,7 +1273,7 @@ void TextEditor::ScrollPress()
 			columnOffset = Column(BPos);
 			Colu = Column(positionOnActualLine);
 			//ColScr = Part.ColorP;
-			ColScr = SetColorOrd(this, 0, ScreenIndex);
+			ColScr = SetColorOrd(0, ScreenIndex);
 		}
 		else {
 			if ((PredScLn < L1) || (PredScLn >= L1 + PageS)) PredScLn = L1;
@@ -1362,8 +1311,9 @@ void TextEditor::DisplLL(WORD Flags)
 
 void TextEditor::RollNext()
 {
-	//if ((NextLineStartIndex >= _lenT) && !AllRd) NextPartDek();
-	if (NextLineStartIndex <= _lenT) {
+	std::string txt = JoinLines(_lines);
+
+	if (NextLineStartIndex <= txt.length()) {
 		screen.GotoXY(1, 1);
 		//MyDelLine();
 		ScreenFirstLineNr++;
@@ -1379,7 +1329,8 @@ void TextEditor::RollNext()
 
 void TextEditor::RollPred()
 {
-	//if ((ScreenFirstLineNr == 1) && (Part.PosP > 0)) PredPart();
+	std::string txt = JoinLines(_lines);
+
 	if (ScreenFirstLineNr > 1) {
 		screen.GotoXY(1, 1);
 		//MyInsLine();
@@ -1388,7 +1339,7 @@ void TextEditor::RollPred()
 		if (TextLineNr == ScreenFirstLineNr + PageS) {
 			TestKod();
 			TextLineNr--;
-			if (_textT[textIndex - 1] == __LF) { CopyCurrentLineToArr(textIndex - 2); }
+			if (txt[textIndex - 1] == __LF) { CopyCurrentLineToArr(textIndex - 2); }
 			else { CopyCurrentLineToArr(textIndex - 1); }
 		}
 	}
@@ -1452,8 +1403,9 @@ void TextEditor::PreviousLine()
 void TextEditor::NextLine(bool WrScr)
 {
 	TestKod();
-	//if ((NextLineStartIndex >= _lenT) && !AllRd) NextPartDek();
-	if (NextLineStartIndex < _lenT) {
+	std::string txt = JoinLines(_lines);
+
+	if (NextLineStartIndex < txt.length()) {
 		textIndex = NextLineStartIndex;
 		DekodLine(textIndex);
 		TextLineNr++;
@@ -1725,9 +1677,8 @@ void TextEditor::FillBlank()
 	KodLine();
 	WORD I = GetArrLineLength();
 	if (positionOnActualLine > I + 1) {
-		//TestLenText(&_textT, _lenT, textIndex + I, textIndex + positionOnActualLine - 1);
 		UpdatT = true;
-		memset(&_textT[textIndex + I], ' ', positionOnActualLine - I - 1);
+		// TODO: memset(&_textT[textIndex + I], ' ', positionOnActualLine - I - 1);
 		NextLineStartIndex += positionOnActualLine - I - 1;
 	}
 }
@@ -1735,7 +1686,7 @@ void TextEditor::FillBlank()
 void TextEditor::DeleteLine()
 {
 	FillBlank();
-	if (_lenT == 0) return;
+	if (_lines.empty()) return;
 	if (blocks->LineAbs(TextLineNr) + 1 <= blocks->BegBLn) {
 		blocks->BegBLn--;
 		if ((blocks->LineAbs(TextLineNr) == blocks->BegBLn) && (TypeB == TextBlock))
@@ -1746,32 +1697,29 @@ void TextEditor::DeleteLine()
 		if ((blocks->LineAbs(TextLineNr) == blocks->EndBLn) && (TypeB == TextBlock))
 			blocks->EndBPos += GetArrLineLength();
 	}
-	//if ((NextLineStartIndex >= _lenT) && !AllRd) NextPartDek();
-	if (NextLineStartIndex <= _lenT) {
-		auto lines = GetLinesFromT();
-
+	if (TextLineNr < _lines.size()) {
+		// the line isn't the last one
 		size_t EoL_length = HardL ? 2 : 1;
 
 		if (Event.Pressed.Char == '\b') {
 			// if BACKSPACE was pressed we will delete line below cursor (which was already moved)
 			if (TextLineNr < 1) return;
-			lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, lines[TextLineNr - 1].length() - EoL_length) + lines[TextLineNr];
-			lines.erase(lines.begin() + TextLineNr);
+			_lines[TextLineNr - 1] = _lines[TextLineNr - 1].substr(0, _lines[TextLineNr - 1].length() - EoL_length) + _lines[TextLineNr];
+			_lines.erase(_lines.begin() + TextLineNr);
 		}
 		else {
-			if (TextLineNr < 1 || TextLineNr == lines.size()) {
+			if (TextLineNr < 1 || TextLineNr == _lines.size()) {
 				// cursor is on the last line, there is nothing more to move
 				return;
 			}
 			else {
-				lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, lines[TextLineNr - 1].length() - EoL_length) + lines[TextLineNr];
-				lines.erase(lines.begin() + TextLineNr);
+				_lines[TextLineNr - 1] = _lines[TextLineNr - 1].substr(0, _lines[TextLineNr - 1].length() - EoL_length) + _lines[TextLineNr];
+				_lines.erase(_lines.begin() + TextLineNr);
 			}
 		}
-
-		auto newT = GetTfromLines(lines, _lenT);
-		delete[] _textT;
-		_textT = newT;
+	}
+	else {
+		// the line is the last one -> cannot be deleted
 	}
 	DekodLine(textIndex);
 }
@@ -1780,26 +1728,19 @@ void TextEditor::NewLine(char Mode)
 {
 	KodLine();
 	WORD LP = textIndex + MinI(GetArrLineLength(), positionOnActualLine - 1);
-	//NullChangePart();
 
 	std::string EoL = HardL ? "\r\n" : "\r";
 
-	auto lines = GetLinesFromT();
-	lines.insert(lines.begin() + TextLineNr, "");
+	_lines.insert(_lines.begin() + TextLineNr, "");
 
 	//TestLenText(&_textT, _lenT, LP, LP + 2);
 	UpdatT = true;
 
 	// vse od aktualni pozice zkopirujeme na dalsi radek (nove vytvoreny)
-	lines[TextLineNr] = lines[TextLineNr - 1].substr(positionOnActualLine - 1);
+	_lines[TextLineNr] = _lines[TextLineNr - 1].substr(positionOnActualLine - 1);
 	// na puvodnim radku zustane vse pred pozici kurzoru a pridame ukonceni radku
-	lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, positionOnActualLine - 1) + EoL;
+	_lines[TextLineNr - 1] = _lines[TextLineNr - 1].substr(0, positionOnActualLine - 1) + EoL;
 
-	char* newT = GetTfromLines(lines, _lenT);
-	delete[] _textT;
-	_textT = newT;
-
-	//LP -= Part.MovI;
 	if (blocks->LineAbs(TextLineNr) <= blocks->BegBLn) {
 		if (blocks->LineAbs(TextLineNr) < blocks->BegBLn) {
 			blocks->BegBLn++;
@@ -1823,15 +1764,26 @@ void TextEditor::NewLine(char Mode)
 		TextLineNr++;
 		textIndex = LP + 1;
 	}
+
 	DekodLine(textIndex);
 }
 
 WORD TextEditor::SetPredI()
 {
-	//if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
-	if (textIndex <= 1) return textIndex;
-	else if (_textT[textIndex - 1] == __LF) return CurrentLineFirstCharIndex(textIndex - 2);
-	else return CurrentLineFirstCharIndex(textIndex - 1);
+	WORD result;
+	std::string txt = JoinLines(_lines);
+
+	if (textIndex <= 1) {
+		result = textIndex;
+	}
+	else if (txt[textIndex - 1] == __LF) {
+		result = CurrentLineFirstCharIndex(textIndex - 2);
+	}
+	else {
+		result = CurrentLineFirstCharIndex(textIndex - 1);
+	}
+
+	return result;
 }
 
 void TextEditor::WrCharE(char Ch)
@@ -1862,30 +1814,32 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 	WORD rp, nb, nw, n;
 	WORD RelPos;
 
-	SetPart(First);
+	//SetPart(First);
 	WORD fst = First; // -Part.PosP;
 	int llst = Last; // -Part.PosP;
 
-	if (llst > _lenT) lst = _lenT;
+	std::string txt = JoinLines(_lines);
+
+	if (llst > txt.length()) lst = txt.length();
 	else lst = llst;
 
 	do {
-		if (_lenT > 0x400) ii1 = _lenT - 0x400;
+		if (txt.length() > 0x400) ii1 = txt.length() - 0x400;
 		else ii1 = 0;
 
 		i = fst; ii1 = i;
-		if ((i < 2) || (_textT[i - 1] == __LF)) {
-			while (_textT[ii1] == ' ') ii1++; Posit = MaxW(Posit, ii1 - i + 1);
+		if ((i < 2) || (txt[i - 1] == __LF)) {
+			while (txt[ii1] == ' ') ii1++; Posit = MaxW(Posit, ii1 - i + 1);
 		}
 		ii1 = i; RelPos = 1;
 		if (Posit > 1) {
-			Move(&_textT[i], A, Posit);
+			Move(&txt[i], A, Posit);
 			for (ii = 1; ii <= Posit - 1; i++) {
-				if (CtrlKey.find(_textT[i]) == std::string::npos) RelPos++;
-				if (_textT[i] == __CR) A[ii] = ' ';
+				if (CtrlKey.find(txt[i]) == std::string::npos) RelPos++;
+				if (txt[i] == __CR) A[ii] = ' ';
 				else i++;
 			}
-			if ((_textT[i] == ' ') && (A[Posit - 1] != ' ')) {
+			if ((txt[i] == ' ') && (A[Posit - 1] != ' ')) {
 				Posit++; RelPos++;
 			}
 		}
@@ -1900,26 +1854,26 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 				else while (RelPos < LeftMarg)
 				{
 					Posit++;
-					if (CtrlKey.find(_textT[i]) == std::string::npos) RelPos++;
-					if (_textT[i] != __CR) i++;
-					if (_textT[i] == __CR) A[Posit] = ' ';
-					else A[Posit] = _textT[i];
+					if (CtrlKey.find(txt[i]) == std::string::npos) RelPos++;
+					if (txt[i] != __CR) i++;
+					if (txt[i] == __CR) A[Posit] = ' ';
+					else A[Posit] = txt[i];
 				}
 			while ((RelPos <= RightMarg) && (i < lst)) {
-				if ((_textT[i] == __CR) || (_textT[i] == ' ')) {
-					while (((_textT[i] == __CR) || (_textT[i] == ' ')) && (i < lst))
-						if (_textT[i + 1] == __LF) lst = i;
-						else { _textT[i] = ' '; i++; }
+				if ((txt[i] == __CR) || (txt[i] == ' ')) {
+					while (((txt[i] == __CR) || (txt[i] == ' ')) && (i < lst))
+						if (txt[i + 1] == __LF) lst = i;
+						else { txt[i] = ' '; i++; }
 					if (!bBool) { nw++; if (i < lst) i--; };
 				}
 				if (i < lst) {
 					bBool = false;
-					A[Posit] = _textT[i];
+					A[Posit] = txt[i];
 					if (CtrlKey.find(A[Posit]) == std::string::npos) RelPos++;
 					i++; Posit++;
 				}
 			}
-			if ((i < lst) && (_textT[i] != ' ') && (_textT[i] != __CR)) {
+			if ((i < lst) && (txt[i] != ' ') && (txt[i] != __CR)) {
 				ii = Posit - 1;
 				if (CtrlKey.find(A[ii]) != std::string::npos) ii--;
 				rp = RelPos; RelPos--;
@@ -1933,15 +1887,15 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 				}
 				else
 				{
-					while ((_textT[i] != ' ') && (_textT[i] != __CR) && (Posit < LineMaxSize)) {
-						A[Posit] = _textT[i]; i++; Posit++;
+					while ((txt[i] != ' ') && (txt[i] != __CR) && (Posit < LineMaxSize)) {
+						A[Posit] = txt[i]; i++; Posit++;
 					}
-					while (((_textT[i] == __CR) || (_textT[i] == ' ')) && (i < lst)) {
-						if (_textT[i + 1] == __LF) {
+					while (((txt[i] == __CR) || (txt[i] == ' ')) && (i < lst)) {
+						if (txt[i + 1] == __LF) {
 							lst = i;
 						}
 						else {
-							_textT[i] = ' ';
+							txt[i] = ' ';
 							i++;
 						}
 					}
@@ -1967,17 +1921,18 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 			if (i < lst) A[Posit] = __CR; else Posit--;
 			//TestLenText(&_textT, _lenT, i, int(ii1) + Posit);
 			UpdatT = true;
-			if (Posit > 0) Move(A, &_textT[ii1], Posit);
+			if (Posit > 0) Move(A, &txt[ii1], Posit);
 			ii = ii1 + Posit - i; i = ii1 + Posit; lst += ii; llst += ii;
 			Posit = 1; RelPos = 1; ii1 = i;
 		}
 		if (Rep)
 		{
-			while ((_textT[i] == __CR) || (_textT[i] == __LF)) i++; fst = i; Rep = i < llst;
-			if (llst > _lenT) lst = _lenT; else lst = llst;
+			while ((txt[i] == __CR) || (txt[i] == __LF)) i++; fst = i; Rep = i < llst;
+			if (llst > txt.length()) lst = txt.length(); else lst = llst;
 		}
 	} while (Rep);
 
+	_lines = GetAllLinesWithEnds(txt, HardL);
 	blocks->BegBLn = 1; blocks->BegBPos = 1; blocks->EndBLn = 1; blocks->EndBPos = 1; TypeB = TextBlock;
 }
 
@@ -2005,7 +1960,7 @@ void TextEditor::Calculate()
 	label1:
 		ww.PromptLL(114, txt, I, Del, true, true);
 		if (Event.Pressed.KeyCombination() == 'U') goto label0;
-		if (Event.Pressed.KeyCombination() == __ESC || txt.length() == 0) goto label3;
+		if (Event.Pressed.KeyCombination() == __ESC || txt.empty()) goto label3;
 		CalcTxt = txt;
 		if (Event.Pressed.KeyCombination() == __CTRL_F4 && Mode == TextM && !bScroll) {
 			if (txt.length() > LineMaxSize - GetArrLineLength()) {
@@ -2083,10 +2038,10 @@ void TextEditor::SetBlockBound(int& BBPos, int& EBPos)
 	BBPos = SetInd(nextLineIdx, blocks->BegBPos); // +Part.PosP;
 }
 
-void ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p)
+void TextEditor::ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p)
 {
 	//*co = Part.ColorP;
-	*co = SetColorOrd(editor, 0, I1 - 1);
+	*co = SetColorOrd(0, I1 - 1);
 	isPrintFile = false;
 	fs = co->length();
 	LenPrint += fs;
@@ -2135,14 +2090,16 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 		tb = TypeB;
 		TypeB = TextBlock;
 	}
-	else
-		if (!BlockExist()) { return false; }
+	else if (!BlockExist()) {
+		return false;
+	}
 	screen.CrsHide();
 	auto result = true;
 	if (TypeB == TextBlock) {
 		WORD I2;
+		std::string txt = JoinLines(_lines);
 		if (Oper == 'p') {
-			LL2 = AbsLenT + _lenT; // -Part.LenP;
+			LL2 = AbsLenT + txt.length(); // -Part.LenP;
 			LL1 = SetInd(textIndex, positionOnActualLine); // +Part.PosP;
 		}
 		else {
@@ -2153,7 +2110,7 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 			ResetPrint(this, Oper, fs, W1, LL2 - LL1, &co, I1, isPrintFile, p);
 		}
 		do {
-			if (LL2 > /*Part.PosP +*/ _lenT) I2 = _lenT;
+			if (LL2 > /*Part.PosP +*/ txt.length()) I2 = txt.length();
 			else I2 = LL2; // -Part.PosP;
 			switch (Oper) {
 			case 'Y': {
@@ -2163,30 +2120,30 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 				break;
 			}
 			case 'U': {
-				for (i = I1; i <= I2 - 1; i++) _textT[i] = UpcCharTab[_textT[i]];
+				for (i = I1; i <= I2 - 1; i++) txt[i] = UpcCharTab[txt[i]];
 				LL1 += I2 - I1;
 				break;
 			}
 			case 'L': {
-				for (i = I1; i <= I2 - 1; i++) LowCase(_textT[i]);
+				for (i = I1; i <= I2 - 1; i++) LowCase(txt[i]);
 				LL1 += I2 - I1;
 				break;
 			}
 			case 'p':
 			case 'P': {
 				if (isPrintFile) {
-					WriteH(W1, I2 - I1, &_textT[I1]);
+					WriteH(W1, I2 - I1, &txt[I1]);
 					HMsgExit(CPath);
 				}
 				else {
-					Move(&_textT[I1], &p[fs + 1], I2 - I1);
+					Move(&txt[I1], &p[fs + 1], I2 - I1);
 					fs += I2 - I1; LL1 += I2 - I1;
 				}
 				break;
 			}
 			case 'W': {
 				SeekH(W1, fs);
-				WriteH(W1, I2 - I1, &_textT[I1]);
+				WriteH(W1, I2 - I1, &txt[I1]);
 				HMsgExit(CPath);
 				fs += I2 - I1;
 				LL1 += I2 - I1;
@@ -2205,6 +2162,7 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 			//	//I1 -= Part.MovI;
 			//}
 		} while (LL1 != LL2);
+		_lines = GetAllLinesWithEnds(txt, HardL);
 	}
 	else              /*ColBlock*/
 	{
@@ -2254,7 +2212,8 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 	}
 	if (toupper(Oper) == 'P') {
 		if (isPrintFile) {
-			WriteH(W1, 0, _textT);/*truncH*/
+			std::string txt = JoinLines(_lines);
+			WriteH(W1, 0, txt.c_str());/*truncH*/
 			PrintFandWork();
 		}
 		else {
@@ -2265,7 +2224,9 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 	if (Oper == 'p') { TypeB = tb; }
 	if (Oper == 'Y') { PosDekFindLine(blocks->BegBLn, blocks->BegBPos, true); }
 	else {
-		if (Oper == 'p') SetPart(1);
+		if (Oper == 'p') {
+			//SetPart(1);
+		}
 		PosDekFindLine(Ln, Ps, true);
 	}
 	if (!bScroll) screen.CrsShow();
@@ -2302,7 +2263,7 @@ bool TextEditor::BlockGrasp(char Oper, void* P1, LongStr* sp)
 	MarkStore(P1);
 	sp = new LongStr(L + 2);
 	sp->LL = L;
-	Move(&_textT[I1], sp->A, L);
+	//Move(&_textT[I1], sp->A, L);
 	if (Oper == 'M') {
 		//TestLenText(&_textT, _lenT, I1 + L, I1);
 		UpdatT = true;
@@ -2334,7 +2295,7 @@ void TextEditor::BlockDrop(char Oper, void* P1, LongStr* sp)
 	//TestLenText(&_textT, _lenT, I, int(I) + I2);
 	UpdatT = true;
 	//if (ChangePart) I -= Part.MovI;
-	Move(sp->A, &_textT[I], I2);
+	//Move(sp->A, &_textT[I], I2);
 	ReleaseStore(&P1);
 	TextLineNr = GetLineNumber(I + I2);
 	blocks->EndBLn = /*Part.LineP +*/ TextLineNr;
@@ -2402,13 +2363,16 @@ void TextEditor::BlockCDrop(char Oper, void* P1, LongStr* sp)
 	do {
 		if (sp->A[I1] == __CR) {
 			InsertLine(i, I1, I3, ww, sp);
-			ww = blocks->BegBPos; blocks->EndBPos = MaxW(ww + i, blocks->EndBPos);
-			if ((NextLineStartIndex > _lenT) && ((TypeT != FileT) || true /*AllRd*/)) {
+			ww = blocks->BegBPos;
+			blocks->EndBPos = MaxW(ww + i, blocks->EndBPos);
+			std::string txt = JoinLines(_lines);
+			if ((NextLineStartIndex > txt.length()) && ((TypeT != FileT) || true /*AllRd*/)) {
 				//TestLenText(&_textT, _lenT, _lenT, (int)_lenT + 2);
 				UpdatT = true;
-				_textT[_lenT - 2] = __CR;
-				_textT[_lenT - 1] = __LF;
-				NextLineStartIndex = _lenT;
+				txt[txt.length() - 2] = __CR;
+				txt[txt.length() - 1] = __LF;
+				NextLineStartIndex = txt.length();
+				_lines = GetAllLinesWithEnds(txt, HardL);
 			}
 			NextLine(false);
 		}
@@ -2583,7 +2547,7 @@ void TextEditor::ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last)
 	UpdatT = true;
 	//ChangeP(fst);
 	//if (TestLastPos(positionOnActualLine, positionOnActualLine + r - f));
-	if (!ReplaceStr.empty()) Move(&ReplaceStr[1], &_textT[J - f], r);
+	//if (!ReplaceStr.empty()) Move(&ReplaceStr[1], &_textT[J - f], r);
 	J += r - f;
 	SetScreen(J, 0, 0);
 	lst += r - f;
@@ -2632,12 +2596,13 @@ void TextEditor::FindReplaceString(int First, int Last)
 		return;
 	}
 	FirstEvent = false;
-	SetPart(First);
-	WORD fst = First; // -Part.PosP;
+	//SetPart(First);
+	WORD fst = First;
 	//NullChangePart();
 label1:
-	if (Last > /*Part.PosP +*/ _lenT) lst = _lenT - 1;
-	else lst = Last; // -Part.PosP;
+	size_t len = GetTotalLength(_lines);
+	if (Last > len) lst = len - 1;
+	else lst = Last;
 	//ChangeP(fst);            /* Background muze volat NextPart */
 	if (FindString(fst, lst)) {
 		SetScreen(fst, 0, 0);
@@ -2676,7 +2641,9 @@ label1:
 
 size_t TextEditor::WordNo(size_t I)
 {
-	int32_t last_index = min(_lenT, I - 1);
+	size_t len = GetTotalLength(_lines);
+
+	int32_t last_index = min(len, I - 1);
 	size_t count = CountChar(0x13, 0, last_index); // ^S
 	return (count + 1) / 2;
 }
@@ -2703,28 +2670,32 @@ WORD TextEditor::WordNo2()
 
 void TextEditor::ClrWord()
 {
+	std::string txt = JoinLines(_lines);
+
 	size_t word_begin = FindCharPosition(0x11, 0);
-	if (word_begin < _lenT) {
-		_textT[word_begin] = 0x13;
+	if (word_begin < txt.length()) {
+		txt[word_begin] = 0x13;
 	}
 
 	size_t word_end = FindCharPosition(0x11, word_begin + 1);
-	if (word_end < _lenT) {
-		_textT[word_end] = 0x13;
+	if (word_end < txt.length()) {
+		txt[word_end] = 0x13;
 	}
 }
 
 bool TextEditor::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr)
 {
+	size_t len = GetTotalLength(_lines);
+
 	bool result = false;
 	if (i == 0) return result;
 	i = i * 2 - 1;
 
 	word_begin = FindCharPosition(0x13, 0, i);
-	if (word_begin >= _lenT) return result;
+	if (word_begin >= len) return result;
 
 	word_end = FindCharPosition(0x13, word_begin + 1);
-	if (word_end >= _lenT) return result;
+	if (word_end >= len) return result;
 
 	line_nr = GetLine(word_begin); // TODO: +1 ?;
 	result = true;
@@ -2733,8 +2704,10 @@ bool TextEditor::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& 
 
 void TextEditor::SetWord(size_t word_begin, size_t word_end)
 {
-	_textT[word_begin] = 0x11;
-	_textT[word_end] = 0x11;
+	std::string txt = JoinLines(_lines);
+	txt[word_begin] = 0x11;
+	txt[word_end] = 0x11;
+	_lines = GetAllLinesWithEnds(txt, HardL);
 	TextLineNr = GetLineNumber(word_begin);
 	word_line = TextLineNr;
 	positionOnActualLine = word_begin - textIndex + 1;
@@ -2856,13 +2829,13 @@ void CursorWord()
 	gc->LexWord = word;
 }
 
-void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
+void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 {
 	//blocks = new Blocks();
 	InitScr();
 	IsWrScreen = false;
-	WrEndT();
-	IndexT = min(IndexT, _lenT - 1);
+	//WrEndT();
+	IndexT = min(IndexT, text.length() - 1);
 	blocks->BegBLn = 1;
 	blocks->EndBLn = 1;
 	blocks->BegBPos = 1;
@@ -2874,14 +2847,7 @@ void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys
 	PredScPos = 1;
 	UpdPHead = false;
 	if (TypeT != FileT) {
-		//AllRd = true;
-		AbsLenT = _lenT - 1;
-		//Part.LineP = 0;
-		//Part.PosP = 0;
-		//Part.LenP = (WORD)AbsLenT;
-		//Part.ColorP = "";
-		//Part.UpdP = false;
-		//NullChangePart();
+		AbsLenT = text.length() - 1;
 		SimplePrintHead();
 	}
 
@@ -3028,9 +2994,8 @@ bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::str
 	NameT = pName;
 	ErrMsg = pErrMsg;
 
-	_lenT = text.length(); //_lenT = pLS->LL;
-	_textT = new char[_lenT]; //_textT = pLS->A;
-	memcpy(_textT, text.c_str(), _lenT);
+	// parse input text to lines
+	_lines = GetAllLinesWithEnds(text, HardL);
 
 	MaxLenT = pMaxLen;
 	IndexT = pInd;
@@ -3063,16 +3028,12 @@ bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::str
 		IndexT = 0;
 	}
 
-	Edit(pExD, break_keys);
+	Edit(pErrMsg, pExD, break_keys);
 	if (Mode != HelpM) { TextAttr = TxtColor; }
 	pUpdat = UpdatT;
 	pSrch = SrchT;
 
-	//pLS->LL = _lenT;
-	//pLS->A = _textT;
-	text = std::string(_textT, _lenT);
-	delete[] _textT;
-	_textT = nullptr;
+	text = JoinLines(_lines);
 
 	pInd = IndexT;
 	pScr = ScrT + ((int)positionOnActualLine << 16);
@@ -3092,28 +3053,28 @@ void TextEditor::SimpleEditText(char pMode, std::string pErrMsg, std::string pNa
 
 WORD TextEditor::FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 {
-	auto* origT = _textT;
-	_textT = (char*)PTxtPtr;
-	pstring f = FindStr;
-	pstring o = OptionStr;
-	bool r = Replace;
-	FindStr = Pstr;
-	OptionStr = Popt;
-	Replace = false;
-	WORD I = 1;
-	WORD result;
-	if (FindString(I, PLen + 1)) result = I;
-	else result = 0;
-	FindStr = f;
-	OptionStr = o;
-	Replace = r;
-	_textT = origT;
-	return result;
+	return 0;
+	//auto* origT = _textT;
+	//_textT = (char*)PTxtPtr;
+	//pstring f = FindStr;
+	//pstring o = OptionStr;
+	//bool r = Replace;
+	//FindStr = Pstr;
+	//OptionStr = Popt;
+	//Replace = false;
+	//WORD I = 1;
+	//WORD result;
+	//if (FindString(I, PLen + 1)) result = I;
+	//else result = 0;
+	//FindStr = f;
+	//OptionStr = o;
+	//Replace = r;
+	//_textT = origT;
+	//return result;
 }
 
 void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD,
-	int TxtPos, int Txtxy, WRect* V, WORD Atr,
-	const std::string Hd, BYTE WFlags, MsgStr* MsgS)
+	int TxtPos, int Txtxy, WRect* V, WORD Atr, const std::string Hd, BYTE WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
 	int Size = 0; // , L = 0;
@@ -3121,7 +3082,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 	bool Loc = false;
 	size_t Ind = 0, oldInd = 0;
 	int oldTxtxy = 0;
-	std::string s;
+	std::string text;
 	std::string compErrTxt;
 
 	if (Atr == 0) {
@@ -3143,8 +3104,9 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 		Loc = (locVar != nullptr);
 
 		if (!Loc) {
-			MaxLenT = 0xFFF0; _lenT = 0;
-			TxtPath = CPath; TxtVol = CVol;
+			MaxLenT = 0xFFF0;
+			TxtPath = CPath;
+			TxtVol = CVol;
 			// zacatek prace se souborem
 			OpenTxtFh(Mode);
 			ReadTextFile();
@@ -3153,7 +3115,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 		}
 		else {
 			Ind = TxtPos;
-			s = *locVar;
+			text = *locVar;
 		}
 
 		oldInd = Ind;
@@ -3163,19 +3125,22 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 			Srch = false;
 			Upd = false;
 			if (!Loc) {
-				std::string LS2 = std::string(_textT, _lenT);
+				// TODO: nahraj text ze souboru
+				// std::string LS2 = std::string(_textT, _lenT);
+				std::string LS2 = JoinLines(_lines); // ? neni uz nekde cely v pameti ?
 				std::vector<WORD> brkKeys = { __F1, __F6, __F9, __ALT_F10 };
 				EditText(Mode, FileT, TxtPath, ErrMsg, LS2, 0xFFF0, Ind, Txtxy,
 					brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
 
-				delete[] _textT;
+				// TODO: ulozit jej zpatky?
+				/*delete[] _textT;
 				_lenT = LS2.length();
 				_textT = new char[_lenT];
-				memcpy(_textT, LS2.c_str(), _lenT);
+				memcpy(_textT, LS2.c_str(), _lenT);*/
 			}
 			else {
 				std::vector<WORD> brkKeys = { __F1, __F6 };
-				EditText(Mode, LocalT, "", ErrMsg, s, MaxLStrLen, Ind, Txtxy,
+				EditText(Mode, LocalT, "", ErrMsg, text, MaxLStrLen, Ind, Txtxy,
 					brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
 			}
 			TxtPos = Ind; // +Part.PosP;
@@ -3184,7 +3149,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 
 			if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
 				// UNDO CHANGES
-				s = *locVar;
+				text = *locVar;
 
 				if (KbdChar == __ALT_EQUAL) {
 					Event.Pressed.UpdateKey(__ESC);
@@ -3209,7 +3174,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 				case __F9: {
 					if (Loc) {
 
-						*locVar = s;
+						*locVar = text;
 					}
 					else {
 						//RdPart();
@@ -3243,7 +3208,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 			}
 			if ((EdBreak == 0xFFFF) && (KbdChar == __F6)) {
 				if (Loc) {
-					PrintArray(_textT, _lenT, false);
+					PrintArray(text, false);
 					continue;
 				}
 				else {
@@ -3272,7 +3237,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 				WrLLF10Msg(110);
 			}
 			if (Loc) {
-				*locVar = s;
+				*locVar = text;
 			}
 			if (w3 != 0) {
 				PopW(w3, (WFlags & WNoPop) == 0);
@@ -3302,7 +3267,7 @@ void TextEditor::ViewPrinterTxt()
 	EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
 
-void TextEditor::ViewHelpText(std::string& text, size_t& text_pos)
+void TextEditor::ViewHelpText(const std::string& text, size_t& text_pos)
 {
 	// make copy of text from std::string because it changes in EditText()
 	std::string s = text;
