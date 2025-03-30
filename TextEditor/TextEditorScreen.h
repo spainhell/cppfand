@@ -2,8 +2,6 @@
 #include <string>
 #include "TextEditor.h"
 
-typedef std::string ColorOrd;
-
 class TextEditorScreen
 {
 public:

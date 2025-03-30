@@ -488,7 +488,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 			}
 			}
 
-			editor->WrEndT();
+			//editor->WrEndT();
 			IndexT = MinW(IndexT, editor->_lenT);
 			if (TypeT != FileT) {
 				AbsLenT = editor->_lenT - 1;
@@ -619,8 +619,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					while (Arr[I1] == ' ') { I1++; }
 					if (I1 > editor->RightMarg) { I1 = editor->RightMarg; }
 					L1 = textIndex; // Part.PosP + textIndex;
-					editor->Format(I, L1, AbsLenT + editor->_lenT /*- Part.LenP*/, I1, false);
-					editor->SetPart(L1);
+					editor->Format(I, L1, AbsLenT + editor->_lenT, I1, false);
+					//editor->SetPart(L1);
 					I = 1;
 					// TODO: tady se pouzivalo 'I' ve FindCharPosition, ale k cemu je???
 					I = editor->FindCharPosition(0xFF, 0);
