@@ -21,15 +21,8 @@ struct MsgStr
 };
 
 
-WORD Position(WORD n);
-WORD Column(WORD p);
-
 bool ModPage(int RLine);
 int NewL(int RLine);
-
-WORD GetArrLineLength();
-
-
 bool MyPromptLL(WORD n, std::string& s);
 
 void SetPartLine(int Ln);
@@ -40,7 +33,7 @@ void SimplePrintHead();
 
 const int SuccLineSize = 256;
 
-extern char Arr[SuccLineSize];
+//extern char Arr[SuccLineSize];
 extern bool bScroll;
 
 extern WORD MaxLenT, IndexT, ScrT;
@@ -158,7 +151,7 @@ private:
 	void TestUpdFile();
 	//void WrEndT();
 	void KodLine();
-	void DekodLine(size_t lineStartIndex);
+	void DekodLine();
 	void FrameStep(BYTE& odir, PressedKey EvKeyC);
 	void Format(WORD& i, int First, int Last, WORD Posit, bool Rep);
 	void NextLine(bool WrScr);
@@ -200,6 +193,7 @@ private:
 	bool WordExist();
 	void MoveIdx(int dir);
 	bool TestLastPos(WORD F, WORD T);
+	void MoveB(WORD& B, WORD& F, WORD& T);
 	void DelChar();
 	void WrCharE(char Ch);
 	void Calculate();
@@ -211,10 +205,15 @@ private:
 	void NewBlock1(WORD& I1, int& L2);
 	void NewBlock2(int& L1, int& L2);
 	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
+	void CursorWord();
+	WORD Position(WORD n);
+	WORD Column(WORD p);
+	WORD GetArrLineLength();
 
 	size_t word_line = 0;
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
+	char Arr[LineMaxSize]{ '\0' };  // dekodovany 1 radek
 
 	bool Insert, Indent, Wrap, Just;
 	pstring OptionStr;
@@ -225,4 +224,5 @@ private:
 	short LeftMarg, RightMarg;
 	char CharPg = '\0';
 	bool InsPg = false;
+	bool HardL = false; // actual line (Arr) ended with CRLF "\r\n" - otherwise only with CR "\r"
 };
