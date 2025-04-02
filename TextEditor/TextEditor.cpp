@@ -39,11 +39,11 @@ std::string CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
 // *** Promenne metody EDIT
 WORD NextLineStartIndex = 0;     // index prvniho znaku na dalsim radku
 int RScrL = 0;
-bool UpdatedL = false, CtrlL = false;
+bool UpdatedL = false;
+bool CtrlL = false;
 WORD columnOffset = 0;
 WORD Colu = 0;
 WORD Row = 0;
-bool ChangeScr = false;
 ColorOrd ColScr;
 bool IsWrScreen = false;
 WORD FirstR = 0, FirstC = 0, LastR = 0, LastC = 0;
@@ -783,6 +783,9 @@ WORD TextEditor::CurrentLineFirstCharIndex(WORD index)
 	return result;
 }
 
+/// <summary>
+/// Load line from text to Arr (without CR/LF), check line length, split line if necessary
+/// </summary>
 void TextEditor::DekodLine()
 {
 	std::string& line = _lines[TextLineNr - 1];
@@ -806,8 +809,8 @@ void TextEditor::DekodLine()
 
 	FillChar(Arr, LineMaxSize, ' ');
 	if (!line.empty()) {
-		// zkopiruj radek do Arr
-		memcpy(Arr, line.c_str(), line.length());
+		// copy line to Arr	without CR/LF
+		memcpy(Arr, line.c_str(), line.length() - (HardL ? 2 : 1));
 	}
 
 	UpdatedL = false;
@@ -970,7 +973,7 @@ void TextEditor::PosDekFindLine(int Num, WORD Pos, bool ChScr)
 {
 	positionOnActualLine = Pos;
 	DekFindLine(Num);
-	ChangeScr = ChangeScr || ChScr;
+	_change_scr = _change_scr || ChScr;
 }
 
 void TextEditor::WrEndL(bool Hard, int Row)
@@ -1024,6 +1027,18 @@ ColorOrd TextEditor::SetColorOrd(size_t first, size_t last)
 	return co;
 }
 
+void TextEditor::UpdateLine()
+{
+	// changes only in the current line
+	if (bScroll) {
+		ColorOrd co1 = SetColorOrd(0, textIndex);
+		_screen->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 1, co1, ColKey, TxtColor, InsPage);
+	}
+	else {
+		_screen->EditWrline(std::string(Arr, 255), TextLineNr - ScreenFirstLineNr + 1, ColKey, TxtColor, BlockColor);
+	}
+}
+
 void TextEditor::UpdScreen()
 {
 	short r; // row number, starts from 1
@@ -1032,11 +1047,11 @@ void TextEditor::UpdScreen()
 	std::string PgStr;
 
 	InsPage = false;
-	if (ChangeScr) {
+	if (_change_scr) {
 		//if (ChangePart) {
 		//	DekodLine(textIndex);
 		//}
-		ChangeScr = false;
+		_change_scr = false;
 
 		if (bScroll) {
 			ScreenIndex = textIndex;
@@ -1069,7 +1084,7 @@ void TextEditor::UpdScreen()
 		_screen->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 1, co1, ColKey, TxtColor, InsPage);
 	}
 	else {
-		_screen->EditWrline(Arr, 255, TextLineNr - ScreenFirstLineNr + 1, ColKey, TxtColor, BlockColor);
+		_screen->EditWrline(std::string(Arr, 255), TextLineNr - ScreenFirstLineNr + 1, ColKey, TxtColor, BlockColor);
 	}
 
 	WrEndL(HardL, TextLineNr - ScreenFirstLineNr + 1);
@@ -1092,12 +1107,12 @@ void TextEditor::UpdScreen()
 		//}
 	}
 
-	do {
-		if (MyTestEvent()) return; // {tisk celeho okna}
+	do { // {tisk celeho okna}
+		if (MyTestEvent()) return; 
 
 		if (bScroll /*&& (index < txt.length())*/) {
 			if ((InsPg && (ModPage(line_offset - rr + RScrL - 1))) || InsPage) {
-				_screen->EditWrline(PgStr.c_str(), _lines[ScreenFirstLineNr + line_offset - 2].length(), line_offset, ColKey, TxtColor, BlockColor);
+				_screen->EditWrline(PgStr, line_offset, ColKey, TxtColor, BlockColor);
 				WrEndL(false, line_offset);
 				if (InsPage) rr++;
 				InsPage = false;
@@ -1115,7 +1130,7 @@ void TextEditor::UpdScreen()
 				_screen->ScrollWrline((char*)_lines[ScreenFirstLineNr + line_offset - 2].c_str(), columnOffset, line_offset, co2, ColKey, TxtColor, InsPage);
 			}
 			else {
-				_screen->EditWrline(_lines[ScreenFirstLineNr + line_offset - 2].c_str(), _lines[line_offset - 1].length(), line_offset, ColKey, TxtColor, BlockColor);
+				_screen->EditWrline(_lines[ScreenFirstLineNr + line_offset - 2], line_offset, ColKey, TxtColor, BlockColor);
 			}
 
 			//if (InsPage) {
@@ -1132,7 +1147,7 @@ void TextEditor::UpdScreen()
 			//}
 		}
 		else {
-			_screen->EditWrline(nullptr, 0, line_offset, ColKey, TxtColor, BlockColor);
+			_screen->EditWrline("", line_offset, ColKey, TxtColor, BlockColor);
 			WrEndL(false, line_offset);
 		}
 
@@ -1180,18 +1195,28 @@ void TextEditor::Background()
 	}
 	if (TextLineNr < ScreenFirstLineNr) {
 		ScreenFirstLineNr = TextLineNr;
-		ChangeScr = true;
+		_change_scr = true;
 	}
 	if (TextLineNr >= ScreenFirstLineNr + PageS) {
 		ScreenFirstLineNr = succ(TextLineNr - PageS);
-		ChangeScr = true;
+		_change_scr = true;
 	}
-	UpdScreen(); // {tisk obrazovky}
+
+	if (_change_scr) {
+		UpdScreen();
+	}
+	else {
+		UpdateLine();
+	}
+
 	WriteMargins();
-	screen.GotoXY(positionOnActualLine - BPos, TextLineNr);
+	screen.GotoXY(positionOnActualLine - BPos, TextLineNr - ScreenFirstLineNr + 1);
 	IsWrScreen = true;
 }
 
+/// <summary>
+/// Save line from Arr to the vector of lines, adds '\r' or '\r\n' at the end
+/// </summary>
 void TextEditor::KodLine()
 {
 	size_t ArrLineLen = GetArrLineLength(); // Arr bez koncovych mezer
@@ -1220,11 +1245,6 @@ void TextEditor::KodLine()
 	UpdatedL = false;
 }
 
-void TextEditor::TestKod()
-{
-	if (UpdatedL) KodLine();
-}
-
 int TextEditor::NewRL(int Line)
 {
 	return blocks->LineAbs(Line);
@@ -1246,7 +1266,7 @@ void TextEditor::ScrollPress()
 	if (old != bScroll) {
 		if (bScroll) {
 			WrStatusLine();
-			TestKod();
+			if (UpdatedL) KodLine();
 			screen.CrsHide();
 			PredScLn = blocks->LineAbs(TextLineNr);
 			PredScPos = positionOnActualLine;
@@ -1260,7 +1280,7 @@ void TextEditor::ScrollPress()
 			}
 			ScreenFirstLineNr = TextLineNr;
 			RScrL = NewRL(ScreenFirstLineNr);
-			if (L1 != blocks->LineAbs(ScreenFirstLineNr)) ChangeScr = true; // { DekodLine; }
+			if (L1 != blocks->LineAbs(ScreenFirstLineNr)) _change_scr = true; // { DekodLine; }
 			columnOffset = Column(BPos);
 			Colu = Column(positionOnActualLine);
 			//ColScr = Part.ColorP;
@@ -1308,9 +1328,9 @@ void TextEditor::RollNext()
 		screen.GotoXY(1, 1);
 		//MyDelLine();
 		ScreenFirstLineNr++;
-		ChangeScr = true;
+		_change_scr = true;
 		if (TextLineNr < ScreenFirstLineNr) {
-			TestKod();
+			if (UpdatedL) KodLine();
 			TextLineNr++;
 			textIndex = NextLineStartIndex;
 			DekodLine();
@@ -1326,9 +1346,9 @@ void TextEditor::RollPred()
 		screen.GotoXY(1, 1);
 		//MyInsLine();
 		ScreenFirstLineNr--;
-		ChangeScr = true;
+		_change_scr = true;
 		if (TextLineNr == ScreenFirstLineNr + PageS) {
-			TestKod();
+			if (UpdatedL) KodLine();
 			TextLineNr--;
 			if (txt[textIndex - 1] == __LF) { CopyCurrentLineToArr(textIndex - 2); }
 			else { CopyCurrentLineToArr(textIndex - 1); }
@@ -1358,7 +1378,7 @@ void TextEditor::MyWriteln()
 void TextEditor::PreviousLine()
 {
 	//WORD mi, ml;
-	TestKod();
+	if (UpdatedL) KodLine();
 	//if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
 	if (TextLineNr > 1) {
 		TextLineNr--;
@@ -1376,7 +1396,7 @@ void TextEditor::PreviousLine()
 			screen.GotoXY(1, 1);
 			//MyInsLine();
 			ScreenFirstLineNr--;
-			ChangeScr = true;
+			_change_scr = true;
 			if (bScroll) {
 				/*dec(RLineL);*/
 				RScrL--;
@@ -1393,16 +1413,16 @@ void TextEditor::PreviousLine()
 
 void TextEditor::NextLine(bool WrScr)
 {
-	TestKod();
+	if (UpdatedL) KodLine();
 
 	if (TextLineNr < _lines.size()) {
 		textIndex = NextLineStartIndex;
-		DekodLine();
 		TextLineNr++;
+		DekodLine();
 		if (bScroll) {
 			if (PageS > 1) MyWriteln();
 			ScreenFirstLineNr++;
-			ChangeScr = true;
+			_change_scr = true;
 			RScrL++;
 			if (ModPage(RScrL)) {
 				if (PageS > 1) MyWriteln();
@@ -1412,7 +1432,7 @@ void TextEditor::NextLine(bool WrScr)
 		else if (WrScr && (TextLineNr == ScreenFirstLineNr + PageS)) {
 			//if (PageS > 1) MyWriteln();
 			ScreenFirstLineNr++;
-			ChangeScr = true;
+			_change_scr = true;
 		}
 	}
 }
@@ -2073,7 +2093,7 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 	char* p = nullptr;
 	bool tb; char c = '\0';
 
-	TestKod();
+	if (UpdatedL) KodLine();
 	int Ln = blocks->LineAbs(TextLineNr);
 	WORD Ps = positionOnActualLine;
 	if (Oper == 'p') {
@@ -2244,7 +2264,8 @@ bool TextEditor::BlockGrasp(char Oper, void* P1, LongStr* sp)
 	auto result = false;
 	if (!BlockExist()) return result;
 	L = /*Part.PosP +*/ textIndex + positionOnActualLine - 1;
-	ln = blocks->LineAbs(TextLineNr); if (Oper == 'G') TestKod();
+	ln = blocks->LineAbs(TextLineNr);
+	if (Oper == 'G' && UpdatedL) KodLine();
 	SetBlockBound(L1, L2);
 	if ((L > L1) and (L < L2) and (Oper != 'G')) return result;
 	L = L2 - L1; if (L > 0x7FFF) { WrLLF10Msg(418); return result; }
@@ -2301,7 +2322,7 @@ bool TextEditor::BlockCGrasp(char Oper, void* P1, LongStr* sp)
 
 	auto result = false;
 	if (!BlockExist()) return result;
-	TestKod();
+	if (UpdatedL) KodLine();
 	L = blocks->LineAbs(TextLineNr);
 	if ((L >= blocks->BegBLn && L <= blocks->EndBLn) && (positionOnActualLine >= blocks->BegBPos + 1 && positionOnActualLine <= blocks->EndBPos - 1) && (Oper != 'G')) return result;
 	int l1 = (blocks->EndBLn - blocks->BegBLn + 1) * (blocks->EndBPos - blocks->BegBPos + 2);
@@ -2316,7 +2337,7 @@ bool TextEditor::BlockCGrasp(char Oper, void* P1, LongStr* sp)
 		Move(&Arr[blocks->BegBPos], a, i); a[i + 1] = __CR; a[i + 2] = __LF;
 		if (Oper == 'M') TestLastPos(blocks->EndBPos, blocks->BegBPos);
 		Move(a, &sp->A[I2 + 1], i + 2); I2 += i + 2;
-		TestKod();
+		if (UpdatedL) KodLine();
 		NextLine(false);
 	} while (I2 != sp->LL);
 	if ((Oper == 'M') && (L >= blocks->BegBLn && L <= blocks->EndBLn) && (positionOnActualLine > blocks->EndBPos)) {
@@ -2334,7 +2355,7 @@ void TextEditor::InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp)
 		TestLastPos(ww, ww + i);
 		Move(&sp->A[I3], &Arr[ww], i);
 	}
-	TestKod();
+	if (UpdatedL) KodLine();
 }
 
 void TextEditor::BlockCDrop(char Oper, void* P1, LongStr* sp)
@@ -2499,12 +2520,13 @@ bool MyPromptLL(WORD n, std::string& s)
 void TextEditor::SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 {
 	TextLineNr = 1; // TODO: GetLineNumber(Ind);
+	DekodLine();
 	positionOnActualLine = MinI(LineMaxSize, MaxI(MaxW(1, Pos), Ind - textIndex + 1));
 	if (ScrXY > 0) {
 		ScreenFirstLineNr = TextLineNr - (ScrXY >> 8) + 1;
 		positionOnActualLine = MaxW(positionOnActualLine, ScrXY & 0x00FF);
 		BPos = positionOnActualLine - (ScrXY & 0x00FF);
-		ChangeScr = true;
+		_change_scr = true;
 	}
 	Colu = Column(positionOnActualLine);
 	columnOffset = Column(BPos);
@@ -2515,7 +2537,7 @@ void TextEditor::SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 		if ((rl >= RScrL + PageS) || (rl < RScrL)) {
 			if (rl > 10) RScrL = rl - 10;
 			else RScrL = 1;
-			ChangeScr = true; ScreenFirstLineNr = NewL(RScrL);
+			_change_scr = true; ScreenFirstLineNr = NewL(RScrL);
 		}
 		TextLineNr = ScreenFirstLineNr;
 		DekFindLine(blocks->LineAbs(TextLineNr));
@@ -2524,7 +2546,7 @@ void TextEditor::SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 		if ((TextLineNr >= ScreenFirstLineNr + PageS) || (TextLineNr < ScreenFirstLineNr)) {
 			if (TextLineNr > 10) ScreenFirstLineNr = TextLineNr - 10;
 			else ScreenFirstLineNr = 1;
-			ChangeScr = true;
+			_change_scr = true;
 		}
 	}
 }
@@ -2847,7 +2869,7 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 	if (bScroll)
 	{
 		ScreenFirstLineNr = NewL(RScrL);
-		ChangeScr = true;
+		_change_scr = true;
 	}
 	HelpScroll = bScroll || (Mode == HelpM);
 	if (HelpScroll) {
