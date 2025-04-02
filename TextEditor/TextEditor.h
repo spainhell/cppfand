@@ -42,7 +42,7 @@ extern WORD textIndex, positionOnActualLine, BPos;
 extern WORD NextLineStartIndex, PageS, LineS;
 extern int RScrL;
 extern bool Konec;
-extern bool EditT, ChangeScr;
+extern bool EditT;
 extern char TypeT;
 extern bool SrchT, UpdatT;
 extern int* LocalPPtr;
@@ -159,7 +159,6 @@ private:
 	WORD SetPredI();
 	void RollNext();
 	void RollPred();
-	void TestKod();
 	void MyWriteln();
 	void PreviousLine();
 	void FillBlank();
@@ -179,6 +178,7 @@ private:
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 	size_t WordNo(size_t I);
 	void Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
+	void UpdateLine();
 	void UpdScreen();
 	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
 	size_t GetLine(size_t idx);
@@ -225,4 +225,5 @@ private:
 	char CharPg = '\0';
 	bool InsPg = false;
 	bool HardL = false; // actual line (Arr) ended with CRLF "\r\n" - otherwise only with CR "\r"
+	bool _change_scr = true; // true if screen needs to be updated (e.g. after scrolling or changes on more lines)
 };

@@ -13,44 +13,38 @@ TextEditorScreen::~TextEditorScreen()
 {
 }
 
-void TextEditorScreen::WriteEditLine(std::string& text_line, size_t row)
-{
-}
-
-void TextEditorScreen::WriteScrollLine(std::string& text_line, size_t offset, size_t row)
-{
-}
-
-void TextEditorScreen::EditWrline(const char* input_text, size_t text_len, int Row, BYTE ColKey[], BYTE TxtColor, BYTE BlockColor)
+void TextEditorScreen::EditWrline(const std::string& text_line, int Row, BYTE ColKey[], BYTE TxtColor, BYTE BlockColor)
 {
 	WORD BuffLine[256]{ 0 };
-	BYTE nv1;
 	BYTE nv2;
-	bool IsCtrl = false;
 
-	WORD Line = pred(_editor->ScreenFirstLineNr + Row);
+	WORD Line = _editor->ScreenFirstLineNr + Row - 1;
 	if (_blocks->LineInBlock(Line) && (TypeB == TextBlock)) {
 		nv2 = BlockColor;
 	}
 	else {
 		nv2 = TxtColor;
 	}
-	short i = 0;
-	while (i < text_len && input_text[i] != '\0' && !(input_text[i] == __CR || input_text[i] == __LF) && i < LineMaxSize - 1) {
-		nv1 = input_text[i];
-		if (i < 0 || i > 255) throw std::exception("Index");
-		BuffLine[i] = (nv2 << 8) + nv1;
-		if (nv1 < 32) IsCtrl = true;
-		i++;
+
+	size_t i = 0;
+	for (; i < LineMaxSize - 1; i++) {
+		if (text_line[i] == '\0' || text_line[i] == __CR || text_line[i] == __LF) {
+			break;
+		}
+		uint8_t c = text_line[i];
+		if (c < 32) {
+			// control char -> convert to letter and color
+			BuffLine[i] = ((text_line[i] + 64) & 0x00FF) + (Color(text_line[i], ColKey) << 8);
+		}
+		else {
+			// normal char
+			BuffLine[i] = (nv2 << 8) + c;
+		}
 	}
 
-	short LP = i - 1;  // index of last character (before CR)
-	nv1 = ' ';
-
-	for (i = LP + 1; i <= BPos + LineS; i++) {
+	for (; i < BPos + LineS; i++) {
 		// all characters after last char will be spaces (to the end of screen)
-		if (i < 0 || i > 255) throw std::exception("Index");
-		BuffLine[i] = (nv2 << 8) + nv1;
+		BuffLine[i] = (nv2 << 8) + ' ';
 	}
 
 	if (_blocks->BegBLn <= _blocks->EndBLn) {
@@ -70,16 +64,7 @@ void TextEditorScreen::EditWrline(const char* input_text, size_t text_len, int R
 			}
 		}
 	}
-	if (IsCtrl) {
-		// retezec obsahuje kontrolni znaky
-		// -> budou zmeneny na pismena a prebarveny
-		for (i = BPos; i <= LP; i++) {
-			if ((unsigned char)input_text[i] < 32) {
-				if (i < 0 || i > 254) throw std::exception("Index");
-				BuffLine[i] = ((input_text[i] + 64) & 0x00FF) + (Color(input_text[i], ColKey) << 8);
-			}
-		}
-	}
+
 	// both 'WindMin.Y' and 'Row' are counted from 1 -> that's why -2 
 	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[BPos], LineS);
 }
@@ -134,8 +119,6 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 			else if (_ctrlKey.find(cc) != std::string::npos) {
 				size_t pp = CO.find(cc);
 				if (pp != std::string::npos) {
-					// TODO: nevim, jak to ma presne fungovat
-					// original: if pp>0 then CO:=copy(CO,1,pp-1)+copy(CO,pp+1,len-pp)
 					CO = CO.substr(0, pp) + CO.substr(pp + 1, len - pp + 1);
 				}
 				else {

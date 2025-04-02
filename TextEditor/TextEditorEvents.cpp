@@ -402,7 +402,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 	std::string txt = JoinLines(editor->_lines);
 	for (EdExitD*& X : ExitD) {
 		if (TestExitKey(key, X)) {  // nastavuje i EdBreak
-			editor->TestKod();
+			if (UpdatedL) editor->KodLine();
 			IndexT = editor->SetInd(textIndex, positionOnActualLine);
 			ScrT = ((editor->TextLineNr - editor->ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
 			LastTxtPos = IndexT; // +Part.PosP;
@@ -650,7 +650,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 							screen.GotoXY(1, 1);
 							//MyDelLine();
 							editor->ScreenFirstLineNr++;
-							ChangeScr = true;
+							editor->_change_scr = true;
 						}
 						else {
 							screen.GotoXY(1, succ(editor->TextLineNr - editor->ScreenFirstLineNr));
@@ -736,7 +736,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			}
 			case __PAGEUP: {
 				if (mode == HelpM) {
-					editor->TestKod();
+					if (UpdatedL) editor->KodLine();
 				}
 				else {
 					editor->ClrWord();
@@ -771,7 +771,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					editor->DekFindLine(editor->blocks->LineAbs(editor->TextLineNr - PageS));
 				}
 
-				ChangeScr = true;
+				editor->_change_scr = true;
 
 				if (mode == HelpM) {
 					ScreenIndex = editor->GetLineStartIndex(editor->ScreenFirstLineNr);
@@ -791,7 +791,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			}
 			case __PAGEDOWN: {
 				if (mode != HelpM) {
-					editor->TestKod();
+					if (UpdatedL) editor->KodLine();
 				}
 				else {
 					editor->ClrWord();
@@ -820,7 +820,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 						editor->ScreenFirstLineNr += PageS;
 					}
 				}
-				ChangeScr = true;
+				editor->_change_scr = true;
 				if (mode == HelpM) {
 					ScreenIndex = editor->GetLineStartIndex(editor->ScreenFirstLineNr);
 					positionOnActualLine = editor->Position(Colu);
@@ -914,32 +914,32 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case _QE_: {
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				editor->TextLineNr = editor->ScreenFirstLineNr;
 				textIndex = ScreenIndex;
 				editor->DekodLine();
 				break;
 			}
 			case _QX_: {
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				editor->DekFindLine(editor->blocks->LineAbs(editor->ScreenFirstLineNr + PageS - 1));
 				break;
 			}
 			case __CTRL_PAGEUP: {
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				//editor->SetPart(1);
 				editor->SetScreen(1, 0, 0);
 				break;
 			}
 			case __CTRL_PAGEDOWN: {
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				//editor->SetPart(AbsLenT /* - Part.LenP*/ + editor->_lenT);
 				editor->SetScreen(txt.length(), 0, 0);
 				break;
 			}
 			case __CTRL_F3: {
 				ss = "";
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				do {
 					if (MyPromptLL(420, ss)) goto Nic;
 					val(ss, L1, I);
@@ -976,7 +976,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				}
 				else {
 					if (textIndex > 1) {
-						editor->TestKod();
+						if (UpdatedL) editor->KodLine();
 						editor->TextLineNr--;
 						textIndex = editor->GetLineStartIndex(editor->TextLineNr);
 						editor->CopyCurrentLineToArr(textIndex);
@@ -984,7 +984,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 						editor->DeleteLine();
 						if (editor->TextLineNr < editor->ScreenFirstLineNr) {
 							editor->ScreenFirstLineNr--;
-							ChangeScr = true;
+							editor->_change_scr = true;
 						}
 					}
 				}
@@ -1059,7 +1059,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				ss = editor->OptionStr;
 				if (MyPromptLL(406, ss)) goto Nic;
 				editor->OptionStr = ss;
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				if (editor->TestOptStr('l') && (!editor->BlockExist() || (TypeB == ColBlock))) goto Nic;
 				if (editor->TestOptStr('l')) editor->SetBlockBound(L1, L2);
 				else {
@@ -1074,7 +1074,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			}
 			case 'L': {
 				if (!editor->FindStr.empty()) {
-					editor->TestKod();
+					if (UpdatedL) editor->KodLine();
 					if (editor->TestOptStr('l') && (!editor->BlockExist() || (TypeB == ColBlock))) goto Nic;
 					fs = 1;
 					L1 = /* Part.PosP + */ editor->SetInd(textIndex, positionOnActualLine);
@@ -1115,12 +1115,12 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case _QB_: {
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				editor->PosDekFindLine(editor->blocks->BegBLn, MinW(editor->GetArrLineLength() + 1, editor->blocks->BegBPos), false);
 				break;
 			}
 			case _QK_: {
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				editor->PosDekFindLine(editor->blocks->EndBLn, MinW(editor->GetArrLineLength() + 1, editor->blocks->EndBPos), false); break;
 			}
 			case _KB_:
@@ -1279,7 +1279,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			case _KF_: {
 				if (editor->BlockExist() && (TypeB == TextBlock)) {
-					editor->TestKod(); screen.CrsHide();
+					if (UpdatedL) editor->KodLine();
+					screen.CrsHide();
 					SetPartLine(editor->blocks->EndBLn);
 					I2 = editor->blocks->EndBLn; // -Part.LineP;
 					size_t nextLineIdx = editor->GetLineStartIndex(I2);
@@ -1345,7 +1346,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case 'B': {
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				L1 = textIndex;
 				editor->Format(I, L1, AbsLenT + txt.length(), MinI(editor->LeftMarg, positionOnActualLine), false);
 				// editor->SetPart(L1);
@@ -1420,7 +1421,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __ESC: {
-				editor->TestKod();
+				if (UpdatedL) editor->KodLine();
 				//Event.Pressed.UpdateKey(key);
 				Konec = true;
 				EdBreak = 0;
@@ -1428,7 +1429,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			}
 			case __ALT_EQUAL: { // end without saving
 				if (TypeT != FileT) {
-					editor->TestKod();
+					if (UpdatedL) editor->KodLine();
 					//Event.Pressed.UpdateKey(key);
 					Konec = true;
 					EdBreak = 0xFFFF;
@@ -1438,7 +1439,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			default: {
 				if (std::find(breakKeys.begin(), breakKeys.end(), key) != breakKeys.end()) {
 					// *** BREAK KEYS ***
-					editor->TestKod();
+					if (UpdatedL) editor->KodLine();
 					//KbdChar: = ww;
 					Konec = true;
 					EdBreak = 0xFFFF;
@@ -1446,7 +1447,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				else if (key >= 0x1000 && key <= 0x101F) {
 					editor->WrCharE(Lo(key)); // ***CTRL-klavesy***
 					if (key == 0x100D) {
-						editor->TestKod();
+						if (UpdatedL) editor->KodLine();
 						editor->DekodLine();
 						positionOnActualLine--;
 					}
@@ -1461,7 +1462,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 
 	else if ((Event.What == evMouseDown) && ((mode == HelpM) || (mode == TextM)))
 	{
-		if (mode == TextM) editor->TestKod();
+		if (mode == TextM && UpdatedL) editor->KodLine();
 		if (!((Event.Where.Y >= FirstR && Event.Where.Y <= LastR - 1)
 			&& (Event.Where.X >= FirstC - 1 && Event.Where.X <= LastC - 1)))
 		{
