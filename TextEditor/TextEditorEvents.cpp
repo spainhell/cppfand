@@ -645,12 +645,12 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					if (editor->TextLineNr == editor->_lines.size() /* && jsme_na_konci_radku? */ || editor->Insert) {
 						editor->NewLine('m');
 						positionOnActualLine = 1;
-						ClrEol(TextAttr);
+						// ClrEol(TextAttr);
 						if (editor->TextLineNr - editor->ScreenFirstLineNr == PageS) {
 							screen.GotoXY(1, 1);
 							//MyDelLine();
 							editor->ScreenFirstLineNr++;
-							editor->_change_scr = true;
+							//editor->_change_scr = true;
 						}
 						else {
 							screen.GotoXY(1, succ(editor->TextLineNr - editor->ScreenFirstLineNr));
@@ -665,9 +665,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 						else if (editor->Wrap) {
 							positionOnActualLine = editor->LeftMarg;
 						}
-						if (editor->TestLastPos(1, positionOnActualLine)) {
-							FillChar(&editor->Arr[1], positionOnActualLine - 1, 32);
-						}
+						//if (editor->TestLastPos(1, positionOnActualLine)) {
+						//	FillChar(&editor->Arr[1], positionOnActualLine - 1, 32);
+						//}
 					}
 					else if (NextLineStartIndex <= txt.length()) {
 						editor->NextLine(true);
@@ -841,6 +841,10 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				}
 				break;
 			}
+			case __SCROLL_LOCK: {
+				editor->_change_scr = true;
+				break;
+				}
 			case __CTRL_LEFT: {
 				do {
 					positionOnActualLine--;
@@ -975,17 +979,21 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					editor->DelChar();
 				}
 				else {
-					if (textIndex > 1) {
+					if (editor->TextLineNr > 1) {
 						if (UpdatedL) editor->KodLine();
 						editor->TextLineNr--;
-						textIndex = editor->GetLineStartIndex(editor->TextLineNr);
-						editor->CopyCurrentLineToArr(textIndex);
+						//textIndex = editor->GetLineStartIndex(editor->TextLineNr);
+						//editor->CopyCurrentLineToArr(textIndex);
+						editor->DekodLine();
 						positionOnActualLine = MinW(255, succ(editor->GetArrLineLength()));
 						editor->DeleteLine();
 						if (editor->TextLineNr < editor->ScreenFirstLineNr) {
 							editor->ScreenFirstLineNr--;
 							editor->_change_scr = true;
 						}
+					}
+					else {
+						// on 1st line -> cannot go above
 					}
 				}
 				break;

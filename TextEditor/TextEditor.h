@@ -184,7 +184,7 @@ private:
 	size_t GetLine(size_t idx);
 	WORD CurrentLineFirstCharIndex(WORD index);
 	void NextPartDek();
-	ColorOrd SetColorOrd(size_t first, size_t last);
+	ColorOrd SetColorOrd(size_t last_line) const;
 	void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last);
 	bool FindString(WORD& I, WORD Len);
 	bool ReadTextFile();

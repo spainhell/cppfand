@@ -857,17 +857,28 @@ WORD TextEditor::SetInd(WORD Ind, WORD Pos) // { line, pozice --> index}
 /**
  * \brief Returns order of N-th character in Arr (because of skipping color chars)
  * \param n N-th character (1..256)
- * \return order of the char (1..256)
+ * \return order of the char (1..256) || 0 for 0
  */
 WORD TextEditor::Position(WORD n) // {PosToCol}
 {
-	WORD cc = 1;
-	WORD p = 1;
-	while (cc <= n) {
-		if ((BYTE)Arr[p - 1] >= ' ') cc++;
-		p++;
+	if (n == 0) return 0;
+
+	uint16_t c = 1;
+
+	for (size_t i = 0; i < LineMaxSize; i++) {
+		if (static_cast<uint8_t>(Arr[i]) < ' ') {
+			// non-printable char
+			continue;
+		}
+		else {
+			if (c >= n) {
+				return i + 1; // return index of the char
+			}
+			c++;
+		}
 	}
-	return p - 1;
+
+	return LineMaxSize;
 }
 
 /**
@@ -963,9 +974,7 @@ void SetPartLine(int Ln)
 
 void TextEditor::DekFindLine(int Num)
 {
-	SetPartLine(Num);
-	TextLineNr = Num; // -Part.LineP;
-	textIndex = GetLineStartIndex(TextLineNr);
+	TextLineNr = min(Num, _lines.size());
 	DekodLine();
 }
 
@@ -1001,29 +1010,30 @@ bool ModPage(int RLine)
 	return false;
 }
 
-/**
- * \brief Reads colors in text and creates ColorOrd string from it
- * \param first index of the first char 0 .. n
- * \param last index of the last char 0 .. n
- * \return ColorOrd string with colors
- */
-ColorOrd TextEditor::SetColorOrd(size_t first, size_t last)
+ColorOrd TextEditor::SetColorOrd(size_t last_line) const
 {
-	std::string txt = JoinLines(_lines);
-
 	ColorOrd co;
-	size_t index = FindCtrlChar(txt.c_str(), txt.length(), first, last);
-	// if not found -> index = std::string::npos
-	while (index < last) {
-		size_t pp = co.find(txt[index]);
-		if (pp != std::string::npos) {
-			co.erase(pp);
+
+	if (last_line > 0) {
+		for (size_t i = 0; i < last_line; i++) {
+			const std::string& line = _lines[i];
+			size_t index = FindCtrlChar(line.c_str(), line.length(), 0, line.length());
+			while (index < line.length()) {
+				size_t pp = co.find(line[index]);
+				if (pp != std::string::npos) {
+					co.erase(pp);
+				}
+				else {
+					co += line[index];
+				}
+				index = FindCtrlChar(line.c_str(), line.length(), index + 1, line.length());
+			}
 		}
-		else {
-			co += txt[index];
-		}
-		index = FindCtrlChar(txt.c_str(), txt.length(), index + 1, last);
 	}
+	else {
+		// there are no lines above to check
+	}
+
 	return co;
 }
 
@@ -1031,7 +1041,7 @@ void TextEditor::UpdateLine()
 {
 	// changes only in the current line
 	if (bScroll) {
-		ColorOrd co1 = SetColorOrd(0, textIndex);
+		ColorOrd co1 = SetColorOrd(TextLineNr - 1);
 		_screen->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 1, co1, ColKey, TxtColor, InsPage);
 	}
 	else {
@@ -1062,7 +1072,7 @@ void TextEditor::UpdScreen()
 
 		if (HelpScroll) {
 			//ColScr = Part.ColorP;
-			ColScr = SetColorOrd(0, ScreenIndex);
+			ColScr = SetColorOrd(TextLineNr - 1);
 		}
 	}
 
@@ -1080,7 +1090,7 @@ void TextEditor::UpdScreen()
 	}
 	else if (Mode == HelpM) {
 		//co1 = Part.ColorP;
-		co1 = SetColorOrd(0, textIndex);
+		co1 = SetColorOrd(TextLineNr - 1);
 		_screen->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 1, co1, ColKey, TxtColor, InsPage);
 	}
 	else {
@@ -1176,12 +1186,11 @@ void TextEditor::Background()
 		}
 		if (Column(p) - columnOffset > LineS) {
 			columnOffset = Column(p) - LineS;
-			BPos = Position(columnOffset);
 		}
 		if (Column(positionOnActualLine) <= columnOffset) {
 			columnOffset = Column(positionOnActualLine) - 1;
-			BPos = Position(columnOffset);
 		}
+		BPos = Position(columnOffset);
 	}
 	else {
 		if (positionOnActualLine > LineS) {
@@ -1202,7 +1211,7 @@ void TextEditor::Background()
 		_change_scr = true;
 	}
 
-	if (_change_scr) {
+	if (bScroll || _change_scr) {
 		UpdScreen();
 	}
 	else {
@@ -1284,7 +1293,7 @@ void TextEditor::ScrollPress()
 			columnOffset = Column(BPos);
 			Colu = Column(positionOnActualLine);
 			//ColScr = Part.ColorP;
-			ColScr = SetColorOrd(0, ScreenIndex);
+			ColScr = SetColorOrd(TextLineNr - 1);
 		}
 		else {
 			if ((PredScLn < L1) || (PredScLn >= L1 + PageS)) PredScLn = L1;
@@ -1695,6 +1704,7 @@ void TextEditor::FillBlank()
 
 void TextEditor::DeleteLine()
 {
+	_change_scr = true;
 	FillBlank();
 	if (_lines.empty()) return;
 	if (blocks->LineAbs(TextLineNr) + 1 <= blocks->BegBLn) {
@@ -1745,6 +1755,7 @@ void TextEditor::NewLine(char Mode)
 
 	//TestLenText(&_textT, _lenT, LP, LP + 2);
 	UpdatT = true;
+	_change_scr = true;
 
 	// vse od aktualni pozice zkopirujeme na dalsi radek (nove vytvoreny)
 	_lines[TextLineNr] = _lines[TextLineNr - 1].substr(positionOnActualLine - 1);
@@ -2051,7 +2062,7 @@ void TextEditor::SetBlockBound(int& BBPos, int& EBPos)
 void TextEditor::ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p)
 {
 	//*co = Part.ColorP;
-	*co = SetColorOrd(0, I1 - 1);
+	*co = SetColorOrd(I1 - 1); // TODO: fix this
 	isPrintFile = false;
 	fs = co->length();
 	LenPrint += fs;
