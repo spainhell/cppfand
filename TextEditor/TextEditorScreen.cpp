@@ -144,14 +144,14 @@ BYTE TextEditorScreen::Color(char c, BYTE ColKey[])
 {
 	size_t index = 0;
 	switch (c) {
-	case '\x13': index = 0; break;
-	case '\x17': index = 1; break;
-	case '\x11': index = 2; break;
-	case '\x04': index = 3; break;
-	case '\x02': index = 4; break;
-	case '\x05': index = 5; break;
-	case '\x01': index = 6; break;
-	default: index = 7; break;
+	case '\x13': index = 1; break;
+	case '\x17': index = 2; break;
+	case '\x11': index = 3; break;
+	case '\x04': index = 4; break;
+	case '\x02': index = 5; break;
+	case '\x05': index = 6; break;
+	case '\x01': index = 7; break;
+	default: index = 0; break;
 		// default case is not needed, but added for safety
 		// if the last color is not in the list, return the default text color
 	}
