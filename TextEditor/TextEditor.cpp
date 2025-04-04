@@ -33,9 +33,6 @@ struct Character {
 	BYTE color = 0;
 };
 
-///  { ^s - underline, ^w - italic, ^q - expanded, ^d - double, ^b - bold, ^e - compressed, ^a - ELITE }
-std::string CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
-
 // *** Promenne metody EDIT
 WORD NextLineStartIndex = 0;     // index prvniho znaku na dalsim radku
 int RScrL = 0;
@@ -1857,7 +1854,7 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 		if (Posit > 1) {
 			Move(&txt[i], A, Posit);
 			for (ii = 1; ii <= Posit - 1; i++) {
-				if (CtrlKey.find(txt[i]) == std::string::npos) RelPos++;
+				if (!CtrlKey.contains(txt[i])) RelPos++;
 				if (txt[i] == __CR) A[ii] = ' ';
 				else i++;
 			}
@@ -1876,7 +1873,7 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 				else while (RelPos < LeftMarg)
 				{
 					Posit++;
-					if (CtrlKey.find(txt[i]) == std::string::npos) RelPos++;
+					if (!CtrlKey.contains(txt[i])) RelPos++;
 					if (txt[i] != __CR) i++;
 					if (txt[i] == __CR) A[Posit] = ' ';
 					else A[Posit] = txt[i];
@@ -1891,16 +1888,16 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 				if (i < lst) {
 					bBool = false;
 					A[Posit] = txt[i];
-					if (CtrlKey.find(A[Posit]) == std::string::npos) RelPos++;
+					if (!CtrlKey.contains(A[Posit])) RelPos++;
 					i++; Posit++;
 				}
 			}
 			if ((i < lst) && (txt[i] != ' ') && (txt[i] != __CR)) {
 				ii = Posit - 1;
-				if (CtrlKey.find(A[ii]) != std::string::npos) ii--;
+				if (CtrlKey.contains(A[ii])) ii--;
 				rp = RelPos; RelPos--;
 				while ((A[ii] != ' ') && (ii > LeftMarg)) {
-					if (CtrlKey.find(A[ii]) == std::string::npos) RelPos--; ii--;
+					if (!CtrlKey.contains(A[ii])) RelPos--; ii--;
 				}
 				if (RelPos > LeftMarg) {
 					nb = rp - RelPos;

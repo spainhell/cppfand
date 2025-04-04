@@ -1,7 +1,7 @@
 #include "../Drivers/constants.h"
 #include "TextEditorScreen.h"
 
-TextEditorScreen::TextEditorScreen(TextEditor* editor, size_t TextColumns, Blocks* blocks, std::string ctrlKey)
+TextEditorScreen::TextEditorScreen(TextEditor* editor, size_t TextColumns, Blocks* blocks, std::set<char> ctrlKey)
 {
 	_editor = editor;
 	_textColumns = TextColumns;
@@ -92,7 +92,7 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 			J++;
 		}
 		else {
-			if (_ctrlKey.find(cc) != std::string::npos) IsCtrl = true;
+			if (_ctrlKey.contains(cc)) IsCtrl = true;
 			else {
 				if (bScroll && (cc == 0x0C)) { InsPage = _editor->InsPg; I++; }
 			}
@@ -116,7 +116,7 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 				BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8);
 				J++;
 			}
-			else if (_ctrlKey.find(cc) != std::string::npos) {
+			else if (_ctrlKey.contains(cc)) {
 				size_t pp = CO.find(cc);
 				if (pp != std::string::npos) {
 					CO = CO.substr(0, pp) + CO.substr(pp + 1, len - pp + 1);
@@ -142,15 +142,27 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 
 BYTE TextEditorScreen::Color(char c, BYTE ColKey[])
 {
-	const size_t indexOfKey = _ctrlKey.find(c);
-	return ColKey[indexOfKey + 1];
+	size_t index = 0;
+	switch (c) {
+	case '\x13': index = 0; break;
+	case '\x17': index = 1; break;
+	case '\x11': index = 2; break;
+	case '\x04': index = 3; break;
+	case '\x02': index = 4; break;
+	case '\x05': index = 5; break;
+	case '\x01': index = 6; break;
+	default: index = 7; break;
+		// default case is not needed, but added for safety
+		// if the last color is not in the list, return the default text color
+	}
+	return ColKey[index];
 }
 
 BYTE TextEditorScreen::Color(ColorOrd CO, BYTE ColKey[], BYTE TxtColor)
 {
-	if (CO.length() == 0) {
+	if (CO.empty()) {
 		return TxtColor;
 	}
-	const char lastColor = CO[CO.length() - 1];
-	return Color(lastColor, ColKey);
+
+	return Color(CO[CO.length() - 1], ColKey);
 }
