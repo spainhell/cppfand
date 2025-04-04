@@ -226,4 +226,7 @@ private:
 	bool InsPg = false;
 	bool HardL = false; // actual line (Arr) ended with CRLF "\r\n" - otherwise only with CR "\r"
 	bool _change_scr = true; // true if screen needs to be updated (e.g. after scrolling or changes on more lines)
+
+	///  { ^s - underline, ^w - italic, ^q - expanded, ^d - double, ^b - bold, ^e - compressed, ^a - ELITE }
+	std::set<char> CtrlKey = { '\x13', '\x17', '\x11', '\x04', '\x02', '\x05', '\x01' };
 };
