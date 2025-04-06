@@ -36,7 +36,7 @@ const int SuccLineSize = 256;
 extern bool bScroll;
 
 extern WORD MaxLenT, IndexT, ScrT;
-extern WORD ScreenIndex;
+//extern WORD ScreenIndex;
 extern WORD textIndex, positionOnActualLine, BPos;
 extern WORD NextLineStartIndex, PageS, LineS;
 extern int RScrL;
@@ -97,7 +97,7 @@ public:
 	friend class TextEditorScreen;
 
 	TextEditor(EditorMode e_mode, TextType text_type);
-	~TextEditor();
+	virtual ~TextEditor();
 
 	bool EditText(EditorMode e_mode, TextType text_type, std::string pName, std::string pErrMsg,
 		std::string& text, size_t pMaxLen, size_t& pInd, int& pScr,
@@ -119,6 +119,10 @@ public:
 	std::string InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
 
 protected:
+	virtual void Background();
+	virtual void UpdStatLine(int Row, int Col);
+	void UpdScreen();
+	void WriteMargins();
 	size_t FindCharPosition(char c, size_t from, size_t n = 1);
 	size_t CountChar(char C, size_t first, size_t last);
 	WORD SetInd(WORD Ind, WORD Pos);
@@ -146,9 +150,9 @@ protected:
 	std::vector<std::string> _lines;
 	char Arr[LineMaxSize]{ '\0' };  // dekodovany 1 radek
 	BYTE TxtColor = 0;
-	size_t word_line = 0;
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
+	bool IsWrScreen = false;
 
 private:
 	EditorMode _mode = EditorMode::Unknown;
@@ -158,15 +162,12 @@ private:
 	TextEditorScreen* _screen = nullptr;
 	Blocks* blocks = nullptr;
 
-	void Background();
 	void FindReplaceString(int First, int Last);
 	void ScrollPress();
 	void DisplLL(WORD Flags);
 	void WrStatusLine();
-	void WriteMargins();
 	void WrLLMargMsg(std::string& s, WORD n);
 	void InitScr();
-	void UpdStatLine(int Row, int Col);
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void SetBlockBound(int& BBPos, int& EBPos);
 	void ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p);
@@ -177,7 +178,6 @@ private:
 	void BlockDrop(char Oper, void* P1, LongStr* sp);
 	void BlockCDrop(char Oper, void* P1, LongStr* sp);
 	void TestUpdFile();
-	//void WrEndT();
 	void KodLine();
 	void DekodLine();
 	void FrameStep(BYTE& odir, PressedKey EvKeyC);
@@ -196,7 +196,6 @@ private:
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 	void Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void UpdateLine();
-	void UpdScreen();
 	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
 	WORD CurrentLineFirstCharIndex(WORD index);
 	void NextPartDek();
@@ -206,7 +205,6 @@ private:
 	bool ReadTextFile();
 	//void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count);
 	void UpdateFile();
-	void MoveIdx(int dir);
 	bool TestLastPos(WORD F, WORD T);
 	void MoveB(WORD& B, WORD& F, WORD& T);
 	void DelChar();
