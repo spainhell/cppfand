@@ -1279,25 +1279,12 @@ void TextEditor::DisplLL(WORD Flags)
 		WrLLMargMsg(AltLastS, 0);
 }
 
-//void MyInsLine()
-//{
-//	TextAttr = TxtColor;
-//	InsLine();
-//}
-
-//void MyDelLine()
-//{
-//	TextAttr = TxtColor;
-//	DelLine();
-//}
-
 void TextEditor::RollNext()
 {
 	std::string txt = JoinLines(_lines);
 
 	if (NextLineStartIndex <= txt.length()) {
 		screen.GotoXY(1, 1);
-		//MyDelLine();
 		ScreenFirstLineNr++;
 		_change_scr = true;
 		if (TextLineNr < ScreenFirstLineNr) {
@@ -1315,7 +1302,6 @@ void TextEditor::RollPred()
 
 	if (ScreenFirstLineNr > 1) {
 		screen.GotoXY(1, 1);
-		//MyInsLine();
 		ScreenFirstLineNr--;
 		_change_scr = true;
 		if (TextLineNr == ScreenFirstLineNr + PageS) {
@@ -1325,6 +1311,78 @@ void TextEditor::RollPred()
 			else { CopyCurrentLineToArr(textIndex - 1); }
 		}
 	}
+}
+
+void TextEditor::ProcessPageUp()
+{
+	size_t I1 = 0, I2 = 0;
+
+	if (UpdatedL) KodLine();
+
+
+	int32_t L1 = blocks->LineAbs(TextLineNr);
+
+	if (bScroll) {
+		RScrL = MaxL(1, RScrL - PageS);
+		if (ModPage(RScrL)) { RScrL++; }
+		ScreenFirstLineNr = NewL(RScrL);
+		TextLineNr = ScreenFirstLineNr;
+		DekFindLine(blocks->LineAbs(TextLineNr));
+		positionOnActualLine = Position(Colu);
+		int j = 0; // TODO: CountChar(0x0C, textIndex, ScreenIndex);
+
+		if ((j > 0) && InsPg) {
+			DekFindLine(blocks->LineAbs(TextLineNr + j));
+			ScreenFirstLineNr = TextLineNr;
+			RScrL = NewRL(ScreenFirstLineNr);
+		}
+	}
+	else {
+		if (ScreenFirstLineNr > PageS) {
+			ScreenFirstLineNr -= PageS;
+		}
+		else {
+			ScreenFirstLineNr = 1;
+		}
+
+		DekFindLine(blocks->LineAbs(TextLineNr - PageS));
+	}
+
+	_change_scr = true;
+
+	BlockUDShift(L1);
+}
+
+void TextEditor::ProcessPageDown()
+{
+	if (UpdatedL) KodLine();
+
+	int L1 = blocks->LineAbs(TextLineNr);
+
+	if (bScroll) {
+		RScrL += PageS;
+		if (ModPage(RScrL)) {
+			RScrL--;
+		}
+		DekFindLine(blocks->LineAbs(NewL(RScrL)));
+		positionOnActualLine = Position(Colu);
+		// TODO:
+		int j = 0; // CountChar(0x0C, ScreenIndex, textIndex);
+		if ((j > 0) && InsPg) {
+			DekFindLine(blocks->LineAbs(TextLineNr - j));
+		}
+		ScreenFirstLineNr = TextLineNr;
+		RScrL = NewRL(ScreenFirstLineNr);
+	}
+	else {
+		DekFindLine(blocks->LineAbs(TextLineNr) + PageS);
+		if (TextLineNr >= ScreenFirstLineNr + PageS) {
+			ScreenFirstLineNr += PageS;
+		}
+	}
+
+	_change_scr = true;
+	BlockUDShift(L1);
 }
 
 void TextEditor::ClrWord()

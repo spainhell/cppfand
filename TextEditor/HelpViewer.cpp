@@ -136,6 +136,102 @@ void HelpViewer::ProcessHelpMode()
 	}
 }
 
+void HelpViewer::ProcessPageUp()
+{
+	ClrWord();
+	TextLineNr = ScreenFirstLineNr;
+
+	//int32_t L1 = blocks->LineAbs(TextLineNr);
+
+	if (bScroll) {
+		RScrL = MaxL(1, RScrL - PageS);
+		if (ModPage(RScrL)) { RScrL++; }
+		ScreenFirstLineNr = NewL(RScrL);
+		TextLineNr = ScreenFirstLineNr;
+		//DekFindLine(blocks->LineAbs(TextLineNr));
+		positionOnActualLine = Position(Colu);
+		// TODO: j = CountChar(0x0C, textIndex, ScreenIndex);
+
+		//if ((j > 0) && InsPg) {
+		//	DekFindLine(blocks->LineAbs(TextLineNr + j));
+		//	ScreenFirstLineNr = TextLineNr;
+		//	RScrL = NewRL(ScreenFirstLineNr);
+		//}
+	}
+	else {
+		if (ScreenFirstLineNr > PageS) {
+			ScreenFirstLineNr -= PageS;
+		}
+		else {
+			ScreenFirstLineNr = 1;
+		}
+
+		//DekFindLine(blocks->LineAbs(TextLineNr - PageS));
+	}
+
+	//_change_scr = true;
+
+	//ScreenIndex = editor->GetLineStartIndex(editor->ScreenFirstLineNr);
+	positionOnActualLine = Position(Colu);
+
+	size_t I1 = 0, I2 = 0;
+	if (WordFind(WordNo2() + 1, I1, I2, _word.start_line) && WordExist()) {
+		SetWord(I1, I2);
+	}
+	else {
+		_word.start_line = 0;
+	}
+
+}
+
+void HelpViewer::ProcessPageDown()
+{
+		ClrWord();
+		TextLineNr = ScreenFirstLineNr;
+
+	//L1 = editor->blocks->LineAbs(editor->TextLineNr);
+
+	if (bScroll) {
+		RScrL += PageS;
+		if (ModPage(RScrL)) {
+			RScrL--;
+		}
+		DekFindLine(blocks->LineAbs(NewL(RScrL)));
+		positionOnActualLine = Position(Colu);
+		// TODO:
+		int j = 0; // CountChar(0x0C, ScreenIndex, textIndex);
+		if ((j > 0) && InsPg) {
+			DekFindLine(blocks->LineAbs(TextLineNr - j));
+		}
+		ScreenFirstLineNr = TextLineNr;
+		RScrL = NewRL(ScreenFirstLineNr);
+	}
+	else {
+		DekFindLine(blocks->LineAbs(TextLineNr) + PageS);
+		if (TextLineNr >= ScreenFirstLineNr + PageS) {
+			ScreenFirstLineNr += PageS;
+		}
+	}
+
+		//ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
+		positionOnActualLine = Position(Colu);
+
+		size_t I1 = 0, I2 = 0;
+		size_t W1 = 0, W2 = 0;
+
+		W1 = WordNo2();
+
+		if (WordFind(W1 + 1, I1, I2, _word.start_line) && WordExist()) {
+			SetWord(I1, I2);
+		}
+		else if (WordFind(W1, I1, I2, _word.start_line) && WordExist()) {
+			SetWord(I1, I2);
+		}
+		else {
+			_word.start_line = 0;
+		}
+}
+
 bool HelpViewer::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr)
 {
 	size_t len = GetTotalLength(_lines);

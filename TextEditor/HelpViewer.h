@@ -28,6 +28,8 @@ private:
 	void HelpRD(char dir) override;
 	void ClrWord() override;
 	void ProcessHelpMode() override;
+	void ProcessPageUp() override;
+	void ProcessPageDown() override;
 
 	WordPosition _word; // last help word position
 };
