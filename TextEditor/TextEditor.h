@@ -134,6 +134,9 @@ protected:
 	void NextLine(bool WrScr);
 	void RollNext();
 	void RollPred();
+	int NewRL(int Line);
+	virtual void ProcessPageUp();
+	virtual void ProcessPageDown();
 
 	// *** methods for HELP viewer ***
 	virtual void ClrWord();
@@ -212,7 +215,6 @@ private:
 	void Calculate();
 	void BlockLRShift(WORD I1);
 	void BlockUDShift(int L1);
-	int NewRL(int Line);
 	bool BlockExist();
 	bool ColBlockExist();
 	void NewBlock1(WORD& I1, int& L2);

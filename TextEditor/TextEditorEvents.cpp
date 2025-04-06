@@ -736,110 +736,11 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				break;
 			}
 			case __PAGEUP: {
-				if (mode == EditorMode::Help) {
-					if (UpdatedL) editor->KodLine();
-				}
-				else {
-					editor->ClrWord();
-					editor->TextLineNr = editor->ScreenFirstLineNr;
-				}
-
-				L1 = editor->blocks->LineAbs(editor->TextLineNr);
-
-				if (bScroll) {
-					RScrL = MaxL(1, RScrL - PageS);
-					if (ModPage(RScrL)) { RScrL++; }
-					editor->ScreenFirstLineNr = NewL(RScrL);
-					editor->TextLineNr = editor->ScreenFirstLineNr;
-					editor->DekFindLine(editor->blocks->LineAbs(editor->TextLineNr));
-					positionOnActualLine = editor->Position(Colu);
-					// TODO: j = editor->CountChar(0x0C, textIndex, ScreenIndex);
-
-					if ((j > 0) && editor->InsPg) {
-						editor->DekFindLine(editor->blocks->LineAbs(editor->TextLineNr + j));
-						editor->ScreenFirstLineNr = editor->TextLineNr;
-						RScrL = editor->NewRL(editor->ScreenFirstLineNr);
-					}
-				}
-				else {
-					if (editor->ScreenFirstLineNr > PageS) {
-						editor->ScreenFirstLineNr -= PageS;
-					}
-					else {
-						editor->ScreenFirstLineNr = 1;
-					}
-
-					editor->DekFindLine(editor->blocks->LineAbs(editor->TextLineNr - PageS));
-				}
-
-				editor->_change_scr = true;
-
-				if (mode == EditorMode::Help) {
-					ScreenIndex = editor->GetLineStartIndex(editor->ScreenFirstLineNr);
-					positionOnActualLine = editor->Position(Colu);
-
-					if (editor->WordFind(editor->WordNo2() + 1, I1, I2, editor->word_line) && editor->WordExist()) {
-						editor->SetWord(I1, I2);
-					}
-					else {
-						editor->word_line = 0;
-					}
-				}
-				else {
-					editor->BlockUDShift(L1);
-				}
+				editor->ProcessPageUp();
 				break;
 			}
 			case __PAGEDOWN: {
-				if (mode != EditorMode::Help) {
-					if (UpdatedL) editor->KodLine();
-				}
-				else {
-					editor->ClrWord();
-					editor->TextLineNr = editor->ScreenFirstLineNr;
-				}
-
-				L1 = editor->blocks->LineAbs(editor->TextLineNr);
-
-				if (bScroll) {
-					RScrL += PageS;
-					if (ModPage(RScrL)) {
-						RScrL--;
-					}
-					editor->DekFindLine(editor->blocks->LineAbs(NewL(RScrL)));
-					positionOnActualLine = editor->Position(Colu);
-					j = editor->CountChar(0x0C, ScreenIndex, textIndex);
-					if ((j > 0) && editor->InsPg) {
-						editor->DekFindLine(editor->blocks->LineAbs(editor->TextLineNr - j));
-					}
-					editor->ScreenFirstLineNr = editor->TextLineNr;
-					RScrL = editor->NewRL(editor->ScreenFirstLineNr);
-				}
-				else {
-					editor->DekFindLine(editor->blocks->LineAbs(editor->TextLineNr) + PageS);
-					if (editor->TextLineNr >= editor->ScreenFirstLineNr + PageS) {
-						editor->ScreenFirstLineNr += PageS;
-					}
-				}
-				editor->_change_scr = true;
-				if (mode == EditorMode::Help) {
-					ScreenIndex = editor->GetLineStartIndex(editor->ScreenFirstLineNr);
-					positionOnActualLine = editor->Position(Colu);
-					W1 = editor->WordNo2();
-					I3 = editor->word_line;
-					if (editor->WordFind(W1 + 1, I1, I2, editor->word_line) && editor->WordExist()) {
-						editor->SetWord(I1, I2);
-					}
-					else if (editor->WordFind(W1, I1, I2, editor->word_line) && editor->WordExist()) {
-						editor->SetWord(I1, I2);
-					}
-					else {
-						editor->word_line = 0;
-					}
-				}
-				else {
-					editor->BlockUDShift(L1);
-				}
+				editor->ProcessPageDown();
 				break;
 			}
 			case __SCROLL_LOCK: {
@@ -921,7 +822,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			case _QE_: {
 				if (UpdatedL) editor->KodLine();
 				editor->TextLineNr = editor->ScreenFirstLineNr;
-				textIndex = ScreenIndex;
+				//textIndex = ScreenIndex;
 				editor->DekodLine();
 				break;
 			}
