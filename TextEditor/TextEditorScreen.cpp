@@ -1,11 +1,10 @@
 #include "../Drivers/constants.h"
 #include "TextEditorScreen.h"
 
-TextEditorScreen::TextEditorScreen(TextEditor* editor, size_t TextColumns, Blocks* blocks, std::set<char> ctrlKey)
+TextEditorScreen::TextEditorScreen(TextEditor* editor, size_t TextColumns, std::set<char> ctrlKey)
 {
 	_editor = editor;
 	_textColumns = TextColumns;
-	_blocks = blocks;
 	_ctrlKey = ctrlKey;
 }
 
@@ -19,7 +18,7 @@ void TextEditorScreen::EditWrline(const std::string& text_line, int Row, BYTE Co
 	BYTE nv2;
 
 	WORD Line = _editor->ScreenFirstLineNr + Row - 1;
-	if (_blocks->LineInBlock(Line) && (TypeB == TextBlock)) {
+	if (_editor->LineInBlock(Line) && (TypeB == TextBlock)) {
 		nv2 = BlockColor;
 	}
 	else {
@@ -47,15 +46,15 @@ void TextEditorScreen::EditWrline(const std::string& text_line, int Row, BYTE Co
 		BuffLine[i] = (nv2 << 8) + ' ';
 	}
 
-	if (_blocks->BegBLn <= _blocks->EndBLn) {
-		if (_blocks->LineBndBlock(Line) || ((TypeB == ColBlock) && _blocks->LineInBlock(Line))) {
+	if (_editor->BegBLn <= _editor->EndBLn) {
+		if (_editor->LineBndBlock(Line) || ((TypeB == ColBlock) && _editor->LineInBlock(Line))) {
 			short B, E;
-			if ((_blocks->BegBLn == _blocks->LineAbs(Line)) || (TypeB == ColBlock)) {
-				B = MinI(_blocks->BegBPos, LineS + BPos + 1);
+			if ((_editor->BegBLn == _editor->LineAbs(Line)) || (TypeB == ColBlock)) {
+				B = MinI(_editor->BegBPos, LineS + BPos + 1);
 			}
 			else { B = 1; }
-			if ((_blocks->EndBLn == _blocks->LineAbs(Line)) || (TypeB == ColBlock)) {
-				E = MinI(_blocks->EndBPos, LineS + BPos + 1);
+			if ((_editor->EndBLn == _editor->LineAbs(Line)) || (TypeB == ColBlock)) {
+				E = MinI(_editor->EndBPos, LineS + BPos + 1);
 			}
 			else { E = LineS + BPos + 1; }
 			for (i = B; i <= pred(E); i++) {
