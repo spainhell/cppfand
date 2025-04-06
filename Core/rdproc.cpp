@@ -2161,7 +2161,7 @@ Instr* RdEditTxt(Compiler* compiler)
 		compiler->TestString(PD->TxtLV->f_typ);
 	}
 	else RdPath(compiler, true, PD->TxtPath, PD->TxtCatIRec);
-	PD->EdTxtMode = 'T';
+	PD->EdTxtMode = EditorMode::Text;
 	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		if (compiler->IsOpt("WW")) {
@@ -2196,8 +2196,12 @@ Instr* RdEditTxt(Compiler* compiler)
 			}
 			else
 				if (RdHeadLast(compiler, PD)) {}
-				else if (compiler->IsKeyWord("NOEDIT")) PD->EdTxtMode = 'V';
-				else compiler->Error(161);
+				else if (compiler->IsKeyWord("NOEDIT")) {
+					PD->EdTxtMode = EditorMode::View;
+				}
+				else {
+					compiler->Error(161);
+				}
 	}
 	return PD;
 }

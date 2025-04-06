@@ -69,7 +69,7 @@ void ReportProc(RprtOpt* RO, bool save)
 {
 	//void* p = nullptr;
 	//void* p2 = nullptr;
-	char md = '\0';
+	EditorMode md = EditorMode::Unknown;
 	int w = 0;
 	//ExitRecord er;
 	//MarkBoth(p, p2);
@@ -108,8 +108,8 @@ void ReportProc(RprtOpt* RO, bool save)
 			auto_report->RunAutoReport(RO);
 		}
 	}
-	if (RO->Edit) md = 'T';
-	else md = 'V';
+	if (RO->Edit) md = EditorMode::Text;
+	else md = EditorMode::View;
 	if (save) {
 		SaveFiles();
 	}

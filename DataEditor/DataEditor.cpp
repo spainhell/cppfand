@@ -3805,7 +3805,7 @@ bool DataEditor::EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& B
 	WORD CtrlMsgNr = 0;
 	WORD C = 0, LastLen = 0;
 	std::string edit_text;
-	char Kind = '\0';
+	EditorMode kind = EditorMode::Unknown;
 	LockMode md;
 	void* p = nullptr;
 	int i = 0, w = 0;
@@ -3858,12 +3858,12 @@ label1:
 	if ((R1 == 3) && params_->WithBoolDispl) R1 = 2;
 	screen.Window(edit_->FrstCol, R1, edit_->LastCol, edit_->LastRow);
 	TextAttr = screen.colors.tNorm;
-	Kind = 'V';
+	kind = EditorMode::View;
 	OldTxtPos = TxtPos;
 	if (Ed) LockRec(false);
 	if ((F->Flg & f_Stored) != 0) {
 		edit_text = file_d_->loadS(F, record_);
-		if (Ed) Kind = 'T';
+		if (Ed) kind = EditorMode::Text;
 	}
 	else {
 		edit_text = RunString(file_d_, F->Frml, record_);
@@ -3879,7 +3879,7 @@ label2:
 	Upd = false;
 	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
 	result =
-		editor->EditText(Kind, MemoT, HdTxt, ErrMsg, edit_text, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
+		editor->EditText(kind, TextType::Memo, HdTxt, ErrMsg, edit_text, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
 	ErrMsg = "";
 	heslo = gc->LexWord;

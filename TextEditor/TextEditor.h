@@ -28,7 +28,6 @@ bool MyPromptLL(WORD n, std::string& s);
 void SetPartLine(int Ln);
 void MyWrLLMsg(std::string s);
 void HMsgExit(std::string s);
-void OpenTxtFh(char Mode);
 void SimplePrintHead();
 
 const int SuccLineSize = 256;
@@ -43,7 +42,6 @@ extern WORD NextLineStartIndex, PageS, LineS;
 extern int RScrL;
 extern bool Konec;
 extern bool EditT;
-extern char TypeT;
 extern bool SrchT, UpdatT;
 extern int* LocalPPtr;
 extern HANDLE TxtFH;
@@ -65,10 +63,10 @@ const BYTE LineMaxSize = 255;
 const bool TextBlock = false;
 const bool ColBlock = true;
 
-const char TextM = 'T'; const char ViewM = 'V'; const char HelpM = 'H';
-const char SinFM = 'S'; const char DouFM = 'D'; const char DelFM = 'F';
-const char NotFM = 'N'; const char FileT = 'F'; const char LocalT = 'V';
-const char MemoT = 'M';
+//const char TextM = 'T'; const char ViewM = 'V'; const char HelpM = 'H';
+//const char SinFM = 'S'; const char DouFM = 'D'; const char DelFM = 'F';
+//const char NotFM = 'N'; const char FileT = 'F'; const char LocalT = 'V';
+//const char MemoT = 'M';
 
 const WORD _QY_ = 0x1119; const WORD _QL_ = 0x110C; const WORD _QK_ = 0x110B;
 const WORD _QB_ = 0x1102; const WORD _QI_ = 0x1109; const WORD _QF_ = 0x1106;
@@ -89,6 +87,10 @@ const BYTE CountC = 7;
 class TextEditorEvents;
 class TextEditorScreen;
 
+enum class EditorMode {	Unknown, Normal, Text, Help, View, Edit, FrameSingle, FrameDouble, DeleteFrame, NotFrame };
+enum class TextType { Unknown, File, Local, Memo };
+
+
 class TextEditor
 {
 public:
@@ -98,13 +100,13 @@ public:
 	TextEditor();
 	~TextEditor();
 
-	bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
+	bool EditText(EditorMode e_mode, TextType text_type, std::string pName, std::string pErrMsg,
 		std::string& text, size_t pMaxLen, size_t& pInd, int& pScr,
 		std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat,
 		WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS);
-	void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, std::string& text,
+	void SimpleEditText(EditorMode editor_mode, std::string pErrMsg, std::string pName, std::string& text,
 		size_t MaxLen, size_t& Ind, bool& Updat);
-	void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
+	void EditTxtFile(std::string* locVar, EditorMode e_mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
 		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 	void ViewPrinterTxt();
 	void SetEditTxt(Instr_setedittxt* PD);
@@ -119,8 +121,10 @@ public:
 	std::string InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
 
 private:
-
 	std::vector<std::string> _lines;
+
+	EditorMode _mode = EditorMode::Unknown;
+	TextType _text_type = TextType::Unknown;
 
 	TextEditorEvents* _events = nullptr;
 	TextEditorScreen* _screen = nullptr;
@@ -134,7 +138,7 @@ private:
 	void WriteMargins();
 	void WrLLMargMsg(std::string& s, WORD n);
 	void InitScr();
-	void UpdStatLine(int Row, int Col, char mode);
+	void UpdStatLine(int Row, int Col);
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	WORD SetInd(WORD Ind, WORD Pos);
 	void SetBlockBound(int& BBPos, int& EBPos);
@@ -209,6 +213,8 @@ private:
 	WORD Position(WORD n);
 	WORD Column(WORD p);
 	WORD GetArrLineLength();
+	void direction(BYTE x, BYTE& zn2);
+	void OpenTxtFh(EditorMode mode);
 
 	size_t word_line = 0;
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)

@@ -61,16 +61,12 @@ const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
 const WORD TextStore = 0x1000;
 const BYTE TStatL = 35; /*=10(Col Row)+length(InsMsg+IndMsg+WrapMsg+JustMsg+BlockMsg)*/
 
-
-
 std::set<char> Separ = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
 26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,58,59,60,61,62,63,64,
 91,92,93,94,96,123,124,125,126,127 };
 
 
 // {**********global param begin for SaveParams}  // r85
-char Mode = '\0';
-char TypeT = '\0';
 std::string NameT;
 std::string ErrMsg;
 WORD MaxLenT = 0;
@@ -442,13 +438,13 @@ void TextEditor::UpdateFile()
 	}
 }
 
-void OpenTxtFh(char Mode)
+void TextEditor::OpenTxtFh(EditorMode e_mode)
 {
 	FileUseMode UM;
 	CPath = TxtPath;
 	CVol = TxtVol;
 	TestMountVol(CPath[0]);
-	if (Mode == ViewM) {
+	if (e_mode == EditorMode::View) {
 		UM = RdOnly;
 	}
 	else {
@@ -489,7 +485,7 @@ pstring ShortName(pstring Name)
 void TextEditor::WrStatusLine()
 {
 	std::string Blanks;
-	if (Mode != HelpM) {
+	if (_mode != EditorMode::Help) {
 		if (HeadS.length() > 0) {
 			Blanks = AddTrailChars(HeadS, ' ', TXTCOLS);
 			size_t i = Blanks.find('_');
@@ -523,7 +519,7 @@ void TextEditor::WriteMargins()
 {
 	CHAR_INFO LastL[201];
 
-	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
+	if ((_mode != EditorMode::Help) && (_mode != EditorMode::View) && Wrap) {
 		screen.ScrRdBuf(FirstC, TxtRows, LastL, LineS);
 		LastL[MargLL[0]].Attributes = MargLL[1] >> 8;
 		LastL[MargLL[0]].Char.AsciiChar = MargLL[1] & 0x00FF;
@@ -562,7 +558,7 @@ void TextEditor::WrLLMargMsg(std::string& s, WORD n)
 			else {
 				WrLLMsg(LastNr);
 			}
-			if (Mode == TextM) {
+			if (_mode == EditorMode::Text) {
 				WriteMargins();
 			}
 		}
@@ -577,7 +573,7 @@ void TextEditor::InitScr()
 	LastR = WindMax.Y;
 	LastC = WindMax.X;
 
-	if ((FirstR == 1) && (Mode != HelpM)) {
+	if ((FirstR == 1) && (_mode != EditorMode::Help)) {
 		FirstR++;
 	}
 	if (LastR == TxtRows) {
@@ -586,14 +582,14 @@ void TextEditor::InitScr()
 	MinC = FirstC; MinR = FirstR; MaxC = LastC; MaxR = LastR;
 	screen.Window(FirstC, FirstR, LastC, LastR);
 	FirstR--;
-	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
+	if ((_mode != EditorMode::Help) && (_mode != EditorMode::View) && Wrap) {
 		LastC--;
 	}
 	PageS = LastR - FirstR;
 	LineS = succ(LastC - FirstC);
 }
 
-void TextEditor::UpdStatLine(int Row, int Col, char mode)
+void TextEditor::UpdStatLine(int Row, int Col)
 {
 	char RowCol[] = "RRRRR:CCCCC";
 	char StatLine[] = "                                   ";
@@ -603,8 +599,8 @@ void TextEditor::UpdStatLine(int Row, int Col, char mode)
 		snprintf(RowCol, sizeof(RowCol), "%5i:%-5i", lRow, Col);
 		memcpy(&StatLine[1], RowCol, 11); // 11 znaku ve format 'RRRRR:CCCCC'
 
-		switch (mode) { // uses parameter 'mode', not global variable 'Mode'
-		case TextM: {
+		switch (_mode) { // uses parameter 'mode', not global variable 'Mode'
+		case EditorMode::Text: {
 			if (Insert) {
 				memcpy(&StatLine[10], InsMsg.c_str(), 5);
 			}
@@ -625,17 +621,17 @@ void TextEditor::UpdStatLine(int Row, int Col, char mode)
 			}
 			break;
 		}
-		case ViewM: {
+		case EditorMode::View: {
 			memcpy(&StatLine[10], ViewMsg.c_str(), ViewMsg.length());
 			break;
 		}
-		case SinFM: {
+		case EditorMode::FrameSingle: {
 			StatLine[12] = '-'; break;
 		}
-		case DouFM: {
+		case EditorMode::FrameDouble: {
 			StatLine[12] = '='; break;
 		}
-		case DelFM: {
+		case EditorMode::DeleteFrame: {
 			StatLine[12] = '/'; break;
 		}
 		default: break;
@@ -787,11 +783,17 @@ void TextEditor::DekodLine()
 {
 	std::string& line = _lines[TextLineNr - 1];
 
-	HardL = line.ends_with("\r\n");
+	// is it the last line? (no CR or LF)
+	bool b_last_line = !(line.ends_with('\r') || line.ends_with('\n'));
+
+	if (!b_last_line) {
+		// it's not the last line, check if it ends with CR or LF
+		HardL = line.ends_with("\r\n");
+	}
 
 	if (line.length() > LineMaxSize) {
 		line = line.substr(0, LineMaxSize);
-		if (Mode == TextM) {
+		if (_mode == EditorMode::Text) {
 			if (PromptYN(402)) {
 				// split line into two lines, insert new line to vector of lines
 				line = line.substr(0, LineMaxSize - (HardL ? 2 : 1)) + (HardL ? "\r\n" : "\r");
@@ -800,14 +802,19 @@ void TextEditor::DekodLine()
 			}
 		}
 		else {
-			Mode = ViewM;
+			_mode = EditorMode::View;
 		}
 	}
 
 	FillChar(Arr, LineMaxSize, ' ');
 	if (!line.empty()) {
-		// copy line to Arr	without CR/LF
-		memcpy(Arr, line.c_str(), line.length() - (HardL ? 2 : 1));
+		if (b_last_line) {
+			memcpy(Arr, line.c_str(), line.length());
+		}
+		else {
+			// copy line to Arr	without CR/LF
+			memcpy(Arr, line.c_str(), line.length() - (HardL ? 2 : 1));
+		}
 	}
 
 	UpdatedL = false;
@@ -984,7 +991,7 @@ void TextEditor::PosDekFindLine(int Num, WORD Pos, bool ChScr)
 
 void TextEditor::WrEndL(bool Hard, int Row)
 {
-	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
+	if ((_mode != EditorMode::Help) && (_mode != EditorMode::View) && Wrap) {
 		WORD w;
 		if (Hard) {
 			w = 0x11 + static_cast<WORD>(TxtColor << 8);
@@ -1085,7 +1092,7 @@ void TextEditor::UpdScreen()
 		}
 		_screen->ScrollWrline(&Arr[r], columnOffset, 1, co1, ColKey, TxtColor, InsPage);
 	}
-	else if (Mode == HelpM) {
+	else if (_mode == EditorMode::Help) {
 		//co1 = Part.ColorP;
 		co1 = SetColorOrd(TextLineNr - 1);
 		_screen->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 1, co1, ColKey, TxtColor, InsPage);
@@ -1169,12 +1176,12 @@ void TextEditor::UpdScreen()
 
 void TextEditor::Background()
 {
-	UpdStatLine(TextLineNr, positionOnActualLine, Mode);
+	UpdStatLine(TextLineNr, positionOnActualLine);
 	// TODO: musi to tady byt?
 	// if (MyTestEvent()) return;
 	if (HelpScroll) {
 		WORD p = positionOnActualLine;
-		if (Mode == HelpM) {
+		if (_mode == EditorMode::Help) {
 			if (word_line == TextLineNr) {
 				while (Arr[p] != 0x11) {
 					p++;
@@ -1266,8 +1273,8 @@ void TextEditor::ScrollPress()
 	bool old = bScroll;
 	const bool fyz = keyboard.GetState(VK_SCROLL) & 0x0001;
 	if (fyz == old) FirstScroll = false;
-	bScroll = (fyz || FirstScroll) && (Mode != HelpM);
-	HelpScroll = bScroll || (Mode == HelpM);
+	bScroll = (fyz || FirstScroll) && (_mode != EditorMode::Help);
+	HelpScroll = bScroll || (_mode == EditorMode::Help);
 	int L1 = blocks->LineAbs(ScreenFirstLineNr);
 	if (old != bScroll) {
 		if (bScroll) {
@@ -1296,9 +1303,16 @@ void TextEditor::ScrollPress()
 			if ((PredScLn < L1) || (PredScLn >= L1 + PageS)) PredScLn = L1;
 			if (!(PredScPos >= BPos + 1 && PredScPos <= BPos + LineS)) PredScPos = BPos + 1;
 			PosDekFindLine(PredScLn, PredScPos, false);
-			if (Mode == ViewM || Mode == SinFM || Mode == DouFM
-				|| Mode == DelFM || Mode == NotFM) screen.CrsBig();
-			else screen.CrsNorm();
+			if (   _mode == EditorMode::View 
+				|| _mode == EditorMode::FrameSingle 
+				|| _mode == EditorMode::FrameDouble
+				|| _mode == EditorMode::DeleteFrame 
+				|| _mode == EditorMode::NotFrame) {
+				screen.CrsBig();
+			}
+			else {
+				screen.CrsNorm();
+			}
 		}
 		Background();
 	}
@@ -1362,12 +1376,12 @@ void TextEditor::RollPred()
 	}
 }
 
-void direction(BYTE x, BYTE& zn2)
+void TextEditor::direction(BYTE x, BYTE& zn2)
 {
 	BYTE y = 0x10;
 	if (x > 2) { y = y << 1; }
 	if (x == 0) { y = 0; }
-	if (Mode == DouFM) {
+	if (_mode == EditorMode::FrameDouble) {
 		zn2 = zn2 | y;
 	}
 	else {
@@ -1550,13 +1564,13 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 	//                                       ║       ╔   ╚   ╠       ╗   ╝   ╣   ═   ╦   ╩   ╬
 
 	switch (EvKeyC.KeyCombination()) {
-	case '-': { Mode = SinFM; break; }
-	case '=': { Mode = DouFM; break; }
-	case '/': { Mode = DelFM; break; }
-	case ' ': { Mode = NotFM; break; }
+	case '-': { _mode = EditorMode::FrameSingle; break; }
+	case '=': { _mode = EditorMode::FrameDouble; break; }
+	case '/': { _mode = EditorMode::DeleteFrame; break; }
+	case ' ': { _mode = EditorMode::NotFrame; break; }
 	case __ESC: {
 		screen.CrsNorm();
-		Mode = TextM;
+		_mode = EditorMode::Text;
 		break;
 	}
 	case __LEFT:
@@ -1581,7 +1595,7 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 		char oldzn = Arr[positionOnActualLine - 1];
 		Arr[positionOnActualLine - 1] = ' ';
 		BYTE b;
-		if (Mode == DelFM) {
+		if (_mode == EditorMode::DeleteFrame) {
 			b = zn1 & !(odir | dir);
 		}
 		else {
@@ -1590,12 +1604,12 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 		if (b == 1 || b == 2 || b == 4 || b == 8) {
 			b = 0;
 		}
-		if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) {
+		if ((_mode == EditorMode::DeleteFrame) && (zn1 != 0) && (b == 0)) {
 			oldzn = ' ';
 		}
 		direction(dir, zn2);
 		direction(odir, zn2);
-		if (Mode == NotFM) {
+		if (_mode == EditorMode::NotFrame) {
 			b = 0;
 		}
 
@@ -1614,7 +1628,7 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 			odir = dir / 2;
 		}
 
-		if (Mode == NotFM) odir = 0;
+		if (_mode == EditorMode::NotFrame) odir = 0;
 		else UpdatedL = true;
 
 		switch (Event.Pressed.KeyCombination()) {
@@ -1639,7 +1653,7 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 	}
 	break;
 	}
-	UpdStatLine(TextLineNr, positionOnActualLine, Mode);
+	UpdStatLine(TextLineNr, positionOnActualLine);
 }
 
 void TextEditor::MoveB(WORD& B, WORD& F, WORD& T)
@@ -1980,7 +1994,7 @@ void TextEditor::Calculate()
 		if (Event.Pressed.KeyCombination() == 'U') goto label0;
 		if (Event.Pressed.KeyCombination() == __ESC || txt.empty()) goto label3;
 		CalcTxt = txt;
-		if (Event.Pressed.KeyCombination() == __CTRL_F4 && Mode == TextM && !bScroll) {
+		if (Event.Pressed.KeyCombination() == __CTRL_F4 && _mode == EditorMode::Text && !bScroll) {
 			if (txt.length() > LineMaxSize - GetArrLineLength()) {
 				I = LineMaxSize - GetArrLineLength();
 				WrLLF10Msg(419);
@@ -2385,7 +2399,7 @@ void TextEditor::BlockCDrop(char Oper, void* P1, LongStr* sp)
 			ww = blocks->BegBPos;
 			blocks->EndBPos = MaxW(ww + i, blocks->EndBPos);
 			std::string txt = JoinLines(_lines);
-			if ((NextLineStartIndex > txt.length()) && ((TypeT != FileT) || true /*AllRd*/)) {
+			if ((NextLineStartIndex > txt.length()) && ((_text_type != TextType::File) || true /*AllRd*/)) {
 				//TestLenText(&_textT, _lenT, _lenT, (int)_lenT + 2);
 				UpdatT = true;
 				txt[txt.length() - 2] = __CR;
@@ -2436,7 +2450,7 @@ void TextEditor::NewBlock1(WORD& I1, int& L2)
 
 void TextEditor::BlockLRShift(WORD I1)
 {
-	if (!bScroll && (Mode != HelpM) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
+	if (!bScroll && (_mode != EditorMode::Help) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
 	{
 		int L2 = blocks->LineAbs(TextLineNr);
 		if (!ColBlockExist()) NewBlock1(I1, L2);
@@ -2477,7 +2491,7 @@ void TextEditor::NewBlock2(int& L1, int& L2)
 void TextEditor::BlockUDShift(int L1)
 {
 	int L2;
-	if (!bScroll && (Mode != HelpM) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
+	if (!bScroll && (_mode != EditorMode::Help) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
 	{
 		L2 = blocks->LineAbs(TextLineNr);
 		if (!ColBlockExist()) NewBlock2(L1, L2);
@@ -2609,7 +2623,7 @@ void TextEditor::FindReplaceString(int First, int Last)
 {
 	WORD lst;
 	if (First >= Last) {
-		if ((TypeT == MemoT) && TestOptStr('e')) {
+		if ((_text_type == TextType::Memo) && TestOptStr('e')) {
 			SrchT = true;
 			Konec = true;
 		}
@@ -2629,7 +2643,7 @@ label1:
 		if (Replace) {
 			if (TestOptStr('n')) {
 				ReplaceString(fst, fst, lst, Last);
-				UpdStatLine(TextLineNr, positionOnActualLine, Mode);/*BackGround*/
+				UpdStatLine(TextLineNr, positionOnActualLine);/*BackGround*/
 			}
 			else {
 				FirstEvent = true;
@@ -2648,7 +2662,7 @@ label1:
 		//	goto label1;
 		//}
 		//else {
-		if (TestOptStr('e') && (TypeT == MemoT)) {
+		if (TestOptStr('e') && (_text_type == TextType::Memo)) {
 			SrchT = true; Konec = true;
 		}
 		else {
@@ -2829,7 +2843,7 @@ void TextEditor::CursorWord()
 
 	WORD pp = positionOnActualLine;
 
-	if (Mode == HelpM) {
+	if (_mode == EditorMode::Help) {
 		O.insert(0x11);
 	}
 	else {
@@ -2866,20 +2880,20 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 	PredScLn = 1;
 	PredScPos = 1;
 	UpdPHead = false;
-	if (TypeT != FileT) {
+	if (_text_type != TextType::File) {
 		AbsLenT = text.length() - 1;
 		SimplePrintHead();
 	}
 
-	FirstScroll = Mode == ViewM;
+	FirstScroll = _mode == EditorMode::View;
 	const bool keybScroll = GetKeyState(VK_SCROLL) & 0x0001;
-	bScroll = (keybScroll || FirstScroll) && (Mode != HelpM);
+	bScroll = (keybScroll || FirstScroll) && (_mode != EditorMode::Help);
 	if (bScroll)
 	{
 		ScreenFirstLineNr = NewL(RScrL);
 		_change_scr = true;
 	}
-	HelpScroll = bScroll || (Mode == HelpM);
+	HelpScroll = bScroll || (_mode == EditorMode::Help);
 	if (HelpScroll) {
 		screen.CrsHide();
 	}
@@ -2891,7 +2905,7 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 	SetScreen(IndexT, ScrT, positionOnActualLine);
 	Konec = false;
 
-	if (Mode == HelpM) {
+	if (_mode == EditorMode::Help) {
 		word_line = 0;
 		ScreenIndex = SetInd(textIndex, positionOnActualLine) - 1;
 		size_t begin_index;
@@ -2933,13 +2947,13 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 		//if (TypeT == FileT) {
 		//	NullChangePart();
 		//}
-		_events->HandleEvent(this, Mode, IsWrScreen, SysLColor, LastS, LastNr, ExitD, breakKeys);
+		_events->HandleEvent(this, _mode, IsWrScreen, SysLColor, LastS, LastNr, ExitD, breakKeys);
 		if (!(Konec || IsWrScreen)) {
 			Background();
 		}
 	} while (!Konec);
 
-	if (bScroll && (Mode != HelpM)) {
+	if (bScroll && (_mode != EditorMode::Help)) {
 		positionOnActualLine = BPos + 1;
 		TextLineNr = ScreenFirstLineNr;
 		textIndex = ScreenIndex;
@@ -2948,13 +2962,13 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 	IndexT = SetInd(textIndex, positionOnActualLine);
 	ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
 
-	if (Mode != HelpM) {
+	if (_mode != EditorMode::Help) {
 		TxtXY = ScrT + ((int)positionOnActualLine << 16);
 	}
 
 	CursorWord();
 
-	if (Mode == HelpM) {
+	if (_mode == EditorMode::Help) {
 		ClrWord();
 	}
 
@@ -3003,14 +3017,14 @@ TextEditor::~TextEditor()
 	this->_screen = nullptr;
 }
 
-bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, std::string& text, size_t pMaxLen,
+bool TextEditor::EditText(EditorMode e_mode, TextType text_type, std::string pName, std::string pErrMsg, std::string& text, size_t pMaxLen,
 	size_t& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
 	bool oldEdOK = EdOk;
 	EditT = true;
-	Mode = pMode;
-	TypeT = pTxtType;
+	_mode = e_mode;
+	_text_type = text_type;
 	NameT = pName;
 	ErrMsg = pErrMsg;
 
@@ -3036,7 +3050,7 @@ bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::str
 		/*LastS = nullptr; CtrlLastS = nullptr; ShiftLastS = nullptr; AltLastS = nullptr; HeadS = nullptr;*/
 		LastS = ""; CtrlLastS = ""; ShiftLastS = ""; AltLastS = ""; HeadS = "";
 	}
-	if (Mode != HelpM) TxtColor = TextAttr;
+	if (_mode != EditorMode::Help) TxtColor = TextAttr;
 	FirstEvent = !SrchT;
 	if (SrchT) {
 		SrchT = false;
@@ -3049,7 +3063,7 @@ bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::str
 	}
 
 	Edit(pErrMsg, pExD, break_keys);
-	if (Mode != HelpM) { TextAttr = TxtColor; }
+	if (_mode != EditorMode::Help) { TextAttr = TxtColor; }
 	pUpdat = UpdatT;
 	pSrch = SrchT;
 
@@ -3061,13 +3075,13 @@ bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::str
 	return EditT;
 }
 
-void TextEditor::SimpleEditText(char pMode, std::string pErrMsg, std::string pName, std::string& text, size_t MaxLen, size_t& Ind, bool& Updat)
+void TextEditor::SimpleEditText(EditorMode editor_mode, std::string pErrMsg, std::string pName, std::string& text, size_t MaxLen, size_t& Ind, bool& Updat)
 {
 	bool Srch = false;
 	int Scr = 0;
 	std::vector<WORD> emptyBreakKeys;
 	std::vector<EdExitD*> emptyExitD;
-	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), text, MaxLen, Ind, Scr,
+	EditText(editor_mode, TextType::Local, std::move(pName), std::move(pErrMsg), text, MaxLen, Ind, Scr,
 		emptyBreakKeys, emptyExitD, Srch, Updat, 0, 0, nullptr);
 }
 
@@ -3093,7 +3107,7 @@ WORD TextEditor::FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WOR
 	//return result;
 }
 
-void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD,
+void TextEditor::EditTxtFile(std::string* locVar, EditorMode e_mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD,
 	int TxtPos, int Txtxy, WRect* V, WORD Atr, const std::string Hd, BYTE WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
@@ -3128,7 +3142,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 			TxtPath = CPath;
 			TxtVol = CVol;
 			// zacatek prace se souborem
-			OpenTxtFh(Mode);
+			OpenTxtFh(e_mode);
 			ReadTextFile();
 			SimplePrintHead();
 			Ind = TxtPos;
@@ -3149,7 +3163,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 				// std::string LS2 = std::string(_textT, _lenT);
 				std::string LS2 = JoinLines(_lines); // ? neni uz nekde cely v pameti ?
 				std::vector<WORD> brkKeys = { __F1, __F6, __F9, __ALT_F10 };
-				EditText(Mode, FileT, TxtPath, ErrMsg, LS2, 0xFFF0, Ind, Txtxy,
+				EditText(e_mode, TextType::File, TxtPath, ErrMsg, LS2, 0xFFF0, Ind, Txtxy,
 					brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
 
 				// TODO: ulozit jej zpatky?
@@ -3160,7 +3174,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 			}
 			else {
 				std::vector<WORD> brkKeys = { __F1, __F6 };
-				EditText(Mode, LocalT, "", ErrMsg, text, MaxLStrLen, Ind, Txtxy,
+				EditText(e_mode, TextType::Local, "", ErrMsg, text, MaxLStrLen, Ind, Txtxy,
 					brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
 			}
 			TxtPos = Ind; // +Part.PosP;
@@ -3235,7 +3249,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 					CPath = TxtPath;
 					CVol = TxtVol;
 					PrintTxtFile(0);
-					OpenTxtFh(Mode);
+					OpenTxtFh(e_mode);
 					// RdPart();
 					continue;
 				}
@@ -3284,7 +3298,7 @@ void TextEditor::ViewPrinterTxt()
 	V.R2 = TxtRows - 1;
 	std::string ErrMsg;
 	std::vector<EdExitD*> emptyExitD;
-	EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
+	EditTxtFile(nullptr, EditorMode::Unknown, ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
 
 void TextEditor::ViewHelpText(const std::string& text, size_t& text_pos)
@@ -3308,7 +3322,7 @@ void TextEditor::ViewHelpText(const std::string& text, size_t& text_pos)
 
 			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
 			editor->InitHelpViewEditor(); // set colors
-			editor->EditText(HelpM, MemoT, "", "", s, 0xFFF0, text_pos, Scr,
+			editor->EditText(EditorMode::Help, TextType::Memo, "", "", s, 0xFFF0, text_pos, Scr,
 				brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
 
 			if (Event.Pressed.KeyCombination() == __F6) {
