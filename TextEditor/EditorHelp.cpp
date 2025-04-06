@@ -81,7 +81,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 		else {
 			w = PushW(1, 1, TxtCols, TxtRows, true, true);
 		}
-		size_t i = 1;
+		size_t i = 0;
 		bool frst = true;
 		int16_t delta = 0;
 		if (backw) {

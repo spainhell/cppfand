@@ -716,7 +716,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 					if (bScroll) {
 						if (RScrL == 1) goto Nic;
 					}
-					L1 = editor->blocks->LineAbs(editor->TextLineNr);
+					L1 = editor->LineAbs(editor->TextLineNr);
 					editor->PreviousLine();
 					editor->BlockUDShift(L1);
 					if (bScroll) positionOnActualLine = editor->Position(Colu);
@@ -728,7 +728,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 					editor->HelpRD('D');
 				}
 				else {
-					L1 = editor->blocks->LineAbs(editor->TextLineNr); // na kterem jsme prave radku textu (celkove, ne na obrazovce)
+					L1 = editor->LineAbs(editor->TextLineNr); // na kterem jsme prave radku textu (celkove, ne na obrazovce)
 					editor->NextLine(true);
 					editor->BlockUDShift(L1);
 					if (bScroll) positionOnActualLine = editor->Position(Colu);
@@ -828,7 +828,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			}
 			case _QX_: {
 				if (UpdatedL) editor->KodLine();
-				editor->DekFindLine(editor->blocks->LineAbs(editor->ScreenFirstLineNr + PageS - 1));
+				editor->DekFindLine(editor->LineAbs(editor->ScreenFirstLineNr + PageS - 1));
 				break;
 			}
 			case __CTRL_PAGEUP: {
@@ -905,20 +905,20 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				NextLineStartIndex = MinW(NextLineStartIndex, txt.length());
 				//TestLenText(&_textT, _lenT, NextLineStartIndex, textIndex);
 				UpdatT = true;
-				if (editor->blocks->BegBLn > editor->blocks->LineAbs(editor->TextLineNr)) {
-					editor->blocks->BegBLn--;
+				if (editor->BegBLn > editor->LineAbs(editor->TextLineNr)) {
+					editor->BegBLn--;
 				}
-				else if (editor->blocks->BegBLn == editor->blocks->LineAbs(editor->TextLineNr)) {
+				else if (editor->BegBLn == editor->LineAbs(editor->TextLineNr)) {
 					if (TypeB == TextBlock) {
-						editor->blocks->BegBPos = 1;
+						editor->BegBPos = 1;
 					}
 				}
-				if (editor->blocks->EndBLn >= editor->blocks->LineAbs(editor->TextLineNr)) {
-					if ((editor->blocks->EndBLn == editor->blocks->LineAbs(editor->TextLineNr)) && (TypeB == TextBlock)) {
+				if (editor->EndBLn >= editor->LineAbs(editor->TextLineNr)) {
+					if ((editor->EndBLn == editor->LineAbs(editor->TextLineNr)) && (TypeB == TextBlock)) {
 						BPos = 1;
 					}
 					else {
-						editor->blocks->EndBLn--;
+						editor->EndBLn--;
 					}
 				}
 				editor->DeleteLine();
@@ -1026,28 +1026,28 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			}
 			case _QB_: {
 				if (UpdatedL) editor->KodLine();
-				editor->PosDekFindLine(editor->blocks->BegBLn, MinW(editor->GetArrLineLength() + 1, editor->blocks->BegBPos), false);
+				editor->PosDekFindLine(editor->BegBLn, MinW(editor->GetArrLineLength() + 1, editor->BegBPos), false);
 				break;
 			}
 			case _QK_: {
 				if (UpdatedL) editor->KodLine();
-				editor->PosDekFindLine(editor->blocks->EndBLn, MinW(editor->GetArrLineLength() + 1, editor->blocks->EndBPos), false); break;
+				editor->PosDekFindLine(editor->EndBLn, MinW(editor->GetArrLineLength() + 1, editor->EndBPos), false); break;
 			}
 			case _KB_:
 			case __F7:
 			case _KH_: {
-				editor->blocks->BegBLn = editor->blocks->LineAbs(editor->TextLineNr);
-				if (TypeB == TextBlock) editor->blocks->BegBPos = MinI(editor->GetArrLineLength() + 1, positionOnActualLine);
-				else editor->blocks->BegBPos = positionOnActualLine;
+				editor->BegBLn = editor->LineAbs(editor->TextLineNr);
+				if (TypeB == TextBlock) editor->BegBPos = MinI(editor->GetArrLineLength() + 1, positionOnActualLine);
+				else editor->BegBPos = positionOnActualLine;
 				if (key == _KH_) goto OznB;
 				break;
 			}
 			case _KK_:
 			case __F8: {
 			OznB:
-				editor->blocks->EndBLn = editor->blocks->LineAbs(editor->TextLineNr);
-				if (TypeB == TextBlock) editor->blocks->EndBPos = MinI(editor->GetArrLineLength() + 1, positionOnActualLine);
-				else editor->blocks->EndBPos = positionOnActualLine;
+				editor->EndBLn = editor->LineAbs(editor->TextLineNr);
+				if (TypeB == TextBlock) editor->EndBPos = MinI(editor->GetArrLineLength() + 1, positionOnActualLine);
+				else editor->EndBPos = positionOnActualLine;
 				break;
 			}
 			case _KN_: {
@@ -1057,8 +1057,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			}
 			case _KY_: {
 				if (editor->BlockHandle(fs, F1, 'Y')) {
-					editor->blocks->EndBLn = editor->blocks->BegBLn;
-					editor->blocks->EndBPos = editor->blocks->BegBPos;
+					editor->EndBLn = editor->BegBLn;
+					editor->EndBPos = editor->BegBPos;
 				}
 				break;
 			}
@@ -1072,12 +1072,12 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				break;
 			}
 			case _KW_: {
-				I1 = editor->blocks->BegBLn; I2 = editor->blocks->BegBPos;
-				I3 = editor->blocks->EndBLn; I = editor->blocks->EndBPos;
+				I1 = editor->BegBLn; I2 = editor->BegBPos;
+				I3 = editor->EndBLn; I = editor->EndBPos;
 				bb = TypeB;
 				if (!editor->BlockExist()) {
-					editor->blocks->BegBLn = 1; editor->blocks->EndBLn = 0x7FFF;
-					editor->blocks->BegBPos = 1; editor->blocks->EndBPos = 0xFF;
+					editor->BegBLn = 1; editor->EndBLn = 0x7FFF;
+					editor->BegBPos = 1; editor->EndBPos = 0xFF;
 					TypeB = TextBlock;
 				}
 				CPath = wwmix1.SelectDiskFile(".TXT", 401, false);
@@ -1099,8 +1099,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 					HMsgExit(CPath);
 				}
 				// { PosDekFindLine(L1,I,true); }
-				editor->blocks->BegBLn = I1; editor->blocks->BegBPos = I2;
-				editor->blocks->EndBLn = I3; editor->blocks->EndBPos = I; TypeB = bb;
+				editor->BegBLn = I1; editor->BegBPos = I2;
+				editor->EndBLn = I3; editor->EndBPos = I; TypeB = bb;
 				break;
 			}
 			case __SHIFT_F7: {
@@ -1114,8 +1114,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				CVol = "";
 				F1 = OpenH(CPath, _isOldFile, RdOnly);
 				if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
-				editor->blocks->BegBLn = /* Part.LineP + */ editor->TextLineNr;
-				editor->blocks->BegBPos = positionOnActualLine;
+				editor->BegBLn = /* Part.LineP + */ editor->TextLineNr;
+				editor->BegBPos = positionOnActualLine;
 				L1 = /* Part.PosP + */ textIndex + positionOnActualLine - 1;
 				editor->FillBlank();
 				fs = FileSizeH(F1); L2 = 0;
@@ -1149,12 +1149,12 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 						I--;
 					}
 					editor->TextLineNr = editor->GetLineNumber(I);
-					editor->blocks->EndBLn = editor->TextLineNr; // Part.LineP + TextLineNr;
-					editor->blocks->EndBPos = succ(I - textIndex);
+					editor->EndBLn = editor->TextLineNr; // Part.LineP + TextLineNr;
+					editor->EndBPos = succ(I - textIndex);
 					break;
 				}
 				case ColBlock: {
-					editor->blocks->EndBPos = positionOnActualLine; I2 = 0x1000;
+					editor->EndBPos = positionOnActualLine; I2 = 0x1000;
 					MarkStore(P1);
 					sp = new LongStr(I2 + 2); //ww =BegBPos;}
 					do {
@@ -1162,28 +1162,28 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 						SeekH(F1, L2); ReadH(F1, I2, sp->A); HMsgExit("");
 						L2 += I2; sp->LL = I2; editor->BlockCDrop('R', P1, sp);
 					} while (L2 != fs);
-					editor->blocks->EndBLn = /*Part.LineP +*/ editor->TextLineNr - 1;
+					editor->EndBLn = /*Part.LineP +*/ editor->TextLineNr - 1;
 					ReleaseStore(&P1);
 					break;
 				}
 				}
 				CloseH(&F1);
 				HMsgExit("");
-				SetPartLine(editor->blocks->BegBLn);
+				SetPartLine(editor->BegBLn);
 				editor->TextLineNr = editor->GetLineNumber(L1 /* - Part.PosP*/);
 				UpdatedL = true;
 				break;
 			} // end case _KR_
 			case _KP_: {
 				if (!editor->BlockHandle(fs, F1, 'P')) {
-					I1 = editor->blocks->BegBLn; I2 = editor->blocks->BegBPos;
-					I3 = editor->blocks->EndBLn; I = editor->blocks->EndBPos;
+					I1 = editor->BegBLn; I2 = editor->BegBPos;
+					I3 = editor->EndBLn; I = editor->EndBPos;
 					bb = TypeB;
-					editor->blocks->BegBLn = 1; editor->blocks->EndBLn = 0x7FFF;
-					editor->blocks->BegBPos = 1; editor->blocks->EndBPos = 0xFF;
+					editor->BegBLn = 1; editor->EndBLn = 0x7FFF;
+					editor->BegBPos = 1; editor->EndBPos = 0xFF;
 					TypeB = TextBlock;
-					editor->blocks->BegBLn = I1; editor->blocks->BegBPos = I2;
-					editor->blocks->EndBLn = I3; editor->blocks->EndBPos = I;
+					editor->BegBLn = I1; editor->BegBPos = I2;
+					editor->EndBLn = I3; editor->EndBPos = I;
 					TypeB = bb;
 				}
 				break;
@@ -1191,15 +1191,15 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				if (editor->BlockExist() && (TypeB == TextBlock)) {
 					if (UpdatedL) editor->KodLine();
 					screen.CrsHide();
-					SetPartLine(editor->blocks->EndBLn);
-					I2 = editor->blocks->EndBLn; // -Part.LineP;
+					SetPartLine(editor->EndBLn);
+					I2 = editor->EndBLn; // -Part.LineP;
 					size_t nextLineIdx = editor->GetLineStartIndex(I2);
-					L1 = editor->SetInd(nextLineIdx, editor->blocks->EndBPos); // +Part.PosP;
-					L2 = editor->blocks->BegBLn; positionOnActualLine = editor->blocks->BegBPos;
+					L1 = editor->SetInd(nextLineIdx, editor->EndBPos); // +Part.PosP;
+					L2 = editor->BegBLn; positionOnActualLine = editor->BegBPos;
 					SetPartLine(L2);
-					I2 = editor->blocks->BegBLn; // -Part.LineP;
+					I2 = editor->BegBLn; // -Part.LineP;
 					nextLineIdx = editor->GetLineStartIndex(I2);
-					editor->Format(I, nextLineIdx /* + Part.PosP */, L1, editor->blocks->BegBPos, true);
+					editor->Format(I, nextLineIdx /* + Part.PosP */, L1, editor->BegBPos, true);
 					editor->DekFindLine(L2);
 					if (!bScroll) screen.CrsShow();
 				}
@@ -1385,7 +1385,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 		if (mode == EditorMode::Help) {
 			W2 = editor->WordNo2() + 1;
 		}
-		editor->DekFindLine(editor->blocks->LineAbs(W1));
+		editor->DekFindLine(editor->LineAbs(W1));
 		positionOnActualLine = Event.Where.X - WindMin.X + 1;
 		if (mode != EditorMode::Text) positionOnActualLine = editor->Position(positionOnActualLine);
 		positionOnActualLine += BPos;

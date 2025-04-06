@@ -3,7 +3,6 @@
 #include <set>
 #include <string>
 
-#include "Blocks.h"
 #include "../Core/base.h"
 #include "../Common/pstring.h"
 
@@ -135,6 +134,7 @@ protected:
 	void RollNext();
 	void RollPred();
 	int NewRL(int Line);
+	size_t LineAbs(int Ln);
 	virtual void ProcessPageUp();
 	virtual void ProcessPageDown();
 
@@ -156,6 +156,7 @@ protected:
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 	bool IsWrScreen = false;
+	bool InsPg = false;
 
 private:
 	EditorMode _mode = EditorMode::Unknown;
@@ -163,7 +164,6 @@ private:
 
 	TextEditorEvents* _events = nullptr;
 	TextEditorScreen* _screen = nullptr;
-	Blocks* blocks = nullptr;
 
 	void FindReplaceString(int First, int Last);
 	void ScrollPress();
@@ -225,6 +225,13 @@ private:
 	void direction(BYTE x, BYTE& zn2);
 	void OpenTxtFh(EditorMode mode);
 
+	bool LineInBlock(int Ln);
+	bool LineBndBlock(int Ln);
+	WORD BegBLn = 0;
+	WORD EndBLn = 0;
+	WORD BegBPos = 0;
+	WORD EndBPos = 0;
+
 	bool Insert, Indent, Wrap, Just;
 	pstring OptionStr;
 	std::string FindStr, ReplaceStr;
@@ -233,7 +240,6 @@ private:
 	std::string ViewMsg;
 	short LeftMarg, RightMarg;
 	char CharPg = '\0';
-	bool InsPg = false;
 	bool HardL = false; // actual line (Arr) ended with CRLF "\r\n" - otherwise only with CR "\r"
 	bool _change_scr = true; // true if screen needs to be updated (e.g. after scrolling or changes on more lines)
 

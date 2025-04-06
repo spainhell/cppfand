@@ -196,18 +196,18 @@ void HelpViewer::ProcessPageDown()
 		if (ModPage(RScrL)) {
 			RScrL--;
 		}
-		DekFindLine(blocks->LineAbs(NewL(RScrL)));
+		DekFindLine(LineAbs(NewL(RScrL)));
 		positionOnActualLine = Position(Colu);
 		// TODO:
 		int j = 0; // CountChar(0x0C, ScreenIndex, textIndex);
 		if ((j > 0) && InsPg) {
-			DekFindLine(blocks->LineAbs(TextLineNr - j));
+			DekFindLine(LineAbs(TextLineNr - j));
 		}
 		ScreenFirstLineNr = TextLineNr;
 		RScrL = NewRL(ScreenFirstLineNr);
 	}
 	else {
-		DekFindLine(blocks->LineAbs(TextLineNr) + PageS);
+		DekFindLine(LineAbs(TextLineNr) + PageS);
 		if (TextLineNr >= ScreenFirstLineNr + PageS) {
 			ScreenFirstLineNr += PageS;
 		}
