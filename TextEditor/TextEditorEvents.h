@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TextEditorModes.h"
+#include "TextEditorSpecialModes.h"
 #include "../Core/rdrun.h"
 #include <string>
 
@@ -13,7 +13,7 @@ enum class TextEditorType { View, Text, Help };
 class TextEditorEvents
 {
 public:
-	friend class TextEditorModes;
+	friend class TextEditorSpecialModes;
 	TextEditorEvents();
 	~TextEditorEvents();
 	void HandleEvent(TextEditor* editor, EditorMode& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
@@ -21,7 +21,7 @@ public:
 	bool My2GetEvent();
 
 private:
-	TextEditorModes* _modes_handler = nullptr; // Ctrl-O, Ctrl-P, Ctrl-Q, ...
+	TextEditorSpecialModes* _modes_handler = nullptr; // Ctrl-O, Ctrl-P, Ctrl-Q, ...
 	TextEditorType _editor_type = TextEditorType::View;
 
 	bool HelpEvent(std::vector<WORD>& breakKeys);

@@ -30,7 +30,7 @@
     <ClCompile Include="Blocks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextEditorModes.cpp">
+    <ClCompile Include="TextEditorSpecialModes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,7 +50,7 @@
     <ClInclude Include="Blocks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextEditorModes.h">
+    <ClInclude Include="TextEditorSpecialModes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

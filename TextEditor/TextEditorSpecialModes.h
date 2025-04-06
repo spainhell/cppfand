@@ -3,23 +3,26 @@
 
 class TextEditorEvents;
 
-enum class TextEditorMode {
+enum class TextEditorSpecialMode {
 	normal,
 	CtrlK, CtrlO, CtrlP, CtrlQ,
 	SingleFrame, DoubleFrame, DeleteFrame, NoFrame
 };
 
-class TextEditorModes
+/// <summary>
+/// Modes for special keys combinations.
+/// </summary>
+class TextEditorSpecialModes
 {
 public:
-	TextEditorModes(TextEditorEvents* events);
-	TextEditorMode GetMode();
-	TextEditorMode HandleKeyPress(PressedKey& key);
-	TextEditorMode HandleMouse();
+	TextEditorSpecialModes(TextEditorEvents* events);
+	TextEditorSpecialMode GetMode();
+	TextEditorSpecialMode HandleKeyPress(PressedKey& key);
+	TextEditorSpecialMode HandleMouse();
 
 private:
 	TextEditorEvents* _events = nullptr;
-	TextEditorMode _actual_mode = TextEditorMode::normal;
+	TextEditorSpecialMode _actual_mode = TextEditorSpecialMode::normal;
 
 	void process_Ctrl_K(const PressedKey& key);
 	void process_Ctrl_O(const PressedKey& key);
@@ -27,4 +30,3 @@ private:
 	void process_Ctrl_Q(const PressedKey& key);
 	void process_Frame(const PressedKey& key);
 };
-

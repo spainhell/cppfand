@@ -18,7 +18,7 @@
 
 TextEditorEvents::TextEditorEvents()
 {
-	_modes_handler = new TextEditorModes(this);
+	_modes_handler = new TextEditorSpecialModes(this);
 }
 
 TextEditorEvents::~TextEditorEvents()
@@ -537,27 +537,27 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 	//	return;
 	//}
 	GetEvent();
-	TextEditorMode tm = _modes_handler->GetMode();
+	TextEditorSpecialMode tm = _modes_handler->GetMode();
 
 	std::string txt = JoinLines(editor->_lines);
 
 	while (true) {
-		if ((tm != TextEditorMode::normal) || (Event.What == evKeyDown && Event.Pressed.Ctrl() && Event.Pressed.Char > 0)) {
+		if ((tm != TextEditorSpecialMode::normal) || (Event.What == evKeyDown && Event.Pressed.Ctrl() && Event.Pressed.Char > 0)) {
 			// mode is not normal || Ctrl key pressed with any other key
 			switch (tm = _modes_handler->HandleKeyPress(Event.Pressed)) {
-			case TextEditorMode::CtrlK: {
+			case TextEditorSpecialMode::CtrlK: {
 				Wr("^K", OrigS, mode, SysLColor);
 				break;
 			}
-			case TextEditorMode::CtrlO: {
+			case TextEditorSpecialMode::CtrlO: {
 				Wr("^O", OrigS, mode, SysLColor);
 				break;
 			}
-			case TextEditorMode::CtrlP: {
+			case TextEditorSpecialMode::CtrlP: {
 				Wr("^P", OrigS, mode, SysLColor);
 				break;
 			}
-			case TextEditorMode::CtrlQ: {
+			case TextEditorSpecialMode::CtrlQ: {
 				Wr("^Q", OrigS, mode, SysLColor);
 				break;
 			}
@@ -567,16 +567,16 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			}
 			}
 
-			if (tm == TextEditorMode::CtrlK
-				|| tm == TextEditorMode::CtrlO
-				|| tm == TextEditorMode::CtrlP
-				|| tm == TextEditorMode::CtrlQ) {
+			if (tm == TextEditorSpecialMode::CtrlK
+				|| tm == TextEditorSpecialMode::CtrlO
+				|| tm == TextEditorSpecialMode::CtrlP
+				|| tm == TextEditorSpecialMode::CtrlQ) {
 				ClrEvent();
 				GetEvent();
 				continue;
 			}
-			else if ((tm == TextEditorMode::SingleFrame || tm == TextEditorMode::DoubleFrame
-				|| tm == TextEditorMode::DeleteFrame || tm == TextEditorMode::NoFrame) && !bScroll) {
+			else if ((tm == TextEditorSpecialMode::SingleFrame || tm == TextEditorSpecialMode::DoubleFrame
+				|| tm == TextEditorSpecialMode::DeleteFrame || tm == TextEditorSpecialMode::NoFrame) && !bScroll) {
 				editor->FrameStep(FrameDir, Event.Pressed);
 				ClrEvent();
 				GetEvent();
