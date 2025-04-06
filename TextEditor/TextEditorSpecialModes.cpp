@@ -1,41 +1,41 @@
-#include "TextEditorModes.h"
+#include "TextEditorSpecialModes.h"
 #include "../Drivers/constants.h"
 #include "TextEditorEvents.h"
 
-TextEditorModes::TextEditorModes(TextEditorEvents* events)
+TextEditorSpecialModes::TextEditorSpecialModes(TextEditorEvents* events)
 {
 	_events = events;
 }
 
-TextEditorMode TextEditorModes::GetMode()
+TextEditorSpecialMode TextEditorSpecialModes::GetMode()
 {
 	return _actual_mode;
 }
 
-TextEditorMode TextEditorModes::HandleKeyPress(PressedKey& key)
+TextEditorSpecialMode TextEditorSpecialModes::HandleKeyPress(PressedKey& key)
 {
 	switch (_actual_mode)
 	{
-	case TextEditorMode::CtrlK: {
+	case TextEditorSpecialMode::CtrlK: {
 		process_Ctrl_K(key);
 		break;
 	}
-	case TextEditorMode::CtrlO: {
+	case TextEditorSpecialMode::CtrlO: {
 		process_Ctrl_O(key);
 		break;
 	}
-	case TextEditorMode::CtrlP: {
+	case TextEditorSpecialMode::CtrlP: {
 		process_Ctrl_P(key);
 		break;
 	}
-	case TextEditorMode::CtrlQ: {
+	case TextEditorSpecialMode::CtrlQ: {
 		process_Ctrl_Q(key);
 		break;
 	}
-	case TextEditorMode::SingleFrame:
-	case TextEditorMode::DoubleFrame:
-	case TextEditorMode::DeleteFrame:
-	case TextEditorMode::NoFrame: {
+	case TextEditorSpecialMode::SingleFrame:
+	case TextEditorSpecialMode::DoubleFrame:
+	case TextEditorSpecialMode::DeleteFrame:
+	case TextEditorSpecialMode::NoFrame: {
 		process_Frame(key);
 		break;
 	}
@@ -43,19 +43,19 @@ TextEditorMode TextEditorModes::HandleKeyPress(PressedKey& key)
 	{
 		switch (key.KeyCombination()) {
 		case __CTRL_K: {
-			_actual_mode = TextEditorMode::CtrlK;
+			_actual_mode = TextEditorSpecialMode::CtrlK;
 			break;
 		}
 		case __CTRL_O: {
-			_actual_mode = TextEditorMode::CtrlO;
+			_actual_mode = TextEditorSpecialMode::CtrlO;
 			break;
 		}
 		case __CTRL_P: {
-			_actual_mode = TextEditorMode::CtrlP;
+			_actual_mode = TextEditorSpecialMode::CtrlP;
 			break;
 		}
 		case __CTRL_Q: {
-			_actual_mode = TextEditorMode::CtrlQ;
+			_actual_mode = TextEditorSpecialMode::CtrlQ;
 			break;
 		}
 		default: {}
@@ -66,13 +66,13 @@ TextEditorMode TextEditorModes::HandleKeyPress(PressedKey& key)
 	return _actual_mode;
 }
 
-TextEditorMode TextEditorModes::HandleMouse()
+TextEditorSpecialMode TextEditorSpecialModes::HandleMouse()
 {
 	// not implemented yet
 	return _actual_mode;
 }
 
-void TextEditorModes::process_Ctrl_K(const PressedKey& key)
+void TextEditorSpecialModes::process_Ctrl_K(const PressedKey& key)
 {
 	std::set<char> setKc = { 'B', 'K', 'H', 'S', 'Y', 'C', 'V', 'W', 'R', 'P', 'F', 'U', 'L', 'N' };
 	if (setKc.count((char)Event.Pressed.KeyCombination()) > 0) {
@@ -81,10 +81,10 @@ void TextEditorModes::process_Ctrl_K(const PressedKey& key)
 	else {
 		//Event.KeyCode = 0;
 	}
-	_actual_mode = TextEditorMode::normal;
+	_actual_mode = TextEditorSpecialMode::normal;
 }
 
-void TextEditorModes::process_Ctrl_O(const PressedKey& key)
+void TextEditorSpecialModes::process_Ctrl_O(const PressedKey& key)
 {
 	switch (Event.Pressed.Char) {
 	case 'W': // wrap
@@ -99,10 +99,10 @@ void TextEditorModes::process_Ctrl_O(const PressedKey& key)
 		//Event.KeyCode = 0;
 	}
 	}
-	_actual_mode = TextEditorMode::normal;
+	_actual_mode = TextEditorSpecialMode::normal;
 }
 
-void TextEditorModes::process_Ctrl_P(PressedKey& key)
+void TextEditorSpecialModes::process_Ctrl_P(PressedKey& key)
 {
 	if (key.Char == 0) {
 		// no key pressed (only Shift, Alt, Ctrl, ...)
@@ -124,11 +124,11 @@ void TextEditorModes::process_Ctrl_P(PressedKey& key)
 			// TODO: color of a character isn't right
 			key.UpdateKey(key.Char + '@');
 		}
-		_actual_mode = TextEditorMode::normal;
+		_actual_mode = TextEditorSpecialMode::normal;
 	}
 }
 
-void TextEditorModes::process_Ctrl_Q(const PressedKey& key)
+void TextEditorSpecialModes::process_Ctrl_Q(const PressedKey& key)
 {
 	switch (Event.Pressed.KeyCombination()) {
 	//case 'S': Event.Pressed.Key()->wVirtualKeyCode = __HOME; break;
@@ -143,7 +143,7 @@ void TextEditorModes::process_Ctrl_Q(const PressedKey& key)
 	//}
 
 	case '-': {
-		_actual_mode = TextEditorMode::SingleFrame;
+		_actual_mode = TextEditorSpecialMode::SingleFrame;
 		screen.CrsBig();
 		FrameDir = 0;
 		// result = true;
@@ -151,7 +151,7 @@ void TextEditorModes::process_Ctrl_Q(const PressedKey& key)
 		break;
 	}
 	case '=': {
-		_actual_mode = TextEditorMode::DoubleFrame;
+		_actual_mode = TextEditorSpecialMode::DoubleFrame;
 		screen.CrsBig();
 		FrameDir = 0;
 		// result = true;
@@ -159,7 +159,7 @@ void TextEditorModes::process_Ctrl_Q(const PressedKey& key)
 		break;
 	}
 	case '/': {
-		_actual_mode = TextEditorMode::DeleteFrame;
+		_actual_mode = TextEditorSpecialMode::DeleteFrame;
 		screen.CrsBig();
 		FrameDir = 0;
 		// result = true;
@@ -167,15 +167,15 @@ void TextEditorModes::process_Ctrl_Q(const PressedKey& key)
 		break;
 	}
 	default: {
-		_actual_mode = TextEditorMode::normal;
+		_actual_mode = TextEditorSpecialMode::normal;
 		// ClrEvent();
 	}
 	}
 }
 
-void TextEditorModes::process_Frame(const PressedKey& key)
+void TextEditorSpecialModes::process_Frame(const PressedKey& key)
 {
 	if (key.Char == __ESC) {
-		_actual_mode = TextEditorMode::normal;
+		_actual_mode = TextEditorSpecialMode::normal;
 	}
 }
