@@ -35,6 +35,44 @@ void HelpViewer::InitHelpViewEditor(std::string& help_text, size_t& text_pos)
 		brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
 }
 
+void HelpViewer::Background()
+{
+	UpdStatLine(TextLineNr, positionOnActualLine);
+
+	WORD p = positionOnActualLine;
+
+	if (_word.start_line == TextLineNr) {
+		while (Arr[p] != 0x11) {
+			p++;
+		}
+	}
+
+	if (Column(p) - columnOffset > LineS) {
+		columnOffset = Column(p) - LineS;
+	}
+
+	if (Column(positionOnActualLine) <= columnOffset) {
+		columnOffset = Column(positionOnActualLine) - 1;
+	}
+	BPos = Position(columnOffset);
+
+
+	if (TextLineNr < ScreenFirstLineNr) {
+		ScreenFirstLineNr = TextLineNr;
+	}
+
+	if (TextLineNr >= ScreenFirstLineNr + PageS) {
+		ScreenFirstLineNr = TextLineNr - PageS + 1;
+	}
+
+	// always update whole screen, not only line in the help viewer
+	UpdScreen();
+
+	WriteMargins();
+	screen.GotoXY(positionOnActualLine - BPos, TextLineNr - ScreenFirstLineNr + 1);
+	//IsWrScreen = true;
+}
+
 size_t HelpViewer::WordNo(size_t I)
 {
 	size_t len = GetTotalLength(_lines);
@@ -46,7 +84,7 @@ size_t HelpViewer::WordNo(size_t I)
 
 bool HelpViewer::WordExist()
 {
-	return (word_line >= ScreenFirstLineNr) && (word_line < ScreenFirstLineNr + PageS);
+	return (_word.start_line >= ScreenFirstLineNr) && (_word.start_line < ScreenFirstLineNr + PageS);
 }
 
 WORD HelpViewer::WordNo2()
@@ -58,7 +96,7 @@ WORD HelpViewer::WordNo2()
 		wNo = WordNo(SetInd(textIndex, positionOnActualLine));
 	}
 	else {
-		wNo = WordNo(ScreenIndex + 1);
+		wNo = WordNo(TextLineNr);
 	}
 
 	return wNo;
@@ -81,8 +119,8 @@ void HelpViewer::ClrWord()
 
 void HelpViewer::ProcessHelpMode()
 {
-	word_line = 0;
-	ScreenIndex = SetInd(textIndex, positionOnActualLine) - 1;
+	//word_line = 0;
+	//ScreenIndex = SetInd(textIndex, positionOnActualLine) - 1;
 	size_t begin_index;
 	size_t end_index;
 	size_t line_number;
@@ -94,7 +132,7 @@ void HelpViewer::ProcessHelpMode()
 
 	if (!WordExist()) {
 		TextLineNr = GetLineNumber(IndexT);
-		ScreenIndex = 0;
+		//ScreenIndex = 0;
 	}
 }
 
@@ -125,7 +163,7 @@ void HelpViewer::SetWord(size_t word_begin, size_t word_end)
 	bool hardL = false;
 	_lines = GetAllLinesWithEnds(txt, hardL); // HardL);
 	TextLineNr = GetLineNumber(word_begin);
-	word_line = TextLineNr;
+	_word.start_line = TextLineNr;
 	positionOnActualLine = word_begin - textIndex + 1;
 	Colu = Column(positionOnActualLine);
 }
@@ -155,7 +193,7 @@ void HelpViewer::HelpLU(char dir)
 		}
 		else {
 			I1 = SetInd(textIndex, positionOnActualLine);
-			word_line = 0;
+			_word.start_line = 0;
 		}
 		I = ScreenFirstLineNr - 1;
 	}
@@ -203,7 +241,7 @@ void HelpViewer::HelpRD(char dir)
 		}
 		else {
 			I1 = SetInd(textIndex, positionOnActualLine);
-			word_line = 0;
+			_word.start_line = 0;
 		}
 		I = ScreenFirstLineNr + PageS;
 	}

@@ -43,7 +43,6 @@ WORD columnOffset = 0;
 WORD Colu = 0;
 WORD Row = 0;
 ColorOrd ColScr;
-bool IsWrScreen = false;
 WORD FirstR = 0, FirstC = 0, LastR = 0, LastC = 0;
 WORD MinC = 0, MinR = 0, MaxC = 0, MaxR = 0;
 WORD MargLL[4]{ 0, 0, 0, 0 };
@@ -84,7 +83,7 @@ std::string LastS, CtrlLastS, ShiftLastS, AltLastS, HeadS;
 int* LocalPPtr;
 bool EditT;
 
-WORD ScreenIndex = 0; // index of the first char on the screen 0 .. N
+//WORD ScreenIndex = 0; // index of the first char on the screen 0 .. N
 WORD textIndex = 0;
 WORD positionOnActualLine = 0; // position of the cursor on the actual line (1 .. 255)
 WORD BPos = 0; // {screen status}
@@ -693,37 +692,6 @@ void TextEditor::TestUpdFile()
 	}
 }
 
-//void TextEditor::WrEndT()
-//{
-//	// vytvori nove pole o delce puvodniho + 1,
-//	// puvodni pole se do nej prekopiruje a na konec se vlozi '\0'
-//	if (_lenT == 0) {
-//		delete[] _textT;
-//		_textT = new char[2]; // udelame pole o delce 2 -> mezera zakoncena \0
-//		_textT[0] = ' ';
-//		_textT[1] = '\0';
-//		_lenT = 1;
-//	}
-//	else {
-//		char* T2 = new char[_lenT + 1]; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
-//		T2[_lenT] = '\0';
-//		memcpy(T2, _textT, _lenT);
-//		delete[] _textT;
-//		_textT = T2;
-//	}
-//}
-
-void TextEditor::MoveIdx(int dir)
-{
-	WORD mi = -dir; // *Part.MovI;
-	WORD ml = -dir; // *Part.MovL;
-	ScreenIndex += mi;
-	textIndex += mi; // {****GLOBAL***}
-	NextLineStartIndex += mi;
-	TextLineNr += ml;
-	ScreenFirstLineNr += ml; // {****Edit***}
-}
-
 /// Counts the number of occurrences of a character;
 /// 'first' & 'last' are 0 .. N
 size_t TextEditor::CountChar(char C, size_t first, size_t last)
@@ -1058,7 +1026,7 @@ void TextEditor::UpdScreen()
 {
 	short r; // row number, starts from 1
 	ColorOrd co1;
-	WORD oldScreenIndex = ScreenIndex;
+	//WORD oldScreenIndex = ScreenIndex;
 	std::string PgStr;
 
 	InsPage = false;
@@ -1068,12 +1036,12 @@ void TextEditor::UpdScreen()
 		//}
 		_change_scr = false;
 
-		if (bScroll) {
-			ScreenIndex = textIndex;
-		}
-		else {
-			ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
-		}
+		//if (bScroll) {
+		//	ScreenIndex = textIndex;
+		//}
+		//else {
+		//	ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
+		//}
 
 		if (HelpScroll) {
 			//ColScr = Part.ColorP;
@@ -1106,7 +1074,7 @@ void TextEditor::UpdScreen()
 
 	if (MyTestEvent()) return;
 
-	WORD index = ScreenIndex;
+	//WORD index = ScreenIndex;
 
 	size_t line_offset = 1;
 	short rr = 0;
@@ -1179,34 +1147,16 @@ void TextEditor::Background()
 {
 	UpdStatLine(TextLineNr, positionOnActualLine);
 	// TODO: musi to tady byt?
-	// if (MyTestEvent()) return;
-	if (HelpScroll) {
-		WORD p = positionOnActualLine;
-		if (_mode == EditorMode::Help) {
-			if (word_line == TextLineNr) {
-				while (Arr[p] != 0x11) {
-					p++;
-				}
-			}
-		}
-		if (Column(p) - columnOffset > LineS) {
-			columnOffset = Column(p) - LineS;
-		}
-		if (Column(positionOnActualLine) <= columnOffset) {
-			columnOffset = Column(positionOnActualLine) - 1;
-		}
-		BPos = Position(columnOffset);
-	}
-	else {
-		if (positionOnActualLine > LineS) {
-			if (positionOnActualLine > BPos + LineS) {
-				BPos = positionOnActualLine - LineS;
-			}
-		}
-		if (positionOnActualLine <= BPos) {
-			BPos = pred(positionOnActualLine);
+
+	if (positionOnActualLine > LineS) {
+		if (positionOnActualLine > BPos + LineS) {
+			BPos = positionOnActualLine - LineS;
 		}
 	}
+	if (positionOnActualLine <= BPos) {
+		BPos = pred(positionOnActualLine);
+	}
+
 	if (TextLineNr < ScreenFirstLineNr) {
 		ScreenFirstLineNr = TextLineNr;
 		_change_scr = true;
@@ -2762,7 +2712,7 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 	blocks->BegBPos = 1;
 	blocks->EndBPos = 1;
 	ScreenFirstLineNr = 1;
-	ScreenIndex = 0;
+	//ScreenIndex = 0;
 	RScrL = 1;
 	PredScLn = 1;
 	PredScPos = 1;
@@ -2828,7 +2778,7 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 	if (bScroll && (_mode != EditorMode::Help)) {
 		positionOnActualLine = BPos + 1;
 		TextLineNr = ScreenFirstLineNr;
-		textIndex = ScreenIndex;
+		//textIndex = ScreenIndex;
 	}
 
 	IndexT = SetInd(textIndex, positionOnActualLine);

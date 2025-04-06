@@ -753,7 +753,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 					editor->TextLineNr = editor->ScreenFirstLineNr;
 					editor->DekFindLine(editor->blocks->LineAbs(editor->TextLineNr));
 					positionOnActualLine = editor->Position(Colu);
-					j = editor->CountChar(0x0C, textIndex, ScreenIndex);
+					// TODO: j = editor->CountChar(0x0C, textIndex, ScreenIndex);
 
 					if ((j > 0) && editor->InsPg) {
 						editor->DekFindLine(editor->blocks->LineAbs(editor->TextLineNr + j));

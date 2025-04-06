@@ -13,11 +13,12 @@ class HelpViewer : public TextEditor
 {
 public:
 	HelpViewer(std::string help_text, size_t text_pos);
-	~HelpViewer();
+	~HelpViewer() override;
 
 	void InitHelpViewEditor(std::string& help_text, size_t& text_pos);
 
 private:
+	void Background() override;
 	bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr) override;
 	void SetWord(size_t word_begin, size_t word_end) override;
 	WORD WordNo2() override;
@@ -27,5 +28,7 @@ private:
 	void HelpRD(char dir) override;
 	void ClrWord() override;
 	void ProcessHelpMode() override;
+
+	WordPosition _word; // last help word position
 };
 
