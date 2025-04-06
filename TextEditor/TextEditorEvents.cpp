@@ -27,7 +27,7 @@ TextEditorEvents::~TextEditorEvents()
 	_modes_handler = nullptr;
 }
 
-bool TextEditorEvents::CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
+bool TextEditorEvents::CtrlShiftAlt(TextEditor* editor, EditorMode mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 {
 	bool Ctrl = false;
 	WORD Delta = 0;
@@ -37,7 +37,7 @@ bool TextEditorEvents::CtrlShiftAlt(TextEditor* editor, char mode, std::string& 
 label1:
 	WaitEvent(Delta);
 
-	if (mode != HelpM) {
+	if (mode != EditorMode::Help) {
 		editor->ScrollPress();
 	}
 
@@ -147,10 +147,10 @@ bool TextEditorEvents::HelpEvent(std::vector<WORD>& breakKeys)
 	return result;
 }
 
-void TextEditorEvents::Wr(std::string s, std::string& OrigS, char Mode, BYTE SysLColor)
+void TextEditorEvents::Wr(std::string s, std::string& OrigS, EditorMode mode, BYTE SysLColor)
 {
 	CHAR_INFO ci2[2];
-	if (Mode != HelpM) {
+	if (mode != EditorMode::Help) {
 		if (s.empty()) s = OrigS;
 		else {
 			screen.ScrRdBuf(1, 1, ci2, 2);
@@ -242,7 +242,7 @@ bool TextEditorEvents::ViewEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>
 	return result;
 }
 
-bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
+bool TextEditorEvents::MyGetEvent(TextEditor* editor, EditorMode& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	std::string OrigS = "    ";
 	WORD ww;
 
@@ -296,7 +296,7 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 				}
 
 				case '-': {
-					mode = SinFM;
+					mode = EditorMode::FrameSingle;
 					screen.CrsBig();
 					FrameDir = 0;
 					result = true;
@@ -304,7 +304,7 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 					break;
 				}
 				case '=': {
-					mode = DouFM;
+					mode = EditorMode::FrameDouble;
 					screen.CrsBig();
 					FrameDir = 0;
 					result = true;
@@ -312,7 +312,7 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 					break;
 				}
 				case '/': {
-					mode = DelFM;
+					mode = EditorMode::DeleteFrame;
 					screen.CrsBig();
 					FrameDir = 0;
 					result = true;
@@ -370,23 +370,23 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 
 	switch (mode)
 	{
-	case SinFM:
-	case DouFM:
-	case DelFM: {
+	case EditorMode::FrameSingle:
+	case EditorMode::FrameDouble:
+	case EditorMode::DeleteFrame: {
 		result = true;
 		break;
 	}
-	case HelpM:
+	case EditorMode::Help:
 	{
 		result = HelpEvent(breakKeys);
 		break;
 	}
-	case ViewM: {
+	case EditorMode::View: {
 		if (bScroll) result = ScrollEvent(ExitD, breakKeys);
 		else result = ViewEvent(ExitD, breakKeys);
 		break;
 	}
-	case TextM: {
+	case EditorMode::Text: {
 		if (bScroll) result = ScrollEvent(ExitD, breakKeys);
 		else result = true;
 		break;
@@ -396,7 +396,7 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 	return result;
 }
 
-bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<EdExitD*>& ExitD, int& fs, LongStr*& sp, WORD key)
+bool TextEditorEvents::TestExitKeys(TextEditor* editor, EditorMode& mode, std::vector<EdExitD*>& ExitD, int& fs, LongStr*& sp, WORD key)
 {
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 	std::string txt = JoinLines(editor->_lines);
@@ -412,8 +412,8 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 				Konec = true; EditT = false;
 				return true;
 			}
-			switch (TypeT) {
-			case FileT: {
+			switch (editor->_text_type) {
+			case TextType::File: {
 				editor->TestUpdFile();
 				//delete[] editor->_textT; editor->_textT = nullptr;
 				//CloseH(&TxtFH);
@@ -421,8 +421,8 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 				TxtFH = NULL;
 				break;
 			}
-			case LocalT:
-			case MemoT: {
+			case TextType::Local:
+			case TextType::Memo: {
 				//DelEndT();
 
 				// TODO: whas is this?
@@ -433,7 +433,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 
 				std::string data = txt;
 
-				if (TypeT == LocalT) {
+				if (editor->_text_type == TextType::Local) {
 					TWork.Delete(*LocalPPtr);
 					*LocalPPtr = TWork.Store(data);
 				}
@@ -448,7 +448,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 			}
 			//ep = SaveParams();
 			screen.CrsHide();
-			if (TypeT == MemoT) {
+			if (editor->_text_type == TextType::Memo) {
 				data_editor->StartExit(X, false);
 			}
 			else {
@@ -460,20 +460,20 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 				screen.CrsShow();
 			}
 			//RestoreParams(ep);
-			switch (TypeT) {
-			case FileT: {
+			switch (editor->_text_type) {
+			case TextType::File: {
 				fs = IndexT; // Part.PosP + IndexT;
-				OpenTxtFh(mode);
+				editor->OpenTxtFh(mode);
 				editor->ReadTextFile();
 				SimplePrintHead();
 				//while ((fs > Part.PosP + Part.LenP) && !AllRd) { RdNextPart(); }
 				IndexT = fs; // fs - Part.PosP;
 				break;
 			}
-			case LocalT:
-			case MemoT: {
+			case TextType::Local:
+			case TextType::Memo: {
 				std::string d = TWork.Read(*LocalPPtr);
-					if (TypeT == LocalT) {
+					if (editor->_text_type == TextType::Local) {
 				}
 				else {
 					throw("Check implementation! EditDRoot is probably not set.");
@@ -490,7 +490,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 
 			//editor->WrEndT();
 			IndexT = MinW(IndexT, txt.length());
-			if (TypeT != FileT) {
+			if (editor->_text_type != TextType::File) {
 				AbsLenT = txt.length() - 1;
 				//Part.LenP = AbsLenT;
 				SimplePrintHead();
@@ -507,7 +507,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 	return false;
 }
 
-void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
+void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	wwmix wwmix1;
 	WORD I = 0;
 	size_t I1 = 0, I2 = 0, I3 = 0;
@@ -606,7 +606,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 		}
 
 		// test frame drawing mode
-		if ((mode == SinFM || mode == DouFM || mode == DelFM || mode == NotFM) && !bScroll) {
+		if (!bScroll &&
+			(mode == EditorMode::FrameSingle || mode == EditorMode::FrameDouble || mode == EditorMode::DeleteFrame || mode == EditorMode::NotFrame)) {
 			editor->FrameStep(FrameDir, Event.Pressed);
 		}
 		else if (Event.Pressed.isChar() || (key >= CTRL + '\x01' && key <= CTRL + '\x31')) {
@@ -636,7 +637,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			// control key
 			switch (key) {
 			case __ENTER: {
-				if (mode == HelpM) {
+				if (mode == EditorMode::Help) {
 					Konec = editor->WordExist();
 					Event.Pressed.UpdateKey(key);
 				}
@@ -677,7 +678,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __LEFT: {
-				if (mode == HelpM) { editor->HelpLU('L'); }
+				if (mode == EditorMode::Help) { editor->HelpLU('L'); }
 				else
 					if (bScroll) {
 						if (columnOffset > 0) {
@@ -693,7 +694,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __RIGHT: {
-				if (mode == HelpM) editor->HelpRD('R');
+				if (mode == EditorMode::Help) editor->HelpRD('R');
 				else {
 					if (bScroll) {
 						positionOnActualLine = MinI(LineMaxSize, editor->Position(columnOffset + LineS + 1));
@@ -708,7 +709,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __UP: {
-				if (mode == HelpM) {
+				if (mode == EditorMode::Help) {
 					editor->HelpLU('U');
 				}
 				else {
@@ -723,7 +724,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __DOWN: {
-				if (mode == HelpM) {
+				if (mode == EditorMode::Help) {
 					editor->HelpRD('D');
 				}
 				else {
@@ -735,7 +736,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __PAGEUP: {
-				if (mode == HelpM) {
+				if (mode == EditorMode::Help) {
 					if (UpdatedL) editor->KodLine();
 				}
 				else {
@@ -773,7 +774,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 
 				editor->_change_scr = true;
 
-				if (mode == HelpM) {
+				if (mode == EditorMode::Help) {
 					ScreenIndex = editor->GetLineStartIndex(editor->ScreenFirstLineNr);
 					positionOnActualLine = editor->Position(Colu);
 
@@ -790,7 +791,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __PAGEDOWN: {
-				if (mode != HelpM) {
+				if (mode != EditorMode::Help) {
 					if (UpdatedL) editor->KodLine();
 				}
 				else {
@@ -821,7 +822,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					}
 				}
 				editor->_change_scr = true;
-				if (mode == HelpM) {
+				if (mode == EditorMode::Help) {
 					ScreenIndex = editor->GetLineStartIndex(editor->ScreenFirstLineNr);
 					positionOnActualLine = editor->Position(Colu);
 					W1 = editor->WordNo2();
@@ -1222,7 +1223,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				case TextBlock: {
 					do {
 						I2 = 0x1000; if (fs - L2 < int(I2))  I2 = fs - L2;
-						if ((TypeT != FileT) && ((I2 >= MaxLenT - txt.length()) || (I2 >= MemoryAvailable()))) {
+						if ((editor->_text_type != TextType::File) && ((I2 >= MaxLenT - txt.length()) || (I2 >= MemoryAvailable()))) {
 							if (I2 >= MemoryAvailable()) {
 								I2 = MemoryAvailable();
 							}
@@ -1391,7 +1392,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				editor->Calculate();
 				break;
 			case __CTRL_F6: {
-				if ((TypeT == FileT) || (TypeT == LocalT)) {
+				if ((editor->_text_type == TextType::File) || (editor->_text_type == TextType::Local)) {
 					editor->BlockHandle(fs, F1, 'p');
 				}
 				break;
@@ -1405,7 +1406,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			}
 			case 0x1000: {
 			Opet:
-				if ((mode != HelpM) && (mode != ViewM) && editor->Wrap) {
+				if ((mode != EditorMode::Help) && (mode != EditorMode::View) && editor->Wrap) {
 					screen.Window(FirstC, FirstR + 1, LastC + 1, LastR);
 				}
 				else {
@@ -1419,7 +1420,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case 'U': { // previous state recovery
-				if (TypeT != FileT)
+				if (editor->_text_type != TextType::File)
 					if (PromptYN(108)) {
 						IndexT = 1;
 						Event.Pressed.UpdateKey('U');
@@ -1436,7 +1437,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __ALT_EQUAL: { // end without saving
-				if (TypeT != FileT) {
+				if (editor->_text_type != TextType::File) {
 					if (UpdatedL) editor->KodLine();
 					//Event.Pressed.UpdateKey(key);
 					Konec = true;
@@ -1468,9 +1469,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 		} // else
 	} // if (Event.What == evKeyDown)
 
-	else if ((Event.What == evMouseDown) && ((mode == HelpM) || (mode == TextM)))
+	else if ((Event.What == evMouseDown) && ((mode == EditorMode::Help) || (mode == EditorMode::Text)))
 	{
-		if (mode == TextM && UpdatedL) editor->KodLine();
+		if (mode == EditorMode::Text && UpdatedL) editor->KodLine();
 		if (!((Event.Where.Y >= FirstR && Event.Where.Y <= LastR - 1)
 			&& (Event.Where.X >= FirstC - 1 && Event.Where.X <= LastC - 1)))
 		{
@@ -1480,17 +1481,17 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 		I3 = textIndex;
 		j = positionOnActualLine;
 		W1 = Event.Where.Y - WindMin.Y + editor->ScreenFirstLineNr;
-		if (mode == HelpM) {
+		if (mode == EditorMode::Help) {
 			W2 = editor->WordNo2() + 1;
 		}
 		editor->DekFindLine(editor->blocks->LineAbs(W1));
 		positionOnActualLine = Event.Where.X - WindMin.X + 1;
-		if (mode != TextM) positionOnActualLine = editor->Position(positionOnActualLine);
+		if (mode != EditorMode::Text) positionOnActualLine = editor->Position(positionOnActualLine);
 		positionOnActualLine += BPos;
 		I = editor->SetInd(textIndex, positionOnActualLine);
 
 		if (I < txt.length()) {
-			if (mode == HelpM) {
+			if (mode == EditorMode::Help) {
 				editor->ClrWord();
 				editor->WordFind(editor->WordNo(I + 1), I1, I2, W1);
 				if ((I1 <= I) && (I2 >= I)) {

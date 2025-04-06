@@ -226,7 +226,7 @@ void CallEditTxt()
 	std::string errMessage;
 	std::vector<EdExitD*> emptyEdExit;
 	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
-	editor->EditTxtFile(nullptr, 'T', errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
+	editor->EditTxtFile(nullptr, EditorMode::Text, errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
 }
 
 void SelectEditTxt(const std::string& ext, bool OnFace)

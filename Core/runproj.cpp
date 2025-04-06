@@ -1991,7 +1991,7 @@ void UpdateUTxt()
 	while (true) {
 		try {
 			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
-			editor->SimpleEditText('T', "", "", s, 0x7FFF, TxtPos, Upd);
+			editor->SimpleEditText(EditorMode::Text, "", "", s, 0x7FFF, TxtPos, Upd);
 			gc->SetInpStdStr(s, false);
 			MarkStore(p);
 			RdUserId(false);

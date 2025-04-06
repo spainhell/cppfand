@@ -3,6 +3,7 @@
 #include "../Graph.h"
 #include "../EditOpt.h"
 #include "../../MergeReport/RprtOpt.h"
+#include "../../TextEditor/TextEditor.h"
 
 enum class PInstrCode
 {
@@ -239,7 +240,7 @@ public:
 	std::string TxtPath;
 	WORD TxtCatIRec = 0;
 	LocVar* TxtLV = nullptr;
-	char EdTxtMode = '\0';
+	EditorMode EdTxtMode = EditorMode::Unknown;
 	std::vector<EdExitD*> ExD;
 	BYTE WFlags = 0;
 	FrmlElem* TxtPos = nullptr;
