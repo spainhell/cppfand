@@ -136,7 +136,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 						}
 					}
 				}
-				std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+				std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Unknown, TextType::Unknown);
 				editor->ViewHelpText(s2, i);
 				if (iStk < maxStk) {
 					iStk++;

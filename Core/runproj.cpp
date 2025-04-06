@@ -911,7 +911,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 				if (CC == __CTRL_F9) {
 					report->Run(nullptr);
 					SaveFiles();
-					std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+					std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Unknown, TextType::Unknown);
 					editor->ViewPrinterTxt();
 				}
 				break;
@@ -1990,7 +1990,7 @@ void UpdateUTxt()
 
 	while (true) {
 		try {
-			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Text, TextType::Unknown);
 			editor->SimpleEditText(EditorMode::Text, "", "", s, 0x7FFF, TxtPos, Upd);
 			gc->SetInpStdStr(s, false);
 			MarkStore(p);

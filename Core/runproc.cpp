@@ -117,7 +117,7 @@ void ReportProc(RprtOpt* RO, bool save)
 		SetPrintTxtPath();
 		std::string errMessage;
 		std::vector<EdExitD*> emptyEdExit;
-		std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+		std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(md, TextType::Unknown);
 		editor->EditTxtFile(nullptr, md, errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
 		PopW(w);
 	}
@@ -500,7 +500,7 @@ void EditTxtProc(Instr_edittxt* PD)
 		msg = RunString(nullptr, PD->ErrMsg, nullptr);  //RunString(CFile, PD->ErrMsg, CRecPtr)
 	}
 
-	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(PD->EdTxtMode, TextType::Unknown);
 	editor->EditTxtFile(
 		lp, PD->EdTxtMode, msg, PD->ExD, i,
 		RunInt(nullptr, PD->TxtXY, nullptr), /*RunInt(CFile, PD->TxtXY, CRecPtr),*/
@@ -1573,7 +1573,8 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_setedittxt: {
-			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+			// TODO: this cannot work! doen't make sense
+			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Unknown, TextType::Unknown);
 			editor->SetEditTxt((Instr_setedittxt*)instr);
 			break;
 		}

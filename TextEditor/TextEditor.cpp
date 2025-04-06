@@ -2998,9 +2998,11 @@ void TextEditor::GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJu
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
 }
 
-TextEditor::TextEditor()
+TextEditor::TextEditor(EditorMode e_mode, TextType text_type)
 {
 	InitTxtEditor();
+	_mode = e_mode;
+	_text_type = text_type;
 	this->blocks = new Blocks();
 	this->_events = new TextEditorEvents();
 	this->_screen = new TextEditorScreen(this, TXTCOLS, blocks, CtrlKey);
@@ -3321,7 +3323,7 @@ void TextEditor::ViewHelpText(const std::string& text, size_t& text_pos)
 			brkKeys.push_back(__CTRL_END);
 			std::vector<EdExitD*> emptyExitD;
 
-			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Unknown, TextType::Unknown);
 			editor->InitHelpViewEditor(); // set colors
 			editor->EditText(EditorMode::Help, TextType::Memo, "", "", s, 0xFFF0, text_pos, Scr,
 				brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);

@@ -97,7 +97,7 @@ public:
 	friend class TextEditorEvents;
 	friend class TextEditorScreen;
 
-	TextEditor();
+	TextEditor(EditorMode e_mode, TextType text_type);
 	~TextEditor();
 
 	bool EditText(EditorMode e_mode, TextType text_type, std::string pName, std::string pErrMsg,

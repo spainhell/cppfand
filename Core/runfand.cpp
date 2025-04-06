@@ -225,7 +225,7 @@ void CallEditTxt()
 	CVol = "";
 	std::string errMessage;
 	std::vector<EdExitD*> emptyEdExit;
-	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Text, TextType::Unknown);
 	editor->EditTxtFile(nullptr, EditorMode::Text, errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
 }
 
@@ -380,7 +380,7 @@ void InitRunFand()
 	// DataEditor::TxtEdCtrlF4Brk = false; // now initialized in DataEditor constructor
 	InitMouseEvents();
 	// Editor
-	//std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+	//std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Text, TextType::Unknown);
 	//editor->InitTxtEditor();
 	//TextEditor::InitTxtEditor();
 
