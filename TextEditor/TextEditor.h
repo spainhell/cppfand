@@ -90,7 +90,6 @@ class TextEditorScreen;
 enum class EditorMode {	Unknown, Normal, Text, Help, View, Edit, FrameSingle, FrameDouble, DeleteFrame, NotFrame };
 enum class TextType { Unknown, File, Local, Memo };
 
-
 class TextEditor
 {
 public:
@@ -112,7 +111,6 @@ public:
 	void SetEditTxt(Instr_setedittxt* PD);
 	void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg,
 	                short& pRightMarg);
-	void ViewHelpText(const std::string& text, size_t& text_pos);
 
 	void InitTxtEditor();
 	void InitHelpViewEditor();
@@ -120,9 +118,39 @@ public:
 	uint8_t ColKey[CountC + 1]{ 0 };
 	std::string InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
 
-private:
-	std::vector<std::string> _lines;
+protected:
+	size_t FindCharPosition(char c, size_t from, size_t n = 1);
+	size_t CountChar(char C, size_t first, size_t last);
+	WORD SetInd(WORD Ind, WORD Pos);
+	size_t GetLine(size_t idx);
+	size_t GetLineNumber(size_t Ind);
+	WORD Column(WORD p);
+	WORD Position(WORD n);
+	void DekFindLine(int Num);
+	void NextLine(bool WrScr);
+	void RollNext();
+	void RollPred();
 
+	// *** methods for HELP viewer ***
+	virtual void ClrWord();
+	virtual void ProcessHelpMode();
+	virtual bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr);
+	virtual void SetWord(size_t word_begin, size_t word_end);
+	virtual WORD WordNo2();
+	virtual size_t WordNo(size_t I);
+	virtual bool WordExist();
+	virtual void HelpLU(char dir);
+	virtual void HelpRD(char dir);
+	// ***
+
+	std::vector<std::string> _lines;
+	char Arr[LineMaxSize]{ '\0' };  // dekodovany 1 radek
+	BYTE TxtColor = 0;
+	size_t word_line = 0;
+	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
+	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
+
+private:
 	EditorMode _mode = EditorMode::Unknown;
 	TextType _text_type = TextType::Unknown;
 
@@ -140,7 +168,6 @@ private:
 	void InitScr();
 	void UpdStatLine(int Row, int Col);
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
-	WORD SetInd(WORD Ind, WORD Pos);
 	void SetBlockBound(int& BBPos, int& EBPos);
 	void ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p);
 	bool BlockHandle(int& fs, HANDLE W1, char Oper);
@@ -149,43 +176,28 @@ private:
 	bool BlockCGrasp(char Oper, void* P1, LongStr* sp);
 	void BlockDrop(char Oper, void* P1, LongStr* sp);
 	void BlockCDrop(char Oper, void* P1, LongStr* sp);
-	WORD WordNo2();
-	void HelpLU(char dir);
-	void HelpRD(char dir);
 	void TestUpdFile();
 	//void WrEndT();
 	void KodLine();
 	void DekodLine();
 	void FrameStep(BYTE& odir, PressedKey EvKeyC);
 	void Format(WORD& i, int First, int Last, WORD Posit, bool Rep);
-	void NextLine(bool WrScr);
 	void NewLine(char Mode);
 	WORD SetPredI();
-	void RollNext();
-	void RollPred();
 	void MyWriteln();
 	void PreviousLine();
 	void FillBlank();
 	void DeleteLine();
-	size_t CountChar(char C, size_t first, size_t last);
-	size_t FindCharPosition(char c, size_t from, size_t n = 1);
 	bool TestOptStr(char c);
-	size_t GetLineNumber(size_t Ind);
 	size_t GetLineStartIndex(size_t lineNr);
 	void CopyCurrentLineToArr(size_t Ind);
-	void DekFindLine(int Num);
-	bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr);
-	void SetWord(size_t word_begin, size_t word_end);
-	void ClrWord();
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 	void WrEndL(bool Hard, int Row);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
-	size_t WordNo(size_t I);
 	void Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void UpdateLine();
 	void UpdScreen();
 	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
-	size_t GetLine(size_t idx);
 	WORD CurrentLineFirstCharIndex(WORD index);
 	void NextPartDek();
 	ColorOrd SetColorOrd(size_t last_line) const;
@@ -194,7 +206,6 @@ private:
 	bool ReadTextFile();
 	//void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count);
 	void UpdateFile();
-	bool WordExist();
 	void MoveIdx(int dir);
 	bool TestLastPos(WORD F, WORD T);
 	void MoveB(WORD& B, WORD& F, WORD& T);
@@ -210,21 +221,14 @@ private:
 	void NewBlock2(int& L1, int& L2);
 	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
 	void CursorWord();
-	WORD Position(WORD n);
-	WORD Column(WORD p);
 	WORD GetArrLineLength();
 	void direction(BYTE x, BYTE& zn2);
 	void OpenTxtFh(EditorMode mode);
 
-	size_t word_line = 0;
-	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
-	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
-	char Arr[LineMaxSize]{ '\0' };  // dekodovany 1 radek
-
 	bool Insert, Indent, Wrap, Just;
 	pstring OptionStr;
 	std::string FindStr, ReplaceStr;
-	BYTE TxtColor = 0, BlockColor = 0, SysLColor = 0;
+	BYTE BlockColor = 0, SysLColor = 0;
 	bool Replace = false;
 	std::string ViewMsg;
 	short LeftMarg, RightMarg;

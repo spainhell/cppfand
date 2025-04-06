@@ -232,6 +232,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Blocks.cpp" />
+    <ClCompile Include="HelpViewer.cpp" />
     <ClCompile Include="TextEditorEvents.cpp" />
     <ClCompile Include="EditorHelp.cpp" />
     <ClCompile Include="TextEditorSpecialModes.cpp" />
@@ -240,6 +241,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blocks.h" />
+    <ClInclude Include="HelpViewer.h" />
     <ClInclude Include="TextEditorEvents.h" />
     <ClInclude Include="EditorHelp.h" />
     <ClInclude Include="TextEditorSpecialModes.h" />

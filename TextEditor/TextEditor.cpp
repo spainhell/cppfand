@@ -8,6 +8,7 @@
 #include "../DataEditor/DataEditor.h"
 #include "../Core/Compiler.h"
 #include "EditorHelp.h"
+#include "HelpViewer.h"
 #include "../Drivers/constants.h"
 #include "../Core/GlobalVariables.h"
 #include "../Drivers/keyboard.h"
@@ -1121,9 +1122,8 @@ void TextEditor::UpdScreen()
 		//}
 	}
 
-	do {
-		// TODO: musi to tady byt?
-		// if (MyTestEvent()) return; // {tisk celeho okna}
+	do { // {tisk celeho okna}
+		if (MyTestEvent()) return;
 
 		if (bScroll /*&& (index < txt.length())*/) {
 			if ((InsPg && (ModPage(line_offset - rr + RScrL - 1))) || InsPage) {
@@ -1304,10 +1304,10 @@ void TextEditor::ScrollPress()
 			if ((PredScLn < L1) || (PredScLn >= L1 + PageS)) PredScLn = L1;
 			if (!(PredScPos >= BPos + 1 && PredScPos <= BPos + LineS)) PredScPos = BPos + 1;
 			PosDekFindLine(PredScLn, PredScPos, false);
-			if (   _mode == EditorMode::View 
-				|| _mode == EditorMode::FrameSingle 
+			if (_mode == EditorMode::View
+				|| _mode == EditorMode::FrameSingle
 				|| _mode == EditorMode::FrameDouble
-				|| _mode == EditorMode::DeleteFrame 
+				|| _mode == EditorMode::DeleteFrame
 				|| _mode == EditorMode::NotFrame) {
 				screen.CrsBig();
 			}
@@ -1375,6 +1375,55 @@ void TextEditor::RollPred()
 			else { CopyCurrentLineToArr(textIndex - 1); }
 		}
 	}
+}
+
+void TextEditor::ClrWord()
+{
+	// do nothing for non-help editor mode
+}
+
+void TextEditor::ProcessHelpMode()
+{
+	// do nothing for non-help editor mode
+}
+
+bool TextEditor::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr)
+{
+	// do nothing for non-help editor mode
+	return false;
+}
+
+void TextEditor::SetWord(size_t word_begin, size_t word_end)
+{
+	// do nothing for non-help editor mode
+}
+
+WORD TextEditor::WordNo2()
+{
+	// do nothing for non-help editor mode
+	return 0;
+}
+
+size_t TextEditor::WordNo(size_t I)
+{
+	// do nothing for non-help editor mode
+	return 0;
+}
+
+bool TextEditor::WordExist()
+{
+	// do nothing for non-help editor mode
+	return false;
+}
+
+void TextEditor::HelpLU(char dir)
+{
+	// do nothing for non-help editor mode
+}
+
+void TextEditor::HelpRD(char dir)
+{
+	// do nothing for non-help editor mode
 }
 
 void TextEditor::direction(BYTE x, BYTE& zn2)
@@ -1652,7 +1701,7 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 		default:;
 		}
 	}
-	break;
+			   break;
 	}
 	UpdStatLine(TextLineNr, positionOnActualLine);
 }
@@ -2674,169 +2723,6 @@ label1:
 	/* BackGround; */
 }
 
-size_t TextEditor::WordNo(size_t I)
-{
-	size_t len = GetTotalLength(_lines);
-
-	int32_t last_index = min(len, I - 1);
-	size_t count = CountChar(0x13, 0, last_index); // ^S
-	return (count + 1) / 2;
-}
-
-bool TextEditor::WordExist()
-{
-	return (word_line >= ScreenFirstLineNr) && (word_line < ScreenFirstLineNr + PageS);
-}
-
-WORD TextEditor::WordNo2()
-{
-	WORD wNo;
-	bool wExists = WordExist();
-
-	if (wExists) {
-		wNo = WordNo(SetInd(textIndex, positionOnActualLine));
-	}
-	else {
-		wNo = WordNo(ScreenIndex + 1);
-	}
-
-	return wNo;
-}
-
-void TextEditor::ClrWord()
-{
-	std::string txt = JoinLines(_lines);
-
-	size_t word_begin = FindCharPosition(0x11, 0);
-	if (word_begin < txt.length()) {
-		txt[word_begin] = 0x13;
-	}
-
-	size_t word_end = FindCharPosition(0x11, word_begin + 1);
-	if (word_end < txt.length()) {
-		txt[word_end] = 0x13;
-	}
-}
-
-bool TextEditor::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr)
-{
-	size_t len = GetTotalLength(_lines);
-
-	bool result = false;
-	if (i == 0) return result;
-	i = i * 2 - 1;
-
-	word_begin = FindCharPosition(0x13, 0, i);
-	if (word_begin >= len) return result;
-
-	word_end = FindCharPosition(0x13, word_begin + 1);
-	if (word_end >= len) return result;
-
-	line_nr = GetLine(word_begin); // TODO: +1 ?;
-	result = true;
-	return result;
-}
-
-void TextEditor::SetWord(size_t word_begin, size_t word_end)
-{
-	std::string txt = JoinLines(_lines);
-	txt[word_begin] = 0x11;
-	txt[word_end] = 0x11;
-	_lines = GetAllLinesWithEnds(txt, HardL);
-	TextLineNr = GetLineNumber(word_begin);
-	word_line = TextLineNr;
-	positionOnActualLine = word_begin - textIndex + 1;
-	Colu = Column(positionOnActualLine);
-}
-
-void TextEditor::HelpLU(char dir)
-{
-	size_t I = 0, I1 = 0, I2 = 0;
-	uint16_t h2 = 0;
-	ClrWord();
-	uint16_t h1 = WordNo2();
-
-	if (dir == 'U') {
-		DekFindLine(TextLineNr - 1);
-		positionOnActualLine = Position(Colu);
-		h2 = MinW(h1, WordNo2() + 1);
-	}
-	else {
-		h2 = h1;
-	}
-
-	if (WordFind(h2, I1, I2, I) && (I >= ScreenFirstLineNr - 1)) {
-		SetWord(I1, I2);
-	}
-	else {
-		if (WordFind(h1 + 1, I1, I2, I) && (I >= ScreenFirstLineNr)) {
-			SetWord(I1, I2);
-		}
-		else {
-			I1 = SetInd(textIndex, positionOnActualLine);
-			word_line = 0;
-		}
-		I = ScreenFirstLineNr - 1;
-	}
-	if (I <= ScreenFirstLineNr - 1) {
-		DekFindLine(ScreenFirstLineNr);
-		RollPred();
-	}
-
-	if (WordExist()) {
-		TextLineNr = GetLineNumber(I1);
-	}
-}
-
-void TextEditor::HelpRD(char dir)
-{
-	size_t I = 0, I1 = 0, I2 = 0;
-	uint16_t h2 = 0;
-
-	ClrWord();
-	uint16_t h1 = WordNo2();
-	if (WordExist()) {
-		h1++;
-	}
-
-	if (dir == 'D') {
-		NextLine(false);
-		positionOnActualLine = Position(Colu);
-		while ((positionOnActualLine > 0) && (Arr[positionOnActualLine - 1] != 0x13)) positionOnActualLine--;
-		positionOnActualLine++;
-		h2 = MaxW(h1 + 1, WordNo2() + 1);
-	}
-	else {
-		h2 = h1 + 1;
-	}
-
-	if (WordFind(h2, I1, I2, I) && (I <= ScreenFirstLineNr + PageS)) {
-		SetWord(I1, I2);
-	}
-	else {
-		if (WordNo2() > h1) {
-			h1++;
-		}
-		if (WordFind(h1, I1, I2, I) && (I <= ScreenFirstLineNr + PageS)) {
-			SetWord(I1, I2);
-		}
-		else {
-			I1 = SetInd(textIndex, positionOnActualLine);
-			word_line = 0;
-		}
-		I = ScreenFirstLineNr + PageS;
-	}
-
-	if (I >= ScreenFirstLineNr + PageS) {
-		DekFindLine(ScreenFirstLineNr + PageS - 1);
-		RollNext();
-	}
-
-	if (WordExist()) {
-		TextLineNr = GetLineNumber(I1);
-	}
-}
-
 void TextEditor::CursorWord()
 {
 	std::set<char> O;
@@ -2907,22 +2793,7 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 	Konec = false;
 
 	if (_mode == EditorMode::Help) {
-		word_line = 0;
-		ScreenIndex = SetInd(textIndex, positionOnActualLine) - 1;
-		size_t begin_index;
-		size_t end_index;
-		size_t line_number;
-		uint16_t i = WordNo2() + 1;
-
-		if (WordFind(i, begin_index, end_index, line_number)) {
-			SetWord(begin_index, end_index);
-		}
-
-		if (!WordExist()) {
-			TextLineNr = GetLineNumber(IndexT);
-			ScreenIndex = 0;
-		}
-
+		ProcessHelpMode();
 	}
 
 	FillChar((char*)MargLL, sizeof(MargLL), 0);
@@ -3304,42 +3175,6 @@ void TextEditor::ViewPrinterTxt()
 	EditTxtFile(nullptr, EditorMode::Unknown, ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
 
-void TextEditor::ViewHelpText(const std::string& text, size_t& text_pos)
-{
-	// make copy of text from std::string because it changes in EditText()
-	std::string s = text;
-
-	try {
-		bool Srch = false;
-		bool Upd = false;
-		int Scr = 0;
-
-		while (true) {
-			std::vector<WORD> brkKeys;
-			brkKeys.push_back(__F1);
-			brkKeys.push_back(__F6);
-			brkKeys.push_back(__F10);
-			brkKeys.push_back(__CTRL_HOME);
-			brkKeys.push_back(__CTRL_END);
-			std::vector<EdExitD*> emptyExitD;
-
-			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Unknown, TextType::Unknown);
-			editor->InitHelpViewEditor(); // set colors
-			editor->EditText(EditorMode::Help, TextType::Memo, "", "", s, 0xFFF0, text_pos, Scr,
-				brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
-
-			if (Event.Pressed.KeyCombination() == __F6) {
-				PrintArray((char*)s.c_str(), s.length(), true);
-				continue;
-			}
-			break;
-		}
-	}
-	catch (std::exception& e)
-	{
-	}
-}
-
 void TextEditor::InitTxtEditor()
 {
 	FindStr = ""; ReplaceStr = "";
@@ -3358,9 +3193,9 @@ void TextEditor::InitTxtEditor()
 	ColKey[6] = screen.colors.tCompressed;
 	ColKey[7] = screen.colors.tElite;
 
-	InsMsg = ReadMessage(411); 
+	InsMsg = ReadMessage(411);
 	nInsMsg = ReadMessage(412);
-	IndMsg = ReadMessage(413); 
+	IndMsg = ReadMessage(413);
 	WrapMsg = ReadMessage(414);
 	JustMsg = ReadMessage(415);
 	BlockMsg = ReadMessage(417);
