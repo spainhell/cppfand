@@ -139,7 +139,8 @@ void Help(RdbD* R, std::string name, bool InCWw)
 				}
 
 				while (true) {
-					std::unique_ptr<HelpViewer> editor = std::make_unique<HelpViewer>(s2, i);
+					std::unique_ptr<HelpViewer> editor = std::make_unique<HelpViewer>();
+					editor->ViewHelp(s2, i);
 					if (Event.Pressed.KeyCombination() == __F6) {
 						PrintArray((char*)s2.c_str(), s2.length(), true);
 						continue;

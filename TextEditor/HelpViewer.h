@@ -12,10 +12,10 @@ struct WordPosition
 class HelpViewer : public TextEditor
 {
 public:
-	HelpViewer(std::string help_text, size_t text_pos);
+	HelpViewer();
 	~HelpViewer() override;
 
-	void InitHelpViewEditor(std::string& help_text, size_t& text_pos);
+	void ViewHelp(std::string& help_text, size_t& text_pos);
 
 private:
 	void Background() override;
@@ -32,5 +32,7 @@ private:
 	void ProcessPageDown() override;
 
 	WordPosition _word; // last help word position
+	std::vector<WORD> brkKeys;
+	std::vector<EdExitD*> exitD;
 };
 
