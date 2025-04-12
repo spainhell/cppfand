@@ -19,8 +19,9 @@ public:
 
 private:
 	void Background() override;
-	bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr) override;
-	void SetWord(size_t word_begin, size_t word_end) override;
+	void FindAllWords();
+	bool WordFind(WORD i);
+	void SetWord();
 	WORD WordNo2() override;
 	size_t WordNo(size_t I) override;
 	bool WordExist() override;
@@ -31,7 +32,8 @@ private:
 	void ProcessPageUp() override;
 	void ProcessPageDown() override;
 
-	WordPosition _word; // last help word position
+	std::vector<WordPosition> _word_list; // list of help words
+	size_t _word_index = 0;
 	std::vector<WORD> brkKeys;
 	std::vector<EdExitD*> exitD;
 };
