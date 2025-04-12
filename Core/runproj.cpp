@@ -57,7 +57,7 @@ bool IsCurrChpt(FileD* file_d)
 
 FandFileType ExtToTyp(const std::string& ext)
 {
-	if ((ext.empty()) || EquUpCase(ext, ".HLP")
+	if ((ext.empty()) || EquUpCase(ext, ".FHLP")
 #ifdef FandSQL
 		|| SEquUpcase(Ext, ".SQL")
 #endif	

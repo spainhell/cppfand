@@ -26,6 +26,11 @@ void HelpViewer::ViewHelp(std::string& help_text, size_t& text_pos)
 	bool Srch = false;
 	bool Upd = false;
 	int Scr = 0;
+	bool hardL = false;
+
+	_lines = GetAllLinesWithEnds(help_text, hardL);
+
+	FindAllWords();
 
 	EditText(EditorMode::Help, TextType::Memo, "", "", help_text, 0xFFF0, text_pos, Scr,
 		brkKeys, exitD, Srch, Upd, 142, 145, nullptr);
@@ -33,12 +38,12 @@ void HelpViewer::ViewHelp(std::string& help_text, size_t& text_pos)
 
 void HelpViewer::Background()
 {
-	UpdStatLine(TextLineNr, positionOnActualLine);
+	// UpdStatLine(TextLineNr, positionOnActualLine);
 
 	WORD p = positionOnActualLine;
 
-	if (_word.start_line == TextLineNr) {
-		while (Arr[p] != 0x11) {
+	if (_word_list[_word_index].start_line == TextLineNr) {
+		while (_lines[TextLineNr - 1][p] != 0x11) {
 			p++;
 		}
 	}
@@ -69,6 +74,48 @@ void HelpViewer::Background()
 	//IsWrScreen = true;
 }
 
+void HelpViewer::FindAllWords()
+{
+	size_t line_index = 0;
+	size_t pos_index = 0;
+
+	while (line_index < _lines.size()) {
+		std::string line_text = _lines[line_index];
+		size_t word_begin = line_text.find(0x13, pos_index);
+		if (word_begin != std::string::npos) {
+			size_t word_end = line_text.find(0x13, word_begin + 1);
+			if (word_end != std::string::npos) {
+				// word end is on the same line
+				_word_list.push_back({ line_index + 1, word_begin, line_index + 1, word_end });
+				pos_index = word_end + 1;
+			}
+			else {
+				// word ends on next lines
+				size_t next_line = line_index + 1;
+				while (next_line < _lines.size()) {
+					std::string next_line_text = _lines[next_line];
+					pos_index = 0;
+					size_t word_end = next_line_text.find(0x13);
+					if (word_end != std::string::npos) {
+						_word_list.push_back({ line_index + 1, word_begin, next_line, word_end });
+						pos_index = word_end + 1;
+						break;
+					}
+					else {
+						next_line++;
+						continue;
+					}
+				}
+			}
+		}
+		else {
+			// no more words in this line
+			line_index++;
+			pos_index = 0;
+		}
+	}
+}
+
 size_t HelpViewer::WordNo(size_t I)
 {
 	size_t len = GetTotalLength(_lines);
@@ -80,7 +127,16 @@ size_t HelpViewer::WordNo(size_t I)
 
 bool HelpViewer::WordExist()
 {
-	return (_word.start_line >= ScreenFirstLineNr) && (_word.start_line < ScreenFirstLineNr + PageS);
+	// find word with start_line >= ScreenFirstLineNr
+	// and start_line < ScreenFirstLineNr + PageS
+	for (size_t i = 0; i < _word_list.size(); i++) {
+		if (_word_list[i].start_line >= ScreenFirstLineNr && _word_list[i].start_line < ScreenFirstLineNr + PageS) {
+			//_word_index = i;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 WORD HelpViewer::WordNo2()
@@ -98,21 +154,6 @@ WORD HelpViewer::WordNo2()
 	return wNo;
 }
 
-void HelpViewer::ClrWord()
-{
-	std::string txt = JoinLines(_lines);
-
-	size_t word_begin = FindCharPosition(0x11, 0);
-	if (word_begin < txt.length()) {
-		txt[word_begin] = 0x13;
-	}
-
-	size_t word_end = FindCharPosition(0x11, word_begin + 1);
-	if (word_end < txt.length()) {
-		txt[word_end] = 0x13;
-	}
-}
-
 void HelpViewer::ProcessHelpMode()
 {
 	//word_line = 0;
@@ -122,8 +163,9 @@ void HelpViewer::ProcessHelpMode()
 	size_t line_number;
 	uint16_t i = WordNo2() + 1;
 
-	if (WordFind(i, begin_index, end_index, line_number)) {
-		SetWord(begin_index, end_index);
+	if (WordFind(i)) {
+		// WordFind should return index of word in vector
+		SetWord();
 	}
 
 	if (!WordExist()) {
@@ -171,19 +213,19 @@ void HelpViewer::ProcessPageUp()
 	positionOnActualLine = Position(Colu);
 
 	size_t I1 = 0, I2 = 0;
-	if (WordFind(WordNo2() + 1, I1, I2, _word.start_line) && WordExist()) {
-		SetWord(I1, I2);
-	}
-	else {
-		_word.start_line = 0;
-	}
+	//if (WordFind(WordNo2() + 1, I1, I2, _word.start_line) && WordExist()) {
+	//	SetWord(I1, I2);
+	//}
+	//else {
+	//	_word.start_line = 0;
+	//}
 
 }
 
 void HelpViewer::ProcessPageDown()
 {
-		ClrWord();
-		TextLineNr = ScreenFirstLineNr;
+	ClrWord();
+	TextLineNr = ScreenFirstLineNr;
 
 	//L1 = editor->blocks->LineAbs(editor->TextLineNr);
 
@@ -209,55 +251,57 @@ void HelpViewer::ProcessPageDown()
 		}
 	}
 
-		//ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
-		positionOnActualLine = Position(Colu);
+	//ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
+	positionOnActualLine = Position(Colu);
 
-		size_t I1 = 0, I2 = 0;
-		size_t W1 = 0, W2 = 0;
+	size_t I1 = 0, I2 = 0;
+	size_t W1 = 0, W2 = 0;
 
-		W1 = WordNo2();
+	W1 = WordNo2();
 
-		if (WordFind(W1 + 1, I1, I2, _word.start_line) && WordExist()) {
-			SetWord(I1, I2);
-		}
-		else if (WordFind(W1, I1, I2, _word.start_line) && WordExist()) {
-			SetWord(I1, I2);
-		}
-		else {
-			_word.start_line = 0;
-		}
+	//if (WordFind(W1 + 1, I1, I2, _word.start_line) && WordExist()) {
+	//	SetWord(I1, I2);
+	//}
+	//else if (WordFind(W1, I1, I2, _word.start_line) && WordExist()) {
+	//	SetWord(I1, I2);
+	//}
+	//else {
+	//	_word.start_line = 0;
+	//}
 }
 
-bool HelpViewer::WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr)
+bool HelpViewer::WordFind(WORD i)
 {
-	size_t len = GetTotalLength(_lines);
-
-	bool result = false;
-	if (i == 0) return result;
-	i = i * 2 - 1;
-
-	word_begin = FindCharPosition(0x13, 0, i);
-	if (word_begin >= len) return result;
-
-	word_end = FindCharPosition(0x13, word_begin + 1);
-	if (word_end >= len) return result;
-
-	line_nr = GetLine(word_begin); // TODO: +1 ?;
-	result = true;
+	bool result;
+	if (i == 0) {
+		result = false;
+	}
+	else if (i >= _word_list.size()) {
+		// there are no so much words
+		result = false;
+	}
+	else {
+		_word_index = i - 1;
+		result = true;
+	}
 	return result;
 }
 
-void HelpViewer::SetWord(size_t word_begin, size_t word_end)
+void HelpViewer::SetWord()
 {
-	std::string txt = JoinLines(_lines);
-	txt[word_begin] = 0x11;
-	txt[word_end] = 0x11;
-	bool hardL = false;
-	_lines = GetAllLinesWithEnds(txt, hardL); // HardL);
-	TextLineNr = GetLineNumber(word_begin);
-	_word.start_line = TextLineNr;
-	positionOnActualLine = word_begin - textIndex + 1;
+	WordPosition* word = &_word_list[_word_index];
+	_lines[word->start_line - 1][word->start_index] = 0x11;
+	_lines[word->end_line - 1][word->end_index] = 0x11;
+	TextLineNr = word->start_line;
+	positionOnActualLine = word->start_index - textIndex + 1;
 	Colu = Column(positionOnActualLine);
+}
+
+void HelpViewer::ClrWord()
+{
+	WordPosition* word = &_word_list[_word_index];
+	_lines[word->start_line - 1][word->start_index] = 0x13;
+	_lines[word->end_line - 1][word->end_index] = 0x13;
 }
 
 void HelpViewer::HelpLU(char dir)
@@ -276,16 +320,18 @@ void HelpViewer::HelpLU(char dir)
 		h2 = h1;
 	}
 
-	if (WordFind(h2, I1, I2, I) && (I >= ScreenFirstLineNr - 1)) {
-		SetWord(I1, I2);
+	if (WordFind(h2) && (I >= ScreenFirstLineNr - 1)) {
+		// WordFind should return index of word in vector
+		SetWord();
 	}
 	else {
-		if (WordFind(h1 + 1, I1, I2, I) && (I >= ScreenFirstLineNr)) {
-			SetWord(I1, I2);
+		if (WordFind(h1) && (I >= ScreenFirstLineNr)) {
+			// WordFind should return index of word in vector
+			SetWord();
 		}
 		else {
 			I1 = SetInd(textIndex, positionOnActualLine);
-			_word.start_line = 0;
+			//_word.start_line = 0;
 		}
 		I = ScreenFirstLineNr - 1;
 	}
@@ -321,19 +367,21 @@ void HelpViewer::HelpRD(char dir)
 		h2 = h1 + 1;
 	}
 
-	if (WordFind(h2, I1, I2, I) && (I <= ScreenFirstLineNr + PageS)) {
-		SetWord(I1, I2);
+	if (WordFind(h2) && (I <= ScreenFirstLineNr + PageS)) {
+		// WordFind should return index of word in vector
+		SetWord();
 	}
 	else {
 		if (WordNo2() > h1) {
 			h1++;
 		}
-		if (WordFind(h1, I1, I2, I) && (I <= ScreenFirstLineNr + PageS)) {
-			SetWord(I1, I2);
+		if (WordFind(h1) && (I <= ScreenFirstLineNr + PageS)) {
+			// WordFind should return index of word in vector
+			SetWord();
 		}
 		else {
 			I1 = SetInd(textIndex, positionOnActualLine);
-			_word.start_line = 0;
+			//_word.start_line = 0;
 		}
 		I = ScreenFirstLineNr + PageS;
 	}

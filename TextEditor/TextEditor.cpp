@@ -1654,7 +1654,7 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 		Arr[positionOnActualLine - 1] = ' ';
 		BYTE b;
 		if (_mode == EditorMode::DeleteFrame) {
-			b = zn1 & !(odir | dir);
+			b = zn1 & ~(odir | dir);
 		}
 		else {
 			b = zn1 | (odir ^ dir);

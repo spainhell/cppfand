@@ -141,8 +141,6 @@ protected:
 	// *** methods for HELP viewer ***
 	virtual void ClrWord();
 	virtual void ProcessHelpMode();
-	virtual bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr);
-	virtual void SetWord(size_t word_begin, size_t word_end);
 	virtual WORD WordNo2();
 	virtual size_t WordNo(size_t I);
 	virtual bool WordExist();
@@ -193,6 +191,10 @@ private:
 	void DeleteLine();
 	bool TestOptStr(char c);
 	size_t GetLineStartIndex(size_t lineNr);
+
+	void SetWord(size_t word_begin, size_t word_end);
+	bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr);
+
 	void CopyCurrentLineToArr(size_t Ind);
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 	void WrEndL(bool Hard, int Row);
