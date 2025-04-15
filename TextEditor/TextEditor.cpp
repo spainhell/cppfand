@@ -1313,78 +1313,6 @@ void TextEditor::RollPred()
 	}
 }
 
-void TextEditor::ProcessPageUp()
-{
-	size_t I1 = 0, I2 = 0;
-
-	if (UpdatedL) KodLine();
-
-
-	int32_t L1 = LineAbs(TextLineNr);
-
-	if (bScroll) {
-		RScrL = MaxL(1, RScrL - PageS);
-		if (ModPage(RScrL)) { RScrL++; }
-		ScreenFirstLineNr = NewL(RScrL);
-		TextLineNr = ScreenFirstLineNr;
-		DekFindLine(LineAbs(TextLineNr));
-		positionOnActualLine = Position(Colu);
-		int j = 0; // TODO: CountChar(0x0C, textIndex, ScreenIndex);
-
-		if ((j > 0) && InsPg) {
-			DekFindLine(LineAbs(TextLineNr + j));
-			ScreenFirstLineNr = TextLineNr;
-			RScrL = NewRL(ScreenFirstLineNr);
-		}
-	}
-	else {
-		if (ScreenFirstLineNr > PageS) {
-			ScreenFirstLineNr -= PageS;
-		}
-		else {
-			ScreenFirstLineNr = 1;
-		}
-
-		DekFindLine(LineAbs(TextLineNr - PageS));
-	}
-
-	_change_scr = true;
-
-	BlockUDShift(L1);
-}
-
-void TextEditor::ProcessPageDown()
-{
-	if (UpdatedL) KodLine();
-
-	int L1 = LineAbs(TextLineNr);
-
-	if (bScroll) {
-		RScrL += PageS;
-		if (ModPage(RScrL)) {
-			RScrL--;
-		}
-		DekFindLine(LineAbs(NewL(RScrL)));
-		positionOnActualLine = Position(Colu);
-		// TODO:
-		int j = 0; // CountChar(0x0C, ScreenIndex, textIndex);
-		if ((j > 0) && InsPg) {
-			DekFindLine(LineAbs(TextLineNr - j));
-		}
-		ScreenFirstLineNr = TextLineNr;
-		RScrL = NewRL(ScreenFirstLineNr);
-	}
-	else {
-		DekFindLine(LineAbs(TextLineNr) + PageS);
-		if (TextLineNr >= ScreenFirstLineNr + PageS) {
-			ScreenFirstLineNr += PageS;
-		}
-	}
-
-	_change_scr = true;
-	BlockUDShift(L1);
-}
-
 void TextEditor::ClrWord()
 {
 	// do nothing for non-help editor mode
@@ -1424,12 +1352,7 @@ bool TextEditor::WordExist()
 	return false;
 }
 
-void TextEditor::HelpLU(char dir)
-{
-	// do nothing for non-help editor mode
-}
-
-void TextEditor::HelpRD(char dir)
+void TextEditor::ProcessHelpMove(uint16_t pressed_key)
 {
 	// do nothing for non-help editor mode
 }

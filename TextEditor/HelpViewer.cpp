@@ -139,6 +139,29 @@ bool HelpViewer::WordExist()
 	return false;
 }
 
+void HelpViewer::ProcessHelpMove(uint16_t pressed_key)
+{
+	switch (pressed_key) {
+	case __LEFT: {
+		HelpLU('L');
+		break;
+	}
+	case __RIGHT: {
+		HelpRD('R');
+		break;
+	}
+	case __UP: {
+		HelpLU('U');
+		break;
+	}
+	case __DOWN: {
+		HelpRD('D');
+		break;
+	}
+	default: break;
+	}
+}
+
 WORD HelpViewer::WordNo2()
 {
 	WORD wNo;

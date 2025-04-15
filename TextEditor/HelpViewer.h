@@ -25,12 +25,13 @@ private:
 	WORD WordNo2() override;
 	size_t WordNo(size_t I) override;
 	bool WordExist() override;
-	void HelpLU(char dir) override;
-	void HelpRD(char dir) override;
+	void ProcessHelpMove(uint16_t pressed_key) override;
+	void HelpLU(char dir);
+	void HelpRD(char dir);
 	void ClrWord() override;
 	void ProcessHelpMode() override;
-	void ProcessPageUp() override;
-	void ProcessPageDown() override;
+	void ProcessPageUp();
+	void ProcessPageDown();
 
 	std::vector<WordPosition> _word_list; // list of help words
 	size_t _word_index = 0;

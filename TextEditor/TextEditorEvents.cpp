@@ -678,7 +678,10 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				break;
 			}
 			case __LEFT: {
-				if (mode == EditorMode::Help) { editor->HelpLU('L'); }
+				if (mode == EditorMode::Help) {
+					// editor->HelpLU('L');
+					editor->ProcessHelpMove(__LEFT);
+				}
 				else
 					if (bScroll) {
 						if (columnOffset > 0) {
@@ -694,7 +697,10 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				break;
 			}
 			case __RIGHT: {
-				if (mode == EditorMode::Help) editor->HelpRD('R');
+				if (mode == EditorMode::Help) {
+					//editor->HelpRD('R');
+					editor->ProcessHelpMove(__RIGHT);
+				}
 				else {
 					if (bScroll) {
 						positionOnActualLine = MinI(LineMaxSize, editor->Position(columnOffset + LineS + 1));
@@ -710,7 +716,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			}
 			case __UP: {
 				if (mode == EditorMode::Help) {
-					editor->HelpLU('U');
+					//editor->HelpLU('U');
+					editor->ProcessHelpMove(__UP);
 				}
 				else {
 					if (bScroll) {
@@ -725,7 +732,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			}
 			case __DOWN: {
 				if (mode == EditorMode::Help) {
-					editor->HelpRD('D');
+					//editor->HelpRD('D');
+					editor->ProcessHelpMove(__DOWN);
 				}
 				else {
 					L1 = editor->LineAbs(editor->TextLineNr); // na kterem jsme prave radku textu (celkove, ne na obrazovce)
@@ -736,11 +744,86 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				break;
 			}
 			case __PAGEUP: {
-				editor->ProcessPageUp();
+				if (mode == EditorMode::Help) {
+					editor->ProcessHelpMove(__PAGEUP);
+				}
+				else
+				{
+					size_t I1 = 0, I2 = 0;
+
+					if (UpdatedL) editor->KodLine();
+
+
+					int32_t L1 = editor->LineAbs(editor->TextLineNr);
+
+					if (bScroll) {
+						RScrL = MaxL(1, RScrL - PageS);
+						if (ModPage(RScrL)) { RScrL++; }
+						editor->ScreenFirstLineNr = NewL(RScrL);
+						editor->TextLineNr = editor->ScreenFirstLineNr;
+						editor->DekFindLine(editor->LineAbs(editor->TextLineNr));
+						positionOnActualLine = editor->Position(Colu);
+						int j = 0; // TODO: CountChar(0x0C, textIndex, ScreenIndex);
+
+						if ((j > 0) && editor->InsPg) {
+							editor->DekFindLine(editor->LineAbs(editor->TextLineNr + j));
+							editor->ScreenFirstLineNr = editor->TextLineNr;
+							RScrL = editor->NewRL(editor->ScreenFirstLineNr);
+						}
+					}
+					else {
+						if (editor->ScreenFirstLineNr > PageS) {
+							editor->ScreenFirstLineNr -= PageS;
+						}
+						else {
+							editor->ScreenFirstLineNr = 1;
+						}
+
+						editor->DekFindLine(editor->LineAbs(editor->TextLineNr - PageS));
+					}
+
+					editor->_change_scr = true;
+
+					editor->BlockUDShift(L1);
+				}
 				break;
 			}
 			case __PAGEDOWN: {
-				editor->ProcessPageDown();
+				if (mode == EditorMode::Help)
+				{
+					editor->ProcessHelpMove(__PAGEDOWN);
+				}
+				else
+				{
+					if (UpdatedL) editor->KodLine();
+
+					int L1 = editor->LineAbs(editor->TextLineNr);
+
+					if (bScroll) {
+						RScrL += PageS;
+						if (ModPage(RScrL)) {
+							RScrL--;
+						}
+						editor->DekFindLine(editor->LineAbs(NewL(RScrL)));
+						positionOnActualLine = editor->Position(Colu);
+						// TODO:
+						int j = 0; // CountChar(0x0C, ScreenIndex, textIndex);
+						if ((j > 0) && editor->InsPg) {
+							editor->DekFindLine(editor->LineAbs(editor->TextLineNr - j));
+						}
+						editor->ScreenFirstLineNr = editor->TextLineNr;
+						RScrL = editor->NewRL(editor->ScreenFirstLineNr);
+					}
+					else {
+						editor->DekFindLine(editor->LineAbs(editor->TextLineNr) + PageS);
+						if (editor->TextLineNr >= editor->ScreenFirstLineNr + PageS) {
+							editor->ScreenFirstLineNr += PageS;
+						}
+					}
+
+					editor->_change_scr = true;
+					editor->BlockUDShift(L1);
+				}
 				break;
 			}
 			case __SCROLL_LOCK: {
@@ -1265,24 +1348,6 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				positionOnActualLine = 1;
 				break;
 			}
-					//case _framesingle_: {
-					//	Mode = SinFM;
-					//	screen.CrsBig();
-					//	FrameDir = 0;
-					//	break;
-					//}
-					//case _framedouble_: {
-					//	Mode = DouFM;
-					//	screen.CrsBig();
-					//	FrameDir = 0;
-					//	break;
-					//}
-					//case _delframe_: {
-					//	Mode = DelFM;
-					//	screen.CrsBig();
-					//	FrameDir = 0;
-					//	break;
-					//}
 			case __F4: {
 				char c = ToggleCS(editor->Arr[positionOnActualLine]);
 				UpdatedL = c != editor->Arr[positionOnActualLine];
