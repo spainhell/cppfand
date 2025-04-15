@@ -135,8 +135,6 @@ protected:
 	void RollPred();
 	int NewRL(int Line);
 	size_t LineAbs(int Ln);
-	virtual void ProcessPageUp();
-	virtual void ProcessPageDown();
 
 	// *** methods for HELP viewer ***
 	virtual void ClrWord();
@@ -144,8 +142,7 @@ protected:
 	virtual WORD WordNo2();
 	virtual size_t WordNo(size_t I);
 	virtual bool WordExist();
-	virtual void HelpLU(char dir);
-	virtual void HelpRD(char dir);
+	virtual void ProcessHelpMove(uint16_t pressed_key);
 	// ***
 
 	std::vector<std::string> _lines;
