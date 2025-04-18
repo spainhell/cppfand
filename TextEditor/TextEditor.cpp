@@ -1346,7 +1346,7 @@ size_t TextEditor::WordNo(size_t I)
 	return 0;
 }
 
-bool TextEditor::WordExist()
+bool TextEditor::WordExistsOnActualScreen()
 {
 	// do nothing for non-help editor mode
 	return false;

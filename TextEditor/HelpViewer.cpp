@@ -125,7 +125,7 @@ size_t HelpViewer::WordNo(size_t I)
 	return (count + 1) / 2;
 }
 
-bool HelpViewer::WordExist()
+bool HelpViewer::WordExistsOnActualScreen()
 {
 	// find word with start_line >= ScreenFirstLineNr
 	// and start_line < ScreenFirstLineNr + PageS
@@ -165,7 +165,7 @@ void HelpViewer::ProcessHelpMove(uint16_t pressed_key)
 WORD HelpViewer::WordNo2()
 {
 	WORD wNo;
-	bool wExists = WordExist();
+	bool wExists = WordExistsOnActualScreen();
 
 	if (wExists) {
 		wNo = WordNo(SetInd(textIndex, positionOnActualLine));
@@ -191,7 +191,7 @@ void HelpViewer::ProcessHelpMode()
 		SetWord();
 	}
 
-	if (!WordExist()) {
+	if (!WordExistsOnActualScreen()) {
 		TextLineNr = GetLineNumber(IndexT);
 		//ScreenIndex = 0;
 	}
@@ -236,7 +236,7 @@ void HelpViewer::ProcessPageUp()
 	positionOnActualLine = Position(Colu);
 
 	size_t I1 = 0, I2 = 0;
-	//if (WordFind(WordNo2() + 1, I1, I2, _word.start_line) && WordExist()) {
+	//if (WordFind(WordNo2() + 1, I1, I2, _word.start_line) && WordExistsOnActualScreen()) {
 	//	SetWord(I1, I2);
 	//}
 	//else {
@@ -282,10 +282,10 @@ void HelpViewer::ProcessPageDown()
 
 	W1 = WordNo2();
 
-	//if (WordFind(W1 + 1, I1, I2, _word.start_line) && WordExist()) {
+	//if (WordFind(W1 + 1, I1, I2, _word.start_line) && WordExistsOnActualScreen()) {
 	//	SetWord(I1, I2);
 	//}
-	//else if (WordFind(W1, I1, I2, _word.start_line) && WordExist()) {
+	//else if (WordFind(W1, I1, I2, _word.start_line) && WordExistsOnActualScreen()) {
 	//	SetWord(I1, I2);
 	//}
 	//else {
@@ -363,7 +363,7 @@ void HelpViewer::HelpLU(char dir)
 		RollPred();
 	}
 
-	if (WordExist()) {
+	if (WordExistsOnActualScreen()) {
 		TextLineNr = GetLineNumber(I1);
 	}
 }
@@ -375,7 +375,7 @@ void HelpViewer::HelpRD(char dir)
 
 	ClrWord();
 	uint16_t h1 = WordNo2();
-	if (WordExist()) {
+	if (WordExistsOnActualScreen()) {
 		h1++;
 	}
 
@@ -414,7 +414,7 @@ void HelpViewer::HelpRD(char dir)
 		RollNext();
 	}
 
-	if (WordExist()) {
+	if (WordExistsOnActualScreen()) {
 		TextLineNr = GetLineNumber(I1);
 	}
 }

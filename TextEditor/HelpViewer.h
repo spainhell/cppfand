@@ -24,7 +24,7 @@ private:
 	void SetWord();
 	WORD WordNo2() override;
 	size_t WordNo(size_t I) override;
-	bool WordExist() override;
+	bool WordExistsOnActualScreen() override;
 	void ProcessHelpMove(uint16_t pressed_key) override;
 	void HelpLU(char dir);
 	void HelpRD(char dir);

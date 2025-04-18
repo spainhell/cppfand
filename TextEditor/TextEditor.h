@@ -141,7 +141,7 @@ protected:
 	virtual void ProcessHelpMode();
 	virtual WORD WordNo2();
 	virtual size_t WordNo(size_t I);
-	virtual bool WordExist();
+	virtual bool WordExistsOnActualScreen();
 	virtual void ProcessHelpMove(uint16_t pressed_key);
 	// ***
 
