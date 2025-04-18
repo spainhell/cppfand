@@ -638,7 +638,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			switch (key) {
 			case __ENTER: {
 				if (mode == EditorMode::Help) {
-					Konec = editor->WordExist();
+					Konec = editor->WordExistsOnActualScreen();
 					Event.Pressed.UpdateKey(key);
 				}
 				else {
@@ -1465,7 +1465,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 					Event.Pressed.UpdateKey('M');
 					Konec = true;
 				}
-				else if (editor->WordExist()) {
+				else if (editor->WordExistsOnActualScreen()) {
 					editor->WordFind(W2, I1, I2, W1);
 					editor->SetWord(I1, I2);
 				}
