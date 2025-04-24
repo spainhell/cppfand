@@ -61,7 +61,7 @@ const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
 const WORD TextStore = 0x1000;
 const BYTE TStatL = 35; /*=10(Col Row)+length(InsMsg+IndMsg+WrapMsg+JustMsg+BlockMsg)*/
 
-std::set<char> Separ = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
+std::set<char> GlobalSeparators = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
 26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,58,59,60,61,62,63,64,
 91,92,93,94,96,123,124,125,126,127 };
 
@@ -228,7 +228,7 @@ bool TextEditor::FindString(WORD& I, WORD Len)
 			goto label1;
 		}
 		if (TestOptStr('w')) {
-			if (I > 1 && !Separ.count(txt[I - 1]) || !Separ.count(txt[I + FindStr.length()])) {
+			if (I > 1 && !GlobalSeparators.count(txt[I - 1]) || !GlobalSeparators.count(txt[I + FindStr.length()])) {
 				I++;
 				goto label1;
 			}
@@ -467,6 +467,39 @@ void TextEditor::OpenTxtFh(EditorMode e_mode)
 	}
 	//AbsLenT = FileSizeH(TxtFH);
 	AbsLenT = GetFileSize(TxtFH, NULL);
+}
+
+/// <summary>
+/// Transform string index to screen position.
+/// </summary>
+/// <param name="line">Line string</param>
+/// <param name="string_index">Index of the character in a line 0..N</param>
+/// <returns></returns>
+size_t TextEditor::StrIndexToScrPos(const std::string& line, size_t string_index)
+{
+	// skip non-printable characters in the line
+	size_t pos = 0;
+	for (size_t i = 0; i < string_index; i++) {
+		if ((uint8_t)line[i] >= 0x20) {
+			pos++;
+		}
+	}
+	return pos + 1;
+}
+
+
+size_t TextEditor::ScrPosToStrIndex(const std::string& line, size_t screen_pos)
+{
+	size_t pos = 0;
+	for (size_t i = 0; i < line.length(); i++) {
+		if ((uint8_t)line[i] >= 0x20) {
+			pos++;
+		}
+		if (pos == screen_pos) {
+			return i + 1;
+		}
+	}
+	return 1;
 }
 
 pstring ShortName(pstring Name)
@@ -2654,31 +2687,34 @@ label1:
 	/* BackGround; */
 }
 
-void TextEditor::CursorWord()
+std::string TextEditor::CursorWord()
 {
-	std::set<char> O;
-	std::string word;
+	std::set<char> sep;
 
-	WORD pp = positionOnActualLine;
+	const std::string line = _lines[TextLineNr - 1];
+	size_t start_index = ScrPosToStrIndex(line, positionOnActualLine);
+	size_t end_index = start_index + 1;
 
 	if (_mode == EditorMode::Help) {
-		O.insert(0x11);
+		sep.insert(0x11);
 	}
 	else {
-		O = Separ;
-		if (O.count(Arr[pp - 1]) > 0) { pp--; }
+		sep = GlobalSeparators;
+		if (start_index > 0 && !sep.contains(line[start_index - 1])) {
+			start_index--;
+		}
 	}
 
-	while ((pp > 0) && !O.count(Arr[pp - 1])) { pp--; }
-
-	pp++;
-
-	while ((pp <= GetArrLineLength()) && !O.count(Arr[pp - 1])) {
-		word += Arr[pp - 1];
-		pp++;
+	while ((start_index > 1) && !sep.contains(line[start_index - 1])) {
+		// find begining of the word
+		start_index--;
 	}
 
-	gc->LexWord = word;
+	while ((end_index < line.length() - 1) && !sep.contains(line[end_index + 1])) {
+		end_index++;
+	}
+
+	return line.substr(start_index, end_index - start_index + 1);
 }
 
 void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
@@ -2769,7 +2805,7 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 		TxtXY = ScrT + ((int)positionOnActualLine << 16);
 	}
 
-	CursorWord();
+	gc->LexWord = CursorWord();
 
 	if (_mode == EditorMode::Help) {
 		ClrWord();
