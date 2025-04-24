@@ -56,7 +56,7 @@ extern WORD MargLL[4];
 
 //extern Blocks* blocks;
 
-extern std::set<char> Separ;
+extern std::set<char> GlobalSeparators;
 
 const BYTE LineMaxSize = 255;
 const bool TextBlock = false;
@@ -219,10 +219,12 @@ private:
 	void NewBlock1(WORD& I1, int& L2);
 	void NewBlock2(int& L1, int& L2);
 	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
-	void CursorWord();
+	std::string CursorWord();
 	WORD GetArrLineLength();
 	void direction(BYTE x, BYTE& zn2);
 	void OpenTxtFh(EditorMode mode);
+	size_t StrIndexToScrPos(const std::string& line, size_t string_index);
+	size_t ScrPosToStrIndex(const std::string& line, size_t screen_pos);
 
 	bool LineInBlock(int Ln);
 	bool LineBndBlock(int Ln);

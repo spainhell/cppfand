@@ -143,19 +143,27 @@ void HelpViewer::ProcessHelpMove(uint16_t pressed_key)
 {
 	switch (pressed_key) {
 	case __LEFT: {
-		HelpLU('L');
+		ProcessLeftUp('L');
 		break;
 	}
 	case __RIGHT: {
-		HelpRD('R');
+		ProcessRightDown('R');
 		break;
 	}
 	case __UP: {
-		HelpLU('U');
+		ProcessLeftUp('U');
 		break;
 	}
 	case __DOWN: {
-		HelpRD('D');
+		ProcessRightDown('D');
+		break;
+	}
+	case __PAGEUP: {
+		ProcessPageUp();
+		break;
+	}
+	case __PAGEDOWN: {
+		ProcessPageDown();
 		break;
 	}
 	default: break;
@@ -179,20 +187,13 @@ WORD HelpViewer::WordNo2()
 
 void HelpViewer::ProcessHelpMode()
 {
-	//word_line = 0;
-	//ScreenIndex = SetInd(textIndex, positionOnActualLine) - 1;
-	size_t begin_index;
-	size_t end_index;
-	size_t line_number;
-	uint16_t i = WordNo2() + 1;
-
-	if (WordFind(i)) {
+	if (WordFind(1)) {
 		// WordFind should return index of word in vector
 		SetWord();
 	}
 
 	if (!WordExistsOnActualScreen()) {
-		TextLineNr = GetLineNumber(IndexT);
+		TextLineNr = 1;
 		//ScreenIndex = 0;
 	}
 }
@@ -327,7 +328,7 @@ void HelpViewer::ClrWord()
 	_lines[word->end_line - 1][word->end_index] = 0x13;
 }
 
-void HelpViewer::HelpLU(char dir)
+void HelpViewer::ProcessLeftUp(char dir)
 {
 	size_t I = 0, I1 = 0, I2 = 0;
 	uint16_t h2 = 0;
@@ -368,7 +369,7 @@ void HelpViewer::HelpLU(char dir)
 	}
 }
 
-void HelpViewer::HelpRD(char dir)
+void HelpViewer::ProcessRightDown(char dir)
 {
 	size_t I = 0, I1 = 0, I2 = 0;
 	uint16_t h2 = 0;

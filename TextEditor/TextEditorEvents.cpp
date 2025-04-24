@@ -246,7 +246,7 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, EditorMode& mode, BYTE Sys
 	std::string OrigS = "    ";
 	WORD ww;
 
-	auto result = false;
+	bool result = false;
 
 	CtrlShiftAlt(editor, mode, LastS, LastNr, IsWrScreen);
 	// *** Prekodovani klaves ***
@@ -841,9 +841,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 						}
 						goto label1;
 					}
-				} while (Separ.count(editor->Arr[positionOnActualLine]) > 0);
+				} while (GlobalSeparators.count(editor->Arr[positionOnActualLine]) > 0);
 
-				while (!(Separ.count(editor->Arr[positionOnActualLine]) > 0)) {
+				while (!(GlobalSeparators.count(editor->Arr[positionOnActualLine]) > 0)) {
 					positionOnActualLine--;
 					if (positionOnActualLine == 0) goto label1;
 				}
@@ -853,13 +853,13 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			}
 			case __CTRL_RIGHT:
 			{
-				while (!(Separ.count(editor->Arr[positionOnActualLine]) > 0)) {
+				while (!(GlobalSeparators.count(editor->Arr[positionOnActualLine]) > 0)) {
 					positionOnActualLine++;
 					if (positionOnActualLine > editor->GetArrLineLength()) {
 						goto label2;
 					}
 				}
-				while (Separ.count(editor->Arr[positionOnActualLine]) > 0) {
+				while (GlobalSeparators.count(editor->Arr[positionOnActualLine]) > 0) {
 					positionOnActualLine++;
 					I = editor->GetArrLineLength();
 					if (positionOnActualLine > I) {
@@ -1015,11 +1015,11 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				}
 				else {
 					I = positionOnActualLine;
-					if (Separ.count(editor->Arr[positionOnActualLine]) > 0) {
+					if (GlobalSeparators.count(editor->Arr[positionOnActualLine]) > 0) {
 						editor->DelChar();
 					}
 					else {
-						while ((I <= editor->GetArrLineLength()) && !(Separ.count(editor->Arr[positionOnActualLine]) > 0)) {
+						while ((I <= editor->GetArrLineLength()) && !(GlobalSeparators.count(editor->Arr[positionOnActualLine]) > 0)) {
 							I++;
 						}
 					}
