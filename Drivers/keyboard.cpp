@@ -326,7 +326,6 @@ void Keyboard::_read()
 	else {
 		_inBuffer = 0;
 	}*/
-
 }
 
 PressedKey::PressedKey(KEY_EVENT_RECORD& key)
