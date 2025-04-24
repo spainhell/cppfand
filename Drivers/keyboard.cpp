@@ -311,7 +311,13 @@ std::string Keyboard::GetKeyBufAsString()
 
 void Keyboard::_read()
 {
-	DWORD events_count;
+	DWORD waitResult = WaitForSingleObject(_handle, 1000 /*INFINITE*/);
+	if (waitResult == WAIT_OBJECT_0) {
+		ReadConsoleInput(_handle, _kbdBuf, buff_size, &_inBuffer);
+		_actualIndex = 0;
+	}
+	
+	/*DWORD events_count;
 	GetNumberOfConsoleInputEvents(_handle, &events_count);
 	if (events_count > 0) {
 		ReadConsoleInput(_handle, _kbdBuf, buff_size, &_inBuffer);
@@ -319,7 +325,7 @@ void Keyboard::_read()
 	}
 	else {
 		_inBuffer = 0;
-	}
+	}*/
 
 }
 
