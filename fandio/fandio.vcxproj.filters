@@ -93,9 +93,6 @@
     <ClInclude Include="locks.h">
       <Filter>Header Files\FandFiles</Filter>
     </ClInclude>
-    <ClInclude Include="files.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FandTFilePrefix.h">
       <Filter>Header Files\FandFiles</Filter>
     </ClInclude>
@@ -175,9 +172,6 @@
     </ClCompile>
     <ClCompile Include="locks.cpp">
       <Filter>Source Files\FandFiles</Filter>
-    </ClCompile>
-    <ClCompile Include="files.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FandTFilePrefix.cpp">
       <Filter>Source Files\FandFiles</Filter>

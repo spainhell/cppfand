@@ -1,6 +1,5 @@
 #include "locks.h"
 
-#include "files.h"
 //#include "../Core/GlobalVariables.h"
 //#include "../Core/access.h"
 #include "../Core/obaseww.h"
@@ -116,7 +115,7 @@ label1:
 			}
 			else {
 				d = spec.NetDelay;
-				SetPathAndVolume(fileD);
+				fileD->SetPathAndVolume();
 				SetMsgPar(path, LockModeTxt[Mode]);
 				int w1 = PushWrLLMsg(825, Kind == 1);
 				if (w == 0) {
@@ -157,7 +156,7 @@ label1:
 	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) {
 		int rp = fileD->FF->RdPrefixes();
 		if (rp != 0) {
-			CFileError(fileD, rp);
+			fileD->CFileError(rp);
 		}
 	}
 	result = true;
@@ -192,7 +191,7 @@ bool TryLMode(FileD* fileD, std::string& path, LockMode Mode, LockMode& OldMode,
 #endif
 	{
 		if (fileD->FF->Handle == nullptr) {
-			OpenCreateF(fileD, path, Shared);
+			fileD->OpenCreateF(path, Shared);
 		}
 		OldMode = fileD->FF->LMode;
 		if (Mode > fileD->FF->LMode) {

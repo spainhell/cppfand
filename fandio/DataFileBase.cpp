@@ -1,5 +1,4 @@
 #include "DataFileBase.h"
-#include "files.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 
@@ -72,7 +71,7 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 		}
 
 		err = HandleError;
-		SetPathForH(Handle);
+		FileD::SetPathForH(Handle);
 		SetMsgPar(CPath);
 		RunError(700 + err);
 	}

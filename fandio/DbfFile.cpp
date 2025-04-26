@@ -1,7 +1,6 @@
 #include "DbfFile.h"
 
 #include "DBaseHeader.h"
-#include "files.h"
 #include "../Core/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Common/textfunc.h"
@@ -556,7 +555,7 @@ void DbfFile::CloseFile()
 
 	if (WasRdOnly) {
 		WasRdOnly = false;
-		std::string path = SetPathAndVolume(_parent);
+		std::string path = _parent->SetPathAndVolume();
 		SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
 		if (TF != nullptr) {
 			path = _parent->CExtToT(CDir, CName, CExt);

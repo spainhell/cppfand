@@ -1,6 +1,5 @@
 #include <memory>
 
-#include "files.h"
 #include "XKey.h"
 #include "XPage.h"
 #include "../Core/FileD.h"
@@ -444,7 +443,7 @@ bool XKey::Insert(FileD* file_d, int RecNr, bool Try, void* record)
 			if (result != 0) {
 				RunError(result);
 			}
-			CFileError(parent_, 822);
+			parent_->CFileError(822);
 		}
 	}
 	InsertOnPath(file_d, x, RecNr);

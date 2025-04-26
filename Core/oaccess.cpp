@@ -10,7 +10,6 @@
 #include "../fandio/FandXFile.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
-#include "../fandio/files.h"
 #include "../Drivers/constants.h"
 
 void OpenXWorkH()
@@ -86,18 +85,18 @@ void OpenFANDFiles()
 
 	OpenXWorkH();
 	OpenTWorkH();
-	OpenF(HelpFD, CPath, RdOnly);
+	HelpFD->OpenF(CPath, RdOnly);
 	if (CRdb == nullptr) return;
 
-	OpenF(catalog->GetCatalogFile(), CPath, Exclusive);
+	catalog->GetCatalogFile()->OpenF(CPath, Exclusive);
 	RD = CRdb;
 
 	while (RD != nullptr) {
 		if (IsTestRun) {
-			OpenF(RD->v_files[0], CPath, Exclusive);
+			RD->v_files[0]->OpenF(CPath, Exclusive);
 		}
 		else {
-			OpenF(RD->v_files[0], CPath, RdOnly);
+			RD->v_files[0]->OpenF(CPath, RdOnly);
 		}
 
 		auto it0 = RD->v_files.begin();
@@ -105,7 +104,7 @@ void OpenFANDFiles()
 
 		while (it0 != RD->v_files.end()) {
 			if ((*it0)->FF->ExLMode != NullMode) {
-				OpenF(*it0, CPath, Shared);
+				(*it0)->OpenF(CPath, Shared);
 				md = (*it0)->NewLockMode((*it0)->FF->ExLMode);
 			}
 			++it0;

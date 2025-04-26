@@ -2,12 +2,14 @@
 
 #include "Coding.h"
 #include "GlobalVariables.h"
+#include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"
-#include "../fandio/files.h"
 #include "../fandio/XKey.h"
 #include "../Common/compare.h"
 #include "../Logging/Logging.h"
+#include "../Common/compare.h"
+#include "../Common/textfunc.h"
 
 
 FileD::FileD(DataFileType f_type)
@@ -1099,7 +1101,7 @@ bool FileD::Lock(int n, WORD kind) const
 				if (kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 					m = 826;
 					if (n == 0) {
-						SetPathAndVolume(FF->GetFileD());
+						FF->GetFileD()->SetPathAndVolume();
 						SetMsgPar(CPath, XTxt);
 						m = 825;
 					}
@@ -1372,7 +1374,7 @@ bool FileD::SearchXKey(XKey* K, XString& X, int& N)
 FileD* FileD::OpenDuplicateF(bool createTextFile)
 {
 	short Len = 0;
-	SetPathAndVolume(this);
+	SetPathAndVolume();
 	bool net = IsNetCVol();
 	FileD* newFile = new FileD(*this);
 
@@ -1380,7 +1382,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	CVol = "";
 	newFile->FullPath = path;
 	newFile->FF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
-	TestCFileError(newFile);
+	newFile->TestCFileError();
 	newFile->FF->NRecs = 0;
 	newFile->IRec = 0;
 	newFile->FF->Eof = true;
@@ -1418,7 +1420,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 void FileD::DeleteDuplicateF(FileD* TempFD)
 {
 	CloseClearH(&TempFD->FF->Handle);
-	SetPathAndVolume(this);
+	SetPathAndVolume();
 	SetTempCExt('0', FF->IsShared());
 	MyDeleteFile(CPath);
 }
@@ -1731,12 +1733,12 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM)
 	WORD n;
 	bool result = true;
 	SetLMode(NullMode);
-	SetPathMountVolumeSetNet(this, UM);
+	SetPathMountVolumeSetNet(UM);
 	const bool b = (this == Chpt) || (this == catalog->GetCatalogFile());
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
 		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110);
 		if (HandleError == 5) HandleError = 79;
-		TestCFileError(this);
+		TestCFileError();
 		SetWasRdOnly(true);
 	}
 	while (true) {
@@ -1744,7 +1746,7 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM)
 		SetHandle(h);
 		if ((HandleError != 0) && GetWasRdOnly()) {
 			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0b00100111) | 0b00000001 /*RdONly*/);
-			TestCFileError(this);
+			TestCFileError();
 		}
 		if ((HandleError == 5) && (GetUMode() == Exclusive)) {
 			SetUMode(RdOnly);
@@ -1760,7 +1762,7 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM)
 	if ((HandleError == 5 || HandleError == 0x21) &&
 		((CVol == '#') || (CVol == "##") || SEquUpcase(CVol, "#R"))) CFileError(842);
 #endif
-	TestCFileError(this);
+	TestCFileError();
 
 	// open text file (.T__)
 	if (HasTextFile()) {
@@ -1878,7 +1880,7 @@ bool FileD::OpenF2(const std::string& path)
 		}
 		else {
 			if (n < GetNRecs()) {
-				SetPathAndVolume(this);
+				SetPathAndVolume();
 				SetMsgPar(CPath);
 				if (PromptYN(882)) {
 					SetNRecs(n);
@@ -1897,6 +1899,192 @@ bool FileD::OpenF2(const std::string& path)
 
 	SeekRec(0);
 	return true;
+}
+
+void FileD::CreateF()
+{
+	std::string path = SetPathMountVolumeSetNet(Exclusive);
+	HANDLE h = OpenH(path, _isOverwriteFile, Exclusive);
+	SetHandle(h);
+	TestCFileError();
+	SetNRecs(0);
+
+	if (HasTextFile()) {
+		path = CExtToT(CDir, CName, CExt);
+		CreateT(path);
+	}
+
+	if (HasIndexFile() && FF->file_type == FandFileType::INDEX) {
+		path = CExtToX(CDir, CName, CExt);
+		FF->XF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
+		FF->XF->TestErr(); /*SetNotValid*/
+		FF->XF->SetEmpty(FF->NRecs, GetNrKeys());
+	}
+
+	SeekRec(0);
+	SetUpdateFlag();
+}
+
+bool FileD::OpenCreateF(const std::string& path, FileUseMode UM)
+{
+	if (!OpenF(path, UM)) {
+		CreateF();
+		if ((UM == Shared) || (UM == RdShared)) {
+			WrPrefixes();
+
+			if (FileType == DataFileType::FandFile) {
+				SaveCache(0, FF->Handle);
+				CloseClearH(&FF->Handle);
+
+				if (FF->file_type == FandFileType::INDEX) {
+					CloseClearH(&FF->XF->Handle);
+				}
+
+				if (FF->TF != nullptr) {
+					CloseClearH(&FF->TF->Handle);
+				}
+			}
+			else if (FileType == DataFileType::DBF) {
+				SaveCache(0, DbfF->Handle);
+				CloseClearH(&DbfF->Handle);
+
+				if (DbfF->TF != nullptr) {
+					CloseClearH(&DbfF->TF->Handle);
+				}
+			}
+			else {
+				// other types don't have index or text files
+			}
+
+			// TODO: here is probably an issue with file caching
+			// wait 100 ms before re-open
+			//std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			OpenF(path, UM);
+		}
+	}
+	return true;
+}
+
+void FileD::TestCFileError()
+{
+	if (HandleError != 0) {
+		CFileError(700 + HandleError);
+	}
+}
+
+std::string FileD::SetPathMountVolumeSetNet(FileUseMode UM)
+{
+	std::string path = SetPathAndVolume();
+	SetUMode(UM);
+	SetDrive((BYTE)TestMountVol(path[0]));
+	if (!IsNetCVol() || (this == Chpt))
+		switch (UM) {
+		case RdShared: SetUMode(RdOnly); break;
+		case Shared: SetUMode(Exclusive); break;
+
+		case Closed:
+		case RdOnly:
+		case Exclusive: break;
+		}
+	else if ((UM == Shared) && EquUpCase(CVol, "#R")) {
+		SetUMode(RdShared);
+	}
+	CPath = path;
+	return path;
+}
+
+std::string FileD::SetPathAndVolume(char pathDelim)
+{
+	bool isRdb = false;
+
+	CVol = "";
+	if (FileType == DataFileType::FandFile && FF->file_type == FandFileType::CAT) {
+		CDir = GetEnv("FANDCAT");
+		if (CDir.empty()) {
+			CDir = TopDataDir.empty() ? TopRdbDir : TopDataDir;
+		}
+		AddBackSlash(CDir);
+		CName = CatFDName;
+		CExt = ".CAT";
+		goto finish;
+	}
+
+	if (CatIRec != 0) {
+		catalog->GetPathAndVolume(this, CatIRec, CPath, CVol);
+		FSplit(CPath, CDir, CName, CExt);
+		if (Name == "@") {
+			CName = Name;
+			goto finish;
+		}
+		else {
+			goto finish;
+		}
+	}
+
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		switch (FF->file_type) {
+		case FandFileType::RDB: {
+			CExt = ".RDB";
+			break;
+		}
+		case FandFileType::FAND8: {
+			CExt = ".DTA";
+			break;
+		}
+		default: {
+			CExt = ".000";
+			break;
+		}
+		}
+		break;
+	}
+	case DataFileType::DBF: {
+		CExt = ".DBF";
+		break;
+	}
+	default:
+		// other types don't have an extension
+		break;
+	}
+
+	if (SetContextDir(this, CDir, isRdb)) {
+		// do nothing
+	}
+	else {
+		if (this == HelpFD) {
+			CDir = FandDir;
+#ifdef FandRunV 
+			CName = "UFANDHLP";
+#else
+			CName = "FANDHLP";
+#endif
+			goto finish;
+		}
+		CExt = ".100";
+		if (CRdb != nullptr) {
+			CDir = CRdb->DataDir;
+		}
+		else {
+			CDir = "";
+		}
+	}
+
+	AddBackSlash(CDir);
+	CName = Name;
+
+finish:
+	if (pathDelim == '/') ReplaceChar(CDir, '\\', '/');
+	if (pathDelim == '\\') ReplaceChar(CDir, '/', '\\');
+	CPath = CDir + CName + CExt;
+	return CPath;
+}
+
+void FileD::CFileError(int N)
+{
+	FileMsg(this, N, '0');
+	Close();
+	GoExit(MsgLine);
 }
 
 void FileD::CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files)
@@ -1931,4 +2119,62 @@ void FileD::CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<Fi
 		v_files[i] = nullptr;
 	}
 	v_files.erase(v_files.begin() + static_cast<int>(first_index_for_remove), v_files.end());
+}
+
+void FileD::CopyH(HANDLE h1, HANDLE h2)
+{
+	const WORD BufSize = 32768;
+	void* p = new BYTE[BufSize];
+	int sz = FileSizeH(h1);
+	SeekH(h1, 0);
+	SeekH(h2, 0);
+	while (sz > BufSize) {
+		ReadH(h1, BufSize, p);
+		WriteH(h2, BufSize, p);
+		sz -= BufSize;
+	}
+	ReadH(h1, sz, p);
+	WriteH(h2, sz, p);
+	CloseH(&h1);
+	MyDeleteFile(CPath);
+	ReleaseStore(&p);
+}
+
+std::string FileD::SetPathForH(HANDLE handle)
+{
+	RdbD* RD = CRdb;
+	while (RD != nullptr) {
+		for (FileD* fd : RD->v_files) {
+			if (fd->FF->Handle == handle) {
+				fd->SetPathAndVolume();
+				return CPath;
+			}
+
+			if (fd->FF->XF != nullptr && fd->FF->XF->Handle == handle) {
+				fd->SetPathAndVolume();
+				CPath = CExtToX(CDir, CName, CExt);
+				return CPath;
+			}
+
+			if (fd->FF->TF != nullptr && fd->FF->TF->Handle == handle) {
+				fd->SetPathAndVolume();
+				CPath = fd->CExtToT(CDir, CName, CExt);
+				return CPath;
+			}
+		}
+		RD = RD->ChainBack;
+	}
+	ReadMessage(799);
+	CPath = MsgLine;
+	return CPath;
+}
+
+void FileD::lock_excl_and_write_prefix()
+{
+	if (IsShared() && (GetLMode() < ExclMode)) {
+		ChangeLockMode(ExclMode, 0, false);
+	}
+	SetLMode(ExclMode);
+	SetUpdateFlag();
+	WrPrefix();
 }

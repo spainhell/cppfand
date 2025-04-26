@@ -1,7 +1,6 @@
 #include "Fand0File.h"
 
 #include "DbfFile.h"
-#include "files.h"
 #include "XScan.h"
 #include "XWorkFile.h"
 #include "XWKey.h"
@@ -720,13 +719,13 @@ void Fand0File::CloseFile()
 	LMode = NullMode;
 
 	if (!IsShared() && (NRecs == 0)) {
-		std::string path = SetPathAndVolume(_parent);
+		std::string path = _parent->SetPathAndVolume();
 		MyDeleteFile(path);
 	}
 
 	if (WasRdOnly) {
 		WasRdOnly = false;
-		std::string path = SetPathAndVolume(_parent);
+		std::string path = _parent->SetPathAndVolume();
 		SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
 		if (TF != nullptr) {
 			path = _parent->CExtToT(CDir, CName, CExt);
@@ -876,7 +875,7 @@ int Fand0File::TestXFExist()
 {
 	if ((XF != nullptr) && XF->NotValid) {
 		if (XF->NoCreate) {
-			CFileError(_parent, 819);
+			_parent->CFileError(819);
 			return 819;
 		}
 		int a = CreateIndexFile();
@@ -1162,7 +1161,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 		RunError(result);
 	}
 
-	std::string orig_path = SetPathAndVolume(_parent);
+	std::string orig_path = _parent->SetPathAndVolume();
 	std::string orig_path_T = _extToT(orig_path);
 
 	if (IsNetCVol()) {
@@ -1207,7 +1206,7 @@ void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 	TempFD->FF->WrPrefixes();
 	SaveCache(0, Handle);
 	SetTempCExt('0', true);
-	CopyH(TempFD->FF->Handle, Handle);
+	FileD::CopyH(TempFD->FF->Handle, Handle);
 
 	// TempFD has been deleted in CopyH -> set Handle to nullptr
 	TempFD->FF->Handle = nullptr;
@@ -1219,11 +1218,11 @@ void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 		SetTempCExt('T', true);
 		*TF = *TempFD->FF->TF;
 		TF->Handle = h2;
-		CopyH(h1, h2);
+		FileD::CopyH(h1, h2);
 	}
 	int rp = RdPrefixes();
 	if (rp != 0) {
-		CFileError(_parent, rp);
+		_parent->CFileError(rp);
 	}
 }
 

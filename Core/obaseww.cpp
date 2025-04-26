@@ -7,7 +7,6 @@
 #include "OldDrivers.h"
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
-#include "../fandio/files.h"
 
 WORD RunErrNr = 0;
 
@@ -339,7 +338,7 @@ bool PromptYN(WORD NMsg)
 
 void FileMsg(FileD* file_d, int n, char Typ)
 {
-	SetPathAndVolume(file_d);
+	file_d->SetPathAndVolume();
 	if (Typ == 'T') {
 		CPath = file_d->CExtToT(CDir, CName, CExt);
 	}

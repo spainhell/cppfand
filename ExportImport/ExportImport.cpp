@@ -21,7 +21,6 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
-#include "../fandio/files.h"
 #include "../Drivers/constants.h"
 
 
@@ -369,7 +368,7 @@ void Cpy(HANDLE h, int sz, ThFile* F2)
 		else n = sz - i;
 		i += n;
 		ReadH(h, n, F2->buffer1);
-		TestCFileError(CFile);
+		CFile->TestCFileError();
 		F2->lBuf = n;
 		F2->WriteBuf(false);
 		RunMsgN(i);

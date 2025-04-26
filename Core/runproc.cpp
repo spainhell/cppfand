@@ -25,7 +25,6 @@
 #include "wwmix.h"
 #include "../Prolog/RunProlog.h"
 #include "../fandio/sort.h"
-#include "../fandio/files.h"
 #include "../fandio/FandXFile.h"
 #include "../fandio/XWKey.h"
 #include "../TextEditor/TextEditor.h"
@@ -872,7 +871,7 @@ label1:
 		else
 #endif
 		{
-			OpenCreateF(CFile, CPath, Shared);
+			CFile->OpenCreateF(CPath, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasRecordUpdateFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
 				CFile->CopyRec((uint8_t*)lr, (uint8_t*)cr, false);
@@ -964,9 +963,9 @@ void WithLockedProc(Instr_withshared* PD)
 	while (it != PD->WLD.end()) {
 		CFile = (*it)->FD;
 		if (CFile->FF->Handle == nullptr) {
-			if (OpenF1(CFile, CPath, Shared)) {
+			if (CFile->OpenF1(CPath, Shared)) {
 				if (CFile->TryLockMode(RdMode, md, 2)) {
-					OpenF2(CFile, CPath);
+					CFile->OpenF2(CPath);
 					CFile->OldLockMode(NullMode);
 				}
 				else {
@@ -975,7 +974,7 @@ void WithLockedProc(Instr_withshared* PD)
 				}
 			}
 			else {
-				OpenCreateF(CFile, CPath, Shared);
+				CFile->OpenCreateF(CPath, Shared);
 			}
 		}
 		if (CFile->FF->IsShared()) {
@@ -998,7 +997,7 @@ void WithLockedProc(Instr_withshared* PD)
 				return;
 			}
 			CFile = (*it)->FD;
-			SetPathAndVolume(CFile);
+			CFile->SetPathAndVolume();
 			if (op == PInstrCode::_withlocked) {
 				msg = 839;
 				str((*it)->N, ntxt);

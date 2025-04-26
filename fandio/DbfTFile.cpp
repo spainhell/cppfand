@@ -2,8 +2,6 @@
 
 #include <cstdlib>
 #include <cstring>
-
-#include "files.h"
 #include "../Core/access.h"
 #include "../Core/obaseww.h"
 #include "../Core/GlobalVariables.h"

@@ -9,7 +9,6 @@
 #include "LinkD.h"
 #include "obaseww.h"
 #include "runfrml.h"
-#include "../fandio/files.h"
 #include "../Core/DateTime.h"
 
 
@@ -393,7 +392,7 @@ bool RunAddUpdate(FileD* file_d, char kind, void* old_record, LinkD* not_link_d,
 	LockMode md;
 	LockForAdd(file_d, 0, false, md);
 	while (!LockForAdd(file_d, 1, false, md)) {
-		SetPathAndVolume(file_d);
+		file_d->SetPathAndVolume();
 		SetMsgPar(CPath, LockModeTxt[md]);
 		LockForAdd(file_d, 2, false, md);
 		int w = PushWrLLMsg(825, false);

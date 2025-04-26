@@ -2,7 +2,6 @@
 
 #include <memory>
 
-#include "files.h"
 #include "../Core/FileD.h"
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
@@ -130,13 +129,13 @@ void FandXFile::CloseFile()
 		ClearUpdateFlag();
 		if (!_parent->IsShared()) {
 			if (NotValid) {
-				SetPathAndVolume(_parent->GetFileD());
+				_parent->GetFileD()->SetPathAndVolume();
 				CPath = CExtToX(CDir, CName, CExt);
 				MyDeleteFile(CPath);
 			}
 			else if ((NRecs == 0) || _parent->NRecs == 0) {
 				NRecs = 0;
-				SetPathAndVolume(_parent->GetFileD());
+				_parent->GetFileD()->SetPathAndVolume();
 				CPath = CExtToX(CDir, CName, CExt);
 				MyDeleteFile(CPath);
 			}

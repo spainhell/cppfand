@@ -10,7 +10,7 @@
 #include "../Core/KeyFldD.h"
 #include "../Core/RunMessage.h"
 #include "../Core/rdfildcl.h"
-#include "../fandio/files.h"
+
 
 Merge::Merge()
 {
@@ -1030,7 +1030,7 @@ void Merge::MergeProc()
 				if (ID->Scan->eof) res = _gt;
 				else {
 					res = CompMFlds(ID->MFld);
-					if (res == _lt) CFileError(CFile, 607);
+					if (res == _lt) CFile->CFileError(607);
 				}
 			} while (res != _gt);
 		else {
@@ -1069,7 +1069,7 @@ void Merge::JoinProc(WORD Ii, bool& EmptyGroup)
 				}
 				else {
 					res = CompMFlds(ID->MFld);
-					if (res == _lt) CFileError(CFile, 607);
+					if (res == _lt) CFile->CFileError(607);
 				}
 			} while (res == _gt);
 		}

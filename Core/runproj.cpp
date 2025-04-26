@@ -11,7 +11,6 @@
 #include "../ExportImport/ExportImport.h"
 #include "../fandio/FandTFile.h"
 #include "../fandio/FandXFile.h"
-#include "../fandio/files.h"
 #include "../fandio/DbfFile.h"
 #include "../Logging/Logging.h"
 #include "../MergeReport/ReportGenerator.h"
@@ -638,7 +637,7 @@ void ResetRdOnly()
 	if (Chpt->FF->UMode == RdOnly) {
 		Chpt->CloseFile();
 		IsInstallRun = true;
-		OpenF(Chpt, CPath, Exclusive);
+		Chpt->OpenF(CPath, Exclusive);
 		IsInstallRun = false;
 	}
 }
@@ -726,7 +725,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 	if (IsTestRun || !create) um = Exclusive;
 	else um = RdOnly;
 
-	if (OpenF(Chpt, CPath, um)) {
+	if (Chpt->OpenF(CPath, um)) {
 		if (ChptTF->CompileAll) ResetRdOnly();
 		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
 			// TODO: oldChptTF != nullptr je v podmince navic, protoze dalsi podminka vzdy vyhorela 
@@ -738,7 +737,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 		if (!create || (top && !IsTestRun)) {
 			RunError(631);
 		}
-		OpenCreateF(Chpt, CPath, Exclusive);
+		Chpt->OpenCreateF(CPath, Exclusive);
 		SetCompileAll();
 	}
 
@@ -1210,7 +1209,7 @@ bool EquStoredF(std::vector<FieldDescr*>& fields1, std::vector<FieldDescr*>& fie
 void DeleteF(FileD* file_d)
 {
 	file_d->CloseFile();
-	SetPathAndVolume(file_d);
+	file_d->SetPathAndVolume();
 	MyDeleteFile(CPath);
 	CPath = CExtToX(CDir, CName, CExt);
 	if (file_d->FF->XF != nullptr) {
@@ -1243,17 +1242,17 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		//CFile = fd_new;
 		fd_new->CloseFile();
 		fd_old->FF->file_type = fd_new->FF->file_type;
-		SetPathAndVolume(fd_new);
+		fd_new->SetPathAndVolume();
 		std::string p = CPath;
 		//CFile = fd_old;
-		SetPathAndVolume(fd_old);
+		fd_old->SetPathAndVolume();
 		RenameFile56(p, CPath, false);
 		//CFile = fd_new;
 
 		/*TF->Format used*/
 		CPath = fd_new->CExtToT(CDir, CName, CExt);
 		p = CPath;
-		SetPathAndVolume(fd_new);
+		fd_new->SetPathAndVolume();
 		CPath = fd_new->CExtToT(CDir, CName, CExt);
 		RenameFile56(CPath, p, false);
 		result = true;
@@ -1324,7 +1323,7 @@ bool MergeOldNew(FileD* new_file, FileD* old_file)
 	bool result = false;
 	FileD* FDOld = old_file;
 	FileD* FDNew = new_file;
-	SetPathAndVolume(new_file);
+	new_file->SetPathAndVolume();
 
 	std::string Name = FDNew->Name;
 	FDNew->Name = "@";
@@ -1341,7 +1340,7 @@ bool MergeOldNew(FileD* new_file, FileD* old_file)
 		result = true;
 	}
 	else if ((FDOld->FF->file_type == FandFileType::INDEX) && !EquKeys(FDOld->Keys, FDNew->Keys)) {
-		SetPathAndVolume(Chpt);
+		Chpt->SetPathAndVolume();
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);
 	}
@@ -1956,7 +1955,7 @@ void UpdateCat()
 {
 	FileD* cat = catalog->GetCatalogFile();
 	if (cat->FF->Handle == nullptr) {
-		OpenCreateF(cat, CPath, Exclusive);
+		cat->OpenCreateF(CPath, Exclusive);
 	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true;

@@ -20,7 +20,6 @@
 #include "../Core/rdrun.h"
 #include "../Core/runproc.h"
 #include "../Core/runproj.h"
-#include "../fandio/files.h"
 #include "../fandio/XKey.h"
 #include "../fandio/XWKey.h"
 #include "../Core/wwmenu.h"
@@ -1634,7 +1633,7 @@ bool DataEditor::OpenEditWw()
 
 	// open journal file, if exists
 	if (edit_->Journal != nullptr) {
-		OpenCreateF(edit_->Journal, CPath, Shared);
+		edit_->Journal->OpenCreateF(CPath, Shared);
 	}
 
 	ReadParamsFromE(edit_);
@@ -1649,7 +1648,7 @@ bool DataEditor::OpenEditWw()
 #ifdef FandSQL
 	if (!file_d_->IsSQLFile)
 #endif
-		OpenCreateF(file_d_, CPath, Shared);
+		file_d_->OpenCreateF(CPath, Shared);
 	edit_->OldMd = edit_->FD->GetLMode();
 	UpdCount = 0;
 #ifdef FandSQL
@@ -2062,7 +2061,7 @@ label1:
 		file_d_->OldLockMode(OldMd);
 		file_d_ = cf2;
 	label3:
-		SetPathAndVolume(file_d_);
+		file_d_->SetPathAndVolume();
 		SetMsgPar(CPath, LockModeTxt[md]);
 		w1 = PushWrLLMsg(825, true);
 		if (w == 0) w = w1;

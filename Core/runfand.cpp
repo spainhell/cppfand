@@ -23,7 +23,6 @@
 #include "../TextEditor/TextEditor.h"
 #include "../DataEditor/DataEditor.h"
 #include "../fandio/directory.h"
-#include "../fandio/files.h"
 #include "../Common/textfunc.h"
 
 
@@ -182,7 +181,7 @@ bool SetTopDir(std::string& p, std::string& n)
 			return result;
 		}
 		CatFDName = n;
-		OpenF(catalog->GetCatalogFile(), CPath, Exclusive);
+		catalog->GetCatalogFile()->OpenF(CPath, Exclusive);
 		result = true;
 	}
 	catch (std::exception& e) {

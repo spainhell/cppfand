@@ -175,7 +175,18 @@ public:
 	void CreateF();
 	bool OpenCreateF(const std::string& path, FileUseMode UM);
 
+	void TestCFileError();
+	std::string SetPathMountVolumeSetNet(FileUseMode UM);
+	std::string SetPathAndVolume(char pathDelim = '\\');
+	void CFileError(int N);
+
 	static void CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
 	static void CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files);
 	static void CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<FileD*>& v_files);
+
+	static void CopyH(HANDLE h1, HANDLE h2);
+	static std::string SetPathForH(HANDLE handle);
+
+private:
+	void lock_excl_and_write_prefix();
 };

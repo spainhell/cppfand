@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "FandTFilePrefix.h"
-#include "files.h"
 #include "../Core/Coding.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
@@ -501,7 +500,7 @@ void FandTFile::CloseFile()
 			ClearUpdateFlag();
 		}
 		if ((!_parent->IsShared()) && (_parent->NRecs == 0)) {
-			SetPathAndVolume(_parent->GetFileD());
+			_parent->GetFileD()->SetPathAndVolume();
 			CPath = _parent->GetFileD()->CExtToT(CDir, CName, CExt);
 			MyDeleteFile(CPath);
 		}
