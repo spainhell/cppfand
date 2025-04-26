@@ -167,6 +167,14 @@ public:
 	bool NotCached();
 	bool Cached();
 
+	bool OpenF(const std::string& path, FileUseMode UM);
+	// open file(s) from disk
+	bool OpenF1(const std::string& path, FileUseMode UM);
+	// load prefix(es) from file
+	bool OpenF2(const std::string& path);
+	void CreateF();
+	bool OpenCreateF(const std::string& path, FileUseMode UM);
+
 	static void CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
 	static void CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files);
 	static void CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<FileD*>& v_files);

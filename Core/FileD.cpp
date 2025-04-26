@@ -1708,6 +1708,197 @@ bool FileD::Cached()
 	return !NotCached();
 }
 
+bool FileD::OpenF(const std::string& path, FileUseMode UM)
+{
+	bool result = true;
+	if (IsOpen()) return result;
+	if (OpenF1(path, UM)) {
+		if (IsShared()) {
+			ChangeLockMode(RdMode, 0, false);
+			SetLMode(RdMode);
+		}
+		result = OpenF2(path);
+		OldLockMode(NullMode);
+	}
+	else {
+		result = false;
+	}
+	return result;
+}
+
+bool FileD::OpenF1(const std::string& path, FileUseMode UM)
+{
+	WORD n;
+	bool result = true;
+	SetLMode(NullMode);
+	SetPathMountVolumeSetNet(this, UM);
+	const bool b = (this == Chpt) || (this == catalog->GetCatalogFile());
+	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
+		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110);
+		if (HandleError == 5) HandleError = 79;
+		TestCFileError(this);
+		SetWasRdOnly(true);
+	}
+	while (true) {
+		HANDLE h = OpenH(CPath, _isOldFile, GetUMode());
+		SetHandle(h);
+		if ((HandleError != 0) && GetWasRdOnly()) {
+			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0b00100111) | 0b00000001 /*RdONly*/);
+			TestCFileError(this);
+		}
+		if ((HandleError == 5) && (GetUMode() == Exclusive)) {
+			SetUMode(RdOnly);
+			continue;
+		}
+		if (HandleError == 2) {
+			result = false;
+			return result;
+		}
+		break;
+	}
+#ifndef FandNetV
+	if ((HandleError == 5 || HandleError == 0x21) &&
+		((CVol == '#') || (CVol == "##") || SEquUpcase(CVol, "#R"))) CFileError(842);
+#endif
+	TestCFileError(this);
+
+	// open text file (.T__)
+	if (HasTextFile()) {
+		CPath = CExtToT(CDir, CName, CExt);
+		if (GetWasRdOnly()) {
+			SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110); // 0x26 = archive + hidden + system
+		}
+		while (true) {
+			HANDLE h = OpenH(CPath, _isOldFile, GetUMode());
+			SetHandleT(h);
+			if (HandleError == 2) {
+				if (FileType == DataFileType::DBF && DbfF->TF->Format == DbfTFile::DbtFormat) {
+					DbfF->TF->Format = DbfTFile::FptFormat;
+					CExt = ".FPT";
+					CPath = CDir + CName + CExt;
+					continue;
+				}
+				if (IsDynFile) {
+					if (FileType == DataFileType::FandFile) {
+						CloseClearH(&FF->Handle);
+					}
+					else if (FileType == DataFileType::DBF) {
+						CloseClearH(&DbfF->Handle);
+					}
+					result = false;
+					return result;
+				}
+			}
+			break;
+		}
+
+		if (HandleError != 0) {
+			n = HandleError;
+			Close();
+			HandleError = n;
+			TestCPathError();
+			return result;
+		}
+	}
+
+	// open index file (*.X__)
+	if (HasIndexFile()) {
+		CPath = CExtToX(CDir, CName, CExt);
+		while (true) {
+			FF->XF->Handle = OpenH(CPath, _isOldFile, FF->UMode);
+			if (HandleError == 2) {
+				FF->XF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+				if (HandleError != 0) {
+					n = HandleError;
+					FF->Close(); //CloseClearH(file_d->FF);
+					HandleError = n;
+					TestCPathError();
+					return result;
+				}
+				FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
+				CloseH(&FF->XF->Handle);
+				continue;
+			}
+			if (HandleError != 0) {
+				n = HandleError;
+				FF->Close(); //CloseClearH(file_d->FF);
+				HandleError = n;
+				TestCPathError();
+			}
+			if (FF->XF != nullptr && FileSizeH(FF->XF->Handle) < 512) {
+				FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
+			}
+			break;
+		}
+	}
+	return result;
+}
+
+bool FileD::OpenF2(const std::string& path)
+{
+	int file_size = GetFileSize();
+	SetNRecs(0);
+
+	if (file_size < GetFirstRecPos()) {
+		lock_excl_and_write_prefix();
+	}
+	else {
+		uint16_t rLen = RdPrefix();
+		int32_t n = (file_size - GetFirstRecPos()) / GetRecLen();
+
+		if (rLen != 0xffff) {
+			if (IsDynFile) {
+				Close(); //CloseClearH(file_d->FF);
+				return false;
+			}
+			else {
+				if (catalog->OldToNewCat(file_size)) {
+					CheckT(file_size);
+					CheckX(file_size);
+					SeekRec(0);
+					return true;
+				}
+
+				FileMsg(this, 883, ' ');
+				int l = GetNRecs() * rLen + GetFirstRecPos();
+
+				if (l == file_size || !PromptYN(885)) {
+					Close();
+					GoExit(MsgLine);
+				}
+
+				if (GetNRecs() == 0 || l >> CachePageShft != file_size >> CachePageShft) {
+					WrLLF10Msg(886);
+					SetNRecs(n);
+				}
+
+				SetUpdateFlag();
+				WrPrefix();
+			}
+		}
+		else {
+			if (n < GetNRecs()) {
+				SetPathAndVolume(this);
+				SetMsgPar(CPath);
+				if (PromptYN(882)) {
+					SetNRecs(n);
+					lock_excl_and_write_prefix();
+				}
+				else {
+					Close();
+					GoExit(MsgLine);
+				}
+			}
+		}
+	}
+
+	CheckT(file_size);
+	CheckX(file_size);
+
+	SeekRec(0);
+	return true;
+}
+
 void FileD::CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files)
 {
 	// find first_for_close in v_files
