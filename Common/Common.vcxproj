@@ -22,7 +22,6 @@
     <ClInclude Include="codePages.h" />
     <ClInclude Include="compare.h" />
     <ClInclude Include="exprcmp.h" />
-    <ClInclude Include="FileEnums.h" />
     <ClInclude Include="LongStr.h" />
     <ClInclude Include="pstring.h" />
     <ClInclude Include="textfunc.h" />

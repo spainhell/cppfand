@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../Common/FileEnums.h"
 #include "../Common/LongStr.h"
 #include <array>
-
-#include "OldDrivers.h"
 #include "../Common/pstring.h"
+#include "../fandio/FileEnums.h"
+#include "datafiles.h"
+#include "OldDrivers.h"
 
 class XWFile;
 class FandTFile;

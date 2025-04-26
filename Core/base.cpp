@@ -15,8 +15,6 @@
 
 #include "Cfg.h"
 #include "Compiler.h"
-#include "datafiles.h"
-#include "FileD.h"
 #include "GlobalVariables.h"
 #include "../Common/exprcmp.h"
 #include "../Common/compare.h"

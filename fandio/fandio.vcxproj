@@ -169,6 +169,7 @@
     <ClInclude Include="FandTFile.h" />
     <ClInclude Include="FandTFilePrefix.h" />
     <ClInclude Include="FandXFile.h" />
+    <ClInclude Include="FileEnums.h" />
     <ClInclude Include="files.h" />
     <ClInclude Include="locks.h" />
     <ClInclude Include="sort.h" />

@@ -311,21 +311,21 @@ std::string Keyboard::GetKeyBufAsString()
 
 void Keyboard::_read()
 {
-	DWORD waitResult = WaitForSingleObject(_handle, 1000 /*INFINITE*/);
+	DWORD waitResult = WaitForSingleObject(_handle, 200/*INFINITE*/);
 	if (waitResult == WAIT_OBJECT_0) {
 		ReadConsoleInput(_handle, _kbdBuf, buff_size, &_inBuffer);
 		_actualIndex = 0;
 	}
 	
-	/*DWORD events_count;
-	GetNumberOfConsoleInputEvents(_handle, &events_count);
-	if (events_count > 0) {
-		ReadConsoleInput(_handle, _kbdBuf, buff_size, &_inBuffer);
-		_actualIndex = 0;
-	}
-	else {
-		_inBuffer = 0;
-	}*/
+	//DWORD events_count;
+	//GetNumberOfConsoleInputEvents(_handle, &events_count);
+	//if (events_count > 0) {
+	//	ReadConsoleInput(_handle, _kbdBuf, buff_size, &_inBuffer);
+	//	_actualIndex = 0;
+	//}
+	//else {
+	//	_inBuffer = 0;
+	//}
 }
 
 PressedKey::PressedKey(KEY_EVENT_RECORD& key)

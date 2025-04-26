@@ -18,9 +18,6 @@
     <ClInclude Include="LongStr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileEnums.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="textfunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
