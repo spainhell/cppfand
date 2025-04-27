@@ -1,11 +1,10 @@
 #include "../Drivers/constants.h"
 #include "TextEditorScreen.h"
 
-TextEditorScreen::TextEditorScreen(TextEditor* editor, size_t TextColumns, Blocks* blocks, std::string ctrlKey)
+TextEditorScreen::TextEditorScreen(TextEditor* editor, size_t TextColumns, std::set<char> ctrlKey)
 {
 	_editor = editor;
 	_textColumns = TextColumns;
-	_blocks = blocks;
 	_ctrlKey = ctrlKey;
 }
 
@@ -13,55 +12,49 @@ TextEditorScreen::~TextEditorScreen()
 {
 }
 
-void TextEditorScreen::WriteEditLine(std::string& text_line, size_t row)
-{
-}
-
-void TextEditorScreen::WriteScrollLine(std::string& text_line, size_t offset, size_t row)
-{
-}
-
-void TextEditorScreen::EditWrline(const char* input_text, size_t text_len, int Row, BYTE ColKey[], BYTE TxtColor, BYTE BlockColor)
+void TextEditorScreen::EditWrline(const std::string& text_line, int Row, BYTE ColKey[], BYTE TxtColor, BYTE BlockColor)
 {
 	WORD BuffLine[256]{ 0 };
-	BYTE nv1;
 	BYTE nv2;
-	bool IsCtrl = false;
 
-	WORD Line = pred(_editor->ScreenFirstLineNr + Row);
-	if (_blocks->LineInBlock(Line) && (TypeB == TextBlock)) {
+	WORD Line = _editor->ScreenFirstLineNr + Row - 1;
+	if (_editor->LineInBlock(Line) && (TypeB == TextBlock)) {
 		nv2 = BlockColor;
 	}
 	else {
 		nv2 = TxtColor;
 	}
-	short i = 0;
-	while (i < text_len && input_text[i] != '\0' && !(input_text[i] == __CR || input_text[i] == __LF) && i < LineMaxSize - 1) {
-		nv1 = input_text[i];
-		if (i < 0 || i > 255) throw std::exception("Index");
-		BuffLine[i] = (nv2 << 8) + nv1;
-		if (nv1 < 32) IsCtrl = true;
-		i++;
+
+	size_t i = 0;
+	for (; i < LineMaxSize - 1; i++) {
+		if (text_line[i] == '\0' || text_line[i] == __CR || text_line[i] == __LF) {
+			break;
+		}
+		uint8_t c = text_line[i];
+		if (c < 32) {
+			// control char -> convert to letter and color
+			BuffLine[i] = ((text_line[i] + 64) & 0x00FF) + (Color(text_line[i], ColKey) << 8);
+		}
+		else {
+			// normal char
+			BuffLine[i] = (nv2 << 8) + c;
+		}
 	}
 
-	short LP = i - 1;  // index of last character (before CR)
-	nv1 = ' ';
-
-	for (i = LP + 1; i <= BPos + LineS; i++) {
+	for (; i < BPos + LineS; i++) {
 		// all characters after last char will be spaces (to the end of screen)
-		if (i < 0 || i > 255) throw std::exception("Index");
-		BuffLine[i] = (nv2 << 8) + nv1;
+		BuffLine[i] = (nv2 << 8) + ' ';
 	}
 
-	if (_blocks->BegBLn <= _blocks->EndBLn) {
-		if (_blocks->LineBndBlock(Line) || ((TypeB == ColBlock) && _blocks->LineInBlock(Line))) {
+	if (_editor->BegBLn <= _editor->EndBLn) {
+		if (_editor->LineBndBlock(Line) || ((TypeB == ColBlock) && _editor->LineInBlock(Line))) {
 			short B, E;
-			if ((_blocks->BegBLn == _blocks->LineAbs(Line)) || (TypeB == ColBlock)) {
-				B = MinI(_blocks->BegBPos, LineS + BPos + 1);
+			if ((_editor->BegBLn == _editor->LineAbs(Line)) || (TypeB == ColBlock)) {
+				B = MinI(_editor->BegBPos, LineS + BPos + 1);
 			}
 			else { B = 1; }
-			if ((_blocks->EndBLn == _blocks->LineAbs(Line)) || (TypeB == ColBlock)) {
-				E = MinI(_blocks->EndBPos, LineS + BPos + 1);
+			if ((_editor->EndBLn == _editor->LineAbs(Line)) || (TypeB == ColBlock)) {
+				E = MinI(_editor->EndBPos, LineS + BPos + 1);
 			}
 			else { E = LineS + BPos + 1; }
 			for (i = B; i <= pred(E); i++) {
@@ -70,16 +63,7 @@ void TextEditorScreen::EditWrline(const char* input_text, size_t text_len, int R
 			}
 		}
 	}
-	if (IsCtrl) {
-		// retezec obsahuje kontrolni znaky
-		// -> budou zmeneny na pismena a prebarveny
-		for (i = BPos; i <= LP; i++) {
-			if ((unsigned char)input_text[i] < 32) {
-				if (i < 0 || i > 254) throw std::exception("Index");
-				BuffLine[i] = ((input_text[i] + 64) & 0x00FF) + (Color(input_text[i], ColKey) << 8);
-			}
-		}
-	}
+
 	// both 'WindMin.Y' and 'Row' are counted from 1 -> that's why -2 
 	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[BPos], LineS);
 }
@@ -107,7 +91,7 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 			J++;
 		}
 		else {
-			if (_ctrlKey.find(cc) != std::string::npos) IsCtrl = true;
+			if (_ctrlKey.contains(cc)) IsCtrl = true;
 			else {
 				if (bScroll && (cc == 0x0C)) { InsPage = _editor->InsPg; I++; }
 			}
@@ -131,11 +115,9 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 				BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8);
 				J++;
 			}
-			else if (_ctrlKey.find(cc) != std::string::npos) {
+			else if (_ctrlKey.contains(cc)) {
 				size_t pp = CO.find(cc);
 				if (pp != std::string::npos) {
-					// TODO: nevim, jak to ma presne fungovat
-					// original: if pp>0 then CO:=copy(CO,1,pp-1)+copy(CO,pp+1,len-pp)
 					CO = CO.substr(0, pp) + CO.substr(pp + 1, len - pp + 1);
 				}
 				else {
@@ -159,15 +141,27 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 
 BYTE TextEditorScreen::Color(char c, BYTE ColKey[])
 {
-	const size_t indexOfKey = _ctrlKey.find(c);
-	return ColKey[indexOfKey + 1];
+	size_t index = 0;
+	switch (c) {
+	case '\x13': index = 1; break;
+	case '\x17': index = 2; break;
+	case '\x11': index = 3; break;
+	case '\x04': index = 4; break;
+	case '\x02': index = 5; break;
+	case '\x05': index = 6; break;
+	case '\x01': index = 7; break;
+	default: index = 0; break;
+		// default case is not needed, but added for safety
+		// if the last color is not in the list, return the default text color
+	}
+	return ColKey[index];
 }
 
 BYTE TextEditorScreen::Color(ColorOrd CO, BYTE ColKey[], BYTE TxtColor)
 {
-	if (CO.length() == 0) {
+	if (CO.empty()) {
 		return TxtColor;
 	}
-	const char lastColor = CO[CO.length() - 1];
-	return Color(lastColor, ColKey);
+
+	return Color(CO[CO.length() - 1], ColKey);
 }

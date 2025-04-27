@@ -458,12 +458,17 @@ void TMenuBox::InitTMenuBox(WORD C1, WORD R1)
 
 WORD TMenuBox::Exec(WORD IStart)
 {
+	if (nTxt == 0) {
+		return 0;
+	}
+
 	WORD i = 0, j = 0;
-	TMenuBox* w = nullptr;
-	if (nTxt == 0) { return 0; }
-	j = 0;
+
 	iTxt = IStart;
-	if (iTxt == 0) iTxt = 1;
+	if (iTxt == 0) {
+		iTxt = 1;
+	}
+
 	Prev();
 	Next();  /*get valid iTxt*/
 

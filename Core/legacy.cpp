@@ -420,7 +420,7 @@ std::string GetEnv(const char* name)
 		result = "";
 	}
 	else {
-		auto buffer = std::make_unique<char[]>(requiredSize * sizeof(char));
+		unique_ptr<char[]> buffer = std::make_unique<char[]>(requiredSize * sizeof(char));
 		getenv_s(&requiredSize, buffer.get(), requiredSize, name);
 		result = std::string(buffer.get());
 	}

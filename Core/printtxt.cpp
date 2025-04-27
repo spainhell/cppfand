@@ -100,7 +100,7 @@ HANDLE OpenPrintManagerOutput()
 	return h;
 }
 
-void CopyToPrintManager(std::string& text)
+void CopyToPrintManager(const std::string& text)
 {
 	HANDLE h2 = OpenPrintManagerOutput();
 	if (h2 == nullptr) return;
@@ -134,7 +134,7 @@ void CopyToPrintManager(std::string& text)
 	//CFile = cf; CRecPtr = cr;
 }
 
-void PrintTxtFBlk(std::string& text, int BegPos, bool CtrlL)
+void PrintTxtFBlk(const std::string& text, int BegPos, bool CtrlL)
 {
 	WORD Ti = 0, Times = 0, Cp = 0, Pl = 0, MaxLine = 0;
 	pstring FoTxt, HeTxt;
@@ -271,6 +271,8 @@ void PrintTxtFile(int BegPos)
 	//Rprt.Close(nullptr); // nullptr je tady navic po uprave metody Close()
 }
 
+
+
 void PrintArray(void* P, WORD N, bool CtrlL)
 {
 	printBlk = true;
@@ -278,6 +280,12 @@ void PrintArray(void* P, WORD N, bool CtrlL)
 	//pBlk = CharArrPtr(P);
 	//nBlk = N;
 	PrintTxtFBlk(text, 0, CtrlL);
+}
+
+void PrintArray(const std::string& arr, bool CtrlL)
+{
+	printBlk = true;
+	PrintTxtFBlk(arr, 0, CtrlL);
 }
 
 void PrintFandWork()

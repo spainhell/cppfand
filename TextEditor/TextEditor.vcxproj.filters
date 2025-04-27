@@ -27,10 +27,10 @@
     <ClCompile Include="TextEditorScreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Blocks.cpp">
+    <ClCompile Include="HelpViewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextEditorModes.cpp">
+    <ClCompile Include="TextEditorSpecialModes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,10 +47,10 @@
     <ClInclude Include="TextEditorScreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Blocks.h">
+    <ClInclude Include="HelpViewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextEditorModes.h">
+    <ClInclude Include="TextEditorSpecialModes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

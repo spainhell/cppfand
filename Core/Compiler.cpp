@@ -102,8 +102,8 @@ std::string Compiler::Error(short N)
 			ReadMessage(61);
 		}
 		std::string HdTxt = MsgLine;
-		std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
-		editor->SimpleEditText('T', ErrMsg, HdTxt, p, 0xfff, i, upd);
+		std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Text, TextType::Unknown);
+		editor->SimpleEditText(EditorMode::Text, ErrMsg, HdTxt, p, 0xfff, i, upd);
 		PopW(w);
 	}
 

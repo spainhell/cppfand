@@ -6,7 +6,13 @@
 std::vector<std::string> GetAllLines(const std::string& input, size_t maxLineLen = 0, bool skipLastEmptyLine = false);
 
 /// rozdeli vstup na jednolive radky a zachova v nich CR a LF; nezohlednuje tisknutelne znaky
-std::vector<std::string> GetAllLinesWithEnds(std::string& input);
+std::vector<std::string> GetAllLinesWithEnds(std::string& input, bool& contains_LF);
+
+/// sestavi retezec z vektoru retezcu
+std::string JoinLines(const std::vector<std::string>& lines);
+
+/// spocita celkovou delku retezcu ve vektoru
+size_t GetTotalLength(const std::vector<std::string>& lines);
 
 /// odstrani nebo nahradi zadane znaky na konci retezce
 std::string TrailChar(std::string& input, char c_old, char c_new = '\0');
@@ -39,6 +45,5 @@ size_t ReplaceChar(std::string& text, char oldChar, char newChar);
 
 // old functions:
 unsigned short CountDLines(void* Buf, unsigned short L, char C); // r139 ASM
-//pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM
 
 std::vector<std::string> SplitString(const std::string& str, char delimiter);

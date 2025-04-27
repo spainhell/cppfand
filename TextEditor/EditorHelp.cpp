@@ -3,7 +3,8 @@
 #include <memory>
 #include <stdexcept>
 
-#include "TextEditor.h"
+#include "HelpViewer.h"
+#include "../Core/printtxt.h"
 #include "../Drivers/constants.h"
 #include "../Core/base.h"
 #include "../Core/Compiler.h"
@@ -80,7 +81,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 		else {
 			w = PushW(1, 1, TxtCols, TxtRows, true, true);
 		}
-		size_t i = 1;
+		size_t i = 0;
 		bool frst = true;
 		int16_t delta = 0;
 		if (backw) {
@@ -136,8 +137,17 @@ void Help(RdbD* R, std::string name, bool InCWw)
 						}
 					}
 				}
-				std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
-				editor->ViewHelpText(s2, i);
+
+				while (true) {
+					std::unique_ptr<HelpViewer> editor = std::make_unique<HelpViewer>();
+					editor->ViewHelp(s2, i);
+					if (Event.Pressed.KeyCombination() == __F6) {
+						PrintArray((char*)s2.c_str(), s2.length(), true);
+						continue;
+					}
+					break;
+				}
+
 				if (iStk < maxStk) {
 					iStk++;
 				}
@@ -195,6 +205,9 @@ void Help(RdbD* R, std::string name, bool InCWw)
 	catch (std::exception& e) {
 		// TODO: log error
 	}
+
+	ClrEvent();
+	Event.Pressed.Char = '\0';
 
 	if (w2 != 0) {
 		PopW(w2);

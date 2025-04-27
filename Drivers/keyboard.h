@@ -42,7 +42,7 @@ public:
 	PressedKey(KEY_EVENT_RECORD& key);
 	KEY_EVENT_RECORD* Key();
 	/// transformed character (for use with Alt, Ctrl or Shift)
-	char Char; 
+	char Char = '\0'; 
 	unsigned __int32 KeyDescr();
 	unsigned __int32 SimpleKeyDescr();
 	unsigned short KeyCombination();
