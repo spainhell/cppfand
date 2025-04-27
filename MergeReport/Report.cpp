@@ -1112,7 +1112,7 @@ void Report::EndString(BlkD* block, BYTE* buffer, size_t LineLen, size_t NBytesS
 	//*StrL = NBytesStored;
 	CBlk->NTxtLines++;
 	if (LineLen == 0) {
-		block->lineLength = 255;
+		block->lineLength = 1;
 	}
 	else {
 		block->lineLength = LineLen;
