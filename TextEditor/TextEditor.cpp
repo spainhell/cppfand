@@ -1123,8 +1123,10 @@ void TextEditor::UpdScreen()
 		//}
 	}
 
-	do { // {tisk celeho okna}
-		if (MyTestEvent()) return;
+	do {
+		// {tisk celeho okna}
+		// TODO: musi to tady byt?
+		//if (MyTestEvent()) return;
 
 		if (bScroll /*&& (index < txt.length())*/) {
 			if ((InsPg && (ModPage(line_offset - rr + RScrL - 1))) || InsPage) {
