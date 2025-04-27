@@ -174,6 +174,7 @@ public:
 	bool OpenF2(const std::string& path);
 	void CreateF();
 	bool OpenCreateF(const std::string& path, FileUseMode UM);
+	void DeleteF();
 
 	void TestCFileError();
 	std::string SetPathMountVolumeSetNet(FileUseMode UM);

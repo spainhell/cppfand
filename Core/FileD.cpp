@@ -8,7 +8,6 @@
 #include "../fandio/XKey.h"
 #include "../Common/compare.h"
 #include "../Logging/Logging.h"
-#include "../Common/compare.h"
 #include "../Common/textfunc.h"
 
 
@@ -1963,6 +1962,21 @@ bool FileD::OpenCreateF(const std::string& path, FileUseMode UM)
 		}
 	}
 	return true;
+}
+
+void FileD::DeleteF()
+{
+	CloseFile();
+	SetPathAndVolume();
+	MyDeleteFile(CPath);
+	CPath = CExtToX(CDir, CName, CExt);
+	if (FF->XF != nullptr) {
+		MyDeleteFile(CPath);
+	}
+	if (FF->TF != nullptr) {
+		CPath = CExtToT(CDir, CName, CExt);
+		MyDeleteFile(CPath);
+	}
 }
 
 void FileD::TestCFileError()

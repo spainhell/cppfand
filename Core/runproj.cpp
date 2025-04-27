@@ -24,7 +24,6 @@
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
-#include "LogicControl.h"
 #include "KeyFldD.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -1206,21 +1205,6 @@ bool EquStoredF(std::vector<FieldDescr*>& fields1, std::vector<FieldDescr*>& fie
 	}
 }
 
-void DeleteF(FileD* file_d)
-{
-	file_d->CloseFile();
-	file_d->SetPathAndVolume();
-	MyDeleteFile(CPath);
-	CPath = CExtToX(CDir, CName, CExt);
-	if (file_d->FF->XF != nullptr) {
-		MyDeleteFile(CPath);
-	}
-	if (file_d->FF->TF != nullptr) {
-		CPath = file_d->CExtToT(CDir, CName, CExt);
-		MyDeleteFile(CPath);
-	}
-}
-
 bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 {
 	bool result;
@@ -1238,7 +1222,7 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 
 		SaveFiles();
 		//CFile = fd_old;
-		DeleteF(fd_old);
+		fd_old->DeleteF();
 		//CFile = fd_new;
 		fd_new->CloseFile();
 		fd_old->FF->file_type = fd_new->FF->file_type;
@@ -1262,7 +1246,7 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		//CFile = fd_old;
 		fd_old->CloseFile();
 		fd_old = fd_new;
-		DeleteF(fd_old);
+		fd_old->DeleteF();
 		SpecFDNameAllowed = false;
 		result = false;
 	}

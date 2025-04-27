@@ -9,7 +9,7 @@
 void ScrGraphMode(bool Redraw, WORD OldScrSeg);
 WORD ScrTextMode(bool Redraw, bool Switch);
 
-void InitRunFand(); // !!! spusteni - vstupní procedura
+void InitRunFand(); // !!! spusteni - vstupni procedura
 void DeleteFandFiles(); // remove Fand work files
 void OpenFileDialog();
 
