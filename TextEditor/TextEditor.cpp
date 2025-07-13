@@ -2707,13 +2707,15 @@ std::string TextEditor::CursorWord()
 		}
 	}
 
-	while ((start_index > 1) && !sep.contains(line[start_index - 1])) {
-		// find begining of the word
-		start_index--;
-	}
+	if (!line.empty()) {
+		while ((start_index > 1) && !sep.contains(line[start_index - 1])) {
+			// find begining of the word
+			start_index--;
+		}
 
-	while ((end_index < line.length() - 1) && !sep.contains(line[end_index + 1])) {
-		end_index++;
+		while ((end_index < line.length() - 1) && !sep.contains(line[end_index + 1])) {
+			end_index++;
+		}
 	}
 
 	return line.substr(start_index, end_index - start_index + 1);
