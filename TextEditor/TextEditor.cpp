@@ -8,7 +8,6 @@
 #include "../DataEditor/DataEditor.h"
 #include "../Core/Compiler.h"
 #include "EditorHelp.h"
-#include "HelpViewer.h"
 #include "../Drivers/constants.h"
 #include "../Core/GlobalVariables.h"
 #include "../Drivers/keyboard.h"
@@ -1057,7 +1056,6 @@ void TextEditor::UpdateLine()
 
 void TextEditor::UpdScreen()
 {
-	short r; // row number, starts from 1
 	ColorOrd co1;
 	//WORD oldScreenIndex = ScreenIndex;
 	std::string PgStr;
@@ -1088,11 +1086,11 @@ void TextEditor::UpdScreen()
 		//FillChar(&PgStr[0], 255, CharPg);
 		//PgStr[0] = 255;
 		co1 = ColScr;
-		r = 0;
-		while (Arr[r] == 0x0C) {
-			r++;
+		short row_nr = 0;
+		while (Arr[row_nr] == 0x0C) {
+			row_nr++;
 		}
-		_screen->ScrollWrline(&Arr[r], columnOffset, 1, co1, ColKey, TxtColor, InsPage);
+		_screen->ScrollWrline(&Arr[row_nr], columnOffset, 1, co1, ColKey, TxtColor, InsPage);
 	}
 	else if (_mode == EditorMode::Help) {
 		//co1 = Part.ColorP;
@@ -2709,7 +2707,7 @@ std::string TextEditor::CursorWord()
 
 	if (!line.empty()) {
 		while ((start_index > 1) && !sep.contains(line[start_index - 1])) {
-			// find begining of the word
+			// find beginning of the word
 			start_index--;
 		}
 

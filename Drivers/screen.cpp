@@ -100,17 +100,17 @@ void Screen::ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
 	WriteConsoleOutput(_handle, &ci, { 1, 1 }, { 0, 0 }, &rect);
 }
 
-void Screen::ScrWrStr(std::string S, BYTE Color)
+void Screen::ScrWrStr(const std::string& s, BYTE Color)
 {
-	ScrWrStr(WhereXabs(), WhereYabs(), S, Color);
+	ScrWrStr(WhereXabs(), WhereYabs(), s, Color);
 }
 
 
-void Screen::ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
+void Screen::ScrWrStr(WORD X, WORD Y, const std::string& s, BYTE Color) const
 {
 	// TODO: doresit zobrazeni znaku jako '\r' nebo '\n'
 
-	short len = S.length();
+	short len = s.length();
 	CHAR_INFO* _buf = new CHAR_INFO[len];
 	COORD BufferSize = { len, 1 };
 	SMALL_RECT rect = { (short)(X - 1), (short)(Y - 1), (short)(X + len - 1), (short)(Y - 1) };
@@ -118,7 +118,7 @@ void Screen::ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 	CHAR_INFO ci;
 	ci.Attributes = Color;
 	for (int i = 0; i < len; i++) {
-		ci.Char.AsciiChar = S[i];
+		ci.Char.AsciiChar = s[i];
 		_buf[i] = ci;
 	}
 	WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
