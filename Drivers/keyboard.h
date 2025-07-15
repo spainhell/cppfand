@@ -43,9 +43,9 @@ public:
 	KEY_EVENT_RECORD* Key();
 	/// transformed character (for use with Alt, Ctrl or Shift)
 	char Char = '\0'; 
-	unsigned __int32 KeyDescr();
-	unsigned __int32 SimpleKeyDescr();
-	unsigned short KeyCombination();
+	uint32_t KeyDescr();
+	uint32_t SimpleKeyDescr();
+	uint16_t KeyCombination();
 	void UpdateKey(WORD newKey);
 	//unsigned __int32 Function();
 	bool isChar();

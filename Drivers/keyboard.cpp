@@ -349,7 +349,7 @@ KEY_EVENT_RECORD* PressedKey::Key()
 //	return _key.uChar.AsciiChar;
 //}
 
-unsigned __int32 PressedKey::KeyDescr()
+uint32_t PressedKey::KeyDescr()
 {
 	// 1. a 2. B - ControlKeyState  https://docs.microsoft.com/en-us/windows/console/key-event-record-str
 	// 3. B      - Virtual Key Code https://docs.microsoft.com/cs-cz/windows/win32/inputdev/virtual-key-codes
@@ -357,26 +357,26 @@ unsigned __int32 PressedKey::KeyDescr()
 	return (_key.dwControlKeyState << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + Char;
 }
 
-unsigned __int32 PressedKey::SimpleKeyDescr()
+uint32_t PressedKey::SimpleKeyDescr()
 {
 	// zjednodusena varianta bez rozliseni leve a prave strany
 	// 3. B (0x00000ACS) - SHIFT, CONTROL, ALT
 	// 2. B Virtual Key Code
 	// 1. B znak CHAR
-	unsigned char ControlKey = 0;
+	uint8_t ControlKey = 0;
 	if (Alt()) ControlKey += 4;
 	if (Ctrl()) ControlKey += 2;
 	if (Shift()) ControlKey += 1;
 	return (ControlKey << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + Char;
 }
 
-unsigned short PressedKey::KeyCombination()
+uint16_t PressedKey::KeyCombination()
 {
 	// primitive variant without detection of left or right side
 	// 2. B (0xN0000ACS) - NonChar, SHIFT, CONTROL, ALT
 	// 1. B NonChar: Virtual Key Code, otherwise printable char
-	unsigned short result;
-	unsigned char ControlKey = 0;
+	uint16_t result;
+	uint8_t ControlKey = 0;
 	if (Alt()) ControlKey += 4;
 	if (Ctrl()) ControlKey += 2;
 	if (Shift()) ControlKey += 1;
@@ -384,12 +384,12 @@ unsigned short PressedKey::KeyCombination()
 	if (Char == 0) {
 		// non printable character
 		ControlKey += 0x80;
-		result = static_cast<unsigned short>((ControlKey << 8) + (_key.wVirtualKeyCode & 0xFF));
+		result = static_cast<uint16_t>((ControlKey << 8) + (_key.wVirtualKeyCode & 0xFF));
 	}
 	else if (ControlKey == 2 && Char != _key.uChar.AsciiChar) {
 		// CTRL + A .. CTRL + N
 		ControlKey += 0x80;
-		result = static_cast<unsigned short>((ControlKey << 8) + Char);
+		result = static_cast<uint16_t>((ControlKey << 8) + Char);
 	}
 	else {
 		// printable character
@@ -401,7 +401,7 @@ unsigned short PressedKey::KeyCombination()
 			// Ctrl + Alt + V (@), ...
 			ControlKey = 0;
 		}
-		result = static_cast<unsigned short>((ControlKey << 8) + static_cast<unsigned char>(_key.uChar.AsciiChar));
+		result = static_cast<uint16_t>((ControlKey << 8) + static_cast<uint16_t>(_key.uChar.AsciiChar));
 	}
 	return result;
 }

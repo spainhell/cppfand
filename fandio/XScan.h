@@ -1,6 +1,7 @@
 #pragma once
+#include "XWKey.h"
 #include "../Core/access-structs.h"
-#include "../Core/models/FrmlElem.h"
+#include "../Core/LocVar.h"
 
 struct KeyInD;
 

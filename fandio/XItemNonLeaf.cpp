@@ -20,16 +20,6 @@ XItemNonLeaf::XItemNonLeaf(const XItemNonLeaf& orig)
 	memcpy(this->data, orig.data, L);
 }
 
-XItemNonLeaf::XItemNonLeaf(unsigned recordsCount, unsigned downPage, unsigned char M, unsigned char L, pstring& s)
-{
-	this->RecordsCount = recordsCount;
-	this->DownPage = downPage;
-	this->M = M;
-	this->L = L;
-	this->data = new unsigned char[L];
-	memcpy(this->data, &s[1 + M], L);
-}
-
 XItemNonLeaf::XItemNonLeaf(unsigned recordsCount, unsigned downPage, unsigned char M, unsigned char L, std::string& s)
 {
 	this->RecordsCount = recordsCount;

@@ -18,19 +18,6 @@ XItemLeaf::XItemLeaf(const XItemLeaf& orig)
 	memcpy(this->data, orig.data, L);
 }
 
-XItemLeaf::XItemLeaf(unsigned int RecNr, unsigned char M, unsigned char L, pstring& s)
-{
-	this->RecNr = RecNr;
-	this->M = M;
-	this->L = L;
-	this->data = new unsigned char[L];
-	memcpy(this->data, &s[1 + M], L);
-
-#if _DEBUG
-	this->key = s;
-#endif
-}
-
 XItemLeaf::XItemLeaf(unsigned RecNr, unsigned char M, unsigned char L, std::string& s)
 {
 	this->RecNr = RecNr;

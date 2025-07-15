@@ -4,6 +4,7 @@
 #include "XItem.h"
 #include "XItemLeaf.h"
 #include "XItemNonLeaf.h"
+#include "../Common/pstring.h"
 
 const unsigned short XPageSize = 1024;
 const unsigned char oLeaf = 3;

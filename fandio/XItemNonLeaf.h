@@ -1,5 +1,4 @@
 #pragma once
-#include "../Common/pstring.h"
 #include "XItem.h"
 
 /// implementace XItem pro delsi zaznam
@@ -8,8 +7,7 @@ class XItemNonLeaf: public XItem
 public:
 	XItemNonLeaf(unsigned char* data);
 	XItemNonLeaf(const XItemNonLeaf& orig);
-	XItemNonLeaf(unsigned int recordsCount, unsigned int downPage, unsigned char M, unsigned char L, pstring& s); // kompletni 's', zpracuje se jen pozadovana cast
-	XItemNonLeaf(unsigned int recordsCount, unsigned int downPage, unsigned char M, unsigned char L, std::string& s);
+	XItemNonLeaf(unsigned int recordsCount, unsigned int downPage, unsigned char M, unsigned char L, std::string& s); // kompletni 's', zpracuje se jen pozadovana cast
 	~XItemNonLeaf() override;
 
 	int RecordsCount = 0;
