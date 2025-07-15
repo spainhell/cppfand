@@ -4,7 +4,6 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
 #include "../Core/LinkD.h"
-#include "../Core/obaseww.h"
 #include "../Core/runfrml.h"
 
 
@@ -198,16 +197,18 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	SeekRec(0);
 }
 
-void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
+int32_t XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 {
 	FD->FF->TestXFExist();
 	Bool = aBool;
 	OwnerLV = LV;
 	Kind = 2;
 	if (!KeyFldD::EquKFlds(((XWKey*)LV->record)->KFlds, LD->ToKey->KFlds)) {
-		RunError(1181);
+		// RunError(1181);
+		return 1181;
 	}
 	SeekRec(0);
+	return 0;
 }
 
 #ifdef FandSQL

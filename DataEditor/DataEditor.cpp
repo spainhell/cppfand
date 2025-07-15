@@ -1513,7 +1513,10 @@ void DataEditor::BuildWork()
 			std::vector<KeyInD*> empty;
 			Scan = new XScan(file_d_, edit_->DownKey, empty, false);
 			if (edit_->OwnerTyp == 'i') {
-				Scan->ResetOwnerIndex(edit_->DownLD, edit_->DownLV, boolP);
+				int32_t err_no = Scan->ResetOwnerIndex(edit_->DownLD, edit_->DownLV, boolP);
+				if (err_no != 0) {
+					RunError(err_no);
+				}
 			}
 			else {
 				xx.PackKF(edit_->DownLD->ToFD, edit_->DownLD->ToKey->KFlds, edit_->DownRecPtr);

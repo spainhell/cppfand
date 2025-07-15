@@ -8,7 +8,7 @@
 #include "../Logging/Logging.h"
 
 
-void GetIndex(Instr_getindex* PD)
+int32_t GetIndex(Instr_getindex* PD)
 {
 	XString x;
 	FileD* lvFD = PD->loc_var1->FD;
@@ -31,7 +31,10 @@ void GetIndex(Instr_getindex* PD)
 
 		switch (PD->owner_type) {
 		case 'i': {
-			Scan->ResetOwnerIndex(ld, lv2, cond);
+			int32_t err_no = Scan->ResetOwnerIndex(ld, lv2, cond);
+			if (err_no != 0) {
+				return err_no;
+			}
 			break;
 		}
 		case 'r': {

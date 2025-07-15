@@ -804,7 +804,10 @@ void ForAllProc(Instr_forall* PD)
 #endif
 		if (LD != nullptr) {
 			if (PD->COwnerTyp == 'i') {
-				xScan->ResetOwnerIndex(LD, PD->CLV, Bool);
+				int32_t err_no = xScan->ResetOwnerIndex(LD, PD->CLV, Bool);
+				if (err_no != 0) {
+					RunError(err_no);
+				}
 			}
 			else {
 				xScan->ResetOwner(&xx, Bool);
@@ -1579,7 +1582,10 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_getindex: {
-			GetIndex((Instr_getindex*)instr);
+			int32_t err_no = GetIndex((Instr_getindex*)instr);
+			if (err_no != 0) {
+				RunError(err_no);
+			}
 			break;
 		}
 		case PInstrCode::_setmouse: {
