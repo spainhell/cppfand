@@ -113,6 +113,7 @@ bool GetKeyEvent()
 			Event.What = evKeyDown;
 			return true;
 		}
+		::Sleep(20); // to decrease CPU load
 	} while (exists);
 	return false;
 }

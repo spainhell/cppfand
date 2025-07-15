@@ -1447,23 +1447,30 @@ void TextEditor::PreviousLine()
 
 void TextEditor::NextLine(bool WrScr)
 {
-	if (UpdatedL) KodLine();
+	if (UpdatedL) {
+		KodLine();
+	}
 
 	if (TextLineNr < _lines.size()) {
 		textIndex = NextLineStartIndex;
 		TextLineNr++;
 		DekodLine();
 		if (bScroll) {
-			if (PageS > 1) MyWriteln();
+			if (PageS > 1) {
+				MyWriteln();
+			}
 			ScreenFirstLineNr++;
 			_change_scr = true;
 			RScrL++;
 			if (ModPage(RScrL)) {
-				if (PageS > 1) MyWriteln();
+				if (PageS > 1) {
+					MyWriteln();
+				}
 				RScrL++;
 			}
 		}
 		else if (WrScr && (TextLineNr == ScreenFirstLineNr + PageS)) {
+			// TextLineNr is below the screen -> move the screen (change first screen line)
 			//if (PageS > 1) MyWriteln();
 			ScreenFirstLineNr++;
 			_change_scr = true;
