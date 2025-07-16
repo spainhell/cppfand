@@ -1035,7 +1035,7 @@ void Fand0File::OverWrXRec(int RecNr, void* P2, void* P, void* record)
 	_parent->WriteRec(RecNr, record);
 }
 
-void Fand0File::GenerateNew000File(XScan* x, void* record, void (*msgFuncUpdate)(int32_t))
+void Fand0File::GenerateNew000File(XScan* x, void* record)
 {
 	// vytvorime si novy buffer pro data,
 	// ten pak zapiseme do souboru naprimo (bez cache)
@@ -1047,8 +1047,8 @@ void Fand0File::GenerateNew000File(XScan* x, void* record, void (*msgFuncUpdate)
 	size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
 
 	while (!x->eof) {
-		if (msgFuncUpdate) {
-			msgFuncUpdate(x->IRec);
+		if (CB->progressUpdateCb) {
+			CB->progressUpdateCb(x->IRec);
 		}
 		NRecs++;
 		memcpy(&buffer[offset], record, RecLen);
@@ -1119,7 +1119,7 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ
 	Scan->SubstWIndex(k2);
 }
 
-void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)())
+void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 {
 	std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
 
@@ -1129,20 +1129,20 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t
 	ScanSubstWIndex(Scan, SK, 'S');
 	FileD* FD2 = _parent->OpenDuplicateF(false);
 
-	if (msgFuncOn) {
-		msgFuncOn('S', Scan->NRecs);
+	if (CB->progressOnCb) {
+		CB->progressOnCb('S', Scan->NRecs);
 	}
 
 	Scan->GetRec(record.get());
 
 	// write data to a file .100
-	FD2->FF->GenerateNew000File(Scan, record.get(), msgFuncUpdate);
+	FD2->FF->GenerateNew000File(Scan, record.get());
 
 	SubstDuplF(FD2, false);
 	Scan->Close();
 
-	if (msgFuncOff) {
-		msgFuncOff();
+	if (CB->progressOffCb) {
+		CB->progressOffCb();
 	}
 
 	delete FD2; FD2 = nullptr;

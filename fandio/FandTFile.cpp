@@ -6,7 +6,7 @@
 #include "../Core/Coding.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+// #include "../Core/obaseww.h"
 #include "../pascal/random.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
@@ -33,11 +33,17 @@ void FandTFile::Err(unsigned short n, bool ex) const
 {
 	if (IsWork) {
 		SetMsgPar(FandWorkTName);
-		WrLLF10Msg(n);
+		if (CB->shortMsgCb) {
+			//WrLLF10Msg(n);
+			CB->shortMsgCb(n);
+		}
 		if (ex) GoExit(MsgLine);
 	}
 	else {
-		FileMsg(_parent->GetFileD(), n, 'T');
+		if (CB->fileMsgCb) {
+			// FileMsg(_parent->GetFileD(), n, 'T');
+			CB->fileMsgCb(_parent->GetFileD(), n, 'T');
+		}
 		if (ex) {
 			_parent->GetFileD()->Close();
 			GoExit(MsgLine);

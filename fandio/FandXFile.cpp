@@ -3,9 +3,7 @@
 #include <memory>
 
 #include "../Core/FileD.h"
-#include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
 
 
 FandXFile::FandXFile(Fand0File* parent) : DataFileBase(parent->get_callbacks())
@@ -103,7 +101,10 @@ void FandXFile::ClearUpdLock()
 int FandXFile::XFNotValid(int recs, unsigned char keys)
 {
 	if (Handle == nullptr) {
-		RunError(903);
+		if (CB->errorCb) {
+			// RunError(903);
+			CB->errorCb(903);
+		}
 		return 903;
 	}
 	else {
@@ -208,11 +209,17 @@ void FandXFile::Err(unsigned short N)
 {
 	if (this == &XWork) {
 		SetMsgPar(FandWorkXName);
-		RunError(N);
+		if (CB->errorCb) {
+			// RunError(N);
+			CB->errorCb(N);
+		}
 	}
 	else {
 		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
-		FileMsg(_parent->GetFileD(), N, 'X');
+		if (CB->fileMsgCb) {
+			// FileMsg(_parent->GetFileD(), N, 'X');
+			CB->fileMsgCb(_parent->GetFileD(), N, 'X');
+		}
 		_parent->Close();
 		GoExit(MsgLine);
 	}

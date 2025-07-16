@@ -112,10 +112,10 @@ public:
 	void DeleteXRec(int RecNr, bool DelT, void* record);
 	void OverWrXRec(int RecNr, void* P2, void* P, void* record);
 
-	void GenerateNew000File(XScan* x, void* record, void (*msgFuncUpdate)(int32_t));
+	void GenerateNew000File(XScan* x, void* record);
 	void CreateWIndex(XScan* Scan, XWKey* K, char Typ);
 	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ);
-	void SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)());
+	void SortAndSubst(std::vector<KeyFldD*>& SK);
 	void CopyIndex(XWKey* K, XKey* FromK);
 
 	void SubstDuplF(FileD* TempFD, bool DelTF);

@@ -7,7 +7,18 @@ DataFileBase::DataFileBase(DataFileCallbacks* callbacks)
 {
 	Handle = nullptr;
 	update_flag = false;
-	CB = callbacks;
+	if (callbacks == nullptr) {
+		CB = new DataFileCallbacks();
+		CB->progressOnCb = nullptr;
+		CB->progressUpdateCb = nullptr;
+		CB->progressOffCb = nullptr;
+		CB->shortMsgCb = nullptr;
+		CB->fileMsgCb = nullptr;
+		CB->errorCb = nullptr;
+	}
+	else {
+		CB = callbacks;
+	}
 }
 
 DataFileBase::~DataFileBase()
