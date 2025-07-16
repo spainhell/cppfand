@@ -22,7 +22,7 @@ enum class DataFileType
 class FileD
 {
 public:
-	FileD(DataFileType f_type);
+	FileD(DataFileType f_type, DataFileCallbacks* callbacks);
 	FileD(const FileD& orig);
 	~FileD();
 

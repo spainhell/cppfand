@@ -8,12 +8,12 @@
 #include "../Core/obaseww.h"
 
 
-FandXFile::FandXFile(Fand0File* parent)
+FandXFile::FandXFile(Fand0File* parent) : DataFileBase(parent->get_callbacks())
 {
 	_parent = parent;
 }
 
-FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent)
+FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent) : DataFileBase(orig.get_callbacks())
 {
 	_parent = parent;
 	NRecs = orig.NRecs;

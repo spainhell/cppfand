@@ -1433,7 +1433,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 							rdb_file->saveT(ChptOldTxt, 0, rdb_file->FF->RecPtr);
 							OldTxt = 0;
 
-							std::unique_ptr<DbfFile> dbf_file = std::make_unique<DbfFile>(nullptr);
+							std::unique_ptr<DbfFile> dbf_file = std::make_unique<DbfFile>(nullptr, nullptr);
 							dbf_file->MakeDbfDcl(nm);
 
 							Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);

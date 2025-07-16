@@ -20,12 +20,12 @@
 //const double FirstDate = 6.97248E+5;
 // ***************************************************************************
 
-Fand0File::Fand0File(FileD* parent)
+Fand0File::Fand0File(FileD* parent, DataFileCallbacks* callbacks) : DataFileBase(callbacks)
 {
 	_parent = parent;
 }
 
-Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
+Fand0File::Fand0File(const Fand0File& orig, FileD* parent, DataFileCallbacks* callbacks) : DataFileBase(callbacks)
 {
 	RecLen = orig.RecLen;
 	file_type = orig.file_type;

@@ -11,16 +11,16 @@
 #include "../Common/textfunc.h"
 
 
-FileD::FileD(DataFileType f_type)
+FileD::FileD(DataFileType f_type, DataFileCallbacks* callbacks)
 {
 	this->FileType = f_type;
 	switch (f_type) {
 	case DataFileType::FandFile: {
-		this->FF = new Fand0File(this);
+		this->FF = new Fand0File(this, callbacks);
 		break;
 	}
 	case DataFileType::DBF: {
-		this->DbfF = new DbfFile(this);
+		this->DbfF = new DbfFile(this, nullptr);
 		break;
 	}
 	default:;
@@ -45,7 +45,7 @@ FileD::FileD(const FileD& orig)
 	}
 
 	if (orig.FF != nullptr) {
-		FF = new Fand0File(*orig.FF, this);
+		FF = new Fand0File(*orig.FF, this, orig.FF->get_callbacks());
 	}
 
 	if (!orig.Keys.empty()) {

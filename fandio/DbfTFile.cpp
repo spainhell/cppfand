@@ -6,7 +6,7 @@
 #include "../Core/obaseww.h"
 #include "../Core/GlobalVariables.h"
 
-DbfTFile::DbfTFile(DbfFile* parent)
+DbfTFile::DbfTFile(DbfFile* parent) : DataFileBase(parent->get_callbacks())
 {
 	_parent = parent;
 }

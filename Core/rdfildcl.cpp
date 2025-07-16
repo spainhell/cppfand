@@ -737,7 +737,7 @@ FileD* RdFileD(std::string FileName, DataFileType data_file_type, FandFileType f
 		file_d = RdFileD_Like(FileName, fand_file_type);
 	}
 	else {
-		file_d = new FileD(data_file_type);
+		file_d = new FileD(data_file_type, nullptr);
 	}
 
 	if (!isJournal) {

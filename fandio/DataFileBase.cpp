@@ -3,10 +3,11 @@
 #include "../Core/obaseww.h"
 
 
-DataFileBase::DataFileBase()
+DataFileBase::DataFileBase(DataFileCallbacks* callbacks)
 {
 	Handle = nullptr;
 	update_flag = false;
+	CB = callbacks;
 }
 
 DataFileBase::~DataFileBase()
@@ -21,6 +22,11 @@ size_t DataFileBase::WriteData(size_t position, size_t count, void* buf)
 {
 	SetUpdateFlag();
 	return read_write_data(WRITE, position, count, buf);
+}
+
+DataFileCallbacks* DataFileBase::get_callbacks() const
+{
+	return CB;
 }
 
 void DataFileBase::SetUpdateFlag()

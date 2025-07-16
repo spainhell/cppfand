@@ -12,12 +12,12 @@
 #include "../Common/compare.h"
 
 
-FandTFile::FandTFile(Fand0File* parent)
+FandTFile::FandTFile(Fand0File* parent) : DataFileBase(parent->get_callbacks())
 {
 	_parent = parent;
 }
 
-FandTFile::FandTFile(const FandTFile& orig, Fand0File* parent)
+FandTFile::FandTFile(const FandTFile& orig, Fand0File* parent) : DataFileBase(parent->get_callbacks())
 {
 	_parent = parent;
 }

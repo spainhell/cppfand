@@ -10,7 +10,7 @@ class FileD;
 class DbfFile : public DataFileBase
 {
 public:
-	DbfFile(FileD* parent);
+	DbfFile(FileD* parent, DataFileCallbacks* callbacks);
 	~DbfFile() override;
 
 	DbfTFile* TF = nullptr;
