@@ -710,10 +710,10 @@ void FileD::AssignNRecs(bool Add, int N)
 	OldLockMode(md);
 }
 
-void FileD::SortByKey(std::vector<KeyFldD*>& keys) const
+void FileD::SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const
 {
 	if (FF != nullptr) {
-		FF->SortAndSubst(keys);
+		FF->SortAndSubst(keys, msgFuncOn, msgFuncUpdate, msgFuncOff);
 	}
 }
 

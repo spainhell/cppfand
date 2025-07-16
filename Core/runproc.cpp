@@ -228,7 +228,7 @@ void AssignRecFld(Instr_assign* PD)
 void SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
 {
 	LockMode md = FD->NewLockMode(ExclMode);
-	FD->SortByKey(SK);
+	FD->SortByKey(SK, RunMsgOn, RunMsgN, RunMsgOff);
 	FD->OldLockMode(md);
 	SaveFiles();
 }

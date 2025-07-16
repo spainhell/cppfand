@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 struct RunMsgD
 {
@@ -9,8 +10,8 @@ struct RunMsgD
 	int W = 0;
 };
 
-void RunMsgOn(char C, int N);
+void RunMsgOn(int8_t C, int32_t N);
 void RunMsgOff();
-void RunMsgN(int N);
+void RunMsgN(int32_t N);
 void RunMsgClear();
 

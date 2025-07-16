@@ -30,6 +30,7 @@
 #include "../Common/compare.h"
 #include "../Drivers/constants.h"
 #include "../Core/DateTime.h"
+#include "../Core/RunMessage.h"
 
 
 DataEditor::DataEditor()
@@ -3314,7 +3315,7 @@ void DataEditor::Sorting()
 	}
 
 	try {
-		file_d_->SortByKey(SKRoot);
+		file_d_->SortByKey(SKRoot, RunMsgOn, RunMsgN, RunMsgOff);
 		edit_->EdUpdated = true;
 	}
 	catch (std::exception&) {

@@ -89,7 +89,7 @@ public:
 	void RecallRec(int recNr, void* record);
 	void AssignNRecs(bool Add, int N);
 
-	void SortByKey(std::vector<KeyFldD*>& keys) const;
+	void SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const;
 	void IndexesMaintenance(bool remove_deleted);
 
 	bool loadB(FieldDescr* field_d, void* record);

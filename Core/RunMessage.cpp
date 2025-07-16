@@ -4,7 +4,7 @@
 
 RunMsgD* CM = nullptr;
 
-void RunMsgOn(char C, int N)
+void RunMsgOn(int8_t C, int32_t N)
 {
 	RunMsgD* CM1 = new RunMsgD();
 #ifndef norunmsg
@@ -38,7 +38,7 @@ void RunMsgOff()
 #endif
 }
 
-void RunMsgN(int n)
+void RunMsgN(int32_t n)
 {
 #ifndef norunmsg
 	if (n < CM->MsgKum) return;
