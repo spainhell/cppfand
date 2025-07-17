@@ -2,16 +2,11 @@
 #include "../Core/GlobalVariables.h"
 
 
-DataFileBase::DataFileBase(DataFileCallbacks* callbacks)
+DataFileBase::DataFileBase()
 {
 	Handle = nullptr;
 	update_flag = false;
-	if (callbacks == nullptr) {
-		CB = new DataFileCallbacks();
-	}
-	else {
-		CB = callbacks;
-	}
+	CB = nullptr;
 }
 
 DataFileBase::~DataFileBase()
@@ -31,6 +26,16 @@ size_t DataFileBase::WriteData(size_t position, size_t count, void* buf)
 DataFileCallbacks* DataFileBase::get_callbacks() const
 {
 	return CB;
+}
+
+void DataFileBase::set_callbacks(DataFileCallbacks* callbacks)
+{
+	if (callbacks) {
+		CB = callbacks;
+	}
+	else {
+		CB = new DataFileCallbacks();
+	}
 }
 
 void DataFileBase::SetUpdateFlag()

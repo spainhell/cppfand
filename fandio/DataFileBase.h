@@ -10,7 +10,7 @@ typedef void* HANDLE;
 class DataFileBase
 {
 public:
-	DataFileBase(DataFileCallbacks* callbacks);
+	DataFileBase();
 	virtual ~DataFileBase();
 	
 	HANDLE Handle;
@@ -19,6 +19,7 @@ public:
 	size_t WriteData(size_t position, size_t count, void* buf);
 
 	DataFileCallbacks* get_callbacks() const;
+	void set_callbacks(DataFileCallbacks* callbacks);
 
 	void SetUpdateFlag();
 	virtual void ClearUpdateFlag();

@@ -1,7 +1,5 @@
 #include "XPage.h"
 
-//#include "../Core/base.h"
-
 
 XPage::XPage()
 {

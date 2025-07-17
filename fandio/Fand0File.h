@@ -22,9 +22,9 @@ enum class FandFileType
 class Fand0File : public DataFileBase
 {
 public:
-	Fand0File(FileD* parent, DataFileCallbacks* callbacks);
+	Fand0File(FileD* parent);
 	Fand0File(const Fand0File& orig) = delete;
-	Fand0File(const Fand0File& orig, FileD* parent, DataFileCallbacks* callbacks);
+	Fand0File(const Fand0File& orig, FileD* parent);
 	~Fand0File() override;
 
 	unsigned short RecLen = 0;

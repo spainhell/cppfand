@@ -10,9 +10,10 @@
 #include "../Core/obaseww.h"
 
 
-DbfFile::DbfFile(FileD* parent, DataFileCallbacks* callbacks) : DataFileBase(callbacks)
+DbfFile::DbfFile(FileD* parent) : DataFileBase()
 {
 	_parent = parent;
+	set_callbacks(_parent->get_callbacks());
 }
 
 DbfFile::~DbfFile()

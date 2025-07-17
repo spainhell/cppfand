@@ -5,7 +5,6 @@
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
-#include "../Core/obaseww.h"
 #include "../fandio/FandXFile.h"
 #include "../Logging/Logging.h"
 #include "../pascal/asm.h"
@@ -14,6 +13,7 @@
 XKey::XKey(FileD* parent)
 {
 	parent_ = parent;
+	CB = parent->get_callbacks();
 }
 
 XKey::XKey(const XKey& orig)
@@ -29,6 +29,7 @@ XKey::XKey(const XKey& orig)
 	IndexLen = orig.IndexLen;
 	NR = orig.NR;
 	Alias = orig.Alias;
+	CB = orig.CB;
 }
 
 /**
@@ -441,7 +442,10 @@ bool XKey::Insert(FileD* file_d, int RecNr, bool Try, void* record)
 		else {
 			int result = parent_->FF->XFNotValid();
 			if (result != 0) {
-				RunError(result);
+				if (CB->errorCb) {
+					// RunError(result);
+					CB->errorCb(result);
+				}
 			}
 			parent_->CFileError(822);
 		}

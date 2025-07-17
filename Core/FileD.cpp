@@ -13,14 +13,21 @@
 
 FileD::FileD(DataFileType f_type, DataFileCallbacks* callbacks)
 {
+	if (callbacks) {
+		CB = callbacks;
+	}
+	else {
+		CB = new DataFileCallbacks();
+	}
+
 	this->FileType = f_type;
 	switch (f_type) {
 	case DataFileType::FandFile: {
-		this->FF = new Fand0File(this, callbacks);
+		this->FF = new Fand0File(this);
 		break;
 	}
 	case DataFileType::DBF: {
-		this->DbfF = new DbfFile(this, nullptr);
+		this->DbfF = new DbfFile(this);
 		break;
 	}
 	default:;
@@ -45,7 +52,7 @@ FileD::FileD(const FileD& orig)
 	}
 
 	if (orig.FF != nullptr) {
-		FF = new Fand0File(*orig.FF, this, orig.FF->get_callbacks());
+		FF = new Fand0File(*orig.FF, this);
 	}
 
 	if (!orig.Keys.empty()) {
@@ -2181,6 +2188,11 @@ std::string FileD::SetPathForH(HANDLE handle)
 	ReadMessage(799);
 	CPath = MsgLine;
 	return CPath;
+}
+
+DataFileCallbacks* FileD::get_callbacks() const
+{
+	return CB;
 }
 
 void FileD::lock_excl_and_write_prefix()

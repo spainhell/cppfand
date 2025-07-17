@@ -12,14 +12,21 @@
 #include "../Common/compare.h"
 
 
-FandTFile::FandTFile(Fand0File* parent) : DataFileBase(parent->get_callbacks())
+FandTFile::FandTFile(Fand0File* parent) : DataFileBase()
 {
 	_parent = parent;
+	if (parent != nullptr) {
+		set_callbacks(parent->get_callbacks());
+	}
+	else {
+		// TWork doesn't have a parent
+	}
 }
 
-FandTFile::FandTFile(const FandTFile& orig, Fand0File* parent) : DataFileBase(parent->get_callbacks())
+FandTFile::FandTFile(const FandTFile& orig, Fand0File* parent) : DataFileBase()
 {
 	_parent = parent;
+	set_callbacks(parent->get_callbacks());
 }
 
 FandTFile::~FandTFile()

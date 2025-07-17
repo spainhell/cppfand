@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+
+#include "DataFileCallbacks.h"
 #include "XString.h"
 
 class FandXFile;
@@ -48,6 +50,7 @@ public:
 
 protected:
 	void CalcIndexLen();
+	DataFileCallbacks* CB;
 
 private:
 	FileD* parent_;

@@ -6,12 +6,18 @@
 #include "../Core/GlobalVariables.h"
 
 
-FandXFile::FandXFile(Fand0File* parent) : DataFileBase(parent->get_callbacks())
+FandXFile::FandXFile(Fand0File* parent) : DataFileBase()
 {
 	_parent = parent;
+	if (parent != nullptr) {
+		set_callbacks(parent->get_callbacks());
+	}
+	else {
+		// XWork doesn't have a parent
+	}
 }
 
-FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent) : DataFileBase(orig.get_callbacks())
+FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent) : DataFileBase()
 {
 	_parent = parent;
 	NRecs = orig.NRecs;
@@ -20,6 +26,7 @@ FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent) : DataFileBase(or
 	NrKeys = orig.NrKeys;
 	NoCreate = orig.NoCreate;
 	FirstDupl = orig.FirstDupl;
+	set_callbacks(orig.get_callbacks());
 }
 
 FandXFile::~FandXFile()
