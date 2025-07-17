@@ -197,18 +197,20 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	SeekRec(0);
 }
 
-int32_t XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
+void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 {
 	FD->FF->TestXFExist();
 	Bool = aBool;
 	OwnerLV = LV;
 	Kind = 2;
 	if (!KeyFldD::EquKFlds(((XWKey*)LV->record)->KFlds, LD->ToKey->KFlds)) {
-		// RunError(1181);
-		return 1181;
+		DataFileCallbacks* cb = FD->get_callbacks();
+		if (cb != nullptr && cb->errorCb != nullptr) {
+			// RunError(1181);
+			cb->errorCb(1181);
+		}
 	}
 	SeekRec(0);
-	return 0;
 }
 
 #ifdef FandSQL

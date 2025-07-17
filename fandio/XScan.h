@@ -20,7 +20,7 @@ public:
 	void ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record);
 	void SubstWIndex(XWKey* WK);
 	void ResetOwner(XString* XX, FrmlElem* aBool);
-	[[nodiscard]] int32_t ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool);
+	void ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool);
 #ifdef FandSQL
 	void ResetSQLTxt(FrmlElem* Z);
 #endif
