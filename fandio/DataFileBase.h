@@ -1,20 +1,11 @@
 #pragma once
 #include <cstdint>
 
+#include "DataFileCallbacks.h"
 #include "FileEnums.h"
 
 class FileD;
 typedef void* HANDLE;
-
-struct DataFileCallbacks
-{
-	void (*progressOnCb)(int8_t, int32_t);
-	void (*progressUpdateCb)(int32_t);
-	void (*progressOffCb)();
-	void (*shortMsgCb)(int32_t);
-	void (*fileMsgCb)(FileD*, unsigned long, int8_t);
-	void (*errorCb)(int32_t);
-};
 
 class DataFileBase
 {

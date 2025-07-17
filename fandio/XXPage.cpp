@@ -1,10 +1,18 @@
 #include "XXPage.h"
 
 #include "XWorkFile.h"
-#include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
 
+
+XXPage::XXPage(DataFileCallbacks* callbacks)
+{
+	if (callbacks == nullptr) {
+		CB = new DataFileCallbacks();
+	}
+	else {
+		CB = callbacks;
+	}
+}
 
 void XXPage::Reset(XWorkFile* OwnerXW)
 {
@@ -46,7 +54,7 @@ void XXPage::PageFull()
 	int n = 0;
 	ClearRest();
 	if (Chain == nullptr) {
-		Chain = new XXPage();
+		Chain = new XXPage(CB);
 		Chain->Reset(XW);
 	}
 	if (IsLeaf) {
@@ -81,12 +89,16 @@ void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, void* record)
 					if (!XW->msgWritten) {
 						SetMsgPar(file_d->Name);
 						if (IsTestRun) {
-							if (!PromptYN(832)) {
+							if (CB->promptCb && !CB->promptCb(832)) {
 								GoExit(MsgLine);
 							}
+
 						}
 						else {
-							WrLLF10Msg(828);
+							if (CB->shortMsgCb) {
+								// WrLLF10Msg(828);
+								CB->shortMsgCb(832);
+							}
 						}
 						XW->msgWritten = true;
 					}

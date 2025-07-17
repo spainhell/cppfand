@@ -1,4 +1,5 @@
 #pragma once
+#include "DataFileCallbacks.h"
 #include "XKey.h"
 #include "XScan.h"
 #include "XXPage.h"
@@ -7,7 +8,7 @@
 class XWorkFile
 {
 public:
-	XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK);
+	XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK, DataFileCallbacks* callbacks);
 	~XWorkFile();
 
 	HANDLE Handle = nullptr;
@@ -32,6 +33,9 @@ public:
 	void Output(XKey* xKey, WRec* R, void* record);
 	void Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NRecs);
 	void SortMerge(XKey* xKey, void* record);
+
+protected:
+	DataFileCallbacks* CB;
 
 private:
 	FileD* _parent;

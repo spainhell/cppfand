@@ -1,6 +1,5 @@
 #include "DataFileBase.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
 
 
 DataFileBase::DataFileBase(DataFileCallbacks* callbacks)
@@ -9,12 +8,6 @@ DataFileBase::DataFileBase(DataFileCallbacks* callbacks)
 	update_flag = false;
 	if (callbacks == nullptr) {
 		CB = new DataFileCallbacks();
-		CB->progressOnCb = nullptr;
-		CB->progressUpdateCb = nullptr;
-		CB->progressOffCb = nullptr;
-		CB->shortMsgCb = nullptr;
-		CB->fileMsgCb = nullptr;
-		CB->errorCb = nullptr;
 	}
 	else {
 		CB = callbacks;
@@ -63,7 +56,10 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 	WORD err = 0;
 
 	if (Handle == nullptr) {
-		RunError(706);
+		if (CB->errorCb) {
+			// RunError(706);
+			CB->errorCb(706);
+		}
 		return result;
 	}
 
@@ -77,7 +73,7 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 	}
 
 	if (HandleError == 0) {
-		
+
 	}
 	else {
 		if (operation == READ) {
@@ -90,7 +86,10 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 		err = HandleError;
 		FileD::SetPathForH(Handle);
 		SetMsgPar(CPath);
-		RunError(700 + err);
+		if (CB->errorCb) {
+			// RunError(700 + err);
+			CB->errorCb(700 + err);
+		}
 	}
 
 	return result;

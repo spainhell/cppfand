@@ -82,7 +82,7 @@ void SetMsgPar(const std::string& s);
 void SetMsgPar(const std::string& s1, const std::string& s2);
 void SetMsgPar(const std::string& s1, const std::string& s2, const std::string& s3);
 void SetMsgPar(const std::string& s1, const std::string& s2, const std::string& s3, const std::string& s4);
-std::string ReadMessage(int N);
+std::string ReadMessage(int32_t N);
 void WriteMsg(WORD N);
 
 extern Spec spec;

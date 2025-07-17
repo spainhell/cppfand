@@ -30,7 +30,7 @@ void WrLLMsg(WORD N);
 void WrLLMsgTxt(std::string& message);
 void WrLLF10MsgLine(std::string& message); // stejna fce definovana v kbdww.cpp
 void WrLLF10Msg(int msgNr); // stejna fce definovana v kbdww.cpp
-bool PromptYN(WORD NMsg);
+bool PromptYN(int32_t NMsg);
 extern WORD RunErrNr;
 void RunError(WORD N); // podobna fce definovana v kbdww.cpp
 void FileMsg(FileD* file_d, int n, char Typ); // podobna fce definovana v kbdww.cpp

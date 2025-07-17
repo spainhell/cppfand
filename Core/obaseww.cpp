@@ -305,7 +305,7 @@ void RunError(WORD N)
 	GoExit(MsgLine);
 }
 
-bool PromptYN(WORD NMsg)
+bool PromptYN(int32_t NMsg)
 {
 	int w = PushW(1, TxtRows, TxtCols, TxtRows);
 	TextAttr = screen.colors.pTxt;

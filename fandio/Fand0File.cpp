@@ -847,7 +847,7 @@ int Fand0File::CreateIndexFile()
 			std::unique_ptr<XScan> scan = std::make_unique<XScan>(_parent, nullptr, empty, false);
 			std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
 			scan->Reset(nullptr, false, record.get());
-			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys);
+			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys, CB);
 			XW->Main('X', record.get());
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
@@ -1073,7 +1073,7 @@ void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 	std::vector<XKey*> xw_keys;
 	xw_keys.push_back(K);
 	std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
-	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys);
+	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys, CB);
 	XW->Main(Typ, record.get());
 }
 

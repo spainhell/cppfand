@@ -176,7 +176,7 @@ size_t ReadH(HANDLE handle, size_t length, void* buffer)
 	return ReadF(handle, buffer, length, HandleError);
 }
 
-std::string ReadMessage(int N)
+std::string ReadMessage(int32_t N)
 {
 	std::string s;
 	bool result = resFile.ReadMessage(N, s);

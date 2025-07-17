@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DataFileCallbacks.h" />
     <ClInclude Include="DBaseField.h" />
     <ClInclude Include="DBaseHeader.h" />
     <ClInclude Include="DbfFile.h" />
@@ -187,6 +188,7 @@
     <ClInclude Include="XXPage.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DataFileCallbacks.cpp" />
     <ClCompile Include="DBaseField.cpp" />
     <ClCompile Include="DBaseHeader.cpp" />
     <ClCompile Include="DbfFile.cpp" />
