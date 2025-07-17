@@ -23,7 +23,7 @@ void XXPage::Reset(XWorkFile* OwnerXW)
 
 void XXPage::PutN(int N)
 {
-	memcpy(&A[Off], &N, 3); // kopirujeme 3 nejnizsi Byty, posledni se ignoruje
+	memcpy(&A[Off], &N, 3); // kopirujeme 3 nejnizsi byte, posledni se ignoruje
 	Off += 3;
 }
 
@@ -89,16 +89,13 @@ void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, void* record)
 					if (!XW->msgWritten) {
 						SetMsgPar(file_d->Name);
 						if (IsTestRun) {
-							if (CB->promptCb && !CB->promptCb(832)) {
+							if (CB->promptYN(832)) {
 								GoExit(MsgLine);
 							}
 
 						}
 						else {
-							if (CB->shortMsgCb) {
-								// WrLLF10Msg(828);
-								CB->shortMsgCb(832);
-							}
+							CB->shortMsg(832);
 						}
 						XW->msgWritten = true;
 					}

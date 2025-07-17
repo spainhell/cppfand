@@ -40,17 +40,11 @@ void FandTFile::Err(unsigned short n, bool ex) const
 {
 	if (IsWork) {
 		SetMsgPar(FandWorkTName);
-		if (CB->shortMsgCb) {
-			//WrLLF10Msg(n);
-			CB->shortMsgCb(n);
-		}
+		CB->shortMsg(n);
 		if (ex) GoExit(MsgLine);
 	}
 	else {
-		if (CB->fileMsgCb) {
-			// FileMsg(_parent->GetFileD(), n, 'T');
-			CB->fileMsgCb(_parent->GetFileD(), n, 'T');
-		}
+		CB->fileMsg(_parent->GetFileD(), n, 'T');
 		if (ex) {
 			_parent->GetFileD()->Close();
 			GoExit(MsgLine);

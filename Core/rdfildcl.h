@@ -8,6 +8,8 @@
 #include "FileD.h"
 
 extern bool HasTT;
+extern DataFileCallbacks* default_callbacks;
+
 FieldDescr* RdFieldDescr(std::string name, bool Stored); // r25
 LogicControl* ReadLogicControl(WORD Low);
 void RdChkDChain(std::vector<LogicControl*>& C);

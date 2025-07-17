@@ -48,9 +48,6 @@
     <ClCompile Include="OldDrivers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FieldDescrBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GlobalVariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -177,9 +174,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OldDrivers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FieldDescrBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GlobalVariables.h">

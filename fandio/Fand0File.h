@@ -1,8 +1,7 @@
 #pragma once
 #include "FandTFile.h"
 #include "FandXFile.h"
-#include "../Core/switches.h"
-#include "../Core/FieldDescrBase.h"
+#include "../Common/FieldDescrBase.h"
 #include "../Logging/Logging.h"
 
 class XWKey;

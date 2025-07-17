@@ -11,8 +11,8 @@
 #include "../Core/oaccess.h"
 #include "../pascal/real48.h"
 #include "../Core/obaseww.h"
-// #include "../Core/RunMessage.h"
 #include "../Core/DateTime.h"
+#include "../Drivers/files.h"
 
 // ****************************** CONSTANTS **********************************
 //double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
@@ -1049,9 +1049,7 @@ void Fand0File::GenerateNew000File(XScan* x, void* record)
 	size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
 
 	while (!x->eof) {
-		if (CB->progressUpdateCb) {
-			CB->progressUpdateCb(x->IRec);
-		}
+		CB->progressUpdate(x->IRec);
 		NRecs++;
 		memcpy(&buffer[offset], record, RecLen);
 		offset += RecLen;
@@ -1131,9 +1129,7 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 	ScanSubstWIndex(Scan, SK, 'S');
 	FileD* FD2 = _parent->OpenDuplicateF(false);
 
-	if (CB->progressOnCb) {
-		CB->progressOnCb('S', Scan->NRecs);
-	}
+	CB->progressOn('S', Scan->NRecs);
 
 	Scan->GetRec(record.get());
 
@@ -1143,9 +1139,7 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 	SubstDuplF(FD2, false);
 	Scan->Close();
 
-	if (CB->progressOffCb) {
-		CB->progressOffCb();
-	}
+	CB->progressOff();
 
 	delete FD2; FD2 = nullptr;
 }

@@ -442,10 +442,7 @@ bool XKey::Insert(FileD* file_d, int RecNr, bool Try, void* record)
 		else {
 			int result = parent_->FF->XFNotValid();
 			if (result != 0) {
-				if (CB->errorCb) {
-					// RunError(result);
-					CB->errorCb(result);
-				}
+				CB->runError(result);
 			}
 			parent_->CFileError(822);
 		}

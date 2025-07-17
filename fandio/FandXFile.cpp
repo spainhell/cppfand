@@ -108,10 +108,7 @@ void FandXFile::ClearUpdLock()
 int FandXFile::XFNotValid(int recs, unsigned char keys)
 {
 	if (Handle == nullptr) {
-		if (CB->errorCb) {
-			// RunError(903);
-			CB->errorCb(903);
-		}
+		CB->runError(903);
 		return 903;
 	}
 	else {
@@ -216,17 +213,11 @@ void FandXFile::Err(unsigned short N)
 {
 	if (this == &XWork) {
 		SetMsgPar(FandWorkXName);
-		if (CB->errorCb) {
-			// RunError(N);
-			CB->errorCb(N);
-		}
+		CB->runError(N);
 	}
 	else {
 		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
-		if (CB->fileMsgCb) {
-			// FileMsg(_parent->GetFileD(), N, 'X');
-			CB->fileMsgCb(_parent->GetFileD(), N, 'X');
-		}
+		CB->fileMsg(_parent->GetFileD(), N, 'X');
 		_parent->Close();
 		GoExit(MsgLine);
 	}

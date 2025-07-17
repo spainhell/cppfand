@@ -75,10 +75,7 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, void* re
 	K->NrToPath(_parent, 1);
 	int page = XPath[XPathN].Page;
 
-	if (CB->progressOnCb) {
-		// RunMsgOn(Typ, K->NRecs());
-		CB->progressOnCb(Typ, K->NRecs());
-	}
+	CB->progressOn(Typ, K->NRecs());
 	int count = 0;
 
 	while (page != 0) {
@@ -98,17 +95,10 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, void* re
 			Output(K, r, record);
 		}
 		count += p->NItems;
-		if (CB->progressUpdateCb) {
-			// RunMsgN(count);
-			CB->progressUpdateCb(count);
-		}
+		CB->progressUpdate(count);
 		page = p->GreaterPage;
 	}
-	if (CB->progressOffCb) {
-		// RunMsgOff();
-		CB->progressOffCb();
-
-	}
+	CB->progressOff();
 }
 
 bool XWorkFile::GetCRec(void* record)
@@ -163,9 +153,8 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NR
 	// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
 	MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array
 
-	if (MaxOnWPage < 4 && CB->errorCb) {
-		// RunError(624);
-		CB->errorCb(624);
+	if (MaxOnWPage < 4) {
+		CB->runError(624);
 	}
 
 	MaxWPage = 0;
@@ -182,10 +171,7 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NR
 	//@shl ax 3, 1; cmp bx, 1; ja @1; cmp cx, 0; jne @4; mov cx, 1;
 	//@mov pages 4.unsigned short, cx;
 
-	if (CB->progressOnCb) {
-		// RunMsgOn(Typ, pages);
-		CB->progressOnCb(Typ, pages);
-	}
+	CB->progressOn(Typ, pages);
 }
 
 /// precte zaznamy, vytvori uplnou delku klice, setridi zaznamy
@@ -201,6 +187,7 @@ void XWorkFile::SortMerge(XKey* xKey, void* record)
 	PgWritten = 0;
 	nxt = WRoot;
 	NChains = 1;
+
 	while (GetCRec(record)) {
 		if (n == MaxOnWPage) {
 			PW->Sort(n, RecLen);
@@ -221,25 +208,22 @@ void XWorkFile::SortMerge(XKey* xKey, void* record)
 		n++;
 		offsetOfPwA += RecLen;
 	}
+
 	PW->Sort(n, RecLen);
 	WriteWPage(xKey, n, nxt, 0, 0, record);
+
 	if (NChains > 1) {
 		Merge(xKey, record);
 	}
-	if (CB->progressOffCb) {
-		// RunMsgOff();
-		CB->progressOffCb();
-	}
+
+	CB->progressOff();
 }
 
 void XWorkFile::TestErr()
 {
 	if (HandleError != 0) {
 		SetMsgPar(FandWorkName);
-		if (CB->errorCb) {
-			// RunError(700 + HandleError);
-			CB->errorCb(700 + HandleError);
-		}
+		CB->runError(700 + HandleError);
 	}
 }
 
@@ -310,11 +294,7 @@ void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Ch
 {
 	size_t offset = 0;
 	PgWritten++;
-
-	if (CB->progressUpdateCb) {
-		// RunMsgN(PgWritten);
-		CB->progressUpdateCb(PgWritten);
-	}
+	CB->progressUpdate(PgWritten);
 
 	if (NChains == 1) {
 		for (size_t i = 0; i < N; i++) {

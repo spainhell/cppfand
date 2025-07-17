@@ -1,16 +1,18 @@
 #include "rdfildcl.h"
 
 #include "../Common/compare.h"
-#include "../fandio/FandXFile.h"
 #include "Compiler.h"
 #include "FieldDescr.h"
-#include "FileD.h"
 #include "GlobalVariables.h"
 #include "LinkD.h"
 #include "LogicControl.h"
 #include "KeyFldD.h"
+#include "obaseww.h"
 #include "rdproc.h"
 #include "runfrml.h"
+#include "RunMessage.h"
+
+DataFileCallbacks* default_callbacks = new DataFileCallbacks(RunMsgOn, RunMsgN, RunMsgOff, WrLLF10Msg, FileMsg, RunError, PromptYN);
 
 bool HasTT;
 bool isSql;

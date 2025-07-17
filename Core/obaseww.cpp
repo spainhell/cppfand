@@ -297,7 +297,7 @@ void WrLLF10Msg(int msgNr)
 	WrLLF10MsgLine(message);
 }
 
-void RunError(WORD N)
+void RunError(int32_t N)
 {
 	RunErrNr = N;
 	ClearKbdBuf();
@@ -336,7 +336,7 @@ bool PromptYN(int32_t NMsg)
 	return cc == AbbrYes;
 }
 
-void FileMsg(FileD* file_d, int n, char Typ)
+void FileMsg(FileD* file_d, int32_t n, int8_t Typ)
 {
 	file_d->SetPathAndVolume();
 	if (Typ == 'T') {

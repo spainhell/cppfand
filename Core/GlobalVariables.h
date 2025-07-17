@@ -6,7 +6,6 @@
 
 #include "ResFile.h"
 #include "Users.h"
-#include "../fandio/FandTFile.h"
 
 class MergeReportBase;
 const double FirstDate = 6.97248E+5;

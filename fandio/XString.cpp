@@ -1,5 +1,5 @@
 #include "XString.h"
-#include "../Core/FieldDescrBase.h"
+#include "../Common/FieldDescrBase.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
 #include "../Core/runfrml.h"

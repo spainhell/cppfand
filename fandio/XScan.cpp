@@ -205,10 +205,7 @@ void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 	Kind = 2;
 	if (!KeyFldD::EquKFlds(((XWKey*)LV->record)->KFlds, LD->ToKey->KFlds)) {
 		DataFileCallbacks* cb = FD->get_callbacks();
-		if (cb != nullptr && cb->errorCb != nullptr) {
-			// RunError(1181);
-			cb->errorCb(1181);
-		}
+		cb->runError(1181);
 	}
 	SeekRec(0);
 }

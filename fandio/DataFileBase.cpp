@@ -61,10 +61,7 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 	WORD err = 0;
 
 	if (Handle == nullptr) {
-		if (CB->errorCb) {
-			// RunError(706);
-			CB->errorCb(706);
-		}
+		CB->runError(706);
 		return result;
 	}
 
@@ -91,10 +88,7 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 		err = HandleError;
 		FileD::SetPathForH(Handle);
 		SetMsgPar(CPath);
-		if (CB->errorCb) {
-			// RunError(700 + err);
-			CB->errorCb(700 + err);
-		}
+		CB->runError(700 + err);
 	}
 
 	return result;

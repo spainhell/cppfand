@@ -1,7 +1,7 @@
 #include "DbfFile.h"
 
 #include "DBaseHeader.h"
-#include "../Core/FieldDescrBase.h"
+#include "../Common/FieldDescrBase.h"
 #include "../Core/GlobalVariables.h"
 #include "../Common/textfunc.h"
 #include "../Core/Coding.h"

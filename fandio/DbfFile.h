@@ -3,7 +3,7 @@
 
 #include "DataFileBase.h"
 #include "DbfTFile.h"
-#include "../Core/FieldDescrBase.h"
+#include "../Common/FieldDescrBase.h"
 
 class FileD;
 

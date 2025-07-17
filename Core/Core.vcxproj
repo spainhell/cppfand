@@ -68,7 +68,6 @@
     <ClCompile Include="EditOpt.cpp" />
     <ClCompile Include="FileD.cpp" />
     <ClCompile Include="OldDrivers.cpp" />
-    <ClCompile Include="FieldDescrBase.cpp" />
     <ClCompile Include="GlobalVariables.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="KeyFldD.cpp" />
@@ -113,7 +112,6 @@
     <ClInclude Include="EditOpt.h" />
     <ClInclude Include="FileD.h" />
     <ClInclude Include="OldDrivers.h" />
-    <ClInclude Include="FieldDescrBase.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Graph.h" />
     <ClInclude Include="KeyFldD.h" />
