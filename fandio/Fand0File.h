@@ -2,7 +2,7 @@
 #include "FandTFile.h"
 #include "FandXFile.h"
 #include "../Core/switches.h"
-#include "../Core/FieldDescr.h"
+#include "../Core/FieldDescrBase.h"
 #include "../Logging/Logging.h"
 
 class XWKey;
@@ -60,19 +60,19 @@ public:
 	void DecNRecs(int n);
 	void PutRec(void* record, int& i_rec);
 
-	bool loadB(FieldDescr* field_d, void* record);
-	double loadR(FieldDescr* field_d, void* record);
-	std::string loadS(FieldDescr* field_d, void* record);
-	int loadT(FieldDescr* F, void* record);
+	bool loadB(FieldDescrBase* field_d, void* record);
+	double loadR(FieldDescrBase* field_d, void* record);
+	std::string loadS(FieldDescrBase* field_d, void* record);
+	int loadT(FieldDescrBase* F, void* record);
 
-	void saveB(FieldDescr* field_d, bool b, void* record);
-	void saveR(FieldDescr* field_d, double r, void* record);
-	void saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record);
-	int saveT(FieldDescr* field_d, int pos, void* record);
+	void saveB(FieldDescrBase* field_d, bool b, void* record);
+	void saveR(FieldDescrBase* field_d, double r, void* record);
+	void saveS(FileD* parent, FieldDescrBase* field_d, std::string s, void* record);
+	int saveT(FieldDescrBase* field_d, int pos, void* record);
 
-	void DelTFld(FieldDescr* field_d, void* record);
+	void DelTFld(FieldDescrBase* field_d, void* record);
 	void DelTFlds(void* record);
-	void DelDifTFld(FieldDescr* field_d, void* record, void* comp_record);
+	void DelDifTFld(FieldDescrBase* field_d, void* record, void* comp_record);
 
 	uint16_t RdPrefix();
 	int RdPrefixes();
@@ -128,7 +128,7 @@ public:
 
 private:
 	FileD* _parent;
-	bool is_null_value(FieldDescr* field_d, uint8_t* record);
+	bool is_null_value(FieldDescrBase* field_d, uint8_t* record);
 
 	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);

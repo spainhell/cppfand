@@ -113,7 +113,7 @@ void Fand0File::CompileRecLen()
 		l = 1;
 	}
 
-	for (FieldDescr* F : _parent->FldD) {
+	for (FieldDescrBase* F : _parent->FldD) {
 		if (file_type == FandFileType::FAND8 && F->field_type == FieldType::DATE) {
 			F->NBytes = 2;
 		}
@@ -193,7 +193,7 @@ void Fand0File::PutRec(void* record, int& i_rec)
 	Eof = true;
 }
 
-bool Fand0File::loadB(FieldDescr* field_d, void* record)
+bool Fand0File::loadB(FieldDescrBase* field_d, void* record)
 {
 	bool result = false;
 	uint8_t* CP = (uint8_t*)record + field_d->Displ;
@@ -208,7 +208,7 @@ bool Fand0File::loadB(FieldDescr* field_d, void* record)
 	return result;
 }
 
-double Fand0File::loadR(FieldDescr* field_d, void* record)
+double Fand0File::loadR(FieldDescrBase* field_d, void* record)
 {
 	uint8_t* source = static_cast<uint8_t*>(record) + field_d->Displ;
 	double result = 0.0;
@@ -260,7 +260,7 @@ double Fand0File::loadR(FieldDescr* field_d, void* record)
 	return result;
 }
 
-std::string Fand0File::loadS(FieldDescr* field_d, void* record)
+std::string Fand0File::loadS(FieldDescrBase* field_d, void* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	std::string S;
@@ -316,14 +316,14 @@ std::string Fand0File::loadS(FieldDescr* field_d, void* record)
 	return S;
 }
 
-int Fand0File::loadT(FieldDescr* F, void* record)
+int Fand0File::loadT(FieldDescrBase* F, void* record)
 {
 	char* source = (char*)record + F->Displ;
 	if (record == nullptr) return 0;
 	return *reinterpret_cast<int*>(source);
 }
 
-void Fand0File::saveB(FieldDescr* field_d, bool b, void* record)
+void Fand0File::saveB(FieldDescrBase* field_d, bool b, void* record)
 {
 	char* pB = (char*)record + field_d->Displ;
 	if ((field_d->field_type == FieldType::BOOL) && field_d->isStored()) {
@@ -331,7 +331,7 @@ void Fand0File::saveB(FieldDescr* field_d, bool b, void* record)
 	}
 }
 
-void Fand0File::saveR(FieldDescr* field_d, double r, void* record)
+void Fand0File::saveR(FieldDescrBase* field_d, double r, void* record)
 {
 	BYTE* pRec = (BYTE*)record + field_d->Displ;
 	int l = 0;
@@ -371,7 +371,7 @@ void Fand0File::saveR(FieldDescr* field_d, double r, void* record)
 	}
 }
 
-void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record)
+void Fand0File::saveS(FileD* parent, FieldDescrBase* field_d, std::string s, void* record)
 {
 	const BYTE LeftJust = 1;
 	BYTE* pRec = (BYTE*)record + field_d->Displ;
@@ -463,7 +463,7 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* r
 	}
 }
 
-int Fand0File::saveT(FieldDescr* field_d, int pos, void* record)
+int Fand0File::saveT(FieldDescrBase* field_d, int pos, void* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	int* LP = (int*)source;
@@ -477,7 +477,7 @@ int Fand0File::saveT(FieldDescr* field_d, int pos, void* record)
 	}
 }
 
-void Fand0File::DelTFld(FieldDescr* field_d, void* record)
+void Fand0File::DelTFld(FieldDescrBase* field_d, void* record)
 {
 	int pos = loadT(field_d, record);
 	if (pos == 0) return;
@@ -496,7 +496,7 @@ void Fand0File::DelTFld(FieldDescr* field_d, void* record)
 
 void Fand0File::DelTFlds(void* record)
 {
-	for (FieldDescr* field : _parent->FldD) {
+	for (FieldDescrBase* field : _parent->FldD) {
 		if (field->field_type == FieldType::TEXT && field->isStored()) {
 			DelTFld(field, record);
 		}
@@ -509,7 +509,7 @@ void Fand0File::DelTFlds(void* record)
  * \param record 1. zaznam (ktery je pripadne smazan)
  * \param comp_record 2. zaznam
  */
-void Fand0File::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
+void Fand0File::DelDifTFld(FieldDescrBase* field_d, void* record, void* comp_record)
 {
 	const int n1 = loadT(field_d, comp_record);
 	const int n2 = loadT(field_d, record);
@@ -1363,7 +1363,7 @@ std::string Fand0File::SetTempCExt(char typ, bool isNet) const
 	return CPath;
 }
 
-bool Fand0File::is_null_value(FieldDescr* field_d, uint8_t* record)
+bool Fand0File::is_null_value(FieldDescrBase* field_d, uint8_t* record)
 {
 	if (field_d->field_type == FieldType::FIXED) {
 		if (field_d->NBytes == 1 && record[0] == 0x80) {

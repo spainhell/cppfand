@@ -1,5 +1,5 @@
 #include "XString.h"
-#include "../Core/FieldDescr.h"
+#include "../Core/FieldDescrBase.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
 #include "../Core/runfrml.h"
@@ -15,7 +15,7 @@ void XString::StoreReal(double R, KeyFldD* KF)
 	unsigned char A[20];
 	// pole urcuje pocet Bytu, ve kterych bude ulozeno cislo
 	const unsigned char TabF[18] = { 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
-	FieldDescr* X = KF->FldD;
+	FieldDescrBase* X = KF->FldD;
 
 	if (X->field_type == FieldType::REAL || X->field_type == FieldType::DATE) {
 		bool b = KF->Descend;
@@ -39,7 +39,7 @@ void XString::StoreReal(double R, KeyFldD* KF)
 void XString::StoreStr(std::string V, KeyFldD* KF)
 {
 	unsigned short n = 0;
-	FieldDescr* X = KF->FldD;
+	FieldDescrBase* X = KF->FldD;
 	while (V.length() < X->L) {
 		if (X->M == LeftJust) {
 			V += ' ';

@@ -1,7 +1,7 @@
 #include "DbfFile.h"
 
 #include "DBaseHeader.h"
-#include "../Core/FieldDescr.h"
+#include "../Core/FieldDescrBase.h"
 #include "../Core/GlobalVariables.h"
 #include "../Common/textfunc.h"
 #include "../Core/Coding.h"
@@ -84,19 +84,19 @@ void DbfFile::PutRec(void* record, int& i_rec)
 	Eof = true;
 }
 
-bool DbfFile::loadB(FieldDescr* field_d, void* record)
+bool DbfFile::loadB(FieldDescrBase* field_d, void* record)
 {
 	uint8_t* CP = (uint8_t*)record + field_d->Displ;
 	return (*CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't');
 }
 
-double DbfFile::loadR(FieldDescr* field_d, void* record)
+double DbfFile::loadR(FieldDescrBase* field_d, void* record)
 {
 	uint8_t* source = static_cast<uint8_t*>(record) + field_d->Displ;
 	return DBF_RforD(field_d, source);
 }
 
-std::string DbfFile::loadS(FieldDescr* field_d, void* record)
+std::string DbfFile::loadS(FieldDescrBase* field_d, void* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	std::string S;
@@ -135,7 +135,7 @@ std::string DbfFile::loadS(FieldDescr* field_d, void* record)
 	return S;
 }
 
-int DbfFile::loadT(FieldDescr* F, void* record)
+int DbfFile::loadT(FieldDescrBase* F, void* record)
 {
 	// tvarime se, ze CRecPtr je pstring ...
 	// TODO: toto je asi blbe, nutno opravit pred 1. pouzitim
@@ -144,7 +144,7 @@ int DbfFile::loadT(FieldDescr* F, void* record)
 	return 0; // result;
 }
 
-void DbfFile::saveB(FieldDescr* field_d, bool b, void* record)
+void DbfFile::saveB(FieldDescrBase* field_d, bool b, void* record)
 {
 	char* pB = (char*)record + field_d->Displ;
 	if ((field_d->field_type == FieldType::BOOL) && ((field_d->Flg & f_Stored) != 0)) {
@@ -153,7 +153,7 @@ void DbfFile::saveB(FieldDescr* field_d, bool b, void* record)
 	}
 }
 
-void DbfFile::saveR(FieldDescr* field_d, double r, void* record)
+void DbfFile::saveR(FieldDescrBase* field_d, double r, void* record)
 {
 	BYTE* pRec = (BYTE*)record + field_d->Displ;
 
@@ -179,7 +179,7 @@ void DbfFile::saveR(FieldDescr* field_d, double r, void* record)
 	}
 }
 
-void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record)
+void DbfFile::saveS(FileD* parent, FieldDescrBase* field_d, std::string s, void* record)
 {
 	const BYTE LeftJust = 1;
 	BYTE* pRec = (BYTE*)record + field_d->Displ;
@@ -246,7 +246,7 @@ void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* rec
 }
 
 
-int DbfFile::saveT(FieldDescr* field_d, int pos, void* record)
+int DbfFile::saveT(FieldDescrBase* field_d, int pos, void* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	int* LP = (int*)source;
@@ -267,7 +267,7 @@ int DbfFile::saveT(FieldDescr* field_d, int pos, void* record)
 	}
 }
 
-void DbfFile::DelTFld(FieldDescr* field_d, void* record)
+void DbfFile::DelTFld(FieldDescrBase* field_d, void* record)
 {
 	int pos = loadT(field_d, record);
 	if (pos == 0) return;
@@ -284,14 +284,14 @@ void DbfFile::DelTFld(FieldDescr* field_d, void* record)
 
 void DbfFile::DelTFlds(void* record)
 {
-	for (FieldDescr* field : _parent->FldD) {
+	for (FieldDescrBase* field : _parent->FldD) {
 		if (field->field_type == FieldType::TEXT && field->isStored()) {
 			DelTFld(field, record);
 		}
 	}
 }
 
-void DbfFile::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
+void DbfFile::DelDifTFld(FieldDescrBase* field_d, void* record, void* comp_record)
 {
 	const int n1 = loadT(field_d, comp_record);
 	const int n2 = loadT(field_d, record);
@@ -352,7 +352,7 @@ void DbfFile::WriteHeader()
 
 	DBaseHeader* dbf_header = new DBaseHeader();
 
-	for (FieldDescr* F : _parent->FldD) {
+	for (FieldDescrBase* F : _parent->FldD) {
 		if (F->isStored()) {
 			DBaseField* actual = new DBaseField();
 			dbf_header->flds.push_back(actual);
@@ -477,7 +477,7 @@ void DbfFile::CompileRecLen()
 	WORD l = 1;
 	WORD n = 0;
 
-	for (FieldDescr* F : _parent->FldD) {
+	for (FieldDescrBase* F : _parent->FldD) {
 		switch (F->field_type) {
 		case FieldType::FIXED: {
 			F->NBytes = F->L - 1;
@@ -657,7 +657,7 @@ std::string DbfFile::SetTempCExt(char typ, bool isNet) const
 	return CPath;
 }
 
-double DbfFile::DBF_RforD(FieldDescr* field_d, uint8_t* source)
+double DbfFile::DBF_RforD(FieldDescrBase* field_d, uint8_t* source)
 {
 	char* ptr = (char*)source;
 	short err;

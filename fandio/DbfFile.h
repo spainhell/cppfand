@@ -3,7 +3,7 @@
 
 #include "DataFileBase.h"
 #include "DbfTFile.h"
-#include "../Core/FieldDescr.h"
+#include "../Core/FieldDescrBase.h"
 
 class FileD;
 
@@ -34,19 +34,19 @@ public:
 	void DecNRecs(int n);
 	void PutRec(void* record, int& i_rec);
 
-	bool loadB(FieldDescr* field_d, void* record);
-	double loadR(FieldDescr* field_d, void* record);
-	std::string loadS(FieldDescr* field_d, void* record);
-	int loadT(FieldDescr* F, void* record);
+	bool loadB(FieldDescrBase* field_d, void* record);
+	double loadR(FieldDescrBase* field_d, void* record);
+	std::string loadS(FieldDescrBase* field_d, void* record);
+	int loadT(FieldDescrBase* F, void* record);
 
-	void saveB(FieldDescr* field_d, bool b, void* record);
-	void saveR(FieldDescr* field_d, double r, void* record);
-	void saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record);
-	int saveT(FieldDescr* field_d, int pos, void* record);
+	void saveB(FieldDescrBase* field_d, bool b, void* record);
+	void saveR(FieldDescrBase* field_d, double r, void* record);
+	void saveS(FileD* parent, FieldDescrBase* field_d, std::string s, void* record);
+	int saveT(FieldDescrBase* field_d, int pos, void* record);
 
-	void DelTFld(FieldDescr* field_d, void* record);
+	void DelTFld(FieldDescrBase* field_d, void* record);
 	void DelTFlds(void* record);
-	void DelDifTFld(FieldDescr* field_d, void* record, void* comp_record);
+	void DelDifTFld(FieldDescrBase* field_d, void* record, void* comp_record);
 
 	uint16_t RdPrefix();
 	void WrPrefix();
@@ -80,6 +80,6 @@ public:
 
 private:
 	FileD* _parent;
-	double DBF_RforD(FieldDescr* field_d, uint8_t* source);
+	double DBF_RforD(FieldDescrBase* field_d, uint8_t* source);
 	std::string _extToT(const std::string& input_path);
 };

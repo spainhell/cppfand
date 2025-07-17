@@ -20,7 +20,7 @@ const int ModeLock = 0x40000000;  // MB160
 // const int RecLock = 0x0B000000;  /* base for record locking */
 const int RecLock = 0x41000000;   // MB160
 
-bool TryLockH(HANDLE Handle, int Pos, WORD Len)
+bool TryLockH(HANDLE Handle, int Pos, uint16_t Len)
 {
 	OVERLAPPED sOverlapped;
 	sOverlapped.Offset = Pos;
@@ -40,7 +40,7 @@ bool TryLockH(HANDLE Handle, int Pos, WORD Len)
 	return true;
 }
 
-bool UnLockH(HANDLE Handle, int Pos, WORD Len)
+bool UnLockH(HANDLE Handle, int Pos, uint16_t Len)
 {
 	OVERLAPPED sOverlapped;
 	sOverlapped.Offset = Pos;
@@ -60,7 +60,7 @@ bool UnLockH(HANDLE Handle, int Pos, WORD Len)
 	return true;
 }
 
-void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len, uint16_t lan_node)
+void ModeLockBnds(LockMode Mode, int& Pos, uint16_t& Len, uint16_t lan_node)
 {
 	__int32 n = 0;
 	switch (Mode) {       /* hi=how much BYTEs, low= first BYTE */
@@ -78,9 +78,9 @@ void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len, uint16_t lan_node)
 	Len = n >> 16;
 }
 
-bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, WORD Kind, bool RdPref, uint16_t lan_node)
+bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, uint16_t Kind, bool RdPref, uint16_t lan_node)
 {
-	int oldpos; WORD oldlen, d;
+	int oldpos; uint16_t oldlen, d;
 	bool result = false;
 	if (!fileD->FF->IsShared()) {         /*neu!!*/
 		result = true;
@@ -103,7 +103,7 @@ bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, WORD Kind, bool
 		}
 	}
 	int w = 0;
-	WORD count = 0;
+	uint16_t count = 0;
 label1:
 	if (Mode != NullMode)
 		if (!TryLockH(h, TransLock, 1)) {
@@ -137,7 +137,7 @@ label1:
 		UnLockH(h, oldpos, oldlen);
 	}
 	if (Mode != NullMode) {
-		WORD len;
+		uint16_t len;
 		__int32 pos;
 		ModeLockBnds(Mode, pos, len, lan_node);
 		if (!TryLockH(h, pos, len)) {
@@ -164,7 +164,7 @@ label1:
 }
 
 #else
-bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
+bool ChangeLMode(FileD* fileD, LockMode Mode, uint16_t Kind, bool RdPref)
 {
 	fileD->LMode = Mode;
 	return true;
@@ -180,7 +180,7 @@ void OldLMode(FileD* fileD, std::string& path, LockMode Mode, uint16_t lan_node)
 	if (Mode != fileD->FF->LMode) ChangeLMode(fileD, path, Mode, 0, true, lan_node);
 }
 
-bool TryLMode(FileD* fileD, std::string& path, LockMode Mode, LockMode& OldMode, WORD Kind, uint16_t lan_node)
+bool TryLMode(FileD* fileD, std::string& path, LockMode Mode, LockMode& OldMode, uint16_t Kind, uint16_t lan_node)
 {
 	bool result = true;
 #ifdef FandSQL

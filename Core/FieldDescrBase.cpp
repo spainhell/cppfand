@@ -1,0 +1,57 @@
+#include "FieldDescrBase.h"
+
+
+FieldDescrBase::FieldDescrBase()
+{
+}
+
+FieldDescrBase::FieldDescrBase(const FieldDescrBase& orig)
+{
+	//if (orig.pChain != nullptr) pChain = new FieldDescr(*(FieldDescr*)orig.pChain);
+	field_type = orig.field_type;
+	field_flag = orig.field_flag;
+	frml_type = orig.frml_type;
+	L = orig.L; M = orig.M; NBytes = orig.NBytes; Flg = orig.Flg;
+	Displ = orig.Displ;
+	Name = orig.Name;
+}
+
+bool FieldDescrBase::isStored() const
+{
+	return (Flg & f_Stored) != 0;
+}
+
+bool FieldDescrBase::isEncrypted() const
+{
+	return (Flg & f_Encryp) != 0;
+}
+
+FieldType FieldDescrBase::GetFieldType(char type)
+{
+	switch (type) {
+	case 'F': return FieldType::FIXED;
+	case 'A': return FieldType::ALFANUM;
+	case 'N': return FieldType::NUMERIC;
+	case 'D': return FieldType::DATE;
+	case 'T': return FieldType::TEXT;
+	case 'B': return FieldType::BOOL;
+	case 'R': return FieldType::REAL;
+	default: {
+		return FieldType::UNKNOWN;
+	}
+	}
+}
+
+char FieldDescrBase::GetFieldTypeChar(FieldType type)
+{
+	switch (type) {
+	case FieldType::FIXED: return 'F';
+	case FieldType::ALFANUM: return 'A';
+	case FieldType::NUMERIC: return 'N';
+	case FieldType::DATE: return 'D';
+	case FieldType::TEXT: return 'T';
+	case FieldType::BOOL: return 'B';
+	case FieldType::REAL: return 'R';
+	default: return '?';
+	}
+}
