@@ -4062,6 +4062,7 @@ bool DataEditor::EditItemProc(bool del, bool ed, WORD& Brk)
 
 		SetWasUpdated(file_d_, record_);
 
+
 		switch (F->frml_type) {
 		case 'B': file_d_->saveB(F, toupper(text[0]) == AbbrYes, record_); break;
 		case 'S': file_d_->saveS(F, text, record_); break;
