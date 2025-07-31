@@ -1179,15 +1179,30 @@ void TextEditor::UpdScreen()
 void TextEditor::Background()
 {
 	UpdStatLine(TextLineNr, positionOnActualLine);
-	// TODO: musi to tady byt?
 
-	if (positionOnActualLine > LineS) {
-		if (positionOnActualLine > BPos + LineS) {
-			BPos = positionOnActualLine - LineS;
+	if (HelpScroll) {
+		// rezim prohlizeni sestav
+		WORD p = positionOnActualLine;
+
+		if (Column(p) - columnOffset > LineS) {
+			columnOffset = Column(p) - LineS;
+			BPos = Position(columnOffset);
+		}
+
+		if (Column(positionOnActualLine) <= columnOffset) {
+			columnOffset = Column(positionOnActualLine) - 1;
+			BPos = Position(columnOffset);
 		}
 	}
-	if (positionOnActualLine <= BPos) {
-		BPos = pred(positionOnActualLine);
+	else {
+		if (positionOnActualLine > LineS) {
+			if (positionOnActualLine > BPos + LineS) {
+				BPos = positionOnActualLine - LineS;
+			}
+		}
+		if (positionOnActualLine <= BPos) {
+			BPos = pred(positionOnActualLine);
+		}
 	}
 
 	if (TextLineNr < ScreenFirstLineNr) {
