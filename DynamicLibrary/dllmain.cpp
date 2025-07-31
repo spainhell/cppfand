@@ -66,6 +66,10 @@ std::string ConvertUnicodetoCP852(char* utf8)
 
 extern "C" int FAND_API OpenRDB(char* rdbName)
 {
+	if (rdbFile != nullptr) {
+		return -3; // already opened
+	}
+
 	std::string p = rdbName;
 	std::string n;
 
@@ -160,10 +164,29 @@ extern "C" int FAND_API SaveChapter(char* chapterType, char* chapterName, char* 
 	return rdbFile->FF->NRecs;
 }
 
+extern "C" int FAND_API UpdateChapter(int32_t recNr, char* chapterType, char* chapterName, char* chapterCode)
+{
+	rdbFile->ClearRecSpace(data);
+
+	std::string chapter_type = ConvertUnicodetoCP852(chapterType);
+	rdbFile->saveS(rdbFile->FldD[3], chapter_type, data);
+
+	std::string chapter_name = ConvertUnicodetoCP852(chapterName);
+	rdbFile->saveS(rdbFile->FldD[4], chapter_name, data);
+
+	std::string chapter_code = ConvertUnicodetoCP852(chapterCode);
+	rdbFile->saveS(rdbFile->FldD[5], chapter_code, data);
+
+	rdbFile->WriteRec(recNr, data);
+
+	return rdbFile->FF->NRecs;
+}
+
 extern "C" int FAND_API CloseRdb()
 {
 	int result = rdbFile->FF->NRecs;
 	rdbFile->FF->SaveFile();
 	rdbFile->FF->CloseFile();
+	rdb = nullptr;
 	return result;
 }
