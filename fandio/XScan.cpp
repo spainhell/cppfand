@@ -2,8 +2,7 @@
 #include "XWKey.h"
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/KeyFldD.h"
-#include "../Common/LinkD.h"
+#include "KeyFldD.h"
 #include "../Core/runfrml.h"
 
 

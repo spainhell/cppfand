@@ -7,7 +7,7 @@
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/KeyFldD.h"
+#include "../fandio/KeyFldD.h"
 #include "../Core/runfrml.h"
 #include "../Core/wwmenu.h"
 #include "../Core/wwmix.h"

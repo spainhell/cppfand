@@ -6,7 +6,7 @@
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
 #include "GlobalVariables.h"
-#include "KeyFldD.h"
+#include "../fandio/KeyFldD.h"
 #include "../Common/LinkD.h"
 #include "obaseww.h"
 #include "rdfildcl.h"

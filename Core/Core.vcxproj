@@ -67,7 +67,6 @@
     <ClCompile Include="OldDrivers.cpp" />
     <ClCompile Include="GlobalVariables.cpp" />
     <ClCompile Include="Graph.cpp" />
-    <ClCompile Include="KeyFldD.cpp" />
     <ClCompile Include="legacy.cpp" />
     <ClCompile Include="models\FrmlElem.cpp" />
     <ClCompile Include="models\Instr.cpp" />
@@ -108,7 +107,6 @@
     <ClInclude Include="OldDrivers.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Graph.h" />
-    <ClInclude Include="KeyFldD.h" />
     <ClInclude Include="legacy.h" />
     <ClInclude Include="models\FrmlElem.h" />
     <ClInclude Include="models\Instr.h" />

@@ -24,7 +24,7 @@
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
 #include "GlobalVariables.h"
-#include "KeyFldD.h"
+#include "../fandio/KeyFldD.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"

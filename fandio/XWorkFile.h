@@ -2,7 +2,6 @@
 #include "XKey.h"
 #include "XScan.h"
 #include "XXPage.h"
-#include "../Core/KeyFldD.h"
 
 class XWorkFile
 {

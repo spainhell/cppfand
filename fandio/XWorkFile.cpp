@@ -2,6 +2,7 @@
 
 #include "../fandio/FandXFile.h"
 #include "../Core/access.h"
+#include "KeyFldD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"

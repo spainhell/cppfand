@@ -51,9 +51,6 @@
     <ClCompile Include="Graph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyFldD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="legacy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -168,9 +165,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Graph.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyFldD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="legacy.h">

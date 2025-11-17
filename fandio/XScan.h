@@ -1,6 +1,6 @@
 #pragma once
 #include "XWKey.h"
-#include "../Core/access-structs.h"
+#include "../Common/LinkD.h"
 #include "../Common/LocVar.h"
 
 struct KeyInD;

@@ -171,6 +171,7 @@
     <ClInclude Include="FandXFile.h" />
     <ClInclude Include="FieldDescr.h" />
     <ClInclude Include="FileEnums.h" />
+    <ClInclude Include="KeyFldD.h" />
     <ClInclude Include="locks.h" />
     <ClInclude Include="realFix.h" />
     <ClInclude Include="sort.h" />
@@ -200,6 +201,7 @@
     <ClCompile Include="FandTFilePrefix.cpp" />
     <ClCompile Include="FandXFile.cpp" />
     <ClCompile Include="FieldDescr.cpp" />
+    <ClCompile Include="KeyFldD.cpp" />
     <ClCompile Include="locks.cpp" />
     <ClCompile Include="realFix.cpp" />
     <ClCompile Include="sort.cpp" />

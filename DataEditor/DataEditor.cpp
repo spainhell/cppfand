@@ -11,7 +11,7 @@
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/KeyFldD.h"
+#include "../fandio/KeyFldD.h"
 #include "../Common/LinkD.h"
 #include "../Core/oaccess.h"
 #include "../Core/obase.h"

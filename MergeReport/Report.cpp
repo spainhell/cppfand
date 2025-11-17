@@ -11,7 +11,7 @@
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/LogicControl.h"
-#include "../Core/KeyFldD.h"
+#include "../fandio/KeyFldD.h"
 #include "../Core/oaccess.h"
 #include "../Core/obase.h"
 #include "../Core/obaseww.h"

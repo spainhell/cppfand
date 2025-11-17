@@ -8,7 +8,7 @@
 #include "GlobalVariables.h"
 #include "../Common/LinkD.h"
 #include "LogicControl.h"
-#include "KeyFldD.h"
+#include "../fandio/KeyFldD.h"
 #include "rdproc.h"
 #include "runfrml.h"
 

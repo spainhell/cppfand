@@ -4,7 +4,7 @@
 #include "../Core/Compiler.h"
 #include "../fandio/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/KeyFldD.h"
+#include "../fandio/KeyFldD.h"
 #include "../Core/RunFrml.h"
 
 void MergeReportBase::SetInput(std::string& input)
