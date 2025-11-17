@@ -1,7 +1,7 @@
 #include "XXPage.h"
 
 #include "XWorkFile.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 

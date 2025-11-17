@@ -2,7 +2,7 @@
 
 #include "XKey.h"
 #include "XPage.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
 #include "../Core/obaseww.h"

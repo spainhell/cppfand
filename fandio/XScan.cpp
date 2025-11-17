@@ -1,9 +1,9 @@
 #include "XScan.h"
 #include "XWKey.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
-#include "../Core/LinkD.h"
+#include "../Common/LinkD.h"
 #include "../Core/runfrml.h"
 
 

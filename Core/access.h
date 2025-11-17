@@ -2,8 +2,8 @@
 #include "access-structs.h"
 #include "base.h"
 
-#include "FileD.h"
-#include "LocVar.h"
+#include "../Common/FileD.h"
+#include "../Common/LocVar.h"
 #include "Rdb.h"
 #include "switches.h"
 #ifdef FandSQL

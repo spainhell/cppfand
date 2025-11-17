@@ -4,7 +4,7 @@
 
 #include "../Core/Compiler.h"
 #include "../Core/Coding.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"

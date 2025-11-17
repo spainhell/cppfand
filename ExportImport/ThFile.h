@@ -3,7 +3,7 @@
 #include <windows.h>
 
 #include "TcFile.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../Common/LongStr.h"
 
 enum class InOutMode { _inp, _outp, _append };

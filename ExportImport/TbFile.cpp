@@ -1,6 +1,6 @@
 #include "TbFile.h"
 #include "../Core/Compiler.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/RunMessage.h"

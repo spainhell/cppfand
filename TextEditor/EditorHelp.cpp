@@ -8,7 +8,7 @@
 #include "../Drivers/constants.h"
 #include "../Core/base.h"
 #include "../Core/Compiler.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 #include "../Core/wwmenu.h"

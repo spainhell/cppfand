@@ -16,11 +16,11 @@
 #include "../MergeReport/InpD.h"
 
 #include "../fandio/FieldDescr.h"
-#include "FileD.h"
+#include "../Common/FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
 #include "legacy.h"
-#include "LinkD.h"
+#include "../Common/LinkD.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "rdproc.h"

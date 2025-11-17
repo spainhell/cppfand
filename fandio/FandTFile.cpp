@@ -4,7 +4,7 @@
 
 #include "FandTFilePrefix.h"
 #include "../Core/Coding.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 #include "../pascal/random.h"

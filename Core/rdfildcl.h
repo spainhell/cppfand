@@ -5,7 +5,7 @@
 #include "../Common/pstring.h"
 #include "rdrun.h"
 #include "EditOpt.h"
-#include "FileD.h"
+#include "../Common/FileD.h"
 
 extern bool HasTT;
 FieldDescr* RdFieldDescr(std::string name, bool Stored); // r25

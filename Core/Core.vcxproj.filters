@@ -42,9 +42,6 @@
     <ClCompile Include="EditOpt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OldDrivers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -126,9 +123,6 @@
     <ClCompile Include="Implicit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LinkD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="datafiles.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -167,9 +161,6 @@
     <ClInclude Include="EditOpt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OldDrivers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -183,9 +174,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="legacy.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LocVar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="models\FrmlElem.h">
@@ -261,9 +249,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Implicit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LinkD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="datafiles.h">

@@ -6,7 +6,7 @@
 #include "ThFile.h"
 #include "TzFile.h"
 #include "../Core/Coding.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../fandio/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"

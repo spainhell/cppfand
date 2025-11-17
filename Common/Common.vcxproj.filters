@@ -39,6 +39,15 @@
     <ClInclude Include="realDouble.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocVar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="textfunc.cpp">
@@ -57,6 +66,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="realDouble.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

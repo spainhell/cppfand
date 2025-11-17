@@ -1,6 +1,6 @@
 #include "ReadProlog.h"
 #include "../Core/Compiler.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 
 ReadProlog::ReadProlog()
 {

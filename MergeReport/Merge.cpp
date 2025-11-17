@@ -4,7 +4,7 @@
 #include "../Common/compare.h"
 #include "../Core/Compiler.h"
 #include "../fandio/FieldDescr.h"
-#include "../Core/FileD.h"
+#include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/LogicControl.h"
 #include "../Core/KeyFldD.h"

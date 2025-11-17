@@ -22,6 +22,9 @@
     <ClInclude Include="codePages.h" />
     <ClInclude Include="compare.h" />
     <ClInclude Include="exprcmp.h" />
+    <ClInclude Include="FileD.h" />
+    <ClInclude Include="LinkD.h" />
+    <ClInclude Include="LocVar.h" />
     <ClInclude Include="LongStr.h" />
     <ClInclude Include="pstring.h" />
     <ClInclude Include="realDouble.h" />
@@ -32,6 +35,8 @@
     <ClCompile Include="codePages.cpp" />
     <ClCompile Include="compare.cpp" />
     <ClCompile Include="exprcmp.cpp" />
+    <ClCompile Include="FileD.cpp" />
+    <ClCompile Include="LinkD.cpp" />
     <ClCompile Include="pstring.cpp" />
     <ClCompile Include="realDouble.cpp" />
     <ClCompile Include="textfunc.cpp" />
