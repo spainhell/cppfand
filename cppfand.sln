@@ -1,15 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32407.343
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11205.157 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "1_Application", "Application\Application.vcxproj", "{8360D42B-FEC4-4A1A-A23A-AB63304A90DC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
-		{1DCA247B-35EC-434D-9E3B-66C507E4AC95} = {1DCA247B-35EC-434D-9E3B-66C507E4AC95}
 	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pascal", "pascal\pascal.vcxproj", "{1DCA247B-35EC-434D-9E3B-66C507E4AC95}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fandio", "fandio\fandio.vcxproj", "{A75DAAB5-58E5-4886-B1F0-6D737AFBA4AB}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -67,14 +64,6 @@ Global
 		{8360D42B-FEC4-4A1A-A23A-AB63304A90DC}.Release|x64.Build.0 = Release|x64
 		{8360D42B-FEC4-4A1A-A23A-AB63304A90DC}.Release|x86.ActiveCfg = Release|Win32
 		{8360D42B-FEC4-4A1A-A23A-AB63304A90DC}.Release|x86.Build.0 = Release|Win32
-		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Debug|x64.ActiveCfg = Debug|x64
-		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Debug|x64.Build.0 = Debug|x64
-		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Debug|x86.ActiveCfg = Debug|Win32
-		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Debug|x86.Build.0 = Debug|Win32
-		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x64.ActiveCfg = Release|x64
-		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x64.Build.0 = Release|x64
-		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x86.ActiveCfg = Release|Win32
-		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x86.Build.0 = Release|Win32
 		{A75DAAB5-58E5-4886-B1F0-6D737AFBA4AB}.Debug|x64.ActiveCfg = Debug|x64
 		{A75DAAB5-58E5-4886-B1F0-6D737AFBA4AB}.Debug|x64.Build.0 = Debug|x64
 		{A75DAAB5-58E5-4886-B1F0-6D737AFBA4AB}.Debug|x86.ActiveCfg = Debug|Win32

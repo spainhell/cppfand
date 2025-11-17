@@ -1,6 +1,5 @@
 #include "access.h"
 
-#include "../pascal/asm.h"
 #include "Compiler.h"
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"

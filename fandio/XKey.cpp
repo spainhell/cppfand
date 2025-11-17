@@ -8,7 +8,6 @@
 #include "../Core/obaseww.h"
 #include "../fandio/FandXFile.h"
 #include "../Logging/Logging.h"
-#include "../pascal/asm.h"
 
 
 XKey::XKey(FileD* parent)
@@ -127,6 +126,56 @@ bool XKey::Search(FileD* file_d, std::string const X, bool AfterEqu, int& RecNr)
 bool XKey::SearchInterval(FileD* file_d, XString& XX, bool AfterEqu, int& RecNr)
 {
 	return Search(file_d, XX, AfterEqu, RecNr) || IntervalTest && (RecNr <= parent_->FF->NRecs);
+}
+
+uint8_t XKey::XKeySearch(unsigned char* xitem, std::string xstring, unsigned short& iItem, size_t& iItemIndex,
+	unsigned short nItems, unsigned short o, bool AfterEqu)
+{
+	if (!(o == 3 || o == 7)) throw std::exception("Exception: XKeySearch() 'o' not 3 or 7 !!!");
+	iItem = 1;
+
+	unsigned char actItem[256]{ 0 };
+	unsigned char strLen = (unsigned char)xstring.length();
+	size_t lastEqualIndex = 0; // pocet znaku, ktere jsou od zacatku stejne, pokud je pri pristim pruchodu mensi, vracime _lt
+
+	size_t inputIndex = 0;
+	while (iItem <= nItems) {
+		iItemIndex = inputIndex;
+		// cislo zaznamu tady nepotrebujeme
+		inputIndex += o; // 'o' je RecNr (RecordsCount a DownPage) - to tady nepotrebujeme
+		unsigned char from = xitem[inputIndex++];  // zmena predchoziho od pozice FROM
+		unsigned char ixLen = xitem[inputIndex++]; // delka zaznamu v indexu
+		memcpy(&actItem[from], &xitem[inputIndex], ixLen);
+		size_t prevLastEqualIndex = lastEqualIndex;
+		if (ixLen + from == strLen) {
+			// delka indexu je stejna jako delka hledaneho retezce
+			const int cmp = compare_xkeys(actItem, (const unsigned char*)xstring.data(), strLen, lastEqualIndex);
+			if (cmp == 1 && !AfterEqu) {
+				return 1; // _equ
+			}
+			if (lastEqualIndex < prevLastEqualIndex || cmp == 4) {
+				// jsme na polozce, ktera je za hledanym vyrazem - _gt
+				// nebo jsme na polozce, ktera ma horsi shodu nez predchozi
+				return 4; // _gt
+			}
+		}
+		else {
+			// delky retezcu nejsou stejne, ale musime je porovnat kvuli zjisteni < nebo >
+			// porovname jen na delku kratsiho retezce
+			auto cmp = compare_xkeys(actItem, (const unsigned char*)xstring.data(), min(ixLen + from, (int)strLen), lastEqualIndex);
+			if (cmp == 1) {
+				// pokud jsou si rovny, bude zalezet, ktery byl delsi
+				if (ixLen + from > (int)strLen) return 4; // _gt - hledany je delsi
+			}
+			else if (cmp == 4) {
+				// uz jsme za
+				return 4; // _gt
+			}
+		}
+		inputIndex += ixLen;
+		iItem++;
+	}
+	return 4; // _gt; NENI DALSI POLOZKA
 }
 
 int XKey::PathToNr(FileD* file_d)
@@ -590,4 +639,17 @@ void XKey::CalcIndexLen()
 			IndexLen += key_field->FldD->NBytes;
 		}
 	}
+}
+
+int XKey::compare_xkeys(const unsigned char* a, const unsigned char* b, size_t len, size_t& lastEqualIndex)
+{
+	lastEqualIndex = 0;
+	for (size_t i = 0; i < len; i++) {
+		if (a[i] == b[i]) { lastEqualIndex++; }
+		else {
+			if (a[i] < b[i]) return 2; // _lt
+			else return 4; // _gt
+		}
+	}
+	return 1; // _equ
 }

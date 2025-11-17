@@ -7,7 +7,7 @@
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
-#include "../pascal/random.h"
+#include "../Common/random.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 

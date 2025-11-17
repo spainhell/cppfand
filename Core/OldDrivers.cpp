@@ -8,7 +8,7 @@
 #include <handleapi.h>
 #include <iostream>
 #include <WinBase.h>
-#include "../pascal/random.h"
+#include "../Common/random.h"
 #include "base.h"
 #include "GlobalVariables.h"
 #include "legacy.h"

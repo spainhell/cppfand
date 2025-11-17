@@ -11,7 +11,7 @@
 #include "../fandio/directory.h"
 #include "../fandio/FandTFile.h"
 #include "../fandio/XWKey.h"
-#include "../pascal/random.h"
+#include "../Common/random.h"
 #include "../Drivers/constants.h"
 #include "../MergeReport/InpD.h"
 

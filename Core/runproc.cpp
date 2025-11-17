@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "Coding.h"
-#include "../pascal/random.h"
+#include "../Common/random.h"
 #include "Compiler.h"
 #include "DateTime.h"
 #include "OldDrivers.h"

@@ -27,6 +27,7 @@
     <ClInclude Include="LocVar.h" />
     <ClInclude Include="LongStr.h" />
     <ClInclude Include="pstring.h" />
+    <ClInclude Include="random.h" />
     <ClInclude Include="realDouble.h" />
     <ClInclude Include="textfunc.h" />
     <ClInclude Include="typeDef.h" />
@@ -38,6 +39,7 @@
     <ClCompile Include="FileD.cpp" />
     <ClCompile Include="LinkD.cpp" />
     <ClCompile Include="pstring.cpp" />
+    <ClCompile Include="random.cpp" />
     <ClCompile Include="realDouble.cpp" />
     <ClCompile Include="textfunc.cpp" />
   </ItemGroup>

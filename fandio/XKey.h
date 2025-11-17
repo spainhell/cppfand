@@ -27,6 +27,7 @@ public:
 	bool Search(FileD* file_d, XString& XX, bool AfterEqu, int& RecNr);
 	bool Search(FileD* file_d, std::string X, bool AfterEqu, int& RecNr);
 	bool SearchInterval(FileD* file_d, XString& XX, bool AfterEqu, int& RecNr);
+	uint8_t XKeySearch(unsigned char* xitem, std::string xstring, unsigned short& iItem, size_t& iItemIndex, unsigned short nItems, unsigned short o, bool AfterEqu);
 	int PathToNr(FileD* file_d);
 	void NrToPath(FileD* file_d, int I);
 	int PathToRecNr(FileD* file_d);
@@ -50,5 +51,6 @@ protected:
 	void CalcIndexLen();
 
 private:
+	int compare_xkeys(const unsigned char* a, const unsigned char* b, size_t len, size_t& lastEqualIndex);
 	FileD* parent_;
 };
