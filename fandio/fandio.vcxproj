@@ -172,6 +172,7 @@
     <ClInclude Include="FieldDescr.h" />
     <ClInclude Include="FileEnums.h" />
     <ClInclude Include="locks.h" />
+    <ClInclude Include="realFix.h" />
     <ClInclude Include="sort.h" />
     <ClInclude Include="TextFile.h" />
     <ClInclude Include="WPage.h" />
@@ -200,6 +201,7 @@
     <ClCompile Include="FandXFile.cpp" />
     <ClCompile Include="FieldDescr.cpp" />
     <ClCompile Include="locks.cpp" />
+    <ClCompile Include="realFix.cpp" />
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="TextFile.cpp" />
     <ClCompile Include="WPage.cpp" />

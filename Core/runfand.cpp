@@ -6,7 +6,7 @@
 #include "legacy.h"
 #include "../Common/pstring.h"
 #include "../Common/compare.h"
-#include "../pascal/real48.h"
+#include "../Common/realDouble.h"
 #include "OldDrivers.h"
 #include "access.h"
 #include "CfgFile.h"

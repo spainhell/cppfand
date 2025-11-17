@@ -24,6 +24,7 @@
     <ClInclude Include="exprcmp.h" />
     <ClInclude Include="LongStr.h" />
     <ClInclude Include="pstring.h" />
+    <ClInclude Include="realDouble.h" />
     <ClInclude Include="textfunc.h" />
     <ClInclude Include="typeDef.h" />
   </ItemGroup>
@@ -32,6 +33,7 @@
     <ClCompile Include="compare.cpp" />
     <ClCompile Include="exprcmp.cpp" />
     <ClCompile Include="pstring.cpp" />
+    <ClCompile Include="realDouble.cpp" />
     <ClCompile Include="textfunc.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

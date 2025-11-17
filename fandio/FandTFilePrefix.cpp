@@ -2,7 +2,7 @@
 
 #include <cstring>
 #include <exception>
-#include "../pascal/real48.h"
+#include "../Common/realDouble.h"
 
 FandTFilePrefix::FandTFilePrefix()
 = default;

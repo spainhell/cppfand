@@ -114,6 +114,9 @@
     <ClInclude Include="FieldDescr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="realFix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Fand0File.cpp">
@@ -192,6 +195,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FieldDescr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="realFix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

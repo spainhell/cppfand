@@ -1,10 +1,12 @@
 #include "XString.h"
+
+#include "realFix.h"
 #include "../Core/access.h"
 #include "../fandio/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
 #include "../Core/runfrml.h"
-#include "../pascal/real48.h"
+#include "../Common/realDouble.h"
 
 void XString::Clear()
 {

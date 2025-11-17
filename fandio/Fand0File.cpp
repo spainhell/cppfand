@@ -9,9 +9,10 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/Coding.h"
 #include "../Core/oaccess.h"
-#include "../pascal/real48.h"
+#include "../Common/realDouble.h"
 #include "../Core/obaseww.h"
 // #include "../Core/RunMessage.h"
+#include "realFix.h"
 #include "../Core/DateTime.h"
 
 // ****************************** CONSTANTS **********************************
