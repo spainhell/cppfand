@@ -24,8 +24,8 @@ class TWindow
 {
 public:
 	TWindow();
-	//TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
-	void InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, const std::string& top, const std::string& bottom, bool SaveLL);
+	//TWindow(uint8_t C1, uint8_t R1, uint8_t C2, uint8_t R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
+	void InitTWindow(uint8_t C1, uint8_t R1, uint8_t C2, uint8_t R2, WORD Attr, const std::string& top, const std::string& bottom, bool SaveLL);
 	virtual ~TWindow();
 	TPoint Orig;
 	TPoint Size;
@@ -33,7 +33,7 @@ public:
 	int SavedW = 0, SavedLLW = 0;
 	WORD State = 0;
 	bool WasCrsEnabled = false;
-	void Assign(BYTE C1, BYTE R1, BYTE C2, BYTE R2);
+	void Assign(uint8_t C1, uint8_t R1, uint8_t C2, uint8_t R2);
 	WORD Col1();
 	WORD Row1();
 	WORD Col2();
@@ -53,7 +53,7 @@ public:
 	TMenu* parent = nullptr;
 	WORD iTxt = 0, nTxt = 0, mx = 0, my = 0;
 	RdbD* HlpRdb = nullptr;
-	BYTE Palette[4]; // norm, curr, char, disabled
+	uint8_t Palette[4]; // norm, curr, char, disabled
 	bool IsBoxS = false;
 	void ClearHlp();
 	virtual bool Enabled(WORD I) = 0;
@@ -120,7 +120,7 @@ public:
 	TMenuBar(WORD C1, WORD R1, WORD Cols);
 	void InitTMenuBar(WORD C1, WORD R1, WORD Cols);
 	WORD nBlks = 0;
-	BYTE DownI[30]{ '\0' };
+	uint8_t DownI[30]{ '\0' };
 	WORD Exec();
 	virtual TMenuBox* GetDownMenu();
 	void GetItemRect(WORD I, TRect* R) override;

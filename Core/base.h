@@ -12,8 +12,8 @@ class FandTFile;
 class FandXFile;
 class Fand0File;
 
-struct WRect { BYTE C1 = 0, R1 = 0, C2 = 0, R2 = 0; }; // r34
-struct WordRec { BYTE Lo = 0, Hi = 0; };
+struct WRect { uint8_t C1 = 0, R1 = 0, C2 = 0, R2 = 0; }; // r34
+struct WordRec { uint8_t Lo = 0, Hi = 0; };
 struct LongRec { WORD Lo = 0, Hi = 0; };
 typedef void* PProcedure;
 
@@ -42,7 +42,7 @@ bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozde
 // *** DEBUGGING ***
 void wait();
 #ifndef FandRunV
-pstring HexB(BYTE b);
+pstring HexB(uint8_t b);
 pstring HexW(WORD i);
 pstring HexD(int i);
 pstring HexPtr(void* p);
@@ -91,7 +91,7 @@ extern Fonts fonts;
 std::string PrTab(WORD printerNr, WORD value);
 void SetCurrPrinter(short NewPr);
 
-typedef std::array<BYTE, 4> TPrTimeOut;
+typedef std::array<uint8_t, 4> TPrTimeOut;
 
 void OpenWorkH();
 

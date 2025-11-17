@@ -3,7 +3,7 @@
 #include <string>
 #include <Windows.h>
 
-const BYTE bigCrsSize = 50;
+const uint8_t bigCrsSize = 50;
 
 struct TCrs
 {
@@ -14,8 +14,8 @@ struct TCrs
 	bool Enabled = false;
 	WORD Ticks = 0;
 };
-struct Wind { BYTE X = 0, Y = 0; };
-const BYTE FrameChars[] { 0xDA, 0xC4, 0xBF, 0xC0, 0xC4, 0xD9, 0xB3, 0x20, 0xB3, 0xC9, 0xCD, 0xBB, 0xC8, 0xCD, 0xBC, 0xBA, 0x20, 0xBA, 0xC3, 0xC4, 0xB4 };
+struct Wind { uint8_t X = 0, Y = 0; };
+const uint8_t FrameChars[] { 0xDA, 0xC4, 0xBF, 0xC0, 0xC4, 0xD9, 0xB3, 0x20, 0xB3, 0xC9, 0xCD, 0xBB, 0xC8, 0xCD, 0xBC, 0xBA, 0x20, 0xBA, 0xC3, 0xC4, 0xB4 };
 
 enum ScrPosition { relative = 0, absolute = 1, actual = 2 };
 
@@ -37,22 +37,22 @@ struct storeWindow
 };
 
 struct Colors
-{  // celkem 54x BYTE
-	BYTE userColor[16]{ 0 };
-	BYTE mNorm = 0, mHili = 0, mFirst = 0, mDisabled = 0; // menu
-	BYTE sNorm = 0, sHili = 0, sMask = 0; // select
-	BYTE pNorm = 0, pTxt = 0; // prompt, verify, password
-	BYTE zNorm = 0; // message
-	BYTE lNorm = 0, lFirst = 0, lSwitch = 0; // last line
-	BYTE fNorm = 0; // first line
-	BYTE tNorm = 0, tCtrl = 0, tBlock = 0; // text edit
-	BYTE tUnderline = 0, tItalic = 0, tDWidth = 0, tDStrike = 0, tEmphasized = 0, tCompressed = 0, tElite = 0; // data edit
-	BYTE dNorm = 0, dHili = 0, dSubset = 0, dTxt = 0, dDeleted = 0, dSelect = 0; // -"-
-	BYTE uNorm = 0; // user screen
-	BYTE hNorm = 0, hHili = 0, hMenu = 0, hSpec = 0;
-	BYTE nNorm = 0;
-	BYTE ShadowAttr = 0;
-	BYTE DesktopColor = 0;
+{  // celkem 54x uint8_t
+	uint8_t userColor[16]{ 0 };
+	uint8_t mNorm = 0, mHili = 0, mFirst = 0, mDisabled = 0; // menu
+	uint8_t sNorm = 0, sHili = 0, sMask = 0; // select
+	uint8_t pNorm = 0, pTxt = 0; // prompt, verify, password
+	uint8_t zNorm = 0; // message
+	uint8_t lNorm = 0, lFirst = 0, lSwitch = 0; // last line
+	uint8_t fNorm = 0; // first line
+	uint8_t tNorm = 0, tCtrl = 0, tBlock = 0; // text edit
+	uint8_t tUnderline = 0, tItalic = 0, tDWidth = 0, tDStrike = 0, tEmphasized = 0, tCompressed = 0, tElite = 0; // data edit
+	uint8_t dNorm = 0, dHili = 0, dSubset = 0, dTxt = 0, dDeleted = 0, dSelect = 0; // -"-
+	uint8_t uNorm = 0; // user screen
+	uint8_t hNorm = 0, hHili = 0, hMenu = 0, hSpec = 0;
+	uint8_t nNorm = 0;
+	uint8_t ShadowAttr = 0;
+	uint8_t DesktopColor = 0;
 };
 
 class Screen
@@ -63,23 +63,23 @@ public:
 	void ReInit(short TxtCols, short TxtRows);
 	size_t BufSize();
 
-	void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color);
-	void ScrWrChar(WORD X, WORD Y, char C, BYTE Color);
-	void ScrWrStr(const std::string& s, BYTE Color);
-	void ScrWrStr(WORD X, WORD Y, const std::string& s, BYTE Color) const;
-	void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color);
+	void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, uint8_t Color);
+	void ScrWrChar(WORD X, WORD Y, char C, uint8_t Color);
+	void ScrWrStr(const std::string& s, uint8_t Color);
+	void ScrWrStr(WORD X, WORD Y, const std::string& s, uint8_t Color) const;
+	void ScrWrFrameLn(WORD X, WORD Y, uint8_t Typ, uint8_t Width, uint8_t Color);
 	void ScrWrText(WORD X, WORD Y, const char* S);
 	void ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...);
-	void ScrFormatWrStyledText(WORD X, WORD Y, BYTE Color, char const* const _Format, ...);
+	void ScrFormatWrStyledText(WORD X, WORD Y, uint8_t Color, char const* const _Format, ...);
 	void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L);
 	void ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L);
 	bool ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L);
 	void ScrMove(short X, short Y, short ToX, short ToY, short L);
-	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
-	void WriteChar(short X, short Y, char C, BYTE attr, ScrPosition pos = relative);
-	size_t WriteStyledStringToWindow(const std::string& text, BYTE Attr);
+	void ScrColor(WORD X, WORD Y, WORD L, uint8_t Color);
+	void WriteChar(short X, short Y, char C, uint8_t attr, ScrPosition pos = relative);
+	size_t WriteStyledStringToWindow(const std::string& text, uint8_t Attr);
 	void LF();
-	bool SetStyleAttr(char C, BYTE& a);
+	bool SetStyleAttr(char C, uint8_t& a);
 	TCrs CrsGet();
 	void CrsSet(TCrs S);
 	void CrsShow();
@@ -91,7 +91,7 @@ public:
 	short WhereY();
 	short WhereXabs();
 	short WhereYabs();
-	void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2);
+	void Window(uint8_t X1, uint8_t Y1, uint8_t X2, uint8_t Y2);
 
 	void ScrWr();
 	void CrsDark();

@@ -19,7 +19,7 @@ void* ErrorAddr = nullptr; // adresa chyby
 void (*ExitProc)() { }; // ukončovací procedura
 
 
-void val(pstring s, BYTE& b, WORD& err)
+void val(pstring s, uint8_t& b, WORD& err)
 {
 	size_t sz;
 	b = std::stoul(s.c_str(), &sz, 10);
@@ -312,7 +312,7 @@ void ChDir(std::string cesta)
 	}
 }
 
-void GetDir(BYTE disk, pstring* cesta)
+void GetDir(uint8_t disk, pstring* cesta)
 {
 	char buf[MAX_PATH];
 	if (_getcwd(buf, MAX_PATH) == nullptr)
@@ -322,7 +322,7 @@ void GetDir(BYTE disk, pstring* cesta)
 	*cesta = buf;
 }
 
-std::string GetDir(BYTE disk)
+std::string GetDir(uint8_t disk)
 {
 	char buf[MAX_PATH];
 	if (_getcwd(buf, MAX_PATH) == nullptr)
@@ -396,12 +396,12 @@ void Move(void* zdroj, void* cil, WORD delka)
 	memmove(cil, zdroj, delka);
 }
 
-BYTE Hi(WORD cislo)
+uint8_t Hi(WORD cislo)
 {
 	return cislo >> 8;
 }
 
-BYTE Lo(WORD cislo)
+uint8_t Lo(WORD cislo)
 {
 	return cislo & 0x00FF;
 }
@@ -488,9 +488,9 @@ bool TextFile::ResetTxt()
 	auto HandleError = fopen_s(&Handle, FullPath.c_str(), "r");
 	//fseek(Handle, 0, SEEK_END);
 	//auto pos = ftell(Handle);
-	//buffer = new BYTE[pos];
+	//buffer = new uint8_t[pos];
 	//fseek(Handle, 0, SEEK_SET);
-	//fread_s(buffer, pos, sizeof(BYTE), pos, Handle);
+	//fread_s(buffer, pos, sizeof(uint8_t), pos, Handle);
 	//fclose(Handle);
 	//Handle = nullptr;
 	return true;

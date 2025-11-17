@@ -1,5 +1,5 @@
 #pragma once
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 
 class Catalog
@@ -36,12 +36,12 @@ public:
 	int GetCatalogIRec(const std::string& name, bool multilevel);
 	void GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std::string& volume) const;
 
-	WORD Generation(FileD* file_d, std::string& path, std::string& volume);
-	void TurnCat(FileD* file_d, WORD Frst, WORD N, short I);
+	uint16_t Generation(FileD* file_d, std::string& path, std::string& volume);
+	void TurnCat(FileD* file_d, uint16_t Frst, uint16_t N, short I);
 
 private:
 	FileD* cat_file_;
-	BYTE* record_;
+	uint8_t* record_;
 	FieldDescr* cat_rdb_name_;
 	FieldDescr* cat_file_name_;
 	FieldDescr* cat_archive_;

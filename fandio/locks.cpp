@@ -2,6 +2,7 @@
 
 //#include "../Core/GlobalVariables.h"
 //#include "../Core/access.h"
+#include "../Core/base.h"
 #include "../Core/obaseww.h"
 
 //void RunErrorM(FileD* file_d, LockMode Md, WORD N)
@@ -63,7 +64,7 @@ bool UnLockH(HANDLE Handle, int Pos, WORD Len)
 void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len, uint16_t lan_node)
 {
 	__int32 n = 0;
-	switch (Mode) {       /* hi=how much BYTEs, low= first BYTE */
+	switch (Mode) {       /* hi=how much BYTEs, low= first uint8_t */
 	case NoExclMode: n = 0x00010000 + lan_node; break;
 	case NoDelMode: n = 0x00010100 + lan_node; break;
 	case NoCrMode: n = 0x00010200 + lan_node; break;

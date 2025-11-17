@@ -12,7 +12,7 @@ public:
 
 	void Open(std::string path);
 	void ReadSpec(Spec& spec);
-	void ReadVideoAndColors(Video& video, BYTE start_mode, enVideoCard video_card, Screen& screen, WORD& TxtCols, WORD& TxtRows);
+	void ReadVideoAndColors(Video& video, uint8_t start_mode, enVideoCard video_card, Screen& screen, WORD& TxtCols, WORD& TxtRows);
 	void ReadFonts(Fonts& fonts);
 	void ReadCodeTables();
 	void RdPrinter(short& prMax, Printer printer[10]);

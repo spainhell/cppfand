@@ -10,10 +10,10 @@ enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
 class Spec
 {
 public:
-	BYTE UpdCount = 0;
-	BYTE AutoRprtWidth = 0;
-	BYTE AutoRprtLimit = 0;
-	BYTE CpLines = 0;
+	uint8_t UpdCount = 0;
+	uint8_t AutoRprtWidth = 0;
+	uint8_t AutoRprtLimit = 0;
+	uint8_t CpLines = 0;
 	bool AutoRprtPrint = false;
 	bool ChoosePrMsg = false;
 	bool TxtInsPg = false;
@@ -25,8 +25,8 @@ public:
 	char CPMdrive = 0;
 	WORD RefreshDelay = 0;
 	WORD NetDelay = 0;
-	BYTE LockDelay = 0;
-	BYTE LockRetries = 0;
+	uint8_t LockDelay = 0;
+	uint8_t LockRetries = 0;
 	bool Beep = false;
 	bool LockBeepAllowed = false;
 	WORD XMSMaxKb = 0;
@@ -34,19 +34,19 @@ public:
 	TKbdConv KbdTyp = OrigKbd;
 	bool NoMouseSupport = false;
 	bool MouseReverse = false;
-	BYTE DoubleDelay = 0;
-	BYTE RepeatDelay = 0;
-	BYTE CtrlDelay = 0;
+	uint8_t DoubleDelay = 0;
+	uint8_t RepeatDelay = 0;
+	uint8_t CtrlDelay = 0;
 	bool OverwrLabeledDisk = false;
 	WORD ScreenDelay = 0;
-	BYTE OffDefaultYear = 0;
+	uint8_t OffDefaultYear = 0;
 	bool WithDiskFree = false;
 };
 
 struct Video // r. 345
 {
 	WORD address;
-	BYTE TxtRows;
+	uint8_t TxtRows;
 	bool ChkSnow;	// {not used }
 	WORD CursOn, CursOff, CursBig;
 };
@@ -61,10 +61,10 @@ struct Fonts // r350
 struct Printer {
 	std::string Strg;
 	char Typ, Kod;
-	BYTE Lpti, TmOut;
+	uint8_t Lpti, TmOut;
 	bool OpCls, ToHandle, ToMgr;
 	WORD Handle;
 };
 
-struct wdaystt { BYTE Typ = 0; WORD Nr = 0; };
+struct wdaystt { uint8_t Typ = 0; WORD Nr = 0; };
 

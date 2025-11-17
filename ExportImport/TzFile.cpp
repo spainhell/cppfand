@@ -259,7 +259,7 @@ void TzFile::WriteBuf2()
 void TzFile::RdH(HANDLE H, bool Skip)
 {
 	int sz;
-	BYTE* a = (BYTE*)&sz;
+	uint8_t* a = (uint8_t*)&sz;
 
 	for (WORD i = 0; i <= 3; i++) {
 		if (iBuf == lBuf) ReadBuf();

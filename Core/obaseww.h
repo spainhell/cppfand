@@ -9,7 +9,7 @@ struct WGrBuf
 	WORD LL;
 	int ChainPos;
 	WORD X, Y;
-	BYTE A;
+	uint8_t A;
 };
 
 const WORD MaxGrBufSz = 0x7fff - 4;
@@ -22,9 +22,9 @@ void PopScr(bool draw);
 void PopW(int pos, bool draw = true);
 void WriteWFrame(uint8_t WFlags, const std::string& top, const std::string& bottom, uint8_t color);
 void WriteHeader(std::string header, WORD row, WORD maxCols);
-void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags);
-int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, 
-	std::string top, std::string bottom, BYTE WFlags); // r176
+void CenterWw(uint8_t& C1, uint8_t& R1, uint8_t& C2, uint8_t& R2, uint8_t WFlags);
+int PushWFramed(uint8_t C1, uint8_t R1, uint8_t C2, uint8_t R2, WORD Attr, 
+	std::string top, std::string bottom, uint8_t WFlags); // r176
 int PushWrLLMsg(WORD N, bool WithESC);
 void WrLLMsg(WORD N);
 void WrLLMsgTxt(std::string& message);

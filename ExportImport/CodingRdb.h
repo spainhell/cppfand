@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Core/FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "../DataEditor/EditReader.h"
 
 
@@ -11,7 +11,7 @@ class CodingRdb
 public:
 	void CodeRdb(EditD* edit, bool Rotate);
 	void CompressTxt(WORD IRec, LongStr* s, char Typ);
-	void Wr(BYTE c);
+	void Wr(uint8_t c);
 	void CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ);
 	void CompressCRdb(DataEditor* data_editor, EditD* edit);
 

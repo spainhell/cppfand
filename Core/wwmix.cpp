@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "Compiler.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
@@ -654,7 +654,7 @@ std::string wwmix::SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace)
 {
 	std::string mask, s;
 	int w = 0; //SearchRec SR;
-	BYTE sizeOfMask = 255;
+	uint8_t sizeOfMask = 255;
 	std::string p, d, n, ext, e, ne;
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 	std::string result;

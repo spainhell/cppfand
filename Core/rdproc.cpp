@@ -1,6 +1,6 @@
 #include "rdproc.h"
 #include "Compiler.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -1089,7 +1089,7 @@ Instr_proc* RdProcArg(Compiler* compiler, char Caller)
 	return PD;
 }
 
-void SetCode(std::string keyName, BYTE fnNr, EdExKeyD* E)
+void SetCode(std::string keyName, uint8_t fnNr, EdExKeyD* E)
 {
 	E->KeyCode = __F1 + fnNr - 1;
 	if (keyName.empty()) {
@@ -1118,7 +1118,7 @@ void RdKeyCode(Compiler* compiler, EdExitD* X)
 {
 	EdExKeyD lastKey;
 	std::string key; // tady bude "shift" | "ctrl" | "alt"
-	BYTE fnNr; // tady bude cislo funkci klavesy
+	uint8_t fnNr; // tady bude cislo funkci klavesy
 
 	lastKey.KeyName = compiler->LexWord;
 
@@ -2089,7 +2089,7 @@ Instr* RdCopyFile(Compiler* compiler)
 
 CpOption RdCOpt(Compiler* compiler)
 {
-	BYTE i = 0;
+	uint8_t i = 0;
 	pstring OptArr[3] = { "FIX", "VAR", "TXT" };
 	compiler->RdLex();
 	compiler->TestIdentif();

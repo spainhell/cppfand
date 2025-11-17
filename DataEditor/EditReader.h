@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Core/EditOpt.h"
-#include "../Core/FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "../Core/rdrun.h"
 
 struct EFldD;

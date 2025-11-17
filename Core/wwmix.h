@@ -15,7 +15,7 @@ struct SS
 };
 extern SS ss;
 
-const BYTE SelMark = 0xF0;
+const uint8_t SelMark = 0xF0;
 
 class wwmix
 {

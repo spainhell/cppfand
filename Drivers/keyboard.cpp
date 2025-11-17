@@ -444,7 +444,7 @@ bool PressedKey::isChar()
 	return comb >= 0x20 && comb <= 0xFF;
 
 	/*
-	BYTE c = (BYTE)_key.uChar.AsciiChar;
+	uint8_t c = (uint8_t)_key.uChar.AsciiChar;
 	// muze byt se SHIFT, to znaci velke pismeno ...
 	// muze byt s CTRL a ALT zaroven, to znaci znaky '@' atp.
 	bool alt = Alt();

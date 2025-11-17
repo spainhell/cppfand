@@ -10,15 +10,15 @@ TcFile::TcFile(bool compress)
 	if (!Compress) {
 		BufSize = 4 * RingBufSz;
 		BufSize2 = BufSize;
-		buffer1 = new BYTE[BufSize];
+		buffer1 = new uint8_t[BufSize];
 		buffer2 = buffer1;
 	}
 	else {
 		BufSize = RingBufSz;
 		BufSize2 = 4 * BufSize;
 		XBuf = new TXBuf(); // GetStore(sizeof(TXBuf));
-		buffer1 = new BYTE[BufSize];
-		buffer2 = new BYTE[BufSize2];
+		buffer1 = new uint8_t[BufSize];
+		buffer2 = new uint8_t[BufSize2];
 	}
 }
 
@@ -149,7 +149,7 @@ void TcFile::InitBufOutp()
 
 void TcFile::WriteBuf(bool isLast)
 {
-	short i = 0, j = 0; BYTE c = 0;
+	short i = 0, j = 0; uint8_t c = 0;
 
 	if (!Compress) {
 		lBuf2 = lBuf;
@@ -241,7 +241,7 @@ void TcFile::InitBufInp()
 void TcFile::ReadBuf()
 {
 	short i = 0, j = 0, k = 0, r = 0;
-	BYTE c = 0; WORD wLo = 0, wHi = 0;
+	uint8_t c = 0; WORD wLo = 0, wHi = 0;
 
 	lBuf = 0; iBuf = 0;
 	if (eof) return;

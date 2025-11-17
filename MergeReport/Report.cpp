@@ -7,7 +7,7 @@
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../Core/Compiler.h"
-#include "../Core/FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/LogicControl.h"
@@ -813,7 +813,7 @@ void Report::RdBlock(std::vector<BlkD*>& BB)
 
 	std::string storedCh; // pridano pro zprovozneni StoreCh(char, &short)
 
-	BYTE rep[256]{ 0 };
+	uint8_t rep[256]{ 0 };
 	size_t offset = 0;
 
 	short LineLen = 0;
@@ -921,8 +921,8 @@ label2:
 	}
 	}
 label3:
-	//LnL = (BYTE*)GetZStore(1);
-	//LnL = new BYTE;
+	//LnL = (uint8_t*)GetZStore(1);
+	//LnL = new uint8_t;
 	//StrL = (WORD*)GetZStore(2);
 	//StrL = new WORD;
 	LineLen = 0;
@@ -1097,14 +1097,14 @@ void Report::RdCh(short& LineLen)
 short Report::NUnderscores(char C, short& LineLen)
 {
 	short N = 0;
-	while (base_compiler->ForwChar == static_cast<BYTE>(C)) {
+	while (base_compiler->ForwChar == static_cast<uint8_t>(C)) {
 		N++;
 		RdCh(LineLen);
 	}
 	return N;
 }
 
-void Report::EndString(BlkD* block, BYTE* buffer, size_t LineLen, size_t NBytesStored)
+void Report::EndString(BlkD* block, uint8_t* buffer, size_t LineLen, size_t NBytesStored)
 {
 	// vlozime buffer do vectoru stringu
 	block->lines.push_back(std::string((char*)buffer, NBytesStored));
@@ -1301,7 +1301,7 @@ label1:
 	WasOutput = true;
 	while (Y.I < Y.Sz) {
 		char buffer[256]{ '\0' };
-		BYTE C = (BYTE)Y.P[Y.I];
+		uint8_t C = (uint8_t)Y.P[Y.I];
 		if (C == 0xFF) {
 			//if (RF == nullptr) RF = Y.Blk->RFD;
 			//else RF = (RFldD*)RF->pChain;
@@ -1315,8 +1315,8 @@ label1:
 				RF = *reportFieldsIt;
 			}
 
-			L = (BYTE)Y.P[Y.I + 1];
-			WORD M = (BYTE)Y.P[Y.I + 2];
+			L = (uint8_t)Y.P[Y.I + 1];
+			WORD M = (uint8_t)Y.P[Y.I + 2];
 			if (RF->FrmlTyp == 'R') {
 				if (!Skip) R = RunReal(CFile, RF->Frml, CRecPtr);
 				switch (RF->Typ) {

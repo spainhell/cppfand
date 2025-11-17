@@ -2,7 +2,7 @@
 #include "FandTFile.h"
 #include "FandXFile.h"
 #include "../Core/switches.h"
-#include "../Core/FieldDescr.h"
+#include "FieldDescr.h"
 #include "../Logging/Logging.h"
 
 class XWKey;

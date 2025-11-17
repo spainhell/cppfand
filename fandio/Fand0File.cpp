@@ -74,7 +74,7 @@ size_t Fand0File::WriteRec(size_t rec_nr, void* record)
 void Fand0File::CreateRec(int n, void* record)
 {
 	IncNRecs(1);
-	BYTE* tmp = _parent->GetRecSpace();
+	uint8_t* tmp = _parent->GetRecSpace();
 	for (int i = NRecs - 1; i >= n; i--) {
 		ReadRec(i, tmp);
 		WriteRec(i + 1, tmp);
@@ -283,14 +283,14 @@ std::string Fand0File::loadS(FieldDescr* field_d, void* record)
 		}
 		else {
 			//jedna je o typ N - prevedeme cislo na znaky
-			for (BYTE i = 0; i < field_d->L; i++) {
+			for (uint8_t i = 0; i < field_d->L; i++) {
 				bool upper = (i % 2) == 0; // jde o "levou" cislici
-				BYTE j = i / 2;
+				uint8_t j = i / 2;
 				if (upper) {
-					S += ((BYTE)source[j] >> 4) + 0x30;
+					S += ((uint8_t)source[j] >> 4) + 0x30;
 				}
 				else {
-					S += ((BYTE)source[j] & 0x0F) + 0x30;
+					S += ((uint8_t)source[j] & 0x0F) + 0x30;
 				}
 			}
 		}
@@ -331,7 +331,7 @@ void Fand0File::saveB(FieldDescr* field_d, bool b, void* record)
 
 void Fand0File::saveR(FieldDescr* field_d, double r, void* record)
 {
-	BYTE* pRec = (BYTE*)record + field_d->Displ;
+	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
 	int l = 0;
 	if ((field_d->Flg & f_Stored) != 0) {
 		WORD m = field_d->M;
@@ -371,8 +371,8 @@ void Fand0File::saveR(FieldDescr* field_d, double r, void* record)
 
 void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record)
 {
-	const BYTE LeftJust = 1;
-	BYTE* pRec = (BYTE*)record + field_d->Displ;
+	const uint8_t LeftJust = 1;
+	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
 
 	if (field_d->isStored()) {
 		short L = field_d->L;
@@ -397,7 +397,7 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* r
 		}
 		case FieldType::NUMERIC: {
 			s = s.substr(0, field_d->L); // delka retezce je max. field_d->L
-			BYTE tmpArr[80]{ 0 };
+			uint8_t tmpArr[80]{ 0 };
 			if (M == LeftJust) {
 				// doplnime nuly zprava
 				s = TrailChar(s, ' ');
@@ -750,39 +750,39 @@ void Fand0File::Close()
 
 void Fand0File::SetTWorkFlag(void* record) const
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	p[RecLen] = 1;
 }
 
 bool Fand0File::HasTWorkFlag(void* record) const
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	const bool workFlag = p[RecLen] == 1;
 	return workFlag;
 }
 
 void Fand0File::SetRecordUpdateFlag(void* record)
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	p[RecLen + 1] = 1;
 }
 
 void Fand0File::ClearRecordUpdateFlag(void* record)
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	p[RecLen + 1] = 0;
 }
 
 bool Fand0File::HasRecordUpdateFlag(void* record)
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	return p[RecLen + 1] == 1;
 }
 
 bool Fand0File::DeletedFlag(void* record)
 {
 	if (file_type == FandFileType::INDEX) {
-		if (((BYTE*)record)[0] == 0) return false;
+		if (((uint8_t*)record)[0] == 0) return false;
 		else return true;
 	}
 
@@ -791,7 +791,7 @@ bool Fand0File::DeletedFlag(void* record)
 
 void Fand0File::ClearDeletedFlag(void* record)
 {
-	BYTE* ptr = (BYTE*)record;
+	uint8_t* ptr = (uint8_t*)record;
 	if (file_type == FandFileType::INDEX) {
 		ptr[0] = 0;
 	}
@@ -799,7 +799,7 @@ void Fand0File::ClearDeletedFlag(void* record)
 
 void Fand0File::SetDeletedFlag(void* record)
 {
-	BYTE* ptr = (BYTE*)record;
+	uint8_t* ptr = (uint8_t*)record;
 	if (file_type == FandFileType::INDEX) {
 		ptr[0] = 1;
 	}
@@ -831,7 +831,7 @@ int Fand0File::CreateIndexFile()
 
 	try {
 		fail = true;
-		//BYTE* record = _parent->GetRecSpace();
+		//uint8_t* record = _parent->GetRecSpace();
 		md = _parent->NewLockMode(RdMode);
 		_parent->Lock(0, 0);
 		/*ClearCacheCFile;*/
@@ -1150,7 +1150,7 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t
 
 void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
 {
-	BYTE* record = _parent->GetRecSpace();
+	uint8_t* record = _parent->GetRecSpace();
 
 	K->Release(_parent);
 	LockMode md = _parent->NewLockMode(RdMode);
@@ -1244,7 +1244,7 @@ void Fand0File::IndexFileProc(bool Compress)
 		RunError(result);
 	}
 
-	BYTE* record = _parent->GetRecSpace();
+	uint8_t* record = _parent->GetRecSpace();
 	if (Compress) {
 		FileD* FD2 = _parent->OpenDuplicateF(false);
 		for (int rec_nr = 1; rec_nr <= NRecs; rec_nr++) {
@@ -1279,7 +1279,7 @@ void Fand0File::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD*
 	bool isLongTxt = false;
 	int pos = 0;
 	size_t n = 0;
-	BYTE X[MPageSize + 1]{ 0 };
+	uint8_t X[MPageSize + 1]{ 0 };
 	WORD* ll = (WORD*)X;
 	LockMode md2;
 

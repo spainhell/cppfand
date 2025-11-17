@@ -2,7 +2,7 @@
 
 #include "Additive.h"
 #include "LogicControl.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
@@ -64,8 +64,8 @@ bool Add(FileD* file_d, Additive* add_d, void* record, double value, bool back)
 
 bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, void* record)
 {
-	BYTE* cr2 = nullptr;
-	BYTE* cr2_old = nullptr;
+	uint8_t* cr2 = nullptr;
+	uint8_t* cr2_old = nullptr;
 	bool result = true;
 	Additive* add_d_back = nullptr;
 
@@ -179,7 +179,7 @@ void CrIndRec(FileD* file_d, void* record)
 	file_d->RecallRec(file_d->FF->NRecs, record);
 }
 
-bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord)
+bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, uint8_t** linkedRecord)
 {
 	// TODO: is param file_d needed?
 
@@ -235,7 +235,7 @@ bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, void* RP, void* new_record
 	if (Kind2 == '+') {
 		return RunAddUpdate(file_d, '+', nullptr, Back, nullptr, nullptr, new_record);
 	}
-	BYTE* rec = file_d->GetRecSpace();
+	uint8_t* rec = file_d->GetRecSpace();
 #ifdef FandSQL
 	// TODO: cele pripadne predelat, po refactoringu uz to nesedi
 	if (CFile->IsSQLFile) {
@@ -306,7 +306,7 @@ bool Assign(FileD* file_d, Additive* add_d, void* record)
 	}
 	}
 	
-	BYTE* linkedRecord = nullptr;
+	uint8_t* linkedRecord = nullptr;
 
 	if (!Link(file_d, add_d, n2, kind2, record, &linkedRecord)) {
 		delete[] linkedRecord; linkedRecord = nullptr;

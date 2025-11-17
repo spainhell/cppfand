@@ -6,7 +6,7 @@ extern WORD CPState, CPCount;
 
 void ResetCtrlFlags();
 bool IsPrintCtrl(char C); // r43
-void PrintByte(BYTE B);
+void PrintByte(uint8_t B);
 void PrintByteStr(pstring S);
 pstring CtrlToESC(char C);
 WORD CPTest(char c); /* 0=binary;1=normal;2=control;3=bypass */

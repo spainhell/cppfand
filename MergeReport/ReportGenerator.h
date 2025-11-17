@@ -10,7 +10,7 @@ struct PFldD
 	FieldDescr* FldD = nullptr;
 	short ColTxt = 0, ColItem = 0;
 	bool IsCtrl = false, IsSum = false, NxtLine = false;
-	BYTE Level = 0;
+	uint8_t Level = 0;
 };
 
 class ReportGenerator

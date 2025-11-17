@@ -59,8 +59,8 @@ std::string CVol;
 ResFile resFile;
 
 WORD F10SpecKey; // r. 293
-BYTE ProcAttr;
-// bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
+uint8_t ProcAttr;
+// bool SetStyleAttr(char c, uint8_t& a); // je v KBDWW
 std::string MsgLine;
 std::string MsgPar[4];
 
@@ -687,7 +687,7 @@ bool EqualsMask(void* p, WORD l, pstring Mask)
 
 	// puvodni implementace pred pouzitim regexu
 	//if (Mask.length() < l) return false;
-	//BYTE* inp = (BYTE*)p;
+	//uint8_t* inp = (uint8_t*)p;
 	//for (size_t i = 0; i < l; i++)
 	//{
 	//	if (inp[i] != Mask[i + 1]) return false;
@@ -766,7 +766,7 @@ std::string PrTab(WORD printerNr, WORD value)
 		offset += printer[printerNr].Strg[offset++];
 	}
 
-	BYTE length = printer[printerNr].Strg[offset];
+	uint8_t length = printer[printerNr].Strg[offset];
 	result = printer[printerNr].Strg.substr(offset + 1, length);
 	return result;
 }

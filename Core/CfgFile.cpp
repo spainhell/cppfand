@@ -62,7 +62,7 @@ void CfgFile::ReadSpec(Spec& spec)
 	// konec SPEC
 }
 
-void CfgFile::ReadVideoAndColors(Video& video, BYTE start_mode, enVideoCard video_card, Screen& screen, WORD& TxtCols, WORD& TxtRows)
+void CfgFile::ReadVideoAndColors(Video& video, uint8_t start_mode, enVideoCard video_card, Screen& screen, WORD& TxtCols, WORD& TxtRows)
 {
 	WORD typ;
 	DWORD error;
@@ -109,9 +109,9 @@ void CfgFile::ReadCodeTables()
 void CfgFile::RdPrinter(short& prMax, Printer printer[10])
 {
 	DWORD error;
-	BYTE L;
+	uint8_t L;
 	const int NPrintStrg = 32;
-	BYTE A[NPrintStrg * 256]{ '\0' };
+	uint8_t A[NPrintStrg * 256]{ '\0' };
 	ReadF(Handle, &prMax, 1, error);
 
 	for (short j = 0; j < prMax; j++) {

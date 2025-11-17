@@ -3,7 +3,7 @@
 #include "ConstListEl.h"
 #include "../Common/compare.h"
 #include "../Core/Compiler.h"
-#include "../Core/FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/LogicControl.h"
@@ -511,8 +511,8 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 		{
 			newAssign->Kind = MInstrCode::_move;
 			newAssign->L = outputField->NBytes;
-			newAssign->ToPtr = (BYTE*)outputRecPointer + outputField->Displ;
-			newAssign->FromPtr = (BYTE*)inputRecPointer + inputField->Displ;
+			newAssign->ToPtr = (uint8_t*)outputRecPointer + outputField->Displ;
+			newAssign->FromPtr = (uint8_t*)inputRecPointer + inputField->Displ;
 			//if (RD_Ass != nullptr
 			//	&& RD_Ass->Kind == _move
 			//	&& (uintptr_t)(RD_Ass->FromPtr + RD_Ass->L) == (uintptr_t)newAssign->FromPtr

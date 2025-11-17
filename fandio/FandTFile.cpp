@@ -770,7 +770,7 @@ void FandTFile::RandIntByBytes(int& nr)
 {
 	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < 4; i++) {
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+		byte[i] = byte[i] ^ static_cast<uint8_t>(Random(255));
 	}
 }
 
@@ -778,7 +778,7 @@ void FandTFile::RandByteByBytes(unsigned short& nr)
 {
 	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < 2; i++) {
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+		byte[i] = byte[i] ^ static_cast<uint8_t>(Random(255));
 	}
 }
 
@@ -786,7 +786,7 @@ void FandTFile::RandReal48ByBytes(double& nr)
 {
 	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < 6; i++) {
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+		byte[i] = byte[i] ^ static_cast<uint8_t>(Random(255));
 	}
 }
 
@@ -794,7 +794,7 @@ void FandTFile::RandBooleanByBytes(bool& nr)
 {
 	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < sizeof(nr); i++) {
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+		byte[i] = byte[i] ^ static_cast<uint8_t>(Random(255));
 	}
 }
 
@@ -802,7 +802,7 @@ void FandTFile::RandArrayByBytes(void* arr, size_t len)
 {
 	unsigned char* byte = (unsigned char*)arr;
 	for (size_t i = 0; i < len; i++) {
-		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
+		byte[i] = byte[i] ^ static_cast<uint8_t>(Random(255));
 	}
 }
 

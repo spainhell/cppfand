@@ -40,7 +40,7 @@ public:
 	FrmlElem* ZdTab = nullptr;
 	FrmlElem* ZdSelect = nullptr;
 	FrmlElem* Top = nullptr;
-	BYTE WFlags = 0;
+	uint8_t WFlags = 0;
 	std::vector<EdExitD*> ExD;
 	FileD* Journal = nullptr;
 	std::string ViewName;

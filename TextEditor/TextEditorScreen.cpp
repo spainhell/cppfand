@@ -12,10 +12,10 @@ TextEditorScreen::~TextEditorScreen()
 {
 }
 
-void TextEditorScreen::EditWrline(const std::string& text_line, int Row, BYTE ColKey[], BYTE TxtColor, BYTE BlockColor)
+void TextEditorScreen::EditWrline(const std::string& text_line, int Row, uint8_t ColKey[], uint8_t TxtColor, uint8_t BlockColor)
 {
 	WORD BuffLine[256]{ 0 };
-	BYTE nv2;
+	uint8_t nv2;
 
 	WORD Line = _editor->ScreenFirstLineNr + Row - 1;
 	if (_editor->LineInBlock(Line) && (TypeB == TextBlock)) {
@@ -68,24 +68,24 @@ void TextEditorScreen::EditWrline(const std::string& text_line, int Row, BYTE Co
 	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[BPos], LineS);
 }
 
-void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO, BYTE ColKey[], BYTE TxtColor, bool& InsPage)
+void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO, uint8_t ColKey[], uint8_t TxtColor, bool& InsPage)
 {
 	std::set<char> GrafCtrl = { 3,6,9,11,15,16,18,21,22,24,25,26,29,30,31 };
-	BYTE len = 15; // GrafCtrl has 15 members
+	uint8_t len = 15; // GrafCtrl has 15 members
 
 	WORD BuffLine[256]{ 0 };
-	BYTE nv1;
-	BYTE nv2;
+	uint8_t nv1;
+	uint8_t nv2;
 
 	bool IsCtrl = false;
-	BYTE Col = Color(CO, ColKey, TxtColor);
+	uint8_t Col = Color(CO, ColKey, TxtColor);
 	nv2 = Col;
 
 	short I = 0;
 	short J = 0;
 	char cc = P[I];
 	while (cc != '\0' && !(cc == __CR || cc == __LF) && I < LineMaxSize && !InsPage) {
-		if (((BYTE)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
+		if (((uint8_t)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
 			nv1 = cc;
 			BuffLine[J] = (nv2 << 8) + nv1;
 			J++;
@@ -111,7 +111,7 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 		I = 0; J = 0;
 		while (I <= LP) {
 			cc = P[I];
-			if (((BYTE)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
+			if (((uint8_t)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
 				BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8);
 				J++;
 			}
@@ -139,7 +139,7 @@ void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& 
 	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[offsetX], LineS);
 }
 
-BYTE TextEditorScreen::Color(char c, BYTE ColKey[])
+uint8_t TextEditorScreen::Color(char c, uint8_t ColKey[])
 {
 	size_t index = 0;
 	switch (c) {
@@ -157,7 +157,7 @@ BYTE TextEditorScreen::Color(char c, BYTE ColKey[])
 	return ColKey[index];
 }
 
-BYTE TextEditorScreen::Color(ColorOrd CO, BYTE ColKey[], BYTE TxtColor)
+uint8_t TextEditorScreen::Color(ColorOrd CO, uint8_t ColKey[], uint8_t TxtColor)
 {
 	if (CO.empty()) {
 		return TxtColor;

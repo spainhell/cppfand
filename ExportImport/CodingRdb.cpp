@@ -71,7 +71,7 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 		gc->ForwChar = 0x1A;
 	}
 	else {
-		gc->ForwChar = (BYTE)gc->input_string[0];
+		gc->ForwChar = (uint8_t)gc->input_string[0];
 	}
 	gc->input_pos = 1;
 	SwitchLevel = 0;
@@ -191,7 +191,7 @@ label1:
 	goto label1;
 }
 
-void CodingRdb::Wr(BYTE c)
+void CodingRdb::Wr(uint8_t c)
 {
 	if (l >= MaxLStrLen) RunError(661);
 	l++;

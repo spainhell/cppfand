@@ -7,12 +7,12 @@
 #include "../Common/LongStr.h"
 #include "../Drivers/files.h"
 
-const BYTE FandFace = 17;
+const uint8_t FandFace = 17;
 
 struct TMsgIdxItem {
 	WORD Nr;
 	WORD Ofs;
-	BYTE Count;
+	uint8_t Count;
 };
 
 struct st {

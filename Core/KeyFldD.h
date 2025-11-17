@@ -8,7 +8,7 @@ class KeyFldD
 public:
 	KeyFldD() {}
 	KeyFldD(const KeyFldD& orig, bool copyFlds);
-	KeyFldD(BYTE* inputStr);
+	KeyFldD(uint8_t* inputStr);
 	FieldDescr* FldD = nullptr;
 	bool CompLex = false;
 	bool Descend = false;

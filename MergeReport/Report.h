@@ -66,7 +66,7 @@ private:
 	void RdBlock(std::vector<BlkD*>& BB);
 	void RdCh(short& LineLen);
 	short NUnderscores(char C, short& LineLen);
-	void EndString(BlkD* block, BYTE* buffer, size_t LineLen, size_t NBytesStored);
+	void EndString(BlkD* block, uint8_t* buffer, size_t LineLen, size_t NBytesStored);
 	void TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF);
 	void TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF);
 	std::vector<AssignD*> RdAssign2();

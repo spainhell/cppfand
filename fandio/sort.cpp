@@ -14,7 +14,7 @@ int32_t GetIndex(Instr_getindex* PD)
 	FileD* lvFD = PD->loc_var1->FD;
 	XWKey* k = (XWKey*)PD->loc_var1->record;
 
-	BYTE* record = lvFD->GetRecSpace();
+	uint8_t* record = lvFD->GetRecSpace();
 
 	LockMode md = lvFD->NewLockMode(RdMode);
 	if (PD->mode == ' ') {

@@ -50,12 +50,12 @@ public:
 	std::vector<FieldDescr*> FldD;
 	std::vector<XKey*> Keys;
 	std::vector<Additive*> Add;
-	std::vector<std::string> ViewNames;  // after each string BYTE string with user codes 
+	std::vector<std::string> ViewNames;  // after each string uint8_t string with user codes 
 
 	int GetNRecs();
 	void SetNRecs(int recs);
 	long GetFileSize();
-	WORD GetNrKeys();
+	uint16_t GetNrKeys();
 	unsigned short GetFirstRecPos();
 	uint16_t GetRecLen();
 	void SetRecLen(uint16_t length);
@@ -102,7 +102,7 @@ public:
 	void saveS(FieldDescr* field_d, const std::string& s, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record) const;
 
-	void SetDrive(BYTE drive) const;
+	void SetDrive(uint8_t drive) const;
 	void SetUpdateFlag() const;
 	void Close() const;
 	void CloseFile() const;
@@ -122,9 +122,9 @@ public:
 
 	void OldLockMode(LockMode mode);
 	LockMode NewLockMode(LockMode mode);
-	bool TryLockMode(LockMode mode, LockMode& old_mode, WORD kind);
-	bool ChangeLockMode(LockMode mode, WORD kind, bool rd_pref);
-	bool Lock(int n, WORD kind) const;
+	bool TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind);
+	bool ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref);
+	bool Lock(int n, uint16_t kind) const;
 	void Unlock(int n);
 	void RunErrorM(LockMode mode);
 

@@ -30,7 +30,7 @@ bool InsPage;
 
 struct Character {
 	char ch = 0;
-	BYTE color = 0;
+	uint8_t color = 0;
 };
 
 // *** Promenne metody EDIT
@@ -49,16 +49,16 @@ WORD PageS = 0, LineS = 0;
 bool bScroll = false, FirstScroll = false, HelpScroll = false;
 int PredScLn = 0;
 WORD PredScPos = 0; // {pozice pred Scroll}
-BYTE FrameDir = 0;
+uint8_t FrameDir = 0;
 //WORD WordL = 0; // {Mode=HelpM & ctrl-word is on screen}
 bool Konec = false;
 //WORD i1 = 0, i3 = 0;
 //short i2 = 0;
 // *** konec promennych
 
-const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
+const uint8_t InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
 const WORD TextStore = 0x1000;
-const BYTE TStatL = 35; /*=10(Col Row)+length(InsMsg+IndMsg+WrapMsg+JustMsg+BlockMsg)*/
+const uint8_t TStatL = 35; /*=10(Col Row)+length(InsMsg+IndMsg+WrapMsg+JustMsg+BlockMsg)*/
 
 std::set<char> GlobalSeparators = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
 26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,58,59,60,61,62,63,64,
@@ -899,13 +899,13 @@ WORD TextEditor::Column(WORD p)
 	WORD c = 1;
 
 	while (pp <= p) {
-		if ((BYTE)Arr[pp - 1] >= ' ') {
+		if ((uint8_t)Arr[pp - 1] >= ' ') {
 			c++;
 		}
 		pp++;
 	}
 
-	if ((BYTE)Arr[p - 1] >= ' ') c--;
+	if ((uint8_t)Arr[p - 1] >= ' ') c--;
 
 	return c;
 }
@@ -1405,9 +1405,9 @@ void TextEditor::ProcessHelpMove(uint16_t pressed_key)
 	// do nothing for non-help editor mode
 }
 
-void TextEditor::direction(BYTE x, BYTE& zn2)
+void TextEditor::direction(uint8_t x, uint8_t& zn2)
 {
-	BYTE y = 0x10;
+	uint8_t y = 0x10;
 	if (x > 2) { y = y << 1; }
 	if (x == 0) { y = 0; }
 	if (_mode == EditorMode::FrameDouble) {
@@ -1503,11 +1503,11 @@ void TextEditor::NextLine(bool WrScr)
 //	FS2 = "\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
 //	pstring FS3(15);
 //	FS3 = "\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
-//	BYTE dir, zn1, zn2, b;
+//	uint8_t dir, zn1, zn2, b;
 //
 //	UpdStatLine(TextLineNr, positionOnActualLine, Mode);
 //	screen.CrsBig();
-//	BYTE odir = 0;
+//	uint8_t odir = 0;
 //	ClrEvent();
 //
 //	while (true) /* !!! with Event do!!! */
@@ -1588,7 +1588,7 @@ void TextEditor::CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& bre
 	//	}
 }
 
-void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
+void TextEditor::FrameStep(uint8_t& odir, PressedKey EvKeyC)
 {
 	std::string FrameString = "\x3F\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
 	//                                       │       ┌   └   ├       ┐   ┘   ┤   ─   ┬   ┴   ┼
@@ -1615,12 +1615,12 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 	case __DOWN: {
 		WORD scanCode = EvKeyC.Key()->wVirtualScanCode;
 		size_t idx = FrameString.find_first_of(Arr[positionOnActualLine - 1]);
-		BYTE zn1 = (idx == std::string::npos) ? 0 : BYTE(idx);
-		BYTE zn2 = zn1 & 0x30;
+		uint8_t zn1 = (idx == std::string::npos) ? 0 : uint8_t(idx);
+		uint8_t zn2 = zn1 & 0x30;
 		zn1 = zn1 & 0x0F;
 
 		idx = FrameString.find_first_of(Lo(scanCode));
-		BYTE dir = (idx == std::string::npos) ? 0 : BYTE(idx);
+		uint8_t dir = (idx == std::string::npos) ? 0 : uint8_t(idx);
 		auto dirodir = dir + odir;
 		if (dirodir == 2 || dirodir == 4 || dirodir == 8 || dirodir == 16) {
 			odir = 0;
@@ -1630,7 +1630,7 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 		}
 		char oldzn = Arr[positionOnActualLine - 1];
 		Arr[positionOnActualLine - 1] = ' ';
-		BYTE b;
+		uint8_t b;
 		if (_mode == EditorMode::DeleteFrame) {
 			b = zn1 & ~(odir | dir);
 		}
@@ -2969,7 +2969,7 @@ WORD TextEditor::FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WOR
 }
 
 void TextEditor::EditTxtFile(std::string* locVar, EditorMode e_mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD,
-	int TxtPos, int Txtxy, WRect* V, WORD Atr, const std::string Hd, BYTE WFlags, MsgStr* MsgS)
+	int TxtPos, int Txtxy, WRect* V, WORD Atr, const std::string Hd, uint8_t WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
 	int Size = 0; // , L = 0;

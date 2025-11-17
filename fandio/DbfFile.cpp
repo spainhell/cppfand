@@ -1,7 +1,7 @@
 #include "DbfFile.h"
 
 #include "DBaseHeader.h"
-#include "../Core/FieldDescr.h"
+#include "FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Common/textfunc.h"
 #include "../Core/Coding.h"
@@ -33,7 +33,7 @@ size_t DbfFile::WriteRec(size_t rec_nr, void* record)
 void DbfFile::CreateRec(int n, void* record)
 {
 	IncNRecs(1);
-	BYTE* tmp = _parent->GetRecSpace();
+	uint8_t* tmp = _parent->GetRecSpace();
 	for (int i = NRecs - 1; i >= n; i--) {
 		ReadRec(i, tmp);
 		WriteRec(i + 1, tmp);
@@ -154,7 +154,7 @@ void DbfFile::saveB(FieldDescr* field_d, bool b, void* record)
 
 void DbfFile::saveR(FieldDescr* field_d, double r, void* record)
 {
-	BYTE* pRec = (BYTE*)record + field_d->Displ;
+	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
 
 	if ((field_d->Flg & f_Stored) != 0) {
 		WORD m = field_d->M;
@@ -180,8 +180,8 @@ void DbfFile::saveR(FieldDescr* field_d, double r, void* record)
 
 void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record)
 {
-	const BYTE LeftJust = 1;
-	BYTE* pRec = (BYTE*)record + field_d->Displ;
+	const uint8_t LeftJust = 1;
+	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
 
 	if (field_d->isStored()) {
 		short L = field_d->L;
@@ -574,50 +574,50 @@ void DbfFile::Close()
 
 void DbfFile::SetTWorkFlag(void* record) const
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	p[RecLen] = 1;
 }
 
 bool DbfFile::HasTWorkFlag(void* record) const
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	const bool workFlag = p[RecLen] == 1;
 	return workFlag;
 }
 
 void DbfFile::SetRecordUpdateFlag(void* record) const
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	p[RecLen + 1] = 1;
 }
 
 void DbfFile::ClearRecordUpdateFlag(void* record) const
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	p[RecLen + 1] = 0;
 }
 
 bool DbfFile::HasRecordUpdateFlag(void* record) const
 {
-	BYTE* p = (BYTE*)record;
+	uint8_t* p = (uint8_t*)record;
 	return p[RecLen + 1] == 1;
 }
 
 bool DbfFile::DeletedFlag(void* record)
 {
-	if (((BYTE*)record)[0] != '*') return false;
+	if (((uint8_t*)record)[0] != '*') return false;
 	else return true;
 }
 
 void DbfFile::ClearDeletedFlag(void* record)
 {
-	BYTE* ptr = (BYTE*)record;
+	uint8_t* ptr = (uint8_t*)record;
 	ptr[0] = ' ';
 }
 
 void DbfFile::SetDeletedFlag(void* record)
 {
-	BYTE* ptr = (BYTE*)record;
+	uint8_t* ptr = (uint8_t*)record;
 	ptr[0] = '*';
 }
 

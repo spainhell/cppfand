@@ -69,7 +69,7 @@ public:
 	~Instr_proc() override;
 	std::string ProcName;
 	RdbPos PPos;
-	BYTE N = 0;
+	uint8_t N = 0;
 	bool ExPar = false;
 	std::vector<TypAndFrml> TArg;
 	LocVarBlock loc_var_block;
@@ -242,7 +242,7 @@ public:
 	LocVar* TxtLV = nullptr;
 	EditorMode EdTxtMode = EditorMode::Unknown;
 	std::vector<EdExitD*> ExD;
-	BYTE WFlags = 0;
+	uint8_t WFlags = 0;
 	FrmlElem* TxtPos = nullptr;
 	FrmlElem* TxtXY = nullptr;
 	FrmlElem* ErrMsg = nullptr;
@@ -319,7 +319,7 @@ public:
 	FrmlElem* Attr = nullptr;
 	std::vector<Instr*> v_ww_instr;
 	FrmlElem* Top = nullptr;
-	BYTE WithWFlags = 0;
+	uint8_t WithWFlags = 0;
 };
 
 class Instr_clrww : public Instr
@@ -394,7 +394,7 @@ public:
 	~Instr_backup() override;
 	int BrCatIRec = 0;
 	bool IsBackup = false, NoCompress = false, BrNoCancel = false;
-	BYTE bmX[5]{ 0 };
+	uint8_t bmX[5]{ 0 };
 	FrmlElem* bmDir = nullptr;
 	FrmlElem* bmMasks = nullptr; /*backup only*/
 	bool bmSubDir = false, bmOverwr = false;

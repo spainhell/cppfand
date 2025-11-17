@@ -224,7 +224,7 @@ void Catalog::GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std
 	}
 }
 
-WORD Catalog::Generation(FileD* file_d, std::string& path, std::string& volume)
+uint16_t Catalog::Generation(FileD* file_d, std::string& path, std::string& volume)
 {
 	if (file_d->CatIRec == 0) return 0;
 
@@ -249,19 +249,19 @@ WORD Catalog::Generation(FileD* file_d, std::string& path, std::string& volume)
 	}
 }
 
-void Catalog::TurnCat(FileD* file_d, WORD Frst, WORD N, short I)
+void Catalog::TurnCat(FileD* file_d, uint16_t Frst, uint16_t N, short I)
 {
 	if (file_d != nullptr) {
 		file_d->CloseFile();
 	}
 	file_d = catalog->GetCatalogFile();
-	BYTE* p = file_d->GetRecSpace();
-	BYTE* q = file_d->GetRecSpace();
-	WORD last = Frst + N - 1;
+	uint8_t* p = file_d->GetRecSpace();
+	uint8_t* q = file_d->GetRecSpace();
+	uint16_t last = Frst + N - 1;
 	if (I > 0)
 		while (I > 0) {
 			file_d->ReadRec(Frst, q);
-			for (WORD j = 1; j <= N - 1; j++) {
+			for (uint16_t j = 1; j <= N - 1; j++) {
 				file_d->ReadRec(Frst + j, p);
 				file_d->WriteRec(Frst + j - 1, p);
 			}
@@ -271,7 +271,7 @@ void Catalog::TurnCat(FileD* file_d, WORD Frst, WORD N, short I)
 	else
 		while (I < 0) {
 			file_d->ReadRec(last, q);
-			for (WORD j = 1; j <= N - 1; j++) {
+			for (uint16_t j = 1; j <= N - 1; j++) {
 				file_d->ReadRec(last - j, p);
 				file_d->WriteRec(last - j + 1, p);
 			}

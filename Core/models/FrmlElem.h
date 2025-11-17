@@ -30,11 +30,11 @@ public:
 	FrmlElem* P5 = nullptr;
 	FrmlElem* P6 = nullptr;
 	char Delim = '\0';
-	BYTE N11 = 0, N12 = 0;
-	BYTE N21 = 0, N22 = 0;
-	BYTE N31 = 0;
+	uint8_t N11 = 0, N12 = 0;
+	uint8_t N21 = 0, N22 = 0;
+	uint8_t N31 = 0;
 	WORD W11 = 0;
-	BYTE buff[64]{ 0 };
+	uint8_t buff[64]{ 0 };
 	LocVar* LV1 = nullptr; // pro potreby smycky FOR
 	std::vector<int> vValues; // napr. pro vahy MODULO
 };
@@ -43,10 +43,10 @@ class FrmlElem1 : public FrmlElem
 {
 public:
 	FrmlElem1(instr_type Op, size_t buff_size);
-	BYTE N01 = 0, N02 = 0, N03 = 0, N04 = 0;
-	BYTE N11 = 0, N12 = 0, N13 = 0, N14 = 0;
-	BYTE N21 = 0, N22 = 0, N23 = 0, N24 = 0;
-	BYTE N31 = 0; // 1
+	uint8_t N01 = 0, N02 = 0, N03 = 0, N04 = 0;
+	uint8_t N11 = 0, N12 = 0, N13 = 0, N14 = 0;
+	uint8_t N21 = 0, N22 = 0, N23 = 0, N24 = 0;
+	uint8_t N31 = 0; // 1
 	WORD W01 = 0, W02 = 0, W11 = 0, W12 = 0, W21 = 0, W22 = 0; // 1
 };
 
@@ -184,7 +184,7 @@ public:
 	FrmlElemLocVar(instr_type Op, size_t buff_size);
 	FrmlElemLocVar(instr_type Op, LocVar* lv);
 	LocVar* locvar = nullptr;
-	//BYTE buff[64]{ 0 };
+	//uint8_t buff[64]{ 0 };
 };
 
 class FrmlElemUserFunc : public FrmlElem
@@ -234,8 +234,8 @@ class FrmlElemIn : public FrmlElem
 public:
 	FrmlElemIn(instr_type Op);
 	FrmlElem* frml_elem = nullptr;
-	BYTE param = 0;
-	//BYTE param2 = 0;
+	uint8_t param = 0;
+	//uint8_t param2 = 0;
 	std::vector<std::string> strings;
 	std::vector<double> reals;
 	std::vector<std::pair<std::string, std::string>> strings_range;

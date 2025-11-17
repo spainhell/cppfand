@@ -24,14 +24,14 @@ bool IsPrintCtrl(char C)
 	return pc.count(C) > 0;
 }
 
-void PrintByte(BYTE B)
+void PrintByte(uint8_t B)
 {
-	const BYTE timeout = 0x01;
-	const BYTE errorio = 0x08;
-	const BYTE selected = 0x10;
-	const BYTE outofpaper = 0x20;
-	const BYTE acknowledge = 0x40;
-	const BYTE notbusy = 0x80;
+	const uint8_t timeout = 0x01;
+	const uint8_t errorio = 0x08;
+	const uint8_t selected = 0x10;
+	const uint8_t outofpaper = 0x20;
+	const uint8_t acknowledge = 0x40;
+	const uint8_t notbusy = 0x80;
 
 	// PRIMY TISK NA PORT NEBO DO HANDLE -> NEUMIME :-)
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include "../Core/Rdb.h"
-#include "../Core/FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 
 
 enum class FandFileType;

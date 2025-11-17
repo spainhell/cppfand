@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <memory>
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
@@ -32,16 +32,16 @@ TWindow::TWindow()
 	Shadow.Y = 0;
 }
 
-//TWindow::TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL)
+//TWindow::TWindow(uint8_t C1, uint8_t R1, uint8_t C2, uint8_t R2, WORD Attr, pstring top, pstring bottom, bool SaveLL)
 //{
 //	//InitTWindow(C1, R1, C2, R2, Attr, top, bottom, SaveLL);
 //}
 
-void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, const std::string& top, const std::string& bottom, bool SaveLL)
+void TWindow::InitTWindow(uint8_t C1, uint8_t R1, uint8_t C2, uint8_t R2, WORD Attr, const std::string& top, const std::string& bottom, bool SaveLL)
 {
 	WORD i = 0, n = 0, m = 0;
 	//pstring s;
-	//BYTE* l = (BYTE*)&s;
+	//uint8_t* l = (uint8_t*)&s;
 	Assign(C1, R1, C2, R2);
 	if (GetState(sfShadow)) {
 		Shadow.X = MinW(2, TxtCols - Col2());
@@ -98,7 +98,7 @@ TWindow::~TWindow()
 	if (WasCrsEnabled) screen.CrsShow();
 }
 
-void TWindow::Assign(BYTE C1, BYTE R1, BYTE C2, BYTE R2)
+void TWindow::Assign(uint8_t C1, uint8_t R1, uint8_t C2, uint8_t R2)
 {
 	WORD cols = 0, rows = 0, m = 0;
 	m = 0;
@@ -336,7 +336,7 @@ bool TMenu::UnderMenuBar()
 void TMenu::WrText(WORD I)
 {
 	WORD j = 0, posw = 0, x = 0, x2 = 0, y = 0;
-	BYTE attr = 0;
+	uint8_t attr = 0;
 	TRect r{ {0,0}, {0,0} };
 	bool red = false, ena = false;
 
@@ -676,7 +676,7 @@ std::string TMenuBoxP::GetText(short I)
 void TMenuBoxP::call()
 {
 	WORD i = 0;
-	BYTE mx = 0, my = 0;
+	uint8_t mx = 0, my = 0;
 label1:
 	i = this->Exec(i);
 	if (!PD->PullDown) {
@@ -1012,7 +1012,7 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 label1:
 	md = CFile->NewLockMode(RdMode);
 	if (CFile->FF->Handle == nullptr) goto label5;
-	CRecPtr = new BYTE[CFile->FF->RecLen + 2]{ '\0' };
+	CRecPtr = new uint8_t[CFile->FF->RecLen + 2]{ '\0' };
 	NmF = CFile->FldD[0];
 	TxtF = CFile->FldD[1];
 	if (!ByName) {

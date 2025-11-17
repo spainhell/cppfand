@@ -1,6 +1,6 @@
 #include "KeyFldD.h"
 #include "access.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 
 KeyFldD::KeyFldD(const KeyFldD& orig, bool copyFlds)
 {
@@ -11,7 +11,7 @@ KeyFldD::KeyFldD(const KeyFldD& orig, bool copyFlds)
 	Descend = orig.Descend;
 }
 
-KeyFldD::KeyFldD(BYTE* inputStr)
+KeyFldD::KeyFldD(uint8_t* inputStr)
 {
 	size_t index = 0;
 	// TODO: pChain = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;

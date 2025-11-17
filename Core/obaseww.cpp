@@ -99,7 +99,7 @@ void WriteHeader(std::string header, WORD row, WORD maxCols)
 	screen.ScrWrText(col, row, header.c_str());
 }
 
-void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)
+void CenterWw(uint8_t& C1, uint8_t& R1, uint8_t& C2, uint8_t& R2, uint8_t WFlags)
 {
 	int16_t m = 0;
 	if ((WFlags & WHasFrame) != 0) {
@@ -136,7 +136,7 @@ void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)
 	R2 = static_cast<int8_t>(R1 + rows - 1);
 }
 
-int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::string top, std::string bottom, BYTE WFlags)
+int PushWFramed(uint8_t C1, uint8_t R1, uint8_t C2, uint8_t R2, WORD Attr, std::string top, std::string bottom, uint8_t WFlags)
 {
 	WORD i = 0;
 	CenterWw(C1, R1, C2, R2, WFlags);

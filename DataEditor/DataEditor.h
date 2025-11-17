@@ -78,7 +78,7 @@ private:
     bool HasTTWw(FieldDescr* F);
     void DisplEmptyFld(EFldD* D, WORD I);
     void Wr1Line(FieldDescr* F);
-    void DisplFld(EFldD* D, WORD I, BYTE Color);
+    void DisplFld(EFldD* D, WORD I, uint8_t Color);
     void DisplRec(WORD I);
     bool LockRec(bool Displ);
     void UnLockRec(EditD* E);
@@ -207,7 +207,7 @@ private:
     uint16_t CPage = false;
 
     int BaseRec = 0;
-    BYTE IRec = 0;
+    uint8_t IRec = 0;
     bool IsNewRec = false;
 
     bool HasIndex = false;

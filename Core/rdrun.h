@@ -3,7 +3,7 @@
 
 #include "access.h"
 #include "Dependency.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "legacy.h"
 #include "../DataEditor/EditD.h"
 #include "models/FrmlElem.h"
@@ -27,8 +27,8 @@ struct AssignD
 	MInstrCode Kind = MInstrCode::_zero;
 	FieldDescr* inputFldD = nullptr;
 	FieldDescr* outputFldD = nullptr;
-	BYTE* ToPtr = nullptr;
-	BYTE* FromPtr = nullptr; 
+	uint8_t* ToPtr = nullptr;
+	uint8_t* FromPtr = nullptr; 
 	WORD L = 0;
 	bool Add = false; FrmlElem* Frml = nullptr; FieldDescr* OFldD = nullptr;
 	bool Add1 = false; FrmlElem* Frml1 = nullptr; LocVar* LV = nullptr;
@@ -77,7 +77,7 @@ struct EFldD
 	FrmlElem* Impl = nullptr;
 	std::vector<Dependency*> Dependencies;
 	std::vector<XKey*> KL;
-	BYTE Page = 0, Col = 0, Ln = 0, L = 0;
+	uint8_t Page = 0, Col = 0, Ln = 0, L = 0;
 	WORD ScanNr = 0;
 	bool Tab = false, Dupl = false, Used = false;
 	bool EdU = false, EdN = false;
@@ -110,7 +110,7 @@ struct CopyD
 	FileD* HdFD;
 	FieldDescr* HdF;
 	bool Append, NoCancel;
-	BYTE Mode;
+	uint8_t Mode;
 };
 
 struct ChoiceD
@@ -127,7 +127,7 @@ struct WrLnD
 {
 	FrmlElem* Frml = nullptr;
 	char Typ = '\0'; /* S, B, F, D */
-	BYTE N = 0, M = 0;
+	uint8_t N = 0, M = 0;
 	std::string Mask;
 };
 
@@ -173,7 +173,7 @@ extern MergOpSt MergOpGroup;
 
 void ResetLVBD();
 void CrIndRec(FileD* file_d, void* record);
-bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord);
+bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, uint8_t** linkedRecord);
 bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back);
 void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, void* rp, void* new_record, int n);
 bool Assign(FileD* file_d, Additive* add_d, void* record);

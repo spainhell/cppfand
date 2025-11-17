@@ -27,7 +27,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, void* record);
 std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B);
 std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, void* record);
-void RunWFrml(FileD* file_d, WRectFrml& X, BYTE WFlags, WRect& W, void* record);
+void RunWFrml(FileD* file_d, WRectFrml& X, uint8_t WFlags, WRect& W, void* record);
 WORD RunWordImpl(FileD* file_d, FrmlElem* Z, WORD Impl, void* record);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 XKey* GetFromKey(LinkD* LD);
@@ -39,7 +39,7 @@ void StrMask(double R, pstring& Mask);
 std::string RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record);
 void LowCase(std::string& text);
 double RoundReal(double RR, short M);
-void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record);
+void AccRecNoProc(FrmlElem14* X, WORD Msg, uint8_t** record);
 void GetRecNoXString(FileD* file_d, FrmlElemRecNo* Z, XString& X, void* record);
 double RunRealStr(FileD* file_d, FrmlElem* X, void* record);
 

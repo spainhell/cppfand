@@ -29,19 +29,19 @@ DWORD cNumRead = 0;
 // ***
 
 TEvent Event; // r39
-BYTE KbdFlgs; // TODO: absolute $417
-BYTE LLKeyFlags = 0;
+uint8_t KbdFlgs; // TODO: absolute $417
+uint8_t LLKeyFlags = 0;
 short GraphDriver, GraphMode;
 WORD ScrSeg, ScrGrSeg;
-BYTE NrVFont, BytesPerChar;
+uint8_t NrVFont, BytesPerChar;
 bool ChkSnow;
 bool IsGraphMode;
-BYTE GrBytesPerChar;
+uint8_t GrBytesPerChar;
 WORD GrBytesPerLine;
 TPoint LastWhere, LastWhereG, DownWhere;
 WORD LastMode;
 void* FontArr; void* BGIDriver; void* BGILittFont; void* BGITripFont;
-BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
+uint8_t ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
 WORD EventCount, EventQHead, EventQTail;
 stEventQueue EventQueue[EventQSize - 1];
 TCrs Crs;
@@ -52,18 +52,18 @@ void* OldBreakIntr;
 void* OldKbdIntr;
 Wind WindMin, WindMax;
 
-BYTE TextAttr, StartAttr, StartMode; // r138
+uint8_t TextAttr, StartAttr, StartMode; // r138
 enVideoCard VideoCard = enVideoCard::viVga;
 
 // *** KEYBOARD ***
-BYTE ofsHeadKeyBuf = 0x1A;
-BYTE ofsTailKeyBuf = 0x1C; /*Bios*/
+uint8_t ofsHeadKeyBuf = 0x1A;
+uint8_t ofsTailKeyBuf = 0x1C; /*Bios*/
 bool BreakFlag = false;
-BYTE diHacek = 1; const BYTE diCarka = 2; const BYTE diUmlaut = 3;
+uint8_t diHacek = 1; const uint8_t diCarka = 2; const uint8_t diUmlaut = 3;
 char Diak = 0; /*diHacek, diCarka*/
 
 
-const BYTE CsKbdSize = 67;
+const uint8_t CsKbdSize = 67;
 
 void ClearKeyBuf()
 {
@@ -159,7 +159,7 @@ uint64_t getMillisecondsNow()
 	).count();
 }
 
-bool KbdTimer(int cpu_delta, BYTE kind)
+bool KbdTimer(int cpu_delta, uint8_t kind)
 {
 	// CPU = cca 55 ms, 1 sec = 18.2 CPU)
 	const uint64_t end_time = getMillisecondsNow() + (uint64_t)(cpu_delta * 55);
@@ -281,7 +281,7 @@ void TestGlobalKey()
 	}
 }
 
-WORD AddCtrlAltShift(BYTE Flgs)
+WORD AddCtrlAltShift(uint8_t Flgs)
 {
 	WORD key = Event.Pressed.KeyCombination();
 	WORD result = 0;
@@ -413,13 +413,13 @@ void NoSound()
 {
 }
 
-void ClrScr(BYTE Color)
+void ClrScr(uint8_t Color)
 {
 	screen.ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1, ' ', Color);
 	screen.GotoXY(WindMin.X, WindMin.Y, absolute);
 }
 
-void ClrEol(BYTE Color)
+void ClrEol(uint8_t Color)
 {
 	short X = screen.WhereXabs();
 	short Y = screen.WhereYabs();
@@ -445,7 +445,7 @@ WORD WaitEvent(uint64_t Delta)
 	ULONGLONG t = 0;
 	uint64_t t1 = 0;
 	int pos = 0, l = 555;
-	BYTE Flgs = 0;
+	uint8_t Flgs = 0;
 	WORD x = 0, y = 0;
 	bool vis = false, ce = false;
 	const uint64_t MoveDelay = 10;

@@ -1,7 +1,7 @@
 #pragma once
 #include "../Common/typeDef.h"
 
-const BYTE FloppyDrives = 2;
+const uint8_t FloppyDrives = 2;
 
 // *** BASE.H ***
 int const UserLicNrShow = 999001; // 160188
@@ -11,71 +11,71 @@ const char CfgVersion[] = { '4', '.', '2', '0', '\0' };
 const bool HasCoproc = true;
 
 const WORD MaxLStrLen = 65000;
-const BYTE WShadow = 0x01; // window flags
-const BYTE WNoClrScr = 0x02;
-const BYTE WPushPixel = 0x04;
-const BYTE WNoPop = 0x08;
-const BYTE WHasFrame = 0x10;
-const BYTE WDoubleFrame = 0x20;
+const uint8_t WShadow = 0x01; // window flags
+const uint8_t WNoClrScr = 0x02;
+const uint8_t WPushPixel = 0x04;
+const uint8_t WNoPop = 0x08;
+const uint8_t WHasFrame = 0x10;
+const uint8_t WDoubleFrame = 0x20;
 
-const BYTE CachePageShft = 12;
+const uint8_t CachePageShft = 12;
 const WORD NCachePages = 0;
 const WORD XMSCachePages = 0;
 
 // konstanty
-const BYTE prName = 0;
-const BYTE prUl1 = 1;
-const BYTE prUl2 = 2;
-const BYTE prKv1 = 3;
-const BYTE prKv2 = 4;
-const BYTE prBr1 = 5;
-const BYTE prBr2 = 6;
-const BYTE prDb1 = 7;
-const BYTE prDb2 = 8;
-const BYTE prBd1 = 9;
-const BYTE prBd2 = 10;
-const BYTE prKp1 = 11;
-const BYTE prKp2 = 12;
-const BYTE prEl1 = 13;
-const BYTE prEl2 = 14;
-const BYTE prReset = 15;
-const BYTE prMgrFileNm = 15;
-const BYTE prMgrProg = 16;
-const BYTE prMgrParam = 17;
-const BYTE prPageSizeNN = 16;
-const BYTE prPageSizeTrail = 17;
-const BYTE prLMarg = 18;
-const BYTE prLMargTrail = 19;
-const BYTE prUs11 = 20;
-const BYTE prUs12 = 21;
-const BYTE prUs21 = 22;
-const BYTE prUs22 = 23;
-const BYTE prUs31 = 24;
-const BYTE prUs32 = 25;
-const BYTE prLine72 = 26;
-const BYTE prLine216 = 27;
-const BYTE prDen60 = 28;
-const BYTE prDen120 = 29;
-const BYTE prDen240 = 30;
-const BYTE prColor = 31;
-const BYTE prClose = 32;
+const uint8_t prName = 0;
+const uint8_t prUl1 = 1;
+const uint8_t prUl2 = 2;
+const uint8_t prKv1 = 3;
+const uint8_t prKv2 = 4;
+const uint8_t prBr1 = 5;
+const uint8_t prBr2 = 6;
+const uint8_t prDb1 = 7;
+const uint8_t prDb2 = 8;
+const uint8_t prBd1 = 9;
+const uint8_t prBd2 = 10;
+const uint8_t prKp1 = 11;
+const uint8_t prKp2 = 12;
+const uint8_t prEl1 = 13;
+const uint8_t prEl2 = 14;
+const uint8_t prReset = 15;
+const uint8_t prMgrFileNm = 15;
+const uint8_t prMgrProg = 16;
+const uint8_t prMgrParam = 17;
+const uint8_t prPageSizeNN = 16;
+const uint8_t prPageSizeTrail = 17;
+const uint8_t prLMarg = 18;
+const uint8_t prLMargTrail = 19;
+const uint8_t prUs11 = 20;
+const uint8_t prUs12 = 21;
+const uint8_t prUs21 = 22;
+const uint8_t prUs22 = 23;
+const uint8_t prUs31 = 24;
+const uint8_t prUs32 = 25;
+const uint8_t prLine72 = 26;
+const uint8_t prLine216 = 27;
+const uint8_t prDen60 = 28;
+const uint8_t prDen120 = 29;
+const uint8_t prDen240 = 30;
+const uint8_t prColor = 31;
+const uint8_t prClose = 32;
 
-//const BYTE RMsgIdx = 0;
-//const BYTE BgiEgaVga = 1;
-//const BYTE BgiHerc = 2;
-//const BYTE ChrLittKam = 3;
-//const BYTE ChrTripKam = 4;
-//const BYTE Ega8x14K = 5;
-//const BYTE Vga8x16K = 6;
-//const BYTE Vga8x19K = 7;
-//const BYTE Ega8x14L = 8;
-//const BYTE Vga8x16L = 9;
-//const BYTE Vga8x19L = 10;
-//const BYTE ChrLittLat = 11;
-//const BYTE ChrTripLat = 12;
-const BYTE LatToWinCp = 13;
-const BYTE KamToWinCp = 14;
-const BYTE WinCpToLat = 15;
+//const uint8_t RMsgIdx = 0;
+//const uint8_t BgiEgaVga = 1;
+//const uint8_t BgiHerc = 2;
+//const uint8_t ChrLittKam = 3;
+//const uint8_t ChrTripKam = 4;
+//const uint8_t Ega8x14K = 5;
+//const uint8_t Vga8x16K = 6;
+//const uint8_t Vga8x19K = 7;
+//const uint8_t Ega8x14L = 8;
+//const uint8_t Vga8x16L = 9;
+//const uint8_t Vga8x19L = 10;
+//const uint8_t ChrLittLat = 11;
+//const uint8_t ChrTripLat = 12;
+const uint8_t LatToWinCp = 13;
+const uint8_t KamToWinCp = 14;
+const uint8_t WinCpToLat = 15;
 
 
 enum instr_type

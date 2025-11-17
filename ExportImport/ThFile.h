@@ -1,8 +1,10 @@
 #pragma once
 #include <string>
+#include <windows.h>
 
 #include "TcFile.h"
 #include "../Core/FileD.h"
+#include "../Common/LongStr.h"
 
 enum class InOutMode { _inp, _outp, _append };
 
@@ -17,7 +19,7 @@ public:
 	std::string Vol;
 	
 	bool Floppy = false, IsEOL = false, Continued = false;
-	//BYTE compress = 0;
+	//uint8_t compress = 0;
 	int Size = 0, OrigSize = 0, SpaceOnDisk = 0;
 	FileD* FD = nullptr;
 

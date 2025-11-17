@@ -2,7 +2,7 @@
 
 #include "../pascal/asm.h"
 #include "Compiler.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -24,7 +24,7 @@ void TestCPathError()
 	}
 }
 
-bool LinkLastRec(FileD* file_d, int& N, bool WithT, BYTE** newRecord)
+bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord)
 {
 	*newRecord = file_d->GetRecSpace();
 	LockMode md = file_d->NewLockMode(RdMode);
@@ -73,7 +73,7 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 	{
 		int n = 0;
 		LockMode md = file_d->NewLockMode(WrMode);
-		BYTE* rec = nullptr;
+		uint8_t* rec = nullptr;
 
 		if (!LinkLastRec(file_d, n, true, &rec)) {
 			file_d->IncNRecs(1);
@@ -88,7 +88,7 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 }
 
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
-bool LinkUpw(LinkD* LD, int& N, bool WithT, void* record, BYTE** newRecord)
+bool LinkUpw(LinkD* LD, int& N, bool WithT, void* record, uint8_t** newRecord)
 {
 	FileD* from_FD = LD->FromFD;
 	FileD* to_FD = LD->ToFD;
@@ -230,7 +230,7 @@ std::string TranslateOrd(std::string text)
 {
 	std::string trans;
 	for (size_t i = 0; i < text.length(); i++) {
-		char c = CharOrdTab[(BYTE)text[i]];
+		char c = CharOrdTab[(uint8_t)text[i]];
 #ifndef FandAng
 		if (c == 0x49 && trans.length() > 0) {       // znak 'H'
 			if (trans[trans.length() - 1] == 0x43) { // posledni znak ve vystupnim retezci je 'C' ?

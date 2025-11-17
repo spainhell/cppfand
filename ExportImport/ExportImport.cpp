@@ -7,7 +7,7 @@
 #include "TzFile.h"
 #include "../Core/Coding.h"
 #include "../Core/FileD.h"
-#include "../Core/FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
@@ -310,7 +310,7 @@ void ExportTxt(CopyD* CD)
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
 		if (CD->HdFD != nullptr) {
 			int n = 0;
-			BYTE* rec = nullptr;
+			uint8_t* rec = nullptr;
 			LinkLastRec(CD->HdFD, n, true, &rec);
 			pstring s = CFile->loadS(CD->HdF, rec);
 			int i = s.first('\r');
@@ -709,7 +709,7 @@ void AddLicNr(FileD* file_d, FieldDescr* field_d, void* record)
 void CopyH(HANDLE H, pstring Nm)
 {
 	WORD n;
-	BYTE* buf = new BYTE[MaxLStrLen]; // GetStore(MaxLStrLen);
+	uint8_t* buf = new uint8_t[MaxLStrLen]; // GetStore(MaxLStrLen);
 	CPath = Nm;
 	CVol = "";
 	HANDLE h2 = OpenH(CPath, _isOverwriteFile, Exclusive);

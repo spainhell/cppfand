@@ -14,7 +14,7 @@
 #include "../Core/wwmenu.h"
 
 // ***********HELP**********  // r351
-const BYTE maxStk = 15;
+const uint8_t maxStk = 15;
 WORD iStk = 0;
 struct structStk { RdbD* Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
 

@@ -15,7 +15,7 @@
 #include "../Drivers/constants.h"
 #include "../MergeReport/InpD.h"
 
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -51,7 +51,7 @@ double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, void* reco
 	}
 	else {
 		r = 0;
-		BYTE* newRecord = fromFD->GetRecSpace();
+		uint8_t* newRecord = fromFD->GetRecSpace();
 		std::vector<KeyInD*> empty;
 		XScan* Scan = new XScan(fromFD, K, empty, true);
 		Scan->ResetOwner(&x, nullptr);
@@ -126,7 +126,7 @@ LongStr* CopyToLongStr(pstring& SS)
 pstring LeadChar(char C, pstring S)
 {
 	// TODO: do it better
-	while (S.length() > 0 && (S[1] == (BYTE)C)) {
+	while (S.length() > 0 && (S[1] == (uint8_t)C)) {
 		S = S.substr(1);
 	}
 	return S;
@@ -187,10 +187,10 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 		if (iX->Options.find('~') != std::string::npos) {
 			// convert to lexical strings
 			for (char& i : strS) {
-				i = CharOrdTab[(BYTE)i];
+				i = CharOrdTab[(uint8_t)i];
 			}
 			for (char& i : strMask) {
-				i = CharOrdTab[(BYTE)i];
+				i = CharOrdTab[(uint8_t)i];
 			}
 		}
 
@@ -333,7 +333,7 @@ int RecNoFun(FileD* file_d, FrmlElemRecNo* Z, void* record)
 	FileD* funcFD = Z->FFD;
 
 	LockMode md = funcFD->NewLockMode(RdMode);
-	BYTE* newRecord = funcFD->GetRecSpace();
+	uint8_t* newRecord = funcFD->GetRecSpace();
 	if (funcFD->FF->NRecs > 0) {
 		bool b;
 		if (funcFD->FF->file_type == FandFileType::INDEX) {
@@ -371,7 +371,7 @@ int AbsLogRecNoFun(FileD* file_d, FrmlElemRecNo* Z, void* record)
 	if (funcFD->FF->file_type == FandFileType::INDEX) {
 		funcFD->FF->TestXFExist();
 		if (Z->Op == _recnolog) {
-			BYTE* newRecord = funcFD->GetRecSpace();
+			uint8_t* newRecord = funcFD->GetRecSpace();
 			funcFD->ReadRec(N, newRecord);
 			if (funcFD->DeletedFlag(newRecord)) {
 				funcFD->OldLockMode(md);
@@ -399,7 +399,7 @@ int AbsLogRecNoFun(FileD* file_d, FrmlElemRecNo* Z, void* record)
 double LinkProc(FrmlElemLink* X, void* record)
 {
 	int N;
-	BYTE* rec = nullptr;
+	uint8_t* rec = nullptr;
 
 	LinkD* LD = X->LinkLD;
 	FileD* fromFD = LD->FromFD;
@@ -414,7 +414,7 @@ double LinkProc(FrmlElemLink* X, void* record)
 			fromFD->RunErrorM(md);
 			RunError(609);
 		}
-		BYTE* newRecord = fromFD->GetRecSpace();
+		uint8_t* newRecord = fromFD->GetRecSpace();
 		fromFD->ReadRec(N, newRecord);
 		fromFD->OldLockMode(md);
 		if (!LinkUpw(LD, N, false, newRecord, &rec)) N = -N;
@@ -433,7 +433,7 @@ WORD IntTSR(FileD* file_d, FrmlElem* X, void* record)
 	double r = 0.0;
 
 	auto iX0 = (FrmlElemFunction*)X;
-	BYTE IntNr = RunInt(file_d, iX0->P1, record);
+	uint8_t IntNr = RunInt(file_d, iX0->P1, record);
 	WORD FunNr = RunInt(file_d, iX0->P2, record);
 	FrmlElem* z = iX0->P3;
 
@@ -712,7 +712,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		auto iX = (FrmlElem7*)X;
 		bool b7 = false;
 		int RecNo;
-		BYTE* newRecord = nullptr;
+		uint8_t* newRecord = nullptr;
 		if (iX->LD != nullptr) {
 			b7 = LinkUpw(iX->LD, RecNo, false, record, &newRecord);
 			if ((iX->P011 == nullptr)) {
@@ -763,7 +763,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _accrecno: {
 		FrmlElem14* iX = (FrmlElem14*)X;
-		BYTE* rec = nullptr;
+		uint8_t* rec = nullptr;
 		AccRecNoProc(iX, 640, &rec);
 		result = iX->RecFD->loadB(iX->RecFldD, rec);
 		delete[] rec; rec = nullptr;
@@ -774,7 +774,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	case _escprompt: result = EscPrompt; break;
 	case _isdeleted: {
 		auto iX = (FrmlElem14*)X;
-		BYTE* rec = nullptr;
+		uint8_t* rec = nullptr;
 		AccRecNoProc(iX, 642, &rec);
 		result = iX->RecFD->DeletedFlag(rec);
 		delete[] rec; rec = nullptr;
@@ -877,7 +877,7 @@ bool RunModulo(FileD* file_d, FrmlElemFunction* X, void* record)
 
 	int sum = 0;
 	const int n = X->vValues[0];
-	const BYTE lastChar = input[input.length() - 1];
+	const uint8_t lastChar = input[input.length() - 1];
 
 	for (size_t i = 0; i < input.length() - 1; i++) {
 		char c = input[i];
@@ -939,7 +939,7 @@ label1:
 	}
 	case _access: {
 		auto iX = (FrmlElem7*)X;
-		BYTE* newRecord = nullptr;
+		uint8_t* newRecord = nullptr;
 		if (iX->LD != nullptr) {
 			LinkUpw(iX->LD, RecNo, false, record, &newRecord);
 			result = RunReal(iX->LD->ToFD, iX->P011, newRecord);
@@ -1100,7 +1100,7 @@ label1:
 	}
 	case _accrecno: {
 		FrmlElem14* iX = (FrmlElem14*)X;
-		BYTE* rec = nullptr;
+		uint8_t* rec = nullptr;
 		AccRecNoProc(iX, 640, &rec);
 		result = iX->RecFD->loadR(iX->RecFldD, rec);
 		delete[] rec; rec = nullptr;
@@ -1190,9 +1190,9 @@ label1:
 		break;
 	}
 	case _color: {
-		// Colors ma 54 prvku (BYTE)
+		// Colors ma 54 prvku (uint8_t)
 		size_t colorFromFrml = RunInt(file_d, iX0->P1, record);
-		BYTE* AColors = (BYTE*)&screen.colors;
+		uint8_t* AColors = (uint8_t*)&screen.colors;
 		result = AColors[min(colorFromFrml, 53)];
 		break;
 	}
@@ -1264,7 +1264,7 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 		int n;
 		FrmlElem7* iZ = (FrmlElem7*)Z;
 		LockMode md = iZ->File2->NewLockMode(RdMode);
-		BYTE* newRecord = nullptr;
+		uint8_t* newRecord = nullptr;
 		if (iZ->LD != nullptr) {
 			LinkUpw(iZ->LD, n, true, record, &newRecord);
 			TestTFrml(iZ->LD->ToFD, F, iZ->P011, TF02, TFD02, TF02Pos, newRecord);
@@ -1512,7 +1512,7 @@ std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, void* record)
 	return DecodeFieldRSB(F, LWw, r, s, b);
 }
 
-void RunWFrml(FileD* file_d, WRectFrml& X, BYTE WFlags, WRect& W, void* record)
+void RunWFrml(FileD* file_d, WRectFrml& X, uint8_t WFlags, WRect& W, void* record)
 {
 	W.C1 = RunInt(file_d, X.C1, record);
 	W.R1 = RunInt(file_d, X.R1, record);
@@ -1572,19 +1572,19 @@ std::string Replace(std::string text, std::string oldText, std::string& newText,
 
 	if (upper) {
 		for (size_t i = 0; i < copyInputText.length(); i++) {
-			copyInputText[i] = UpcCharTab[(BYTE)copyInputText[i]];
+			copyInputText[i] = UpcCharTab[(uint8_t)copyInputText[i]];
 		}
 		for (size_t i = 0; i < oldText.length(); i++) {
-			oldText[i] = UpcCharTab[(BYTE)oldText[i]];
+			oldText[i] = UpcCharTab[(uint8_t)oldText[i]];
 		}
 	}
 
 	if (tilda) {
 		for (size_t i = 0; i < copyInputText.length(); i++) {
-			copyInputText[i] = CharOrdTab[(BYTE)copyInputText[i]];
+			copyInputText[i] = CharOrdTab[(uint8_t)copyInputText[i]];
 		}
 		for (size_t i = 0; i < oldText.length(); i++) {
-			oldText[i] = CharOrdTab[(BYTE)oldText[i]];
+			oldText[i] = CharOrdTab[(uint8_t)oldText[i]];
 		}
 	}
 
@@ -1625,7 +1625,7 @@ label1:
 	case _access: {
 		FrmlElem7* iX7 = (FrmlElem7*)X;
 		LockMode lm = iX7->File2->NewLockMode(RdMode);
-		BYTE* newRecord = nullptr;
+		uint8_t* newRecord = nullptr;
 		if (iX7->LD != nullptr) {
 			LinkUpw(iX7->LD, RecNo, true, record, &newRecord);
 			result = RunString(iX7->LD->ToFD, iX7->P011, newRecord);
@@ -1716,7 +1716,7 @@ label1:
 		auto iX0 = (FrmlElemFunction*)X;
 		result = RunString(file_d, iX0->P1, record);
 		for (WORD i = 0; i < result.length(); i++) {
-			result[i] = UpcCharTab[(BYTE)result[i]];
+			result[i] = UpcCharTab[(uint8_t)result[i]];
 		}
 		break;
 	}
@@ -1744,7 +1744,7 @@ label1:
 	}
 	case _accrecno: {
 		FrmlElem14* iX = (FrmlElem14*)X;
-		BYTE* rec = nullptr;
+		uint8_t* rec = nullptr;
 		AccRecNoProc(iX, 640, &rec);
 		result = iX->RecFD->loadS(iX->RecFldD, rec);
 		delete[] rec; rec = nullptr;
@@ -1795,7 +1795,7 @@ label1:
 		if (iZ0->P3 != nullptr) {
 			double r = RunReal(file_d, iZ0->P1, record);
 			WORD l = RunInt(file_d, iZ0->P2, record);
-			BYTE m = RunInt(file_d, iZ0->P3, record);
+			uint8_t m = RunInt(file_d, iZ0->P3, record);
 
 			if (m == 255) {
 				result = to_string(static_cast<int>(r));
@@ -2120,7 +2120,7 @@ double RoundReal(double RR, short M)
 	return int(R) / Power10[M];
 }
 
-void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record)
+void AccRecNoProc(FrmlElem14* X, WORD Msg, uint8_t** record)
 {
 	FileD* fd = X->RecFD;
 	LockMode md = fd->NewLockMode(RdMode);

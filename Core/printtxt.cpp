@@ -65,7 +65,7 @@ std::string replaceNo(std::string s, std::string sNew)
 
 void ExecPrintManagerProgram()
 {
-	BYTE x = 0, y = 0;
+	uint8_t x = 0, y = 0;
 	std::string pgmNm = PrTab(prCurr, prMgrProg);
 	if (pgmNm.empty()) return;
 	std::string param = replaceNo(PrTab(prCurr, prMgrParam), CPath);

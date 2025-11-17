@@ -5,7 +5,7 @@ char UpcCharTab[256];
 
 char NoDiakr(char C, TVideoFont fromFont)
 {
-	BYTE byteC = static_cast<BYTE>(C);
+	uint8_t byteC = static_cast<uint8_t>(C);
 	if (byteC < 0x80) return C;
 
 	switch (fromFont) {
@@ -35,7 +35,7 @@ char CurrToKamen(char C)
 
 void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont)
 {
-	BYTE* c = static_cast<BYTE*>(Buf);
+	uint8_t* c = static_cast<uint8_t*>(Buf);
 	if (FromFont == TVideoFont::foAscii) return;
 	if (FromFont == TVideoFont::foLatin2) {
 		for (size_t i = 0; i < L; i++) {
@@ -57,27 +57,27 @@ void ConvToNoDiakr(std::string& text, TVideoFont FromFont)
 
 	if (FromFont == TVideoFont::foLatin2) {
 		for (size_t i = 0; i < text.length(); i++) {
-			if (static_cast<BYTE>(text[i]) < 0x80) continue;
-			text[i] = static_cast<char>(TabLtN[static_cast<BYTE>(text[i])]);
+			if (static_cast<uint8_t>(text[i]) < 0x80) continue;
+			text[i] = static_cast<char>(TabLtN[static_cast<uint8_t>(text[i])]);
 		}
 	}
 	else {
 		for (size_t i = 0; i < text.length(); i++) {
-			if (static_cast<BYTE>(text[i]) < 0x80) continue;
-			text[i] = static_cast<char>(TabKtN[static_cast<BYTE>(text[i])]);
+			if (static_cast<uint8_t>(text[i]) < 0x80) continue;
+			text[i] = static_cast<char>(TabKtN[static_cast<uint8_t>(text[i])]);
 		}
 	}
 }
 
 void ConvKamenToCurr(std::string& text, bool diacritic)
 {
-	BYTE* tab = diacritic ? TabKtL : TabKtN;
+	uint8_t* tab = diacritic ? TabKtL : TabKtN;
 
 	for (size_t i = 0; i < text.length(); i++) {
-		short index = (BYTE)text[i] - 0x80;
+		short index = (uint8_t)text[i] - 0x80;
 		if (index >= 0) {
-			BYTE kam = text[i];
-			BYTE lat = tab[kam];
+			uint8_t kam = text[i];
+			uint8_t lat = tab[kam];
 			text[i] = (char)lat;
 		}
 	}
@@ -90,7 +90,7 @@ void ConvKamenLatin(void* Buf, WORD L, bool ToLatin)
 char ToggleCS(char C)
 {
 	char result = 0;
-	BYTE input = (BYTE)C;
+	uint8_t input = (uint8_t)C;
 
 	if (input == 0) {
 		// null stays null

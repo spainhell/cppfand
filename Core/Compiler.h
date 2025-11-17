@@ -15,8 +15,8 @@ enum class ReadFuncType { none, P };
 
 struct stSaveState
 {
-	BYTE CurrChar = 0;
-	BYTE ForwChar = 0; BYTE ExpChar = 0; BYTE Lexem = 0;
+	uint8_t CurrChar = 0;
+	uint8_t ForwChar = 0; uint8_t ExpChar = 0; uint8_t Lexem = 0;
 	std::string lex_word;
 	bool SpecFDNameAllowed = false, IdxLocVarAllowed = false, FDLocVarAllowed = false, IsCompileErr = false;
 	std::deque<CompInpD> PrevCompInp;
@@ -105,7 +105,7 @@ public:
 	std::string RdHelpName();
 	FrmlElem* RdAttr();
 	void RdW(WRectFrml& W);
-	void RdFrame(FrmlElem** Z, BYTE& WFlags);
+	void RdFrame(FrmlElem** Z, uint8_t& WFlags);
 	bool PromptSortKeys(FileD* file_d, std::vector<FieldDescr*>& FL, std::vector<KeyFldD*>& SKRoot);
 	void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller);
 	bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
@@ -124,8 +124,8 @@ public:
 	size_t input_pos = 0;
 	size_t input_old_err_pos = 0;
 
-	BYTE CurrChar; // { Compile }
-	BYTE ForwChar, ExpChar, Lexem;
+	uint8_t CurrChar; // { Compile }
+	uint8_t ForwChar, ExpChar, Lexem;
 	pstring LexWord;
 
 private:

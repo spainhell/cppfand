@@ -195,7 +195,7 @@ void FileD::Reset()
 	FldD.clear();
 	IsParFile = false; IsJournal = false; IsHlpFile = false;
 	typSQLFile = false; IsSQLFile = false; IsDynFile = false;
-	ViewNames.clear();  //after each string BYTE string with user codes 
+	ViewNames.clear();  //after each string uint8_t string with user codes 
 	Keys.clear();
 	Add.clear();
 }
@@ -451,9 +451,9 @@ void FileD::CheckX(int file_size)
 uint8_t* FileD::GetRecSpace() const
 {
 	size_t length;
-	// 0. BYTE in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
-	// 1. BYTE in the end -> Work Flag
-	// 2. BYTE in the end -> Update Flag
+	// 0. uint8_t in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
+	// 1. uint8_t in the end -> Work Flag
+	// 2. uint8_t in the end -> Update Flag
 
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -475,9 +475,9 @@ uint8_t* FileD::GetRecSpace() const
 std::unique_ptr<uint8_t[]> FileD::GetRecSpaceUnique() const
 {
 	size_t length;
-	// 0. BYTE in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
-	// 1. BYTE in the end -> Work Flag
-	// 2. BYTE in the end -> Update Flag
+	// 0. uint8_t in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
+	// 1. uint8_t in the end -> Work Flag
+	// 2. uint8_t in the end -> Update Flag
 
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -696,7 +696,7 @@ void FileD::AssignNRecs(bool Add, int N)
 		return;
 	}
 
-	BYTE* record = GetRecSpace();
+	uint8_t* record = GetRecSpace();
 	ZeroAllFlds(record, false);
 	SetDeletedFlag(record);
 	IncNRecs(N - OldNRecs);
@@ -876,7 +876,7 @@ int FileD::saveT(FieldDescr* field_d, int pos, void* record) const
 	return result;
 }
 
-void FileD::SetDrive(BYTE drive) const
+void FileD::SetDrive(uint8_t drive) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -1990,7 +1990,7 @@ std::string FileD::SetPathMountVolumeSetNet(FileUseMode UM)
 {
 	std::string path = SetPathAndVolume();
 	SetUMode(UM);
-	SetDrive((BYTE)TestMountVol(path[0]));
+	SetDrive((uint8_t)TestMountVol(path[0]));
 	if (!IsNetCVol() || (this == Chpt))
 		switch (UM) {
 		case RdShared: SetUMode(RdOnly); break;
@@ -2138,7 +2138,7 @@ void FileD::CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<Fi
 void FileD::CopyH(HANDLE h1, HANDLE h2)
 {
 	const WORD BufSize = 32768;
-	void* p = new BYTE[BufSize];
+	void* p = new uint8_t[BufSize];
 	int sz = FileSizeH(h1);
 	SeekH(h1, 0);
 	SeekH(h2, 0);

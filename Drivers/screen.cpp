@@ -16,8 +16,8 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	this->WindMax = WindMax;
 	this->Crs = Crs;
 
-	WindMax->X = (BYTE)MaxColsIndex;
-	WindMax->Y = (BYTE)MaxRowsIndex;
+	WindMax->X = (uint8_t)MaxColsIndex;
+	WindMax->Y = (uint8_t)MaxRowsIndex;
 
 	_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (_handle == INVALID_HANDLE_VALUE) {
@@ -56,8 +56,8 @@ void Screen::ReInit(short TxtCols, short TxtRows)
 		this->MaxColsIndex = (short)(TxtCols - 1);
 		this->MaxRowsIndex = (short)(TxtRows - 1);
 
-		this->WindMax->X = (BYTE)this->MaxColsIndex;
-		this->WindMax->Y = (BYTE)this->MaxRowsIndex;
+		this->WindMax->X = (uint8_t)this->MaxColsIndex;
+		this->WindMax->Y = (uint8_t)this->MaxRowsIndex;
 
 		SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
 		SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
@@ -76,7 +76,7 @@ size_t Screen::BufSize()
 	return BUFFSIZE;
 }
 
-void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
+void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, uint8_t Color)
 {
 	// cislovani radku a sloupcu prichazi od 1 .. X
 	if (X < 1 || Y < 1) { throw std::exception("Bad ScrClr index."); }
@@ -93,20 +93,20 @@ void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 	delete[] _buf;
 }
 
-void Screen::ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
+void Screen::ScrWrChar(WORD X, WORD Y, char C, uint8_t Color)
 {
 	SMALL_RECT rect = { (short)(X - 1), (short)(Y - 1), (short)X, (short)Y };
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
 	WriteConsoleOutput(_handle, &ci, { 1, 1 }, { 0, 0 }, &rect);
 }
 
-void Screen::ScrWrStr(const std::string& s, BYTE Color)
+void Screen::ScrWrStr(const std::string& s, uint8_t Color)
 {
 	ScrWrStr(WhereXabs(), WhereYabs(), s, Color);
 }
 
 
-void Screen::ScrWrStr(WORD X, WORD Y, const std::string& s, BYTE Color) const
+void Screen::ScrWrStr(WORD X, WORD Y, const std::string& s, uint8_t Color) const
 {
 	// TODO: doresit zobrazeni znaku jako '\r' nebo '\n'
 
@@ -125,7 +125,7 @@ void Screen::ScrWrStr(WORD X, WORD Y, const std::string& s, BYTE Color) const
 	delete[] _buf;
 }
 
-void Screen::ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
+void Screen::ScrWrFrameLn(WORD X, WORD Y, uint8_t Typ, uint8_t Width, uint8_t Color)
 {
 	std::string txt;
 	txt.reserve(Width);
@@ -180,7 +180,7 @@ void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)
 	va_end(args);
 }
 
-void Screen::ScrFormatWrStyledText(WORD X, WORD Y, BYTE Color, char const* const _Format, ...)
+void Screen::ScrFormatWrStyledText(WORD X, WORD Y, uint8_t Color, char const* const _Format, ...)
 {
 	// souradnice jsou relativni, tiskneme do aktualniho okna
 	X += WindMin->X - 1;
@@ -261,14 +261,14 @@ void Screen::ScrMove(short X, short Y, short ToX, short ToY, short L)
 	CrsShow();
 }
 
-void Screen::ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
+void Screen::ScrColor(WORD X, WORD Y, WORD L, uint8_t Color)
 {
 	DWORD written = 0;
 	FillConsoleOutputAttribute(_handle, Color, L, { (short)X, (short)Y }, &written);
 }
 
 // vypise na zadanou pozici 1 znak v zadane barve
-void Screen::WriteChar(short X, short Y, char C, BYTE attr, ScrPosition pos)
+void Screen::WriteChar(short X, short Y, char C, uint8_t attr, ScrPosition pos)
 {
 	DWORD written = 0;
 	switch (pos) {
@@ -294,7 +294,7 @@ void Screen::WriteChar(short X, short Y, char C, BYTE attr, ScrPosition pos)
 }
 
 // vypise stylizovany text do aktualniho okna a vrati pocet vypsanych znaku
-size_t Screen::WriteStyledStringToWindow(const std::string& text, BYTE Attr)
+size_t Screen::WriteStyledStringToWindow(const std::string& text, uint8_t Attr)
 {
 	if (text.length() == 0) return 0;
 
@@ -339,7 +339,7 @@ size_t Screen::WriteStyledStringToWindow(const std::string& text, BYTE Attr)
 		for (size_t i = 0; i < strLen; i++)
 		{
 			char c = str[i];
-			BYTE a = 0;
+			uint8_t a = 0;
 			if (SetStyleAttr(c, a))
 			{
 				ctrlCharsCount++;
@@ -416,7 +416,7 @@ void Screen::LF()
 	GotoXY(actualWindowCol, actualWindowRow);
 }
 
-bool Screen::SetStyleAttr(char C, BYTE& a)
+bool Screen::SetStyleAttr(char C, uint8_t& a)
 {
 	auto result = true;
 	if (C == 0x13) a = colors.tUnderline;
@@ -537,7 +537,7 @@ short Screen::WhereYabs()
 	return sbi.dwCursorPosition.Y + 1;
 }
 
-void Screen::Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
+void Screen::Window(uint8_t X1, uint8_t Y1, uint8_t X2, uint8_t Y2)
 {
 	// pùvodní kód z ASM
 	if (X2 < X1) return;

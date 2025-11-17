@@ -32,7 +32,7 @@ struct WinG
 	WRect WR;
 	FrmlElem* ColFrame, *ColBack, *ColFor;  /*pstring*/
 	FrmlElem* *Top;
-	BYTE WFlags;
+	uint8_t WFlags;
 };
 
 struct GraphD

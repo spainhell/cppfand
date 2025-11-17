@@ -10,7 +10,7 @@ extern int ExitCode; // exit kód -> OS
 extern void* ErrorAddr; // adresa chyby
 extern void (*ExitProc)(); // ukončovací procedura
 
-void val(pstring s, BYTE& b, WORD& err);
+void val(pstring s, uint8_t& b, WORD& err);
 void val(pstring s, WORD& b, WORD& err);
 void val(pstring s, short& b, short& err);
 void val(pstring s, double& b, short& err);
@@ -37,8 +37,8 @@ std::string FSearch(const std::string path, const std::string dirlist);
 std::string FExpand(std::string path, char pathDelim = '\\');
 
 void ChDir(std::string cesta);
-void GetDir(BYTE disk, pstring* cesta);
-std::string GetDir(BYTE disk);
+void GetDir(uint8_t disk, pstring* cesta);
+std::string GetDir(uint8_t disk);
 void MkDir(std::string cesta);
 void RmDir(std::string cesta);
 void Rename(std::string soubor, std::string novejmeno);
@@ -60,8 +60,8 @@ inline void Halt(WORD code) { exit(code); }
 
 void FillChar(void* cil, int delka, size_t vypln);
 void Move(void* zdroj, void* cil, WORD delka);
-BYTE Hi(WORD cislo);
-BYTE Lo(WORD cislo);
+uint8_t Hi(WORD cislo);
+uint8_t Lo(WORD cislo);
 WORD Swap(WORD cislo);
 
 inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
@@ -86,11 +86,11 @@ public:
 	short (*flushfunc)(TextFile* F) = nullptr; // function pointer
 	short (*closefunc)(TextFile* F) = nullptr; // function pointer
 	short (*opentxt)(TextFile* F) = nullptr; // function pointer
-	BYTE UserData[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	uint8_t UserData[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	std::string name;
 	std::string LineEnd;
 	std::string FullPath;
-	BYTE* buffer = nullptr;
+	uint8_t* buffer = nullptr;
 	bool eof = false;
 
 	const char* c_str();

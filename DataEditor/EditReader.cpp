@@ -64,7 +64,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	std::vector<std::string> SLRoot;
 	std::string s;
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
-	bool comment = false; char c = '\0'; BYTE a = 0;
+	bool comment = false; char c = '\0'; uint8_t a = 0;
 	gc->SetInpTT(&FormPos, true);
 
 	bool skipAfterHash = false;

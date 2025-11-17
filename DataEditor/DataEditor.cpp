@@ -8,7 +8,7 @@
 #include "../Core/LogicControl.h"
 #include "../Core/Compiler.h"
 #include "../Core/EditOpt.h"
-#include "../Core/FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
@@ -113,14 +113,14 @@ void DataEditor::SetSelectFalse()
 	params_->Select = false;
 }
 
-void DelBlk(BYTE& sLen, std::string s, WORD pos)
+void DelBlk(uint8_t& sLen, std::string s, WORD pos)
 {
 	while ((sLen > 0) && (s[sLen - 1] == ' ') && (pos <= sLen)) {
 		sLen--;
 	}
 }
 
-void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std::string s, bool star,
+void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, uint8_t sLen, std::string s, bool star,
 	WORD cx, WORD cy, WORD cx1, WORD cy1)
 {
 	CHAR_INFO Buffer[MaxTxtCols];
@@ -977,7 +977,7 @@ void DataEditor::Wr1Line(FieldDescr* F)
 	if (chars < max) screen.ScrFormatWrStyledText(X + chars, Y, edit_->dNorm, "%*c", max - chars, ' ');
 }
 
-void DataEditor::DisplFld(EFldD* D, WORD I, BYTE Color)
+void DataEditor::DisplFld(EFldD* D, WORD I, uint8_t Color)
 {
 	WORD r = FldRow(D, I);
 	FieldDescr* F = D->FldD;
@@ -1000,7 +1000,7 @@ void DataEditor::DisplRec(WORD I)
 {
 	//EFldD* D = nullptr;
 	bool NewFlds = false;
-	BYTE a = edit_->dNorm;
+	uint8_t a = edit_->dNorm;
 	int N = BaseRec + I - 1;
 	bool IsCurrNewRec = IsNewRec && (I == IRec);
 	uint8_t* p = file_d_->GetRecSpace();
@@ -2269,7 +2269,7 @@ bool DataEditor::DeleteRecProc()
 	}
 
 	CFld = edit_->FirstFld.begin();
-	IRec = (BYTE)oIRec;
+	IRec = (uint8_t)oIRec;
 	BaseRec = oBaseRec;
 	file_d_->ClearDeletedFlag(record_);
 	AdjustCRec();
@@ -2615,7 +2615,7 @@ void DataEditor::DisplChkErr(LogicControl* logic_control)
 
 		int n = 0;
 
-		BYTE* rec = nullptr;
+		uint8_t* rec = nullptr;
 		bool b = LinkUpw(LD, n, false, record_, &rec);
 
 		delete[] rec; rec = nullptr;
@@ -3795,7 +3795,7 @@ bool DataEditor::EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& B
 
 	std::vector<WORD> Breaks;
 
-	const BYTE maxStk = 10;
+	const uint8_t maxStk = 10;
 
 	bool Srch = false, Upd = false, WasUpd = false, Displ = false, quit;
 	std::string HdTxt;
@@ -4921,7 +4921,7 @@ void DataEditor::DisplCtrlAltLL(WORD Flags)
 // po nacteni editoru se smycka drzi tady a ceka na stisknuti klavesy
 void DataEditor::CtrlReadKbd()
 {
-	BYTE flgs = 0;
+	uint8_t flgs = 0;
 	uint64_t TimeBeg = getMillisecondsNow();
 	unsigned int D = 0;
 
@@ -5096,7 +5096,7 @@ void DataEditor::RunEdit(XString* PX, WORD& Brk)
 	uint64_t OldTimeW = 0;
 	uint64_t OldTimeR = 0;
 	int n = 0;
-	BYTE EdBr = 0;
+	uint8_t EdBr = 0;
 	WORD KbdChar;
 
 	Brk = 0;

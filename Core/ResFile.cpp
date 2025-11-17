@@ -24,7 +24,7 @@ void ResFile::Open(std::string path)
 WORD ResFile::Get(WORD Kod, void** P)
 {
 	WORD l = A[Kod].Size;
-	*P = new BYTE[l];
+	*P = new uint8_t[l];
 	long sizeF = SizeF(Handle, error);
 	long seekF = SeekF(Handle, error, A[Kod - 1].Pos);
 	size_t readF = ReadF(Handle, *P, l, error);
@@ -61,7 +61,7 @@ bool ResFile::ReadMessage(int msg_nr, std::string& message)
 	bool found = false;
 	for (int i = 0; i < MsgIdxN; i++) {
 		WORD Nr = MsgIdx[i].Nr;
-		BYTE Count = MsgIdx[i].Count;
+		uint8_t Count = MsgIdx[i].Count;
 		WORD Ofs = MsgIdx[i].Ofs;
 		if (msg_nr >= Nr && msg_nr < Nr + Count) {
 			j = msg_nr - Nr + 1;
@@ -83,7 +83,7 @@ std::string ResFile::get_message(int offset, WORD order)
 {
 	SeekF(Handle, error, offset, 0);
 
-	BYTE length = 0;
+	uint8_t length = 0;
 	char* buffer = nullptr;
 
 	for (int i = 1; i <= order; i++) {
@@ -122,7 +122,7 @@ void ResFile::ReadInfo()
 		TMsgIdxItem newItem{ 0, 0, 0 };
 		ReadF(Handle, &newItem.Nr, sizeof(newItem.Nr), error);       // WORD
 		ReadF(Handle, &newItem.Ofs, sizeof(newItem.Ofs), error);     // WORD
-		ReadF(Handle, &newItem.Count, sizeof(newItem.Count), error); // BYTE
+		ReadF(Handle, &newItem.Count, sizeof(newItem.Count), error); // uint8_t
 		MsgIdx.push_back(newItem);
 	}
 	FrstMsgPos = PosF(Handle, error);

@@ -21,7 +21,7 @@
 #include "access.h"
 #include "Coding.h"
 #include "Compiler.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -264,7 +264,7 @@ bool IsDuplFileName(DataEditor* data_editor, std::string name)
 	else {
 		result = false;
 		std::string n; std::string e;
-		BYTE* record = CFile->GetRecSpace();
+		uint8_t* record = CFile->GetRecSpace();
 		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
 			if (i != data_editor->CRec()) {
 				CFile->ReadRec(i, record);
@@ -303,7 +303,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		return result;
 	}
 	if (!data_editor->TestIsNewRec()) {
-		eq = CompArea(&((BYTE*)edit->NewRecPtr)[2], &((BYTE*)edit->OldRecPtr)[2], edit->FD->FF->RecLen - 2);
+		eq = CompArea(&((uint8_t*)edit->NewRecPtr)[2], &((uint8_t*)edit->OldRecPtr)[2], edit->FD->FF->RecLen - 2);
 		if (eq == _equ) {
 			return result;
 		}

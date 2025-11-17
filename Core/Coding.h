@@ -16,16 +16,16 @@ public:
 	/// <param name="file_d">FileD pointer</param>
 	/// <param name="nr">Password type</param>
 	/// <param name="passwd">Password</param>
-	void static SetPassword(FileD* file_d, WORD nr, std::string passwd);
+	void static SetPassword(FileD* file_d, uint16_t nr, std::string passwd);
 
-	bool static HasPassword(FileD* file_d, WORD nr, const std::string& passwd);
+	bool static HasPassword(FileD* file_d, uint16_t nr, const std::string& passwd);
 
 	std::string static XDecode(const std::string& coded_input);
 	std::string static XEncode(const std::string& input);
 
 private:
-	void static rotateByteLeft(BYTE& input, size_t count);
-	void static rotateByteRight(BYTE& input, size_t count);
+	void static rotateByteLeft(uint8_t& input, size_t count);
+	void static rotateByteRight(uint8_t& input, size_t count);
 	static bool findCommonSubstr(const std::string& input, size_t index, size_t& offset, size_t& length);
 };
 

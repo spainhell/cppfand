@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "Coding.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -21,7 +21,7 @@
 #include "../Drivers/constants.h"
 #include "../Core/DateTime.h"
 
-const BYTE MaxLen = 9;
+const uint8_t MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
 Compiler* gc = new Compiler(); // global compiler instance
 bool IsRdUserFunc;
@@ -671,9 +671,9 @@ bool Compiler::IsKeyWord(const std::string& S)
 	std::string sLexWord = LexWord;
 
 	for (size_t i = 0; i < sLexWord.length(); i++) {
-		BYTE lw = (BYTE)sLexWord[i];
-		BYTE upcLw = UpcCharTab[lw]; // velke pismeno dle UpcCharTab
-		if (upcLw != (BYTE)S[i]) return false;
+		uint8_t lw = (uint8_t)sLexWord[i];
+		uint8_t upcLw = UpcCharTab[lw]; // velke pismeno dle UpcCharTab
+		if (upcLw != (uint8_t)S[i]) return false;
 	}
 	RdLex();
 	return true;
@@ -930,7 +930,7 @@ void Compiler::RdLocDcl(LocVarBlock* LVB, bool IsParList, bool WithRecVar, char 
 	double r = 0;
 	std::string s;
 	char typ = '\0';
-	BYTE lx = '\0', fc = '\0';
+	uint8_t lx = '\0', fc = '\0';
 	size_t sz = 0, n = 0;
 	FileD* cf = nullptr;
 	FileD* fd = nullptr;
@@ -1206,7 +1206,7 @@ std::string Compiler::RdHelpName()
 FrmlElem* Compiler::RdAttr()
 {
 	if (Lexem == '^') {
-		BYTE n;
+		uint8_t n;
 		RdLex();
 		const char c = (char)(toupper(Rd1Char()) - 64);
 		if (!screen.SetStyleAttr(c, n)) OldError(120);
@@ -1224,7 +1224,7 @@ void Compiler::RdW(WRectFrml& W)
 	W.R2 = RdRealFrml(nullptr);
 }
 
-void Compiler::RdFrame(FrmlElem** Z, BYTE& WFlags)
+void Compiler::RdFrame(FrmlElem** Z, uint8_t& WFlags)
 {
 	if (Lexem != ',') return;
 	RdLex();
@@ -1621,7 +1621,7 @@ void Compiler::RdInConst(FrmlElemIn* Z, char& FTyp, std::string& str, double& R)
 FrmlElem* Compiler::RdComp(char& FTyp, MergeReportBase* caller)
 {
 	pstring S;
-	BYTE* B = nullptr;
+	uint8_t* B = nullptr;
 	short N = 0;
 	FrmlElem* Z1 = nullptr;
 	FrmlElem* Z = RdAdd(FTyp, caller);
@@ -1723,7 +1723,7 @@ FrmlElem* Compiler::RdBOr(char& FTyp, MergeReportBase* caller)
 FrmlElem* Compiler::RdFormula(char& FTyp, MergeReportBase* caller)
 {
 	FrmlElem* Z = RdBOr(FTyp, caller);
-	while ((BYTE)Lexem == _limpl || (BYTE)Lexem == _lequ) {
+	while ((uint8_t)Lexem == _limpl || (uint8_t)Lexem == _lequ) {
 		Z = BOperation(FTyp, (instr_type)Lexem, Z);
 		((FrmlElemFunction*)Z)->P2 = RdBOr(FTyp, caller);
 		TestBool(FTyp);
@@ -1863,7 +1863,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 	FrmlElem* Z3 = nullptr;
 	char Typ = '\0';
 	short I = 0, N = 0;
-	BYTE* B = nullptr;
+	uint8_t* B = nullptr;
 
 	switch (Lexem) {
 	case _identifier: {
@@ -1900,14 +1900,14 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				RdLex();
 				Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
 				((FrmlElemFunction*)Z)->P1 = RdAdd(FTyp, caller);
-				if ((BYTE)FunCode == _copy) TestString(FTyp);
+				if ((uint8_t)FunCode == _copy) TestString(FTyp);
 				else {
 					TestReal(FTyp);
 					FTyp = 'S';
 				}
 				Accept(',');
 				((FrmlElemFunction*)Z)->P2 = RdAdd(Typ, caller);
-				if (((BYTE)FunCode == _str) && (Typ == 'S')) {
+				if (((uint8_t)FunCode == _str) && (Typ == 'S')) {
 					// do nothing
 				}
 				else {
@@ -2063,7 +2063,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 						iZ->Options = LexWord;
 						RdLex();
 					}
-					if (((BYTE)FunCode == _pos) && (Lexem == ',')) {
+					if (((uint8_t)FunCode == _pos) && (Lexem == ',')) {
 						// which occurrence - count (kolikaty vyskyt)
 						RdLex();
 						Z3 = RdAdd(Typ, caller);

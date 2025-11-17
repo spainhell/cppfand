@@ -3,7 +3,7 @@
 #include "../Common/compare.h"
 #include "../fandio/FandXFile.h"
 #include "Compiler.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "LinkD.h"
@@ -17,10 +17,10 @@ bool isSql;
 
 FieldDescr* RdFieldDescr(std::string name, bool Stored)
 {
-	const BYTE TabF[19] = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
+	const uint8_t TabF[19] = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
 
 	WORD L = 0, M = 0, NBytes = 0;
-	BYTE Flg = 0;
+	uint8_t Flg = 0;
 	char FrmlTyp = 0, c = 0;
 	std::string sstr;
 

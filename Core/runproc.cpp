@@ -7,7 +7,7 @@
 #include "Compiler.h"
 #include "DateTime.h"
 #include "OldDrivers.h"
-#include "FieldDescr.h"
+#include "../fandio/FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
@@ -464,7 +464,7 @@ void EditTxtProc(Instr_edittxt* PD)
 	int i = 0;
 	WRect v;
 	WRect* pv = nullptr;
-	BYTE a = 0;
+	uint8_t a = 0;
 	std::string* lp = nullptr;
 	MsgStr MsgS;
 	void* p = nullptr;
@@ -571,7 +571,7 @@ void DeleteRecProc(Instr_recs* PD)
 void AppendRecProc(FileD* file_d)
 {
 	LockMode md = file_d->NewLockMode(CrMode);
-	BYTE* record = file_d->GetRecSpace();
+	uint8_t* record = file_d->GetRecSpace();
 	file_d->ZeroAllFlds(record, false);
 	file_d->SetDeletedFlag(record);
 	file_d->CreateRec(file_d->FF->NRecs + 1, record);
@@ -621,7 +621,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	bool ad = PD->AdUpd;
 	LockMode md = lv->FD->GetLMode();
 	bool app = false;
-	BYTE* record1 = lv->FD->GetRecSpace();
+	uint8_t* record1 = lv->FD->GetRecSpace();
 	if (PD->ByKey) {
 		x.S = RunString(lv->FD, PD->RecNr, lv->record);
 #ifdef FandSQL
@@ -730,7 +730,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 void LinkRecProc(Instr_assign* assign_instr)
 {
 	int n = 0;
-	BYTE* rec = nullptr;
+	uint8_t* rec = nullptr;
 	LinkD* ld = assign_instr->LinkLD;
 	uint8_t* lr2 = assign_instr->RecLV2->record;
 
@@ -931,7 +931,7 @@ void SetWwViewPort()
 
 void WithWindowProc(Instr_window* PD)
 {
-	BYTE PAttr = ProcAttr;
+	uint8_t PAttr = ProcAttr;
 	int w1 = 0;
 	WRect v;
 

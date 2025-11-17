@@ -46,7 +46,7 @@ extern int* LocalPPtr;
 extern HANDLE TxtFH;
 //extern bool AllRd;
 extern int AbsLenT;
-extern BYTE FrameDir;
+extern uint8_t FrameDir;
 extern WORD columnOffset, Colu, Row;
 extern bool ChangePart, TypeB;
 extern WORD LastC, FirstC, FirstR, LastR;
@@ -58,7 +58,7 @@ extern WORD MargLL[4];
 
 extern std::set<char> GlobalSeparators;
 
-const BYTE LineMaxSize = 255;
+const uint8_t LineMaxSize = 255;
 const bool TextBlock = false;
 const bool ColBlock = true;
 
@@ -81,7 +81,7 @@ const WORD _KL_ = 0x0B0C; const WORD _OW_ = 0x0F17; const WORD _OL_ = 0x0F0C;
 const WORD _OR_ = 0x0F12; const WORD _OJ_ = 0x0F0A; const WORD _OC_ = 0x0F03;
 const WORD _KF_ = 0x0B06;
 
-const BYTE CountC = 7;
+const uint8_t CountC = 7;
 
 class TextEditorEvents;
 class TextEditorScreen;
@@ -105,7 +105,7 @@ public:
 	void SimpleEditText(EditorMode editor_mode, std::string pErrMsg, std::string pName, std::string& text,
 		size_t MaxLen, size_t& Ind, bool& Updat);
 	void EditTxtFile(std::string* locVar, EditorMode e_mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
-		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
+		int Txtxy, WRect* V, WORD Atr, std::string Hd, uint8_t WFlags, MsgStr* MsgS);
 	void ViewPrinterTxt();
 	void SetEditTxt(Instr_setedittxt* PD);
 	void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg,
@@ -147,7 +147,7 @@ protected:
 
 	std::vector<std::string> _lines;
 	char Arr[LineMaxSize]{ '\0' };  // dekodovany 1 radek
-	BYTE TxtColor = 0;
+	uint8_t TxtColor = 0;
 	short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 	short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 	bool IsWrScreen = false;
@@ -178,7 +178,7 @@ private:
 	void TestUpdFile();
 	void KodLine();
 	void DekodLine();
-	void FrameStep(BYTE& odir, PressedKey EvKeyC);
+	void FrameStep(uint8_t& odir, PressedKey EvKeyC);
 	void Format(WORD& i, int First, int Last, WORD Posit, bool Rep);
 	void NewLine(char Mode);
 	WORD SetPredI();
@@ -221,7 +221,7 @@ private:
 	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
 	std::string CursorWord();
 	WORD GetArrLineLength();
-	void direction(BYTE x, BYTE& zn2);
+	void direction(uint8_t x, uint8_t& zn2);
 	void OpenTxtFh(EditorMode mode);
 	size_t StrIndexToScrPos(const std::string& line, size_t string_index);
 	size_t ScrPosToStrIndex(const std::string& line, size_t screen_pos);
@@ -236,7 +236,7 @@ private:
 	bool Insert, Indent, Wrap, Just;
 	pstring OptionStr;
 	std::string FindStr, ReplaceStr;
-	BYTE BlockColor = 0, SysLColor = 0;
+	uint8_t BlockColor = 0, SysLColor = 0;
 	bool Replace = false;
 	std::string ViewMsg;
 	short LeftMarg, RightMarg;

@@ -21,7 +21,7 @@ public:
 	FieldDescr* Field = nullptr;
 	FileD* File2 = nullptr;
 	LinkD* LD = nullptr;
-	BYTE Create = 0; // { 0-no, 1-!, 2-!! }
+	uint8_t Create = 0; // { 0-no, 1-!, 2-!! }
 	FrmlElem* Frml = nullptr;
 	bool Assign = false;
 	FrmlElem* Bool = nullptr;

@@ -36,32 +36,32 @@ struct TEvent
 };
 
 extern TEvent Event; // r39
-extern BYTE KbdFlgs; // TODO: absolute $417
+extern uint8_t KbdFlgs; // TODO: absolute $417
 
 // ******** Konstanty *********
 const bool DemoAutoRd = false; // r. 82
 //extern pstring KbdBuffer; // r. 83
 extern Keyboard keyboard;
-extern BYTE LLKeyFlags; // r. 84
+extern uint8_t LLKeyFlags; // r. 84
 
 extern enVideoCard VideoCard;
 extern short GraphDriver, GraphMode;
 extern WORD ScrSeg, ScrGrSeg;
-extern BYTE NrVFont, BytesPerChar;
+extern uint8_t NrVFont, BytesPerChar;
 extern bool ChkSnow;
 extern bool IsGraphMode;
-extern BYTE GrBytesPerChar;
+extern uint8_t GrBytesPerChar;
 extern WORD GrBytesPerLine;
 
-const BYTE MaxTxtCols = 132; // r132 {the best adapter}
-const BYTE EventQSize = 16;
+const uint8_t MaxTxtCols = 132; // r132 {the best adapter}
+const uint8_t EventQSize = 16;
 const bool BGIReload = true;
 extern TPoint LastWhere, LastWhereG, DownWhere;
 extern Wind WindMin, WindMax; // r137
-extern BYTE TextAttr, StartAttr, StartMode; // r138
+extern uint8_t TextAttr, StartAttr, StartMode; // r138
 extern WORD LastMode;
 extern void* FontArr; extern void* BGIDriver; extern void* BGILittFont; extern void* BGITripFont;
-extern BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
+extern uint8_t ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
 extern WORD EventCount, EventQHead, EventQTail;
 struct stEventQueue { WORD Time, Buttons, X, Y, GX, GY; };
 extern stEventQueue EventQueue[EventQSize - 1];
@@ -92,8 +92,8 @@ WORD ReadKbd(); // { buffer + Bios / + mouse / }
 void Delay(WORD N);
 void Sound(WORD N);
 void NoSound();
-void ClrScr(BYTE Color);
-void ClrEol(BYTE Color);
+void ClrScr(uint8_t Color);
+void ClrEol(uint8_t Color);
 void Beep();
 void LockBeep();
 void ScrBeep();
@@ -116,9 +116,9 @@ short OpenCrt(TextFile* F);
 unsigned long long getAvailPhysMemory();
 
 uint64_t getMillisecondsNow();
-bool KbdTimer(int cpu_delta, BYTE kind);
+bool KbdTimer(int cpu_delta, uint8_t kind);
 bool TestEvent();
-WORD AddCtrlAltShift(BYTE Flgs);
+WORD AddCtrlAltShift(uint8_t Flgs);
 void AddToKbdBuf(WORD KeyCode);
 void ShowMouse();
 void GetMouseEvent();

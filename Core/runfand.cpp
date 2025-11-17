@@ -242,7 +242,7 @@ void InitRunFand()
 	WORD n = 0, l = 0, err = 0, hourmin = 0;
 	FILE* h = nullptr;
 	std::string s;
-	BYTE nb = 0, sec = 0;
+	uint8_t nb = 0, sec = 0;
 	short j, MsgNr;
 	TMenuBoxS* mb = nullptr;
 	int w = 0;
@@ -313,7 +313,7 @@ void InitRunFand()
 	//	TMsgIdxItem newItem{ 0, 0, 0 };
 	//	ReadH(h, 2, &newItem.Nr);    // WORD
 	//	ReadH(h, 2, &newItem.Ofs);   // WORD
-	//	ReadH(h, 1, &newItem.Count); // BYTE
+	//	ReadH(h, 1, &newItem.Count); // uint8_t
 	//	MsgIdx.push_back(newItem);
 	//}
 	//FrstMsgPos = PosH(h);
@@ -329,7 +329,7 @@ void InitRunFand()
 	//	else {
 	//		std::string s = MsgLine;
 	//		for (int jj = 0; jj < s.length(); jj++) {
-	//			if ((BYTE)s[jj] < ' ') {
+	//			if ((uint8_t)s[jj] < ' ') {
 	//				std::string xxxx = std::format("{:#x}", s[jj]);
 	//				std::string hexString = "&#x" + xxxx.substr(2) + ";";
 	//				s.replace(jj, 1, hexString);
@@ -426,7 +426,7 @@ void InitRunFand()
 	}
 
 	TextAttr = screen.colors.DesktopColor;
-	screen.Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
+	screen.Window(1, 1, (uint8_t)TxtCols, TxtRows - 1);
 	WriteWFrame(WHasFrame + WDoubleFrame, "", "", TextAttr);
 	screen.ScrClr(2, 2, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
 	screen.ScrClr(2, TxtRows - 11, TxtCols - 2, 10, (char)0xb2, TextAttr);
