@@ -22,6 +22,7 @@
     <ClInclude Include="codePages.h" />
     <ClInclude Include="Coding.h" />
     <ClInclude Include="compare.h" />
+    <ClInclude Include="DateTime.h" />
     <ClInclude Include="exprcmp.h" />
     <ClInclude Include="FileD.h" />
     <ClInclude Include="LinkD.h" />
@@ -37,6 +38,7 @@
     <ClCompile Include="codePages.cpp" />
     <ClCompile Include="Coding.cpp" />
     <ClCompile Include="compare.cpp" />
+    <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="exprcmp.cpp" />
     <ClCompile Include="FileD.cpp" />
     <ClCompile Include="LinkD.cpp" />

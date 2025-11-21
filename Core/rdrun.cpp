@@ -9,7 +9,7 @@
 #include "../Common/LinkD.h"
 #include "obaseww.h"
 #include "runfrml.h"
-#include "../Core/DateTime.h"
+#include "../Common/DateTime.h"
 
 
 XString OldMXStr;                  /* Merge */

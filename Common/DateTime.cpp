@@ -2,8 +2,8 @@
 
 #include <chrono>
 #include <ctime>
-#include "base.h"
-#include "legacy.h"
+#include "../Core/base.h"
+#include "../Core/legacy.h"
 
 void EncodeMask(std::string& mask, WORD& min, WORD& max)
 {

@@ -5,8 +5,7 @@
 #include "../Core/GlobalVariables.h"
 #include "../Common/textfunc.h"
 #include "../Common/Coding.h"
-#include "../Core/DateTime.h"
-#include "../Common/compare.h"
+#include "../Common/DateTime.h"
 #include "../Core/obaseww.h"
 
 

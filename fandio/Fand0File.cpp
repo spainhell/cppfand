@@ -13,8 +13,8 @@
 #include "../Core/obaseww.h"
 // #include "../Core/RunMessage.h"
 #include "realFix.h"
-#include "../Core/DateTime.h"
-#include "../fandio/KeyFldD.h"
+#include "../Common/DateTime.h"
+#include "KeyFldD.h"
 
 // ****************************** CONSTANTS **********************************
 //double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,

@@ -19,7 +19,7 @@
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
-#include "../Core/DateTime.h"
+#include "../Common/DateTime.h"
 
 const uint8_t MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
