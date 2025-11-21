@@ -1,5 +1,6 @@
 #include "rdproc.h"
 #include "Compiler.h"
+#include "../Common/CommonVariables.h"
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
 #include "GlobalVariables.h"

@@ -10,6 +10,7 @@
 #include "../fandio/KeyFldD.h"
 #include "../Core/RunMessage.h"
 #include "../Core/rdfildcl.h"
+#include "../Common/CommonVariables.h"
 
 
 Merge::Merge()

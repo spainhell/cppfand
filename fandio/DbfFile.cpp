@@ -7,6 +7,7 @@
 #include "../Common/Coding.h"
 #include "../Common/DateTime.h"
 #include "../Core/obaseww.h"
+#include "../Common/CommonVariables.h"
 
 
 DbfFile::DbfFile(FileD* parent)

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="codePages.h" />
     <ClInclude Include="Coding.h" />
+    <ClInclude Include="CommonVariables.h" />
     <ClInclude Include="compare.h" />
     <ClInclude Include="DateTime.h" />
     <ClInclude Include="exprcmp.h" />
@@ -37,6 +38,7 @@
   <ItemGroup>
     <ClCompile Include="codePages.cpp" />
     <ClCompile Include="Coding.cpp" />
+    <ClCompile Include="CommonVariables.cpp" />
     <ClCompile Include="compare.cpp" />
     <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="exprcmp.cpp" />

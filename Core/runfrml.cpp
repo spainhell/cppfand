@@ -4,6 +4,7 @@
 #include <ctime>
 #include <memory>
 
+#include "../Common/CommonVariables.h"
 #include "../Common/compare.h"
 #include "../Common/pstring.h"
 #include "../Common/textfunc.h"

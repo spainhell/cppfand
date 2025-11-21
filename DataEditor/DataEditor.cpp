@@ -10,6 +10,7 @@
 #include "../Core/EditOpt.h"
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
+#include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
 #include "../fandio/KeyFldD.h"
 #include "../Common/LinkD.h"

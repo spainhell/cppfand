@@ -7,6 +7,7 @@
 #include "KeyFldD.h"
 #include "../Core/runfrml.h"
 #include "../Common/realDouble.h"
+#include "../Common/CommonVariables.h"
 
 void XString::Clear()
 {

@@ -9,7 +9,7 @@
 #include "../fandio/FandTFile.h"
 
 class MergeReportBase;
-const double FirstDate = 6.97248E+5;
+
 
 // r474
 //extern std::vector<FileD*> FileDRoot; // { only current RDB }
@@ -69,7 +69,7 @@ extern std::string MountedVol[FloppyDrives];
 extern pstring SQLDateMask;
 
 // ********** COMPARE FUNCTIONS **********
-extern double Power10[21];
+
 
 //extern uint8_t CurrChar; // { Compile }
 //extern uint8_t ForwChar, ExpChar, Lexem;

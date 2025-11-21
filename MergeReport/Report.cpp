@@ -4,6 +4,8 @@
 #include "InpD.h"
 #include "MergeReportBase.h"
 #include "RFldD.h"
+
+#include "../Common/CommonVariables.h"
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../Core/Compiler.h"
