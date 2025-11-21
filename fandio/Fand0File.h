@@ -132,5 +132,7 @@ private:
 
 	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);
+
+	void TestDelErr(std::string& P);
 };
 

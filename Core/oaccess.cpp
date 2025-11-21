@@ -293,10 +293,3 @@ void SetTxtPathVol(std::string& Path, int CatIRec)
 	}
 }
 
-void TestDelErr(std::string& P)
-{
-	if (HandleError != 0) {
-		SetMsgPar(P);
-		RunError(827);
-	}
-}

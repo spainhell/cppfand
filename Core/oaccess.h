@@ -23,5 +23,3 @@ void SetIsSQLFile();
 bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb);
 
 void SetTxtPathVol(std::string& Path, int CatIRec);
-
-void TestDelErr(std::string& P);

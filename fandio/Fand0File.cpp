@@ -4,17 +4,20 @@
 #include "XScan.h"
 #include "XWorkFile.h"
 #include "XWKey.h"
-#include "../Common/textfunc.h"
-#include "../Common/compare.h"
-#include "../Core/GlobalVariables.h"
-#include "../Common/Coding.h"
-#include "../Core/oaccess.h"
-#include "../Common/realDouble.h"
-#include "../Core/obaseww.h"
-// #include "../Core/RunMessage.h"
 #include "realFix.h"
-#include "../Common/DateTime.h"
 #include "KeyFldD.h"
+
+#include "../Core/GlobalVariables.h"
+//#include "../Core/oaccess.h"
+#include "../Core/obaseww.h"
+
+#include "../Common/Coding.h"
+#include "../Common/compare.h"
+#include "../Common/DateTime.h"
+#include "../Common/realDouble.h"
+#include "../Common/textfunc.h"
+// #include "../Core/RunMessage.h"
+
 
 // ****************************** CONSTANTS **********************************
 //double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
@@ -1266,10 +1269,11 @@ void Fand0File::IndexFileProc(bool Compress)
 		}
 		delete FD2; FD2 = nullptr;
 	}
+
 	XF->NoCreate = false;
 	TestXFExist();
 	_parent->OldLockMode(md);
-	SaveFiles();
+	
 	delete[] record; record = nullptr;
 }
 
@@ -1417,4 +1421,12 @@ std::string Fand0File::_extToX(const std::string& dir, const std::string& name, 
 {
 	ext[1] = 'X';
 	return dir + name + ext;
+}
+
+void Fand0File::TestDelErr(std::string& P)
+{
+	if (HandleError != 0) {
+		SetMsgPar(P);
+		RunError(827);
+	}
 }

@@ -1485,6 +1485,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 		case PInstrCode::_indexfile: {
 			Instr_indexfile* iPD = (Instr_indexfile*)instr;
 			iPD->IndexFD->IndexesMaintenance(iPD->Compress);
+			SaveFiles();
 			break;
 		}
 		case PInstrCode::_display: {
