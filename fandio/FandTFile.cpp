@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "FandTFilePrefix.h"
-#include "../Core/Coding.h"
+#include "../Common/Coding.h"
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"

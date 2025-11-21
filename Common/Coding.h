@@ -1,5 +1,6 @@
 #pragma once
-#include "../Common/FileD.h"
+#include <string>
+#include "FileD.h"
 
 class Coding
 {

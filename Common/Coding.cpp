@@ -1,7 +1,7 @@
 #include "Coding.h"
 
-#include "access.h"
-#include "../Common/textfunc.h"
+#include "../Core/access.h"
+#include "textfunc.h"
 
 std::string Coding::Code(const std::string& data)
 {

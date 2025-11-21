@@ -57,7 +57,6 @@
     <ClCompile Include="Dependency.cpp" />
     <ClCompile Include="Implicit.cpp" />
     <ClCompile Include="LogicControl.cpp" />
-    <ClCompile Include="Coding.cpp" />
     <ClCompile Include="Compiler.cpp" />
     <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="EditOpt.cpp" />
@@ -96,7 +95,6 @@
     <ClInclude Include="Dependency.h" />
     <ClInclude Include="Implicit.h" />
     <ClInclude Include="LogicControl.h" />
-    <ClInclude Include="Coding.h" />
     <ClInclude Include="Compiler.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="DateTime.h" />

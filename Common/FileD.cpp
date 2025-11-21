@@ -1,6 +1,6 @@
 #include "FileD.h"
 
-#include "../Core/Coding.h"
+#include "Coding.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"

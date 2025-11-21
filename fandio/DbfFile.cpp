@@ -4,7 +4,7 @@
 #include "FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Common/textfunc.h"
-#include "../Core/Coding.h"
+#include "../Common/Coding.h"
 #include "../Core/DateTime.h"
 #include "../Common/compare.h"
 #include "../Core/obaseww.h"

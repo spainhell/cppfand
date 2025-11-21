@@ -5,7 +5,7 @@
 #include "TbFile.h"
 #include "ThFile.h"
 #include "TzFile.h"
-#include "../Core/Coding.h"
+#include "../Common/Coding.h"
 #include "../Common/FileD.h"
 #include "../fandio/FieldDescr.h"
 #include "../Core/GlobalVariables.h"

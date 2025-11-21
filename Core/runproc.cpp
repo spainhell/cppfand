@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "Coding.h"
+#include "../Common/Coding.h"
 #include "../Common/random.h"
 #include "Compiler.h"
 #include "DateTime.h"

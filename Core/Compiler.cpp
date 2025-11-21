@@ -2,7 +2,7 @@
 #include <map>
 #include <memory>
 
-#include "Coding.h"
+#include "../Common/Coding.h"
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
 #include "GlobalVariables.h"

@@ -7,7 +7,7 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/Coding.h"
+#include "../Common/Coding.h"
 #include "../Core/oaccess.h"
 #include "../Common/realDouble.h"
 #include "../Core/obaseww.h"

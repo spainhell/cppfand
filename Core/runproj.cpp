@@ -19,7 +19,7 @@
 #include "../Prolog/RunProlog.h"
 #include "../Drivers/constants.h"
 #include "access.h"
-#include "Coding.h"
+#include "../Common/Coding.h"
 #include "Compiler.h"
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
