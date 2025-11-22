@@ -259,3 +259,67 @@ std::string CExtToT(const std::string& dir, const std::string& name, std::string
 	}
 	return dir + name + ext;
 }
+
+std::string TWork_LoadS(FieldDescr* field, void* record)
+{
+	std::string result;
+	if (field->field_type == FieldType::TEXT && field->isStored())
+	{
+		char* source = (char*)record + field->Displ;
+		int32_t* pos = reinterpret_cast<int32_t*>(source);
+		if (*pos == 0) {
+			return result;
+		}
+		result = TWork.Read(*pos);
+	}
+	else {
+		// non-text field -> cannot be saved in TWork
+	}
+	return result;
+}
+
+void TWork_SaveS(FieldDescr* field, const std::string& text, void* record)
+{
+	if (field->field_type == FieldType::TEXT && field->isStored())
+	{
+		char* source = (char*)record + field->Displ;
+		uint32_t* pos = reinterpret_cast<uint32_t*>(source);
+		if (*pos == 0) {
+			// there is nothing saved now
+		}
+		else
+		{
+			// delete previous text
+			TWork.Delete(*pos);
+			*pos = 0;
+		}
+		if (text.empty()) {
+			// nothing to save
+		}
+		else {
+			*pos = TWork.Store(text);
+		}
+	}
+	else {
+		// non-text field -> cannot be saved in TWork
+	}
+}
+
+
+void TWork_DeleteT(FieldDescr* field, void* record)
+{
+	char* source = (char*)record + field->Displ;
+	int32_t* pos = reinterpret_cast<int32_t*>(source);
+	if (*pos == 0) return;
+	TWork.Delete(*pos);
+	*pos = 0;
+}
+
+void TWork_DeleteAllT(const std::vector<FieldDescr*>& fields, void* record)
+{
+	for (FieldDescr* field : fields) {
+		if (field->field_type == FieldType::TEXT && field->isStored()) {
+			TWork_DeleteT(field, record);
+		}
+	}
+}

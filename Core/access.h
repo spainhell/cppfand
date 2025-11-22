@@ -40,3 +40,9 @@ void TestCPathError();
 
 std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
 std::string CExtToX(std::string dir, std::string name, std::string ext);
+
+// functions for TWork file
+std::string TWork_LoadS(FieldDescr* field_d, void* record);
+void TWork_SaveS(FieldDescr* field, const std::string& text, void* record);
+void TWork_DeleteT(FieldDescr* field, void* record);
+void TWork_DeleteAllT(const std::vector<FieldDescr*>& fields, void* record);
