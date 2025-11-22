@@ -499,14 +499,14 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	edit_->params_->ChkSwitch = true;
 	edit_->params_->WarnSwitch = true;
 
-	edit_->OldRecPtr = edit_->FD->GetRecSpace();
-	uint8_t* record = edit_->OldRecPtr;
+	edit_->OldRec = new Record(edit_->FD);
+	uint8_t* record = edit_->OldRec->GetRecord();
 
 #ifdef FandSQL
-	if (file_d->IsSQLFile) SetTWorkFlag;
+	if (file_d->IsSQLFile) { SetTWorkFlag; }
 #endif
 	if (edit_->params_->EdRecVar) {
-		edit_->NewRecPtr = (uint8_t*)edit_->LVRecPtr;
+		edit_->NewRec = new Record(edit_->FD, (uint8_t*)edit_->LVRecPtr);
 		edit_->params_->NoDelete = true;
 		edit_->params_->NoCreate = true;
 		edit_->Journal = nullptr;
@@ -519,8 +519,8 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 			file_d = edit_->FD;
 		}
 
-		edit_->NewRecPtr = file_d->GetRecSpace();
-		record = edit_->NewRecPtr;
+		edit_->NewRec = new Record(file_d);
+		record = edit_->NewRec->GetRecord();
 
 #ifdef FandSQL
 		if (file_d->IsSQLFile) SetTWorkFlag;

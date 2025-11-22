@@ -644,11 +644,6 @@ bool CacheExist()
 	//return !cache.Empty();
 }
 
-bool WrCPage(FILE* Handle, int N, void* Buf, WORD ErrH)
-{
-	return true;
-}
-
 bool SaveCache(WORD ErrH, HANDLE f)
 {
 	// saves cache to the file

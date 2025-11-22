@@ -15,6 +15,10 @@ EditD::EditD(uint8_t cols, uint8_t rows)
 
 EditD::~EditD()
 {
+	delete OldRec;
+	OldRec = nullptr;
+	delete NewRec;
+	NewRec = nullptr;
 }
 
 std::vector<EFldD*>::iterator EditD::GetEFldIter(EFldD* e_fld)

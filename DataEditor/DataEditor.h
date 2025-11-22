@@ -87,8 +87,8 @@ private:
     void DisplRecNr(int N);
     void AdjustCRec();
     
-    void DuplFld(FileD* src_file, FileD* dst_file, uint8_t* src_buff, uint8_t* dst_buff, 
-				 void* RPt, FieldDescr* srd_fld, FieldDescr* dst_fld);
+    void DuplFld(FileD* src_file, FileD* dst_file, uint8_t* src_rec, uint8_t* dst_rec_new, 
+        uint8_t* dst_rec_old, FieldDescr* srd_fld, FieldDescr* dst_fld);
     bool IsFirstEmptyFld();
     void SetFldAttr(EFldD* D, WORD I, WORD Attr);
     void IVoff();

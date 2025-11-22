@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "DataEditorParams.h"
+#include "Record.h"
 #include "../Common/FileD.h"
 #include "../Core/base.h"
 
@@ -28,14 +29,16 @@ public:
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;
 	std::vector<FieldDescr*> Flds;
-	uint8_t* OldRecPtr = nullptr;
-	uint8_t* NewRecPtr = nullptr;
+	Record* OldRec = nullptr;
+	Record* NewRec = nullptr;
+	//uint8_t* OldRecPtr = nullptr;
+	//uint8_t* NewRecPtr = nullptr;
 	uint8_t FrstCol = 0, FrstRow = 0, LastCol = 0, LastRow = 0, Rows = 0;
 	WRect V; uint8_t ShdwX = 0, ShdwY = 0;
 	uint8_t Attr = 0, dNorm = 0, dHiLi = 0, dSubSet = 0;
 	uint8_t dDel = 0, dTab = 0, dSelect = 0;
 	std::string Top;
-	uint8_t WFlags = 0;                             /* copied from options */
+	uint8_t WFlags = 0;                          /* copied from options */
 	std::vector<EdExitD*> ExD;                   /*          "          */
 	FileD* Journal = nullptr;                    /*          "          */
 	std::string ViewName;                        /*          "          */

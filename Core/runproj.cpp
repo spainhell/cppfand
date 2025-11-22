@@ -86,7 +86,7 @@ void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 	CFile = Chpt;
 
 	if (edit != nullptr) {
-		CRecPtr = edit->NewRecPtr;
+		CRecPtr = edit->NewRec->GetRecord();
 	}
 	RdbD* R = CRdb->ChainBack;
 	if (R != nullptr) {
@@ -250,7 +250,7 @@ bool ChptDel(FileD* file_d, EditD* edit)
 	if (!IsCurrChpt(file_d)) {
 		return true;
 	}
-	GetRdbRecVars(edit, edit->NewRecPtr, &New);
+	GetRdbRecVars(edit, edit->NewRec->GetRecord(), &New);
 	return ChptDelFor(edit, &New);
 }
 
@@ -303,14 +303,14 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		return result;
 	}
 	if (!data_editor->TestIsNewRec()) {
-		eq = CompArea(&((uint8_t*)edit->NewRecPtr)[2], &((uint8_t*)edit->OldRecPtr)[2], edit->FD->FF->RecLen - 2);
+		eq = CompArea(&((uint8_t*)edit->NewRec->GetRecord())[2], &((uint8_t*)edit->OldRec->GetRecord())[2], edit->FD->FF->RecLen - 2);
 		if (eq == _equ) {
 			return result;
 		}
 	}
-	GetRdbRecVars(edit, edit->NewRecPtr, &New);
+	GetRdbRecVars(edit, edit->NewRec->GetRecord(), &New);
 	if (!data_editor->TestIsNewRec()) {
-		GetRdbRecVars(edit, edit->OldRecPtr, &Old);
+		GetRdbRecVars(edit, edit->OldRec->GetRecord(), &Old);
 	}
 	result = 1;
 #ifndef FandGraph
@@ -363,7 +363,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(edit, &Old)) return result;
-		edit->FD->saveT(ChptOldTxt, 0, edit->NewRecPtr);
+		edit->FD->saveT(ChptOldTxt, 0, edit->NewRec->GetRecord());
 		if (New.Typ == 'F') {
 			ReleaseFilesAndLinksAfterChapter(edit);
 		}
@@ -398,7 +398,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		}
 	}
 label2:
-	edit->FD->saveB(ChptVerif, true, edit->NewRecPtr);
+	edit->FD->saveB(ChptVerif, true, edit->NewRec->GetRecord());
 	result = 0;
 	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 	return result;

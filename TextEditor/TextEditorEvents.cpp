@@ -477,7 +477,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, EditorMode& mode, std::v
 				}
 				else {
 					throw("Check implementation! EditDRoot is probably not set.");
-					CRecPtr = EditDRoot->NewRecPtr;
+					CRecPtr = EditDRoot->NewRec->GetRecord();
 					//sp = CFile->loadLongS((*data_editor->CFld)->FldD, CRecPtr);
 				}
 				//editor->_lenT = sp->LL;

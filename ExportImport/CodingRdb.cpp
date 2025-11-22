@@ -282,7 +282,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	ReleaseStore(&p);
 	Chpt->FF->RecPtr = cr;
 	CFile = Chpt;
-	CRecPtr = edit->NewRecPtr;
+	CRecPtr = edit->NewRec->GetRecord();
 	CFile->ReadRec(data_editor->CRec(), CRecPtr);
 
 	ChptTF->CompileAll = false;
