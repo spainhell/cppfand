@@ -1005,13 +1005,15 @@ void DataEditor::DisplRec(WORD I)
 	else {
 		// TODO: tady se to hodne zmenilo, je potreba zjisit, proc se nekdy alokovalo 'p'
 		if (I == IRec) {
+			// last record / item
 			//record_ = edit_->NewRec->GetRecord();
 		}
 		else {
 			//record_ = p;
 			//RdRec(N, record_);
-			RdRec(N, GetCurrentRecord());
 		}
+
+		RdRec(N, GetCurrentRecord()); // ted nacita vzdy - i posledni record
 
 		NewFlds = false;
 
