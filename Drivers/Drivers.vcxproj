@@ -22,12 +22,14 @@
     <ClCompile Include="files.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="screen.cpp" />
+    <ClCompile Include="WinTerminal.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constants.h" />
     <ClInclude Include="files.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="screen.h" />
+    <ClInclude Include="WinTerminal.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

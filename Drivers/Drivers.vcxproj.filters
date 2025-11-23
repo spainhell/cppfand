@@ -24,6 +24,9 @@
     <ClCompile Include="files.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WinTerminal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="keyboard.h">
@@ -36,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinTerminal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
