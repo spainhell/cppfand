@@ -26,6 +26,14 @@ Record::~Record()
 	}
 }
 
+Record* Record::Clone() const
+{
+	Record* clone = new Record(_file_d);
+	clone->_values = this->_values;
+	clone->_was_updated = this->_was_updated;
+	return clone;
+}
+
 uint8_t* Record::GetRecord() const
 {
 	return _record;
@@ -36,6 +44,17 @@ void Record::Reset()
 	for (BRS_Value& val : _values) {
 		val.Reset();
 	}
+}
+
+void Record::SetRecordUpdateFlag()
+{
+	_was_updated = true;
+}
+
+uint8_t* Record::PrepareRecord()
+{
+	_setRecordFromValues();
+	return _record;
 }
 
 std::vector<BRS_Value> Record::_getValuesFromRecord()
