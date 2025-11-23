@@ -401,7 +401,7 @@ uint16_t PressedKey::KeyCombination()
 			// Ctrl + Alt + V (@), ...
 			ControlKey = 0;
 		}
-		result = static_cast<uint16_t>((ControlKey << 8) + static_cast<uint16_t>(_key.uChar.AsciiChar));
+		result = (ControlKey << 8) + (uint8_t)(_key.uChar.AsciiChar);
 	}
 	return result;
 }
