@@ -2,6 +2,7 @@
 #include <stack>
 #include <string>
 #include <Windows.h>
+#include "WinTerminal.h"
 
 const uint8_t bigCrsSize = 50;
 
@@ -106,6 +107,8 @@ public:
 	int SaveScreen(WParam* wp, short c1, short r1, short c2, short r2);
 	WParam* LoadScreen(bool draw);
 	Colors colors;
+	
+	WinTerminal* GetTerminal() { return _terminal; }
 
 private:
 	short TxtCols;
@@ -120,7 +123,7 @@ private:
 
 	std::stack<storeWindow> _windowStack;
 
-	HANDLE _handle;
+	WinTerminal* _terminal;
 	size_t _actualIndex;
 	DWORD _inBuffer;
 };

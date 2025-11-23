@@ -19,32 +19,16 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	WindMax->X = (uint8_t)MaxColsIndex;
 	WindMax->Y = (uint8_t)MaxRowsIndex;
 
-	_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (_handle == INVALID_HANDLE_VALUE) {
-		throw std::exception("Cannot open console output handle.");
-	}
-
-	SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
-	SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
-	SetConsoleWindowInfo(_handle, true, &rect);
-
-	SetConsoleCP(852);
-	SetConsoleOutputCP(852);
-	SetConsoleTitle("C++ FAND");
-
-	// avoid console window size changes
-	HWND consoleWindow = GetConsoleWindow();
-	SetWindowLong(consoleWindow, GWL_STYLE, GetWindowLong(consoleWindow, GWL_STYLE) & ~WS_MAXIMIZEBOX & ~WS_SIZEBOX);
-
-	//DWORD consoleMode = ENABLE_VIRTUAL_TERMINAL_PROCESSING; // | ENABLE_LVB_GRID_WORLDWIDE;
-	//bool scm = SetConsoleMode(_handle, 0);
+	_terminal = new WinTerminal();
+	
 	_actualIndex = 0;
 	_inBuffer = 0;
 }
 
 Screen::~Screen()
 {
-	//delete[] _scrBuf;
+	delete _terminal;
+	_terminal = nullptr;
 }
 
 void Screen::ReInit(short TxtCols, short TxtRows)
@@ -58,10 +42,6 @@ void Screen::ReInit(short TxtCols, short TxtRows)
 
 		this->WindMax->X = (uint8_t)this->MaxColsIndex;
 		this->WindMax->Y = (uint8_t)this->MaxRowsIndex;
-
-		SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
-		SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
-		SetConsoleWindowInfo(_handle, true, &rect);
 
 		_actualIndex = 0;
 		_inBuffer = 0;
@@ -88,7 +68,7 @@ void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, uint8_t Colo
 
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
 	for (int i = 0; i < SizeX * SizeY; i++) { _buf[i] = ci; }
-	WriteConsoleOutput(_handle, _buf, BufferSize, { 0, 0 }, &rect);
+	_terminal->WriteConsoleOutput(_buf, BufferSize, { 0, 0 }, &rect);
 
 	delete[] _buf;
 }
@@ -97,7 +77,7 @@ void Screen::ScrWrChar(WORD X, WORD Y, char C, uint8_t Color)
 {
 	SMALL_RECT rect = { (short)(X - 1), (short)(Y - 1), (short)X, (short)Y };
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
-	WriteConsoleOutput(_handle, &ci, { 1, 1 }, { 0, 0 }, &rect);
+	_terminal->WriteConsoleOutput(&ci, { 1, 1 }, { 0, 0 }, &rect);
 }
 
 void Screen::ScrWrStr(const std::string& s, uint8_t Color)
@@ -121,7 +101,7 @@ void Screen::ScrWrStr(WORD X, WORD Y, const std::string& s, uint8_t Color) const
 		ci.Char.AsciiChar = s[i];
 		_buf[i] = ci;
 	}
-	WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
+	_terminal->WriteConsoleOutput(_buf, BufferSize, { 0, 0 }, &rect);
 	delete[] _buf;
 }
 
@@ -153,14 +133,13 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 	// vycteme oblast do bufferu
 	auto buff = new CHAR_INFO[len];
 	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + len - 2), (short)(Y - 1) };
-	ReadConsoleOutput(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
+	_terminal->ReadConsoleOutput(buff, { (short)len, 1 }, { 0, 0 }, &XY);
 	// vezme jednotlive znaky a "opravime je" ve vyctenem bufferu
 	for (size_t i = 0; i < len; i++) {
 		buff[i].Char.AsciiChar = S[i];
 	}
 	// vypisem buffer na obrazovku
-	WriteConsoleOutputA(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
-	//WriteConsoleOutputCharacterA(_handle, S, len, { (short)X - 1, (short)Y - 1 }, &written);
+	_terminal->WriteConsoleOutput(buff, { (short)len, 1 }, { 0, 0 }, &XY);
 	delete[] buff;
 	if (X + len > TxtCols) {
 		GotoXY(1, Y + 1, absolute);
@@ -198,7 +177,7 @@ void Screen::ScrFormatWrStyledText(WORD X, WORD Y, uint8_t Color, char const* co
 		buff[i].Attributes = Color;
 		buff[i].Char.AsciiChar = buffer[i];
 	}
-	WriteConsoleOutputA(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
+	_terminal->WriteConsoleOutput(buff, { (short)len, 1 }, { 0, 0 }, &XY);
 	// posuneme souradnici X o vytistene znaky
 	GotoXY(WhereXabs() + (WORD)len, WhereYabs(), absolute);
 	delete[] buff;
@@ -221,7 +200,7 @@ void Screen::ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 		ci[i].Attributes = pBuf[i] >> 8;
 		ci[i].Char.AsciiChar = pBuf[i] & 0x00FF;
 	}
-	WriteConsoleOutputA(_handle, ci, BufferSize, { 0, 0 }, &XY);
+	_terminal->WriteConsoleOutput(ci, BufferSize, { 0, 0 }, &XY);
 	delete[] ci;
 }
 
@@ -230,15 +209,15 @@ void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
 {
 	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + L), (short)(Y - 1) };
 	COORD BufferSize = { (short)L, 1 };
-	WriteConsoleOutputA(_handle, Buf, BufferSize, { 0, 0 }, &XY);
+	_terminal->WriteConsoleOutput(Buf, BufferSize, { 0, 0 }, &XY);
 }
 
 bool Screen::ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L)
 {
 	SMALL_RECT rect{ (short)(X - 1), (short)(Y - 1), (short)(X - 1 + L - 1), (short)(Y - 1) };
 	COORD bufSize{ (short)(L), 1 };
-	bool result = ReadConsoleOutput(_handle, Buf, bufSize, { 0, 0 }, &rect);
-	return result;
+	_terminal->ReadConsoleOutput(Buf, bufSize, { 0, 0 }, &rect);
+	return true;
 }
 
 void Screen::ScrMove(short X, short Y, short ToX, short ToY, short L)
@@ -256,21 +235,30 @@ void Screen::ScrMove(short X, short Y, short ToX, short ToY, short L)
 	SMALL_RECT rectTo{ (short)ToX, (short)ToY, (short)(ToX + L), (short)ToY };
 	COORD bufSize{ (short)L, 1 };
 	CHAR_INFO* buf = new CHAR_INFO[L * 1];
-	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rectFrom);
-	WriteConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rectTo);
+	_terminal->ReadConsoleOutput(buf, bufSize, { 0, 0 }, &rectFrom);
+	_terminal->WriteConsoleOutput(buf, bufSize, { 0, 0 }, &rectTo);
+	delete[] buf;
 	CrsShow();
 }
 
 void Screen::ScrColor(WORD X, WORD Y, WORD L, uint8_t Color)
 {
-	DWORD written = 0;
-	FillConsoleOutputAttribute(_handle, Color, L, { (short)X, (short)Y }, &written);
+	// Read current characters, update only attributes
+	CHAR_INFO* buf = new CHAR_INFO[L];
+	SMALL_RECT rect{ (short)X, (short)Y, (short)(X + L - 1), (short)Y };
+	_terminal->ReadConsoleOutput(buf, { (short)L, 1 }, { 0, 0 }, &rect);
+	
+	for (WORD i = 0; i < L; i++) {
+		buf[i].Attributes = Color;
+	}
+	
+	_terminal->WriteConsoleOutput(buf, { (short)L, 1 }, { 0, 0 }, &rect);
+	delete[] buf;
 }
 
 // vypise na zadanou pozici 1 znak v zadane barve
 void Screen::WriteChar(short X, short Y, char C, uint8_t attr, ScrPosition pos)
 {
-	DWORD written = 0;
 	switch (pos) {
 	case relative: {
 		X += WindMin->X - 1;
@@ -287,9 +275,12 @@ void Screen::WriteChar(short X, short Y, char C, uint8_t attr, ScrPosition pos)
 	}
 	default:;
 	}
-	WORD color = attr;
-	auto resatr = WriteConsoleOutputAttribute(_handle, &color, 1, { (short)(X - 1), (short)(Y - 1) }, &written);
-	auto result = WriteConsoleOutputCharacterA(_handle, &C, 1, { (short)(X - 1), (short)(Y - 1) }, &written);
+	
+	CHAR_INFO ci;
+	ci.Char.AsciiChar = C;
+	ci.Attributes = attr;
+	SMALL_RECT rect{ (short)(X - 1), (short)(Y - 1), (short)X, (short)Y };
+	_terminal->WriteConsoleOutput(&ci, { 1, 1 }, { 0, 0 }, &rect);
 	GotoXY(WhereXabs() + 1, WhereYabs(), absolute); // po zapisu poseneme kurzor
 }
 
@@ -370,7 +361,7 @@ size_t Screen::WriteStyledStringToWindow(const std::string& text, uint8_t Attr)
 			_buf[position] = ci;
 		}
 		COORD BufferSize = { (short)(strLen - ctrlCharsCount), 1 }; // pocet tisknutelnych znaku, 1 radek
-		WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
+		_terminal->WriteConsoleOutput(_buf, BufferSize, { 0, 0 }, &rect);
 		totalChars += strLen - ctrlCharsCount;
 		// nastavime zacatek dalsiho radku, pokud se nejedna o posledni radek
 		if (i < rowsToPrint - 1) {
@@ -403,11 +394,13 @@ void Screen::LF()
 		SMALL_RECT dst_rect{ (short)(WindMin->X - 1), (short)(WindMin->Y - 1), (short)(WindMax->X - 1), (short)(WindMax->Y - 2) };
 		COORD bufSize{ cols, (short)(rows - 1) };
 		CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
-		ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &src_rect);
-		WriteConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &dst_rect);
+		_terminal->ReadConsoleOutput(buf, bufSize, { 0, 0 }, &src_rect);
+		_terminal->WriteConsoleOutput(buf, bufSize, { 0, 0 }, &dst_rect);
+		delete[] buf;
 		char* spaces = new char[cols + 1]{ '\0' };
 		size_t len = snprintf(spaces, cols, "%*c", cols, ' ');
 		ScrWrText(1, actualWindowRow, spaces);
+		delete[] spaces;
 	}
 	else {
 		actualWindowRow++;
@@ -454,17 +447,15 @@ void Screen::CrsSet(TCrs S)
 
 void Screen::CrsShow()
 {
-	const CONSOLE_CURSOR_INFO visible{ Crs->Size, true };
-	SetConsoleCursorInfo(_handle, &visible);
 	Crs->Enabled = true;
+	// WinTerminal handles cursor drawing in Paint()
 }
 
 void Screen::CrsHide()
 {
 #ifndef _DEBUG
-	CONSOLE_CURSOR_INFO invisible{ 1, false };
-	SetConsoleCursorInfo(_handle, &invisible);
 	Crs->Enabled = false;
+	// WinTerminal handles cursor drawing in Paint()
 #else
 	CrsShow();
 #endif
@@ -499,42 +490,35 @@ void Screen::GotoXY(WORD X, WORD Y, ScrPosition pos)
 	case actual: return;
 	default: return;
 	}
-	bool succ = SetConsoleCursorPosition(_handle, { (short)(X - 1), (short)(Y - 1) });
-	if (Crs->Enabled && !succ) {
-		printf("GotoXY() fail");
-	}
+	_terminal->SetConsoleCursorPosition({ (short)(X - 1), (short)(Y - 1) });
 }
 
 short Screen::WhereX()
 {
 	// vrací relativní pozici (k aktuálnímu oknu) èíslovanou od 1
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return (sbi.dwCursorPosition.X + 1) - WindMin->X + 1;
+	COORD pos = _terminal->GetConsoleCursorPosition();
+	return (pos.X + 1) - WindMin->X + 1;
 }
 
 short Screen::WhereY()
 {
 	// vrací relativní pozici (k aktuálnímu oknu) èíslovanou od 1
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return (sbi.dwCursorPosition.Y + 1) - WindMin->Y + 1;
+	COORD pos = _terminal->GetConsoleCursorPosition();
+	return (pos.Y + 1) - WindMin->Y + 1;
 }
 
 short Screen::WhereXabs()
 {
 	// vrací absolutní pozici èíslovanou od 1
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return sbi.dwCursorPosition.X + 1;
+	COORD pos = _terminal->GetConsoleCursorPosition();
+	return pos.X + 1;
 }
 
 short Screen::WhereYabs()
 {
 	// vrací absolutní pozici èíslovanou od 1
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return sbi.dwCursorPosition.Y + 1;
+	COORD pos = _terminal->GetConsoleCursorPosition();
+	return pos.Y + 1;
 }
 
 void Screen::Window(uint8_t X1, uint8_t Y1, uint8_t X2, uint8_t Y2)
@@ -572,17 +556,14 @@ void Screen::CrsGotoXY(WORD aX, WORD aY)
 {
 	Crs->X = aX;
 	Crs->Y = aY;
-	bool succ = SetConsoleCursorPosition(_handle, { (short)Crs->X, (short)Crs->Y });
-	if (!succ) {
-		printf("GotoXY() fail");
-	}
+	_terminal->SetConsoleCursorPosition({ (short)Crs->X, (short)Crs->Y });
 }
 
 int Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 {
 	SMALL_RECT rect{ (short)X, (short)Y, (short)(X + SizeX), (short)(Y + SizeY) };
 	// do ukazatele zøejmì uloží obsah videopamìti ...
-	ReadConsoleOutput(_handle, (CHAR_INFO*)P, { (short)SizeX, (short)SizeY }, { 0, 0 }, &rect);
+	_terminal->ReadConsoleOutput((CHAR_INFO*)P, { (short)SizeX, (short)SizeY }, { 0, 0 }, &rect);
 	return SizeX * SizeY;
 }
 
@@ -614,7 +595,7 @@ int Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 	SMALL_RECT rect{ c1, r1, c2, r2 };
 	COORD bufSize{ (short)(c2 - c1 + 1), (short)(r2 - r1 + 1) };
 	CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
-	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rect);
+	_terminal->ReadConsoleOutput(buf, bufSize, { 0, 0 }, &rect);
 	_windowStack.push({ wp, bufSize, rect, buf });
 	return _windowStack.size();
 }
@@ -628,7 +609,7 @@ WParam* Screen::LoadScreen(bool draw)
 	auto scr = _windowStack.top();
 	_windowStack.pop();
 	if (draw) {
-		WriteConsoleOutput(_handle, scr.content, scr.coord, { 0, 0 }, &scr.rect);
+		_terminal->WriteConsoleOutput(scr.content, scr.coord, { 0, 0 }, &scr.rect);
 	}
 	delete[] scr.content;
 	return scr.wp;
