@@ -48,7 +48,6 @@ public:
     bool OpenEditWw();
     void RunEdit(XString* PX, WORD& Brk);
     void SetSelectFalse();
-    //void PopEdit();
     EditD* GetEditD();
 
     bool TxtEdCtrlUBrk = false;
@@ -57,10 +56,12 @@ public:
 
 private:
     FileD* file_d_ = nullptr;
-    uint8_t* record_ = nullptr;
-    uint8_t* original_record_ = nullptr;
     std::unique_ptr<DataEditorParams> params_;
     EditD* edit_ = nullptr;
+
+    uint8_t* GetCurrentRecord() { return edit_ ? edit_->NewRec->GetRecord() : nullptr; }
+    uint8_t* GetOriginalRecord() { return edit_ ? edit_->OldRec->GetRecord() : nullptr; }
+
 
     std::vector<EFldD*>::iterator FirstEmptyFld;
 
@@ -70,9 +71,9 @@ private:
     bool IsSelectedRec(WORD I);
     bool EquOldNewRec();
     void RdRec(int N, uint8_t* buffer);
-    bool CheckOwner(EditD* E);
-    bool CheckKeyIn(EditD* E);
-    bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset);
+    bool CheckOwner(EditD* E, uint8_t* record);
+    bool CheckKeyIn(EditD* E, uint8_t* record);
+    bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset, uint8_t* record);
     WORD RecAttr(WORD I);
     WORD FldRow(EFldD* D, WORD I);
     bool HasTTWw(FieldDescr* F);
