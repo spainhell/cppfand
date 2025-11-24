@@ -24,7 +24,8 @@ public:
     void SetEditD(EditD* edit);
 	void SetFileD(FileD* file_d);
 
-    uint8_t* GetRecord();
+    uint8_t* GetRecord() const;
+    uint8_t* GetOriginalRecord() const;
 
 	void EditDataFile(FileD* FD, EditOpt* EO);
     WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
@@ -57,8 +58,10 @@ public:
 
 private:
     FileD* file_d_ = nullptr;
-    uint8_t* record_ = nullptr;
-    uint8_t* original_record_ = nullptr;
+    //uint8_t* record_ = nullptr;
+    //uint8_t* original_record_ = nullptr;
+    Record* current_rec_ = nullptr;
+    Record* original_rec_ = nullptr;
     std::unique_ptr<DataEditorParams> params_;
     EditD* edit_ = nullptr;
 

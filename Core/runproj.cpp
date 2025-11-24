@@ -85,9 +85,9 @@ void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 	FuncDRoot = CRdb->OldFCRoot;
 	CFile = Chpt;
 
-	if (edit != nullptr) {
-		CRecPtr = edit->NewRec->GetRecord();
-	}
+	//if (edit != nullptr) {
+	//	CRecPtr = edit->NewRec->GetRecord();
+	//}
 	RdbD* R = CRdb->ChainBack;
 	if (R != nullptr) {
 		CRdb->help_file = R->help_file;
@@ -244,14 +244,14 @@ bool ChptDelFor(EditD* edit, RdbRecVars* X)
 	return result;
 }
 
-bool ChptDel(FileD* file_d, EditD* edit)
+bool ChptDel(FileD* file_d, DataEditor* data_editor)
 {
 	RdbRecVars New;
 	if (!IsCurrChpt(file_d)) {
 		return true;
 	}
-	GetRdbRecVars(edit, edit->NewRec->GetRecord(), &New);
-	return ChptDelFor(edit, &New);
+	GetRdbRecVars(data_editor->GetEditD(), data_editor->GetRecord(), &New);
+	return ChptDelFor(data_editor->GetEditD(), &New);
 }
 
 bool IsDuplFileName(DataEditor* data_editor, std::string name)
@@ -303,14 +303,14 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		return result;
 	}
 	if (!data_editor->TestIsNewRec()) {
-		eq = CompArea(&((uint8_t*)edit->NewRec->GetRecord())[2], &((uint8_t*)edit->OldRec->GetRecord())[2], edit->FD->FF->RecLen - 2);
+		eq = CompArea(&(data_editor->GetRecord())[2], &(data_editor->GetOriginalRecord())[2], edit->FD->FF->RecLen - 2);
 		if (eq == _equ) {
 			return result;
 		}
 	}
-	GetRdbRecVars(edit, edit->NewRec->GetRecord(), &New);
+	GetRdbRecVars(edit, data_editor->GetRecord(), &New);
 	if (!data_editor->TestIsNewRec()) {
-		GetRdbRecVars(edit, edit->OldRec->GetRecord(), &Old);
+		GetRdbRecVars(edit, data_editor->GetOriginalRecord(), &Old);
 	}
 	result = 1;
 #ifndef FandGraph
@@ -363,7 +363,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(edit, &Old)) return result;
-		edit->FD->saveT(ChptOldTxt, 0, edit->NewRec->GetRecord());
+		edit->FD->saveT(ChptOldTxt, 0, data_editor->GetRecord());
 		if (New.Typ == 'F') {
 			ReleaseFilesAndLinksAfterChapter(edit);
 		}
@@ -398,7 +398,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		}
 	}
 label2:
-	edit->FD->saveB(ChptVerif, true, edit->NewRec->GetRecord());
+	edit->FD->saveB(ChptVerif, true, data_editor->GetRecord());
 	result = 0;
 	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 	return result;
