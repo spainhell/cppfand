@@ -26,6 +26,7 @@ public:
 	void Reset();
 	void SetRecordUpdateFlag();
 	uint8_t* PrepareRecord();
+	void Expand();
 
 private:
 	FileD* _file_d;

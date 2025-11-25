@@ -57,6 +57,11 @@ uint8_t* Record::PrepareRecord()
 	return _record;
 }
 
+void Record::Expand()
+{
+	_values = _getValuesFromRecord();
+}
+
 std::vector<BRS_Value> Record::_getValuesFromRecord()
 {
 	std::vector<BRS_Value> values;

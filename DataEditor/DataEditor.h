@@ -72,7 +72,7 @@ private:
     int LogRecNo(int N);
     bool IsSelectedRec(WORD I);
     bool EquOldNewRec();
-    void RdRec(int N, uint8_t* buffer);
+    void RdRec(int nr, Record* record);
     bool CheckOwner(EditD* E);
     bool CheckKeyIn(EditD* E);
     bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset);

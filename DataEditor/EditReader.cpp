@@ -499,14 +499,15 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	edit_->params_->ChkSwitch = true;
 	edit_->params_->WarnSwitch = true;
 
-	edit_->OldRec = new Record(edit_->FD);
-	uint8_t* record = edit_->OldRec->GetRecord();
+	//edit_->OldRec = new Record(edit_->FD);
+	//uint8_t* record = edit_->OldRec->GetRecord();
+	Record* record = new Record(edit_->FD);
 
 #ifdef FandSQL
 	if (file_d->IsSQLFile) { SetTWorkFlag; }
 #endif
 	if (edit_->params_->EdRecVar) {
-		edit_->NewRec = new Record(edit_->FD, (uint8_t*)edit_->LVRecPtr);
+		//edit_->NewRec = new Record(edit_->FD, (uint8_t*)edit_->LVRecPtr);
 		edit_->params_->NoDelete = true;
 		edit_->params_->NoCreate = true;
 		edit_->Journal = nullptr;
@@ -519,22 +520,22 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 			file_d = edit_->FD;
 		}
 
-		edit_->NewRec = new Record(file_d);
-		record = edit_->NewRec->GetRecord();
+		//edit_->NewRec = new Record(file_d);
+		//record = edit_->NewRec->GetRecord();
 
 #ifdef FandSQL
 		if (file_d->IsSQLFile) SetTWorkFlag;
 #endif
 
 		edit_->params_->AddSwitch = true;
-		edit_->Cond = RunEvalFrml(file_d, EO->Cond, record);
-		edit_->RefreshDelay = RunWordImpl(file_d, EO->RefreshDelayZ, spec.RefreshDelay, record) * 1000;
-		edit_->SaveAfter = RunWordImpl(file_d, EO->SaveAfterZ, spec.UpdCount, record) * 1000;
+		edit_->Cond = RunEvalFrml(file_d, EO->Cond, record->GetRecord());
+		edit_->RefreshDelay = RunWordImpl(file_d, EO->RefreshDelayZ, spec.RefreshDelay, record->GetRecord()) * 1000;
+		edit_->SaveAfter = RunWordImpl(file_d, EO->SaveAfterZ, spec.UpdCount, record->GetRecord()) * 1000;
 		if (EO->StartRecKeyZ != nullptr) {
-			edit_->StartRecKey = RunString(file_d, EO->StartRecKeyZ, record);
+			edit_->StartRecKey = RunString(file_d, EO->StartRecKeyZ, record->GetRecord());
 		}
-		edit_->StartRecNo = RunInt(file_d, EO->StartRecNoZ, record);
-		edit_->StartIRec = RunInt(file_d, EO->StartIRecZ, record);
+		edit_->StartRecNo = RunInt(file_d, EO->StartRecNoZ, record->GetRecord());
+		edit_->StartIRec = RunInt(file_d, EO->StartIRecZ, record->GetRecord());
 		edit_->VK = EO->ViewKey;
 		if (edit_->DownLD != nullptr) {
 			edit_->DownSet = true;
@@ -548,7 +549,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 				break;
 			}
 			case 'F': {
-				edit_->OwnerRecNo = RunInt(file_d, (FrmlElem*)EO->DownLV, record);
+				edit_->OwnerRecNo = RunInt(file_d, (FrmlElem*)EO->DownLV, record->GetRecord());
 				edit_->DownRecPtr = edit_->DownLD->ToFD->GetRecSpace();
 				break;
 			}
@@ -571,7 +572,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		}
 	}
 	if (EO->StartFieldZ != nullptr) {
-		std::string rss = RunString(file_d, EO->StartFieldZ, record);
+		std::string rss = RunString(file_d, EO->StartFieldZ, record->GetRecord());
 		std::string s = TrailChar(rss, ' ');
 		//EFldD* D = edit_->FirstFld;
 		//while (D != nullptr) {
@@ -586,17 +587,17 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 			}
 		}
 	}
-	edit_->WatchDelay = RunInt(file_d, EO->WatchDelayZ, record) * 1000;
+	edit_->WatchDelay = RunInt(file_d, EO->WatchDelayZ, record->GetRecord()) * 1000;
 	if (EO->Head == nullptr) {
 		edit_->Head = StandardHead(edit_);
 	}
 	else {
-		edit_->Head = GetStr_E(EO->Head, record);
+		edit_->Head = GetStr_E(EO->Head, record->GetRecord());
 	}
-	edit_->Last = GetStr_E(EO->Last, record);
-	edit_->AltLast = GetStr_E(EO->AltLast, record);
-	edit_->CtrlLast = GetStr_E(EO->CtrlLast, record);
-	edit_->ShiftLast = GetStr_E(EO->ShiftLast, record);
+	edit_->Last = GetStr_E(EO->Last, record->GetRecord());
+	edit_->AltLast = GetStr_E(EO->AltLast, record->GetRecord());
+	edit_->CtrlLast = GetStr_E(EO->CtrlLast, record->GetRecord());
+	edit_->ShiftLast = GetStr_E(EO->ShiftLast, record->GetRecord());
 	F2NoUpd = edit_->params_->OnlyTabs && EO->Tab.empty() && !EO->NegTab && edit_->params_->OnlyAppend;
 
 	//EFldD* D = edit_->FirstFld;
