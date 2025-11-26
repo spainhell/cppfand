@@ -311,7 +311,7 @@ void TzFile::WrH(HANDLE src_file, uint32_t file_size)
 
 void TzFile::ProcFileList()
 {
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	HANDLE h = nullptr;
 
 	int d = 0;

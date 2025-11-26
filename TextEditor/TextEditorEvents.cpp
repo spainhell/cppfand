@@ -473,17 +473,17 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, EditorMode& mode, std::v
 			case TextType::Local:
 			case TextType::Memo: {
 				std::string d = TWork.Read(*LocalPPtr);
-					if (editor->_text_type == TextType::Local) {
+				if (editor->_text_type == TextType::Local) {
 				}
 				else {
 					throw("Check implementation! EditDRoot is probably not set.");
-					CRecPtr = EditDRoot->NewRec->GetRecord();
+					//CRecPtr = EditDRoot->NewRec->GetRecord();
 					//sp = CFile->loadLongS((*data_editor->CFld)->FldD, CRecPtr);
 				}
 				//editor->_lenT = sp->LL;
 				//// _textT = (CharArr*)(sp)
 				//Move(&editor->_textT[3], &editor->_textT[1], editor->_lenT);
-					txt = d;
+				txt = d;
 				break;
 			}
 			}
@@ -518,7 +518,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 	int j = 0;
 	CHAR_INFO LastL[161];
 	LongStr* sp = nullptr;
-	void* P1 = nullptr;
+	uint8_t* P1 = nullptr;
 	bool bb = false;
 	//EdExitD* X = nullptr;
 
@@ -829,7 +829,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 			case __SCROLL_LOCK: {
 				editor->_change_scr = true;
 				break;
-				}
+			}
 			case __CTRL_LEFT: {
 				do {
 					positionOnActualLine--;

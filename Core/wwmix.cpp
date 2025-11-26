@@ -91,7 +91,7 @@ void wwmix::SelectStr(short C1, short R1, WORD NMsg, std::string LowTxt)
 	Item* p = nullptr;
 	short i = 0, iOld = 0;
 
-	void* pw = PushScr(1, TxtRows, TxtCols, TxtRows);
+	uint8_t* pw = (uint8_t*)PushScr(1, TxtRows, TxtCols, TxtRows);
 	if (ss.Subset) {
 		if (ss.AscDesc) WrLLMsg(135);
 		else WrLLMsg(134);
@@ -756,7 +756,7 @@ label3:
 
 bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 {
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	FileD* cf = nullptr;
 	MarkStore(p);
 	size_t I = 1;

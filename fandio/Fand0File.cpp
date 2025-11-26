@@ -57,14 +57,14 @@ Fand0File::~Fand0File()
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-size_t Fand0File::ReadRec(size_t rec_nr, void* record)
+size_t Fand0File::ReadRec(size_t rec_nr, uint8_t* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
 	return ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
-size_t Fand0File::WriteRec(size_t rec_nr, void* record)
+size_t Fand0File::WriteRec(size_t rec_nr, uint8_t* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
@@ -72,7 +72,7 @@ size_t Fand0File::WriteRec(size_t rec_nr, void* record)
 	return WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
-void Fand0File::CreateRec(int n, void* record)
+void Fand0File::CreateRec(int n, uint8_t* record)
 {
 	IncNRecs(1);
 	uint8_t* tmp = _parent->GetRecSpace();
@@ -85,7 +85,7 @@ void Fand0File::CreateRec(int n, void* record)
 	WriteRec(n, record);
 }
 
-void Fand0File::DeleteRec(int n, void* record)
+void Fand0File::DeleteRec(int n, uint8_t* record)
 {
 	DelAllDifTFlds(record, nullptr);
 	for (int i = n; i <= NRecs - 1; i++) {
@@ -93,15 +93,6 @@ void Fand0File::DeleteRec(int n, void* record)
 		WriteRec(i, record);
 	}
 	DecNRecs(1);
-}
-
-void Fand0File::DelAllDifTFlds(void* record, void* comp_record)
-{
-	for (auto& F : _parent->FldD) {
-		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
-			DelDifTFld(F, record, comp_record);
-		}
-	}
 }
 
 void Fand0File::CompileRecLen()
@@ -192,7 +183,7 @@ void Fand0File::PutRec(void* record, int& i_rec)
 	Eof = true;
 }
 
-bool Fand0File::loadB(FieldDescr* field_d, void* record)
+bool Fand0File::loadB(FieldDescr* field_d, uint8_t* record)
 {
 	bool result = false;
 	uint8_t* CP = (uint8_t*)record + field_d->Displ;
@@ -207,7 +198,7 @@ bool Fand0File::loadB(FieldDescr* field_d, void* record)
 	return result;
 }
 
-double Fand0File::loadR(FieldDescr* field_d, void* record)
+double Fand0File::loadR(FieldDescr* field_d, uint8_t* record)
 {
 	uint8_t* source = static_cast<uint8_t*>(record) + field_d->Displ;
 	double result = 0.0;
@@ -259,7 +250,7 @@ double Fand0File::loadR(FieldDescr* field_d, void* record)
 	return result;
 }
 
-std::string Fand0File::loadS(FieldDescr* field_d, void* record)
+std::string Fand0File::loadS(FieldDescr* field_d, uint8_t* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	std::string S;
@@ -315,14 +306,14 @@ std::string Fand0File::loadS(FieldDescr* field_d, void* record)
 	return S;
 }
 
-int Fand0File::loadT(FieldDescr* F, void* record)
+int Fand0File::loadT(FieldDescr* F, uint8_t* record)
 {
 	char* source = (char*)record + F->Displ;
 	if (record == nullptr) return 0;
 	return *reinterpret_cast<int*>(source);
 }
 
-void Fand0File::saveB(FieldDescr* field_d, bool b, void* record)
+void Fand0File::saveB(FieldDescr* field_d, bool b, uint8_t* record)
 {
 	char* pB = (char*)record + field_d->Displ;
 	if ((field_d->field_type == FieldType::BOOL) && field_d->isStored()) {
@@ -330,7 +321,7 @@ void Fand0File::saveB(FieldDescr* field_d, bool b, void* record)
 	}
 }
 
-void Fand0File::saveR(FieldDescr* field_d, double r, void* record)
+void Fand0File::saveR(FieldDescr* field_d, double r, uint8_t* record)
 {
 	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
 	int l = 0;
@@ -370,7 +361,7 @@ void Fand0File::saveR(FieldDescr* field_d, double r, void* record)
 	}
 }
 
-void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record)
+void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t* record)
 {
 	const uint8_t LeftJust = 1;
 	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
@@ -462,7 +453,7 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* r
 	}
 }
 
-int Fand0File::saveT(FieldDescr* field_d, int pos, void* record)
+int Fand0File::saveT(FieldDescr* field_d, int pos, uint8_t* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	int* LP = (int*)source;
@@ -476,7 +467,7 @@ int Fand0File::saveT(FieldDescr* field_d, int pos, void* record)
 	}
 }
 
-void Fand0File::DelTFld(FieldDescr* field_d, void* record)
+void Fand0File::DelTFld(FieldDescr* field_d, uint8_t* record)
 {
 	int pos = loadT(field_d, record);
 	if (pos == 0) return;
@@ -493,7 +484,7 @@ void Fand0File::DelTFld(FieldDescr* field_d, void* record)
 	saveT(field_d, 0, record);
 }
 
-void Fand0File::DelTFlds(void* record)
+void Fand0File::DelTFlds(uint8_t* record)
 {
 	for (FieldDescr* field : _parent->FldD) {
 		if (field->field_type == FieldType::TEXT && field->isStored()) {
@@ -508,12 +499,21 @@ void Fand0File::DelTFlds(void* record)
  * \param record 1. zaznam (ktery je pripadne smazan)
  * \param comp_record 2. zaznam
  */
-void Fand0File::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
+void Fand0File::DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record)
 {
 	const int n1 = loadT(field_d, comp_record);
 	const int n2 = loadT(field_d, record);
 	if (n1 != n2) {
 		DelTFld(field_d, record);
+	}
+}
+
+void Fand0File::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
+{
+	for (auto& F : _parent->FldD) {
+		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
+			DelDifTFld(F, record, comp_record);
+		}
 	}
 }
 
@@ -749,38 +749,38 @@ void Fand0File::Close()
 	}
 }
 
-void Fand0File::SetTWorkFlag(void* record) const
+void Fand0File::SetTWorkFlag(uint8_t* record) const
 {
 	uint8_t* p = (uint8_t*)record;
 	p[RecLen] = 1;
 }
 
-bool Fand0File::HasTWorkFlag(void* record) const
+bool Fand0File::HasTWorkFlag(uint8_t* record) const
 {
 	uint8_t* p = (uint8_t*)record;
 	const bool workFlag = p[RecLen] == 1;
 	return workFlag;
 }
 
-void Fand0File::SetRecordUpdateFlag(void* record)
+void Fand0File::SetRecordUpdateFlag(uint8_t* record)
 {
 	uint8_t* p = (uint8_t*)record;
 	p[RecLen + 1] = 1;
 }
 
-void Fand0File::ClearRecordUpdateFlag(void* record)
+void Fand0File::ClearRecordUpdateFlag(uint8_t* record)
 {
 	uint8_t* p = (uint8_t*)record;
 	p[RecLen + 1] = 0;
 }
 
-bool Fand0File::HasRecordUpdateFlag(void* record)
+bool Fand0File::HasRecordUpdateFlag(uint8_t* record)
 {
 	uint8_t* p = (uint8_t*)record;
 	return p[RecLen + 1] == 1;
 }
 
-bool Fand0File::DeletedFlag(void* record)
+bool Fand0File::DeletedFlag(uint8_t* record)
 {
 	if (file_type == FandFileType::INDEX) {
 		if (((uint8_t*)record)[0] == 0) return false;
@@ -790,7 +790,7 @@ bool Fand0File::DeletedFlag(void* record)
 	return false;
 }
 
-void Fand0File::ClearDeletedFlag(void* record)
+void Fand0File::ClearDeletedFlag(uint8_t* record)
 {
 	uint8_t* ptr = (uint8_t*)record;
 	if (file_type == FandFileType::INDEX) {
@@ -798,7 +798,7 @@ void Fand0File::ClearDeletedFlag(void* record)
 	}
 }
 
-void Fand0File::SetDeletedFlag(void* record)
+void Fand0File::SetDeletedFlag(uint8_t* record)
 {
 	uint8_t* ptr = (uint8_t*)record;
 	if (file_type == FandFileType::INDEX) {
@@ -893,7 +893,7 @@ FileD* Fand0File::GetFileD()
 	return _parent;
 }
 
-bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
+bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record)
 {
 	int R = 0;
 	XString x;
@@ -955,7 +955,7 @@ int Fand0File::XNRecs(std::vector<XKey*>& K)
 	}
 }
 
-void Fand0File::TryInsertAllIndexes(int RecNr, void* record)
+void Fand0File::TryInsertAllIndexes(int RecNr, uint8_t* record)
 {
 	TestXFExist();
 	XKey* lastK = nullptr;
@@ -985,7 +985,7 @@ label1:
 	}
 }
 
-void Fand0File::DeleteAllIndexes(int RecNr, void* record)
+void Fand0File::DeleteAllIndexes(int RecNr, uint8_t* record)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
@@ -995,7 +995,7 @@ void Fand0File::DeleteAllIndexes(int RecNr, void* record)
 	}
 }
 
-void Fand0File::DeleteXRec(int RecNr, bool DelT, void* record)
+void Fand0File::DeleteXRec(int RecNr, bool DelT, uint8_t* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
@@ -1009,7 +1009,7 @@ void Fand0File::DeleteXRec(int RecNr, bool DelT, void* record)
 	XF->NRecs--;
 }
 
-void Fand0File::OverWrXRec(int RecNr, void* P2, void* P, void* record)
+void Fand0File::OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record)
 {
 	XString x, x2;
 	record = P2;
@@ -1036,7 +1036,7 @@ void Fand0File::OverWrXRec(int RecNr, void* P2, void* P, void* record)
 	_parent->WriteRec(RecNr, record);
 }
 
-void Fand0File::GenerateNew000File(XScan* x, void* record, void (*msgFuncUpdate)(int32_t))
+void Fand0File::GenerateNew000File(XScan* x, uint8_t* record, void (*msgFuncUpdate)(int32_t))
 {
 	// vytvorime si novy buffer pro data,
 	// ten pak zapiseme do souboru naprimo (bez cache)

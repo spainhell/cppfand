@@ -1091,7 +1091,7 @@ void TestDepend()
 	FrmlElem* Z = nullptr;
 	FieldDescr* F = nullptr;
 	char FTyp;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	gc->RdLex();
 	MarkStore(p);
 label1:

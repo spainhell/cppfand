@@ -1,9 +1,14 @@
 #include "Record.h"
 
+Record::Record()
+{
+	_buffer = nullptr;
+}
+
 Record::Record(FileD* file_d)
 {
 	_file_d = file_d;
-	_record = file_d->GetRecSpace();
+	_buffer = file_d->GetRecSpace();
 
 	for (FieldDescr* field_d : file_d->FldD) {
 		BRS_Value val;
@@ -14,15 +19,15 @@ Record::Record(FileD* file_d)
 Record::Record(FileD* file_d, uint8_t* record)
 {
 	_file_d = file_d;
-	_record = record;
+	_buffer = record;
 	_delete_record_on_destroy = false;
 }
 
 Record::~Record()
 {
 	if (_delete_record_on_destroy) {
-		delete[] _record;
-		_record = nullptr;
+		delete[] _buffer;
+		_buffer = nullptr;
 	}
 }
 
@@ -36,7 +41,7 @@ Record* Record::Clone() const
 
 uint8_t* Record::GetRecord() const
 {
-	return _record;
+	return _buffer;
 }
 
 void Record::Reset()
@@ -54,7 +59,12 @@ void Record::SetRecordUpdateFlag()
 uint8_t* Record::PrepareRecord()
 {
 	_setRecordFromValues();
-	return _record;
+	return _buffer;
+}
+
+void Record::Expand()
+{
+	_values = _getValuesFromRecord();
 }
 
 std::vector<BRS_Value> Record::_getValuesFromRecord()
@@ -67,17 +77,17 @@ std::vector<BRS_Value> Record::_getValuesFromRecord()
 		if (field->isStored()) {
 			switch (field->field_type) {
 			case FieldType::BOOL:
-				val.B = _file_d->loadB(field, _record);
+				val.B = _file_d->loadB(field, _buffer);
 				break;
 			case FieldType::DATE:
 			case FieldType::FIXED:
 			case FieldType::REAL:
-				val.R = _file_d->loadR(field, _record);
+				val.R = _file_d->loadR(field, _buffer);
 				break;
 			case FieldType::ALFANUM:
 			case FieldType::NUMERIC:
 			case FieldType::TEXT:
-				val.S = _file_d->loadS(field, _record);
+				val.S = _file_d->loadS(field, _buffer);
 				break;
 			default:
 				// unknown field type
@@ -89,17 +99,17 @@ std::vector<BRS_Value> Record::_getValuesFromRecord()
 			// calculated field
 			//switch (field->field_type) {
 			//case FieldType::BOOL:
-			//	val.B = RunBool(_file_d, field->Frml, _record);
+			//	val.B = RunBool(_file_d, field->Frml, _buffer);
 			//	break;
 			//case FieldType::DATE:
 			//case FieldType::FIXED:
 			//case FieldType::REAL:
-			//	val.R = RunReal(_file_d, field->Frml, _record);
+			//	val.R = RunReal(_file_d, field->Frml, _buffer);
 			//	break;
 			//case FieldType::ALFANUM:
 			//case FieldType::NUMERIC:
 			//case FieldType::TEXT:
-			//	val.S = RunString(_file_d, field->Frml, _record);
+			//	val.S = RunString(_file_d, field->Frml, _buffer);
 			//	break;
 			//default:
 			//	// unknown field type
@@ -121,17 +131,17 @@ void Record::_setRecordFromValues()
 			BRS_Value& val = _values[i];
 			switch (field->field_type) {
 			case FieldType::BOOL:
-				_file_d->saveB(field, val.B, _record);
+				_file_d->saveB(field, val.B, _buffer);
 				break;
 			case FieldType::DATE:
 			case FieldType::FIXED:
 			case FieldType::REAL:
-				_file_d->saveR(field, val.R, _record);
+				_file_d->saveR(field, val.R, _buffer);
 				break;
 			case FieldType::ALFANUM:
 			case FieldType::NUMERIC:
 			case FieldType::TEXT:
-				_file_d->saveS(field, val.S, _record);
+				_file_d->saveS(field, val.S, _buffer);
 				break;
 			default:
 				// unknown field type

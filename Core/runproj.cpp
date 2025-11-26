@@ -85,9 +85,9 @@ void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 	FuncDRoot = CRdb->OldFCRoot;
 	CFile = Chpt;
 
-	if (edit != nullptr) {
-		CRecPtr = edit->NewRec->GetRecord();
-	}
+	//if (edit != nullptr) {
+	//	CRecPtr = edit->NewRec->GetRecord();
+	//}
 	RdbD* R = CRdb->ChainBack;
 	if (R != nullptr) {
 		CRdb->help_file = R->help_file;
@@ -111,7 +111,7 @@ bool NetFileTest(RdbRecVars* X)
 	return false;
 }
 
-void GetSplitChapterName(FileD* file_d, void* record, std::string& name, std::string& ext)
+void GetSplitChapterName(FileD* file_d, uint8_t* record, std::string& name, std::string& ext)
 {
 
 	std::string chapter_name = file_d->loadS(ChptName, record);
@@ -126,10 +126,10 @@ void GetSplitChapterName(FileD* file_d, void* record, std::string& name, std::st
 	}
 }
 
-void GetRdbRecVars(const EditD* edit, void* record, RdbRecVars* X)
+void GetRdbRecVars(const EditD* edit, uint8_t* record, RdbRecVars* X)
 {
-	void* p = nullptr;
-	void* p2 = nullptr;
+	uint8_t* p = nullptr;
+	uint8_t* p2 = nullptr;
 	//void* cr = nullptr;
 
 	//cr = CRecPtr;
@@ -244,14 +244,14 @@ bool ChptDelFor(EditD* edit, RdbRecVars* X)
 	return result;
 }
 
-bool ChptDel(FileD* file_d, EditD* edit)
+bool ChptDel(FileD* file_d, DataEditor* data_editor)
 {
 	RdbRecVars New;
 	if (!IsCurrChpt(file_d)) {
 		return true;
 	}
-	GetRdbRecVars(edit, edit->NewRec->GetRecord(), &New);
-	return ChptDelFor(edit, &New);
+	GetRdbRecVars(data_editor->GetEditD(), data_editor->GetRecord(), &New);
+	return ChptDelFor(data_editor->GetEditD(), &New);
 }
 
 bool IsDuplFileName(DataEditor* data_editor, std::string name)
@@ -303,14 +303,14 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		return result;
 	}
 	if (!data_editor->TestIsNewRec()) {
-		eq = CompArea(&((uint8_t*)edit->NewRec->GetRecord())[2], &((uint8_t*)edit->OldRec->GetRecord())[2], edit->FD->FF->RecLen - 2);
+		eq = CompArea(&(data_editor->GetRecord())[2], &(data_editor->GetOriginalRecord())[2], edit->FD->FF->RecLen - 2);
 		if (eq == _equ) {
 			return result;
 		}
 	}
-	GetRdbRecVars(edit, edit->NewRec->GetRecord(), &New);
+	GetRdbRecVars(edit, data_editor->GetRecord(), &New);
 	if (!data_editor->TestIsNewRec()) {
-		GetRdbRecVars(edit, edit->OldRec->GetRecord(), &Old);
+		GetRdbRecVars(edit, data_editor->GetOriginalRecord(), &Old);
 	}
 	result = 1;
 #ifndef FandGraph
@@ -363,7 +363,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(edit, &Old)) return result;
-		edit->FD->saveT(ChptOldTxt, 0, edit->NewRec->GetRecord());
+		edit->FD->saveT(ChptOldTxt, 0, data_editor->GetRecord());
 		if (New.Typ == 'F') {
 			ReleaseFilesAndLinksAfterChapter(edit);
 		}
@@ -398,7 +398,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		}
 	}
 label2:
-	edit->FD->saveB(ChptVerif, true, edit->NewRec->GetRecord());
+	edit->FD->saveB(ChptVerif, true, data_editor->GetRecord());
 	result = 0;
 	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 	return result;
@@ -411,7 +411,7 @@ bool RdFDSegment(WORD FromI, int Pos)
 
 WORD FindHelpRecNr(FileD* FD, std::string& txt)
 {
-	FileD* cf = nullptr; void* cr = nullptr;
+	FileD* cf = nullptr; uint8_t* cr = nullptr;
 	LockMode md = LockMode::NullMode;
 	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr;
 	WORD i = 0;
@@ -528,7 +528,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 
 void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 {
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	WORD LicNr = ChptTF->LicenseNr;
 	int oldpos = CFile->loadT(F, CRecPtr);
 	MarkStore(p);
@@ -820,7 +820,7 @@ void Diagnostics(void* MaxHp, int Free, FileD* FD)
 
 bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 {
-	void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
+	uint8_t* p = nullptr; uint8_t* p2 = nullptr; uint8_t* MaxHp = nullptr;
 	//EditD* OldE = nullptr;
 	RdbPos RP;
 	bool uw = false, mv = false;
@@ -1351,9 +1351,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	bool Verif = false, FDCompiled = false, Encryp = false;
 	char Mode = '\0';
 	RdbPos RP;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	FileD* p1 = nullptr;
-	void* p2 = nullptr;
+	uint8_t* p2 = nullptr;
 	WORD lmsg = 0;
 	std::string RprtTxt;
 	size_t lstFDindex = 0;
@@ -1709,7 +1709,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "starting EditExecRdb()");
 	WORD Brk = 0, cc = 0;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	pstring passw(20);
 	bool b = false;
 	RdbPos RP;
@@ -1956,8 +1956,8 @@ void UpdateUTxt()
 {
 	bool Upd;
 	int Pos = 0;
-	void* p = nullptr;
-	void* p1 = nullptr;
+	uint8_t* p = nullptr;
+	uint8_t* p1 = nullptr;
 	size_t LL = 0;
 	CFile = Chpt;
 	CRecPtr = Chpt->FF->RecPtr;

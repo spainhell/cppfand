@@ -24,7 +24,8 @@ public:
     void SetEditD(EditD* edit);
 	void SetFileD(FileD* file_d);
 
-    uint8_t* GetRecord();
+    uint8_t* GetRecord() const;
+    uint8_t* GetOriginalRecord() const;
 
 	void EditDataFile(FileD* FD, EditOpt* EO);
     WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
@@ -57,8 +58,10 @@ public:
 
 private:
     FileD* file_d_ = nullptr;
-    uint8_t* record_ = nullptr;
-    uint8_t* original_record_ = nullptr;
+    //uint8_t* record_ = nullptr;
+    //uint8_t* original_record_ = nullptr;
+    Record* current_rec_ = nullptr;
+    Record* original_rec_ = nullptr;
     std::unique_ptr<DataEditorParams> params_;
     EditD* edit_ = nullptr;
 
@@ -69,7 +72,7 @@ private:
     int LogRecNo(int N);
     bool IsSelectedRec(WORD I);
     bool EquOldNewRec();
-    void RdRec(int N, uint8_t* buffer);
+    void RdRec(int nr, Record* record);
     bool CheckOwner(EditD* E);
     bool CheckKeyIn(EditD* E);
     bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset);
@@ -194,7 +197,7 @@ private:
 
     WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt,
                    double& RR, bool del, bool upd, bool ret, unsigned int Delta);
-    void SetWasUpdated(FileD* file_d, void* record);
+    void SetWasUpdated(FileD* file_d, uint8_t* record);
     void AssignFld(FieldDescr* F, FrmlElem* Z);
     bool TestMask(std::string& S, std::string Mask);
     void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R);

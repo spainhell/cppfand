@@ -172,26 +172,15 @@ struct MergOpSt { char Op; double Group; };
 extern MergOpSt MergOpGroup;
 
 void ResetLVBD();
-void CrIndRec(FileD* file_d, void* record);
-bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, uint8_t** linkedRecord);
-bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back);
-void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, void* rp, void* new_record, int n);
-bool Assign(FileD* file_d, Additive* add_d, void* record);
+void CrIndRec(FileD* file_d, uint8_t* record);
+bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, uint8_t* record, uint8_t** linkedRecord);
+bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, uint8_t* RP, uint8_t* new_record, int N, char Kind2, bool Back);
+void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, uint8_t* rp, uint8_t* new_record, int n);
+bool Assign(FileD* file_d, Additive* add_d, uint8_t* record);
 bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md);
 
-bool RunAddUpdate(FileD* file_d, char kind, void* old_record, LinkD* not_link_d, void* record);
+bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, LinkD* not_link_d, uint8_t* record);
+bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, uint8_t* record);
 
-/**
- * \brief What does it do?
- * \param file_d file
- * \param kind +, -, d
- * \param old_record old record
- * \param back backtracking
- * \param stop_add_d stop AddD object
- * \param not_link_d not LinkD
- * \param record record
- * \return bool
- */
-bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, void* record);
 bool TestExitKey(WORD KeyCode, EdExitD* X);
 void SetCompileAll();

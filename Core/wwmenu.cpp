@@ -944,7 +944,7 @@ std::string TMenuBarP::GetText(short I)
 WORD Menu(WORD MsgNr, WORD IStart)
 {
 	TMenuBoxS* w = nullptr;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	MarkStore(p);
 	ReadMessage(MsgNr);
 	w = new TMenuBoxS(0, 0, MsgLine);
@@ -975,7 +975,7 @@ bool PrinterMenu(WORD Msg)
 void MenuBarProc(Instr_menu* PD)
 {
 	TMenuBarP* w = nullptr;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	MarkStore(p);
 	w = new TMenuBarP(PD);
 	w->Exec();
@@ -991,9 +991,9 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	int i = 0;
 	TVideoFont fo;
 	//FileD* cf = nullptr;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	LockMode md = LockMode::NullMode;
-	void* cr = CRecPtr;
+	uint8_t* cr = CRecPtr;
 	std::string result;
 
 	if (ByName) {

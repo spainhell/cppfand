@@ -28,7 +28,7 @@ void FandHelp(FileD* help_file, const std::string& name, bool InCWw)
 
 void Help(RdbD* R, std::string name, bool InCWw)
 {
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	FileD* fd = nullptr;
 	WORD l2;
 	bool backw;

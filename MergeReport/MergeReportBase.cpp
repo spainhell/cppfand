@@ -196,7 +196,7 @@ void MergeReportBase::ZeroSumFlds(std::vector<FrmlElemSum*>* sum)
 	}
 }
 
-void MergeReportBase::SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, void* record)
+void MergeReportBase::SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, uint8_t* record)
 {
 	if (S == nullptr) return;
 	for (size_t i = 0; i < S->size(); i++) {

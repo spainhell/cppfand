@@ -28,7 +28,7 @@ protected:
 	void TestSetSumIi();
 	void ZeroSumFlds(LvDescr* L);
 	void ZeroSumFlds(std::vector<FrmlElemSum*>* sum);
-	void SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, void* record);
+	void SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, uint8_t* record);
 
 	WORD Ii, Oi, SumIi;
 	char WhatToRd; /*i=Oi output FDs;O=O outp.FDs*/

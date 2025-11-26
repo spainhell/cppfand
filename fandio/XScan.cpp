@@ -15,7 +15,7 @@ void AddFFs(XKey* K, pstring& s)
 
 /// asi vytvori XStringy pro zacatek a konec (rozsah) vyhledavani
 /// pokud se hleda interval v klici
-void CompKIFrml(FileD* file_d, XKey* K, std::vector<KeyInD*>& KI, bool AddFF, void* record)
+void CompKIFrml(FileD* file_d, XKey* K, std::vector<KeyInD*>& KI, bool AddFF, uint8_t* record)
 {
 	XString x;
 	//while (KI != nullptr) {
@@ -62,7 +62,7 @@ XScan::XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT)
 	}
 }
 
-void XScan::Reset(FrmlElem* ABool, bool SQLFilter, void* record)
+void XScan::Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record)
 {
 	KeyInD* k = nullptr;
 	int n = 0;
@@ -111,7 +111,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, void* record)
 	SeekRec(0);
 }
 
-void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record)
+void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, uint8_t* record)
 {
 	LockMode m;
 	if (Kind == 4) {
@@ -341,7 +341,7 @@ void XScan::NextIntvl()
 	}
 }
 
-void XScan::GetRec(void* record)
+void XScan::GetRec(uint8_t* record)
 {
 	XString xx;
 	size_t item = 0;

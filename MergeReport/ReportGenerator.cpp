@@ -28,7 +28,7 @@ ReportGenerator::~ReportGenerator()
 
 void ReportGenerator::RunAutoReport(RprtOpt* RO)
 {
-	void* p1 = RO->FDL[0]->FD->FF->RecPtr;
+	uint8_t* p1 = RO->FDL[0]->FD->FF->RecPtr;
 	std::string txt = GenAutoRprt(RO, true);
 	std::unique_ptr report = std::make_unique<Report>();
 	report->SetInput(txt, false);

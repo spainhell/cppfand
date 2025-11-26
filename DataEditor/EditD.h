@@ -29,8 +29,8 @@ public:
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;
 	std::vector<FieldDescr*> Flds;
-	Record* OldRec = nullptr;
-	Record* NewRec = nullptr;
+	//Record* OldRec = nullptr;
+	//Record* NewRec = nullptr;
 	//uint8_t* OldRecPtr = nullptr;
 	//uint8_t* NewRecPtr = nullptr;
 	uint8_t FrstCol = 0, FrstRow = 0, LastCol = 0, LastRow = 0, Rows = 0;
@@ -90,5 +90,5 @@ public:
 	int OwnerRecNo = 0;
 	LinkD* ShiftF7_link = nullptr;
 	EditD* ShiftF7_caller = nullptr;
-	void* AfterE = nullptr;
+	uint8_t* AfterE = nullptr;
 };

@@ -8,7 +8,7 @@ FileD* CFile;
 //std::vector<FileD*> FileDRoot;	// only current RDB
 std::deque<LinkD*> LinkDRoot;	// for all RDBs
 std::deque<FuncD*> FuncDRoot;
-void* CRecPtr;
+uint8_t* CRecPtr;
 XKey* CViewKey;
 std::string TopRdbDir, TopDataDir;
 std::string CatFDName;

@@ -170,11 +170,11 @@ private:
 	void SetBlockBound(int& BBPos, int& EBPos);
 	void ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p);
 	bool BlockHandle(int& fs, HANDLE W1, char Oper);
-	void BlockCopyMove(char Oper, void* P1, LongStr* sp);
-	bool BlockGrasp(char Oper, void* P1, LongStr* sp);
-	bool BlockCGrasp(char Oper, void* P1, LongStr* sp);
-	void BlockDrop(char Oper, void* P1, LongStr* sp);
-	void BlockCDrop(char Oper, void* P1, LongStr* sp);
+	void BlockCopyMove(char Oper, uint8_t* P1, LongStr* sp);
+	bool BlockGrasp(char Oper, uint8_t* P1, LongStr* sp);
+	bool BlockCGrasp(char Oper, uint8_t* P1, LongStr* sp);
+	void BlockDrop(char Oper, uint8_t* P1, LongStr* sp);
+	void BlockCDrop(char Oper, uint8_t* P1, LongStr* sp);
 	void TestUpdFile();
 	void KodLine();
 	void DekodLine();

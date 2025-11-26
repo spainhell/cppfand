@@ -17,7 +17,7 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 {
 	std::string s;
 	FileD* cf = CFile;
-	void* cr = CRecPtr;
+	uint8_t* cr = CRecPtr;
 	CFile = Chpt;
 
 	CRecPtr = CFile->GetRecSpace();
@@ -75,7 +75,7 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 	}
 	gc->input_pos = 1;
 	SwitchLevel = 0;
-	void* cr = CRecPtr;
+	uint8_t* cr = CRecPtr;
 	ss = new LongStr(MaxLStrLen + 2);
 	l = 0;
 	if (Typ == 'E') {
@@ -200,8 +200,8 @@ void CodingRdb::Wr(uint8_t c)
 
 void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 {
-	void* p = nullptr;
-	void* p2 = nullptr;
+	uint8_t* p = nullptr;
+	uint8_t* p2 = nullptr;
 
 	int pos = CFile->loadT(F, CRecPtr);
 	if (pos == 0) return;
@@ -266,9 +266,9 @@ label2:
 
 void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 {
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	MarkStore(p);
-	void* cr = Chpt->FF->RecPtr;
+	uint8_t* cr = Chpt->FF->RecPtr;
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
 	SpecFDNameAllowed = true;
 
@@ -281,9 +281,10 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	SaveFiles();
 	ReleaseStore(&p);
 	Chpt->FF->RecPtr = cr;
-	CFile = Chpt;
-	CRecPtr = edit->NewRec->GetRecord();
-	CFile->ReadRec(data_editor->CRec(), CRecPtr);
+	//CFile = Chpt;
+	//CRecPtr = edit->NewRec->GetRecord();
+	//CFile->ReadRec(data_editor->CRec(), CRecPtr);
+	Chpt->ReadRec(data_editor->CRec(), data_editor->GetRecord());
 
 	ChptTF->CompileAll = false;
 	ChptTF->CompileProc = false;
