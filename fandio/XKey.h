@@ -31,21 +31,21 @@ public:
 	int PathToNr(FileD* file_d);
 	void NrToPath(FileD* file_d, int I);
 	int PathToRecNr(FileD* file_d);
-	bool RecNrToPath(FileD* file_d, XString& XX, int RecNr, void* record);
+	bool RecNrToPath(FileD* file_d, XString& XX, int RecNr, uint8_t* record);
 	bool IncPath(FileD* file_d, unsigned short J, int& Pg);
 	int NrToRecNr(FileD* file_d, int I);
 	std::string NrToStr(FileD* file_d, int I);
-	int RecNrToNr(FileD* file_d, int RecNr, void* record);
+	int RecNrToNr(FileD* file_d, int RecNr, uint8_t* record);
 	bool FindNr(FileD* file_d, std::string X, int& IndexNr);
 	void InsertOnPath(FileD* file_d, XString& XX, int RecNr);
 	void InsertNonLeafItem(FileD* file_d, XString& XX, XPage* P, XPage* UpP, int Page, unsigned short I, int& UpPage, unsigned int upSum, unsigned int downPage);
 	void InsertLeafItem(FileD* file_d, XString& XX, XPage* P, XPage* UpP, int Page, unsigned short I, int RecNr, int& UpPage);
 	void ChainPrevLeaf(FileD* file_d, XPage* P, int N);
-	bool Insert(FileD* file_d, int RecNr, bool Try, void* record);
+	bool Insert(FileD* file_d, int RecNr, bool Try, uint8_t* record);
 	void DeleteOnPath(FileD* file_d);
 	void BalancePages(XPage* P1, XPage** P2, bool& Released);
 	void XIDown(FileD* file_d, XPage* p, XPage* p1, unsigned short i, int& page1);
-	bool Delete(FileD* file_d, int RecNr, void* record);
+	bool Delete(FileD* file_d, int RecNr, uint8_t* record);
 
 protected:
 	void CalcIndexLen();

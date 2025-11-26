@@ -246,7 +246,7 @@ void InitRunFand()
 	short j, MsgNr;
 	TMenuBoxS* mb = nullptr;
 	int w = 0;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	std::string txt;
 	double r = 0.0;
 

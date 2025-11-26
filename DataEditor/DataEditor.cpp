@@ -446,7 +446,7 @@ label4:
 	return result;
 }
 
-void DataEditor::SetWasUpdated(FileD* file_d, void* record)
+void DataEditor::SetWasUpdated(FileD* file_d, uint8_t* record)
 {
 	if (!params_->WasUpdated) {
 		switch (file_d->FileType) {
@@ -1505,7 +1505,7 @@ void DataEditor::DuplKeyMsg(XKey* K)
 
 void DataEditor::BuildWork()
 {
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	XKey* K = nullptr;
 	std::vector<KeyFldD*>* KF = nullptr;
 	XString xx;
@@ -2339,7 +2339,7 @@ void DataEditor::FindExistTest(FrmlElem* Z, LinkD** LD)
 
 	switch (Z->Op) {
 	case _field: {
-		auto iZ = (FrmlElemAccess*)Z;
+		auto iZ = (FrmlElemRecVarField*)Z;
 		if ((iZ->Field->Flg & f_Stored) == 0) FindExistTest(iZ->Field->Frml, LD);
 		break;
 	}
@@ -2496,7 +2496,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 {
 	wwmix ww;
 
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	std::string s1, s2;
 	XString x;
 	XString* px = nullptr;
@@ -3123,7 +3123,7 @@ bool DataEditor::PromptSearch(bool create)
 	if (params_->Subset) K = WK;
 	std::vector<KeyFldD*>::iterator KF = K->KFlds.begin();
 
-	void* RP = file_d_->GetRecSpace();
+	uint8_t* RP = file_d_->GetRecSpace();
 	//record_ = RP;
 
 	file_d_->ZeroAllFlds(current_rec_->GetRecord(), false);
@@ -3330,7 +3330,7 @@ void DataEditor::CheckFromHere()
 void DataEditor::Sorting()
 {
 	std::vector<KeyFldD*> SKRoot;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	LockMode md;
 	SaveFiles();
 	MarkStore(p);
@@ -3365,7 +3365,7 @@ void DataEditor::Sorting()
 
 void DataEditor::AutoReport()
 {
-	void* p = nullptr; RprtOpt* RO = nullptr;
+	uint8_t* p = nullptr; RprtOpt* RO = nullptr;
 	FileUseMode UM = Closed;
 	MarkStore(p); RO = gc->GetRprtOpt();
 	RO->FDL[0]->FD = file_d_;
@@ -3845,7 +3845,7 @@ bool DataEditor::EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& B
 	std::string edit_text;
 	EditorMode kind = EditorMode::Unknown;
 	LockMode md;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	int i = 0, w = 0;
 	std::vector<EdExitD*> X;
 	WORD iStk = 0;
@@ -4267,7 +4267,7 @@ bool DataEditor::SelFldsForEO(EditOpt* EO, LinkD* LD)
 
 	wwmix ww;
 
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	bool result = true;
 	if (EO->Flds.empty()) return result;
 	//FieldListEl* FL = options->Flds;
@@ -4316,7 +4316,7 @@ void DataEditor::ImbeddEdit()
 {
 	wwmix ww;
 
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	std::string s1, s2;
 	WORD Brk;
 	//std::vector<std::string> SL;
@@ -4402,7 +4402,7 @@ void DataEditor::DownEdit()
 	wwmix ww;
 
 	EditOpt* EO = nullptr;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	MarkStore(p);
 
 	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
@@ -4582,7 +4582,7 @@ void DataEditor::Calculate2()
 	wwmix ww;
 
 	FrmlElem* Z; std::string txt; WORD I; pstring Msg;
-	void* p = nullptr; char FTyp; double R; FieldDescr* F; bool Del;
+	uint8_t* p = nullptr; char FTyp; double R; FieldDescr* F; bool Del;
 	//MarkStore(p);
 	//NewExit(Ovr(), er);
 	//goto label2;
@@ -5671,7 +5671,7 @@ label81:
 
 void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 {
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	int w1 = 0, w2 = 0, w3 = 0;
 	WORD Brk = 0, r1 = 0, r2 = 0;
 	bool pix = false;

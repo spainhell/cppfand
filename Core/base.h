@@ -50,7 +50,7 @@ void DispH(void* ad, short NoBytes);
 #endif
 
 void MarkStore(void* p);
-void ReleaseStore(void** pointer);
+void ReleaseStore(uint8_t** pointer);
 void ReleaseAfterLongStr(void** pointer);
 int MemoryAvailable();
 void MarkBoth(void* p, void* p2);

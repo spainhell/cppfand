@@ -42,7 +42,7 @@ void ResetLVBD()
 	LVBD.func_name = "";
 }
 
-bool Add(FileD* file_d, Additive* add_d, void* record, double value, bool back)
+bool Add(FileD* file_d, Additive* add_d, uint8_t* record, double value, bool back)
 {
 	bool result = true;
 
@@ -62,124 +62,13 @@ bool Add(FileD* file_d, Additive* add_d, void* record, double value, bool back)
 	return result;
 }
 
-bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, void* record)
-{
-	uint8_t* cr2 = nullptr;
-	uint8_t* cr2_old = nullptr;
-	bool result = true;
-	Additive* add_d_back = nullptr;
-
-	try {
-		char kind2_old = 0;
-		char kind2 = 0;
-		for (Additive* add : file_d->Add) {
-			if (add == stop_add_d) {
-				// TODO: tady se nema CFile a CRecPtr vracet zpet, ale asi ma zustat !!!
-				//ReleaseStore(&p);
-				return result;
-			}
-			if ((not_link_d != nullptr) && (add->LD == not_link_d)) {
-				delete[] cr2; cr2 = nullptr;
-				delete[] cr2_old; cr2_old = nullptr;
-				continue;
-			}
-			if (add->Assign) {
-				if (Assign(file_d, add, record)) {
-					delete[] cr2; cr2 = nullptr;
-					delete[] cr2_old; cr2_old = nullptr;
-					continue;
-				}
-				else {
-					throw std::exception("fail");
-				}
-			}
-
-			double r = RunReal(file_d, add->Frml, record);
-			if (kind == '-') {
-				r = -r;
-			}
-			double r_old = 0;
-			if (kind == 'd') {
-				r_old = RunReal(file_d, add->Frml, old_record);
-			}
-			add_d_back = add;
-
-			int n2 = 0;
-			int n2_old = 0;
-			if (r != 0.0) {
-				if (!Link(file_d, add, n2, kind2, record, &cr2)) {
-					throw std::exception("fail");
-				}
-			}
-			if (r_old != 0.0) {
-				if (!Link(file_d, add, n2_old, kind2_old, old_record, &cr2_old)) {
-					throw std::exception("fail");
-				}
-				if (n2_old == n2) {
-					r = r - r_old;
-					if (r == 0.0) {
-						delete[] cr2; cr2 = nullptr;
-						delete[] cr2_old; cr2_old = nullptr;
-						continue;
-					}
-					n2_old = 0;
-				}
-			}
-			if ((n2 == 0) && (n2_old == 0)) {
-				delete[] cr2; cr2 = nullptr;
-				delete[] cr2_old; cr2_old = nullptr;
-				continue;
-			}
-			if (n2_old != 0) {
-				if (!Add(add->File2, add, cr2_old, -r_old, back)) {
-					throw std::exception("fail");
-				}
-			}
-			if (n2 != 0) {
-				if (!Add(add->File2, add, cr2, r, back)) {
-					throw std::exception("fail");
-				}
-			}
-			if ((n2_old != 0) && !TransAdd(add->File2, add, file_d, record, cr2_old, n2_old, kind2_old, false)) {
-				throw std::exception("fail");
-			}
-			if ((n2 != 0) && !TransAdd(add->File2, add, file_d, record, cr2, n2, kind2, false)) {
-				if (n2_old != 0) {
-					bool b = TransAdd(add->File2, add, file_d, record, cr2_old, n2_old, kind2_old, true);
-				}
-				throw std::exception("fail");
-			}
-			if (n2_old != 0) {
-				WrUpdRec(add->File2, add, file_d, record, cr2_old, n2_old);
-			}
-			if (n2 != 0) {
-				WrUpdRec(add->File2, add, file_d, record, cr2, n2);
-			}
-
-			delete[] cr2; cr2 = nullptr;
-			delete[] cr2_old; cr2_old = nullptr;
-		}
-	}
-
-	catch (std::exception&) {
-		delete[] cr2; cr2 = nullptr;
-		delete[] cr2_old; cr2_old = nullptr;
-		result = false;
-		if (add_d_back != nullptr) {
-			bool b = RunAddUpdate(file_d, kind, old_record, true, add_d_back, not_link_d, record);  /* backtracking */
-		}
-	}
-
-	return result;
-}
-
-void CrIndRec(FileD* file_d, void* record)
+void CrIndRec(FileD* file_d, uint8_t* record)
 {
 	file_d->CreateRec(file_d->FF->NRecs + 1, record);
 	file_d->RecallRec(file_d->FF->NRecs, record);
 }
 
-bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, uint8_t** linkedRecord)
+bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, uint8_t* record, uint8_t** linkedRecord)
 {
 	// TODO: is param file_d needed?
 
@@ -227,7 +116,7 @@ bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, void* record, uin
 	return result;
 }
 
-bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back)
+bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, uint8_t* RP, uint8_t* new_record, int N, char Kind2, bool Back)
 {
 	if (file_d->Add.empty()) {
 		return true;
@@ -255,7 +144,7 @@ bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, void* RP, void* new_record
 	return result;
 }
 
-void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, void* rp, void* new_record, int n)
+void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, uint8_t* rp, uint8_t* new_record, int n)
 {
 	//XString x;
 	//LinkD* ld;
@@ -272,7 +161,7 @@ void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, void* rp, void* new_rec
 		file_d->WriteRec(n, new_record);
 }
 
-bool Assign(FileD* file_d, Additive* add_d, void* record)
+bool Assign(FileD* file_d, Additive* add_d, uint8_t* record)
 {
 	double r = 0.0;
 	std::string s;
@@ -387,7 +276,7 @@ bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
 	return result;
 }
 
-bool RunAddUpdate(FileD* file_d, char kind, void* old_record, LinkD* not_link_d, void* record)
+bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, LinkD* not_link_d, uint8_t* record)
 {
 	LockMode md;
 	LockForAdd(file_d, 0, false, md);
@@ -401,6 +290,117 @@ bool RunAddUpdate(FileD* file_d, char kind, void* old_record, LinkD* not_link_d,
 	}
 	const bool result = RunAddUpdate(file_d, kind, old_record, false, nullptr, not_link_d, record);
 	LockForAdd(file_d, 2, false, md);
+	return result;
+}
+
+bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, uint8_t* record)
+{
+	uint8_t* cr2 = nullptr;
+	uint8_t* cr2_old = nullptr;
+	bool result = true;
+	Additive* add_d_back = nullptr;
+
+	try {
+		char kind2_old = 0;
+		char kind2 = 0;
+		for (Additive* add : file_d->Add) {
+			if (add == stop_add_d) {
+				// TODO: tady se nema CFile a CRecPtr vracet zpet, ale asi ma zustat !!!
+				//ReleaseStore(&p);
+				return result;
+			}
+			if ((not_link_d != nullptr) && (add->LD == not_link_d)) {
+				delete[] cr2; cr2 = nullptr;
+				delete[] cr2_old; cr2_old = nullptr;
+				continue;
+			}
+			if (add->Assign) {
+				if (Assign(file_d, add, record)) {
+					delete[] cr2; cr2 = nullptr;
+					delete[] cr2_old; cr2_old = nullptr;
+					continue;
+				}
+				else {
+					throw std::exception("fail");
+				}
+			}
+
+			double r = RunReal(file_d, add->Frml, record);
+			if (kind == '-') {
+				r = -r;
+			}
+			double r_old = 0;
+			if (kind == 'd') {
+				r_old = RunReal(file_d, add->Frml, old_record);
+			}
+			add_d_back = add;
+
+			int n2 = 0;
+			int n2_old = 0;
+			if (r != 0.0) {
+				if (!Link(file_d, add, n2, kind2, record, &cr2)) {
+					throw std::exception("fail");
+				}
+			}
+			if (r_old != 0.0) {
+				if (!Link(file_d, add, n2_old, kind2_old, old_record, &cr2_old)) {
+					throw std::exception("fail");
+				}
+				if (n2_old == n2) {
+					r = r - r_old;
+					if (r == 0.0) {
+						delete[] cr2; cr2 = nullptr;
+						delete[] cr2_old; cr2_old = nullptr;
+						continue;
+					}
+					n2_old = 0;
+				}
+			}
+			if ((n2 == 0) && (n2_old == 0)) {
+				delete[] cr2; cr2 = nullptr;
+				delete[] cr2_old; cr2_old = nullptr;
+				continue;
+			}
+			if (n2_old != 0) {
+				if (!Add(add->File2, add, cr2_old, -r_old, back)) {
+					throw std::exception("fail");
+				}
+			}
+			if (n2 != 0) {
+				if (!Add(add->File2, add, cr2, r, back)) {
+					throw std::exception("fail");
+				}
+			}
+			if ((n2_old != 0) && !TransAdd(add->File2, add, file_d, record, cr2_old, n2_old, kind2_old, false)) {
+				throw std::exception("fail");
+			}
+			if ((n2 != 0) && !TransAdd(add->File2, add, file_d, record, cr2, n2, kind2, false)) {
+				if (n2_old != 0) {
+					bool b = TransAdd(add->File2, add, file_d, record, cr2_old, n2_old, kind2_old, true);
+				}
+				throw std::exception("fail");
+			}
+			if (n2_old != 0) {
+				WrUpdRec(add->File2, add, file_d, record, cr2_old, n2_old);
+			}
+			if (n2 != 0) {
+				WrUpdRec(add->File2, add, file_d, record, cr2, n2);
+			}
+
+			delete[] cr2; cr2 = nullptr;
+			delete[] cr2_old; cr2_old = nullptr;
+		}
+	}
+
+	catch (std::exception&) {
+		delete[] cr2; cr2 = nullptr;
+		delete[] cr2_old; cr2_old = nullptr;
+		result = false;
+		if (add_d_back != nullptr) {
+			bool b = RunAddUpdate(file_d, kind, old_record, true, add_d_back, not_link_d, record);  /* backtracking */
+		}
+	}
+
 	return result;
 }
 

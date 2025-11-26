@@ -659,7 +659,7 @@ void MarkBoth(void* p, void* p2)
 {
 }
 
-void ReleaseStore(void** pointer)
+void ReleaseStore(uint8_t** pointer)
 {
 	delete[] * pointer; *pointer = nullptr;
 }

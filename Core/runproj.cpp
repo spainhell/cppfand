@@ -111,7 +111,7 @@ bool NetFileTest(RdbRecVars* X)
 	return false;
 }
 
-void GetSplitChapterName(FileD* file_d, void* record, std::string& name, std::string& ext)
+void GetSplitChapterName(FileD* file_d, uint8_t* record, std::string& name, std::string& ext)
 {
 
 	std::string chapter_name = file_d->loadS(ChptName, record);
@@ -126,10 +126,10 @@ void GetSplitChapterName(FileD* file_d, void* record, std::string& name, std::st
 	}
 }
 
-void GetRdbRecVars(const EditD* edit, void* record, RdbRecVars* X)
+void GetRdbRecVars(const EditD* edit, uint8_t* record, RdbRecVars* X)
 {
-	void* p = nullptr;
-	void* p2 = nullptr;
+	uint8_t* p = nullptr;
+	uint8_t* p2 = nullptr;
 	//void* cr = nullptr;
 
 	//cr = CRecPtr;
@@ -411,7 +411,7 @@ bool RdFDSegment(WORD FromI, int Pos)
 
 WORD FindHelpRecNr(FileD* FD, std::string& txt)
 {
-	FileD* cf = nullptr; void* cr = nullptr;
+	FileD* cf = nullptr; uint8_t* cr = nullptr;
 	LockMode md = LockMode::NullMode;
 	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr;
 	WORD i = 0;
@@ -528,7 +528,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 
 void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 {
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	WORD LicNr = ChptTF->LicenseNr;
 	int oldpos = CFile->loadT(F, CRecPtr);
 	MarkStore(p);
@@ -820,7 +820,7 @@ void Diagnostics(void* MaxHp, int Free, FileD* FD)
 
 bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 {
-	void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
+	uint8_t* p = nullptr; uint8_t* p2 = nullptr; uint8_t* MaxHp = nullptr;
 	//EditD* OldE = nullptr;
 	RdbPos RP;
 	bool uw = false, mv = false;
@@ -1351,9 +1351,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	bool Verif = false, FDCompiled = false, Encryp = false;
 	char Mode = '\0';
 	RdbPos RP;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	FileD* p1 = nullptr;
-	void* p2 = nullptr;
+	uint8_t* p2 = nullptr;
 	WORD lmsg = 0;
 	std::string RprtTxt;
 	size_t lstFDindex = 0;
@@ -1709,7 +1709,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "starting EditExecRdb()");
 	WORD Brk = 0, cc = 0;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	pstring passw(20);
 	bool b = false;
 	RdbPos RP;
@@ -1956,8 +1956,8 @@ void UpdateUTxt()
 {
 	bool Upd;
 	int Pos = 0;
-	void* p = nullptr;
-	void* p1 = nullptr;
+	uint8_t* p = nullptr;
+	uint8_t* p1 = nullptr;
 	size_t LL = 0;
 	CFile = Chpt;
 	CRecPtr = Chpt->FF->RecPtr;

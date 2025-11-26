@@ -184,8 +184,8 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 {
 	FileD* FD1 = LV1->FD;  // destination record
 	FileD* FD2 = LV2->FD;  // source record
-	void* RP1 = LV1->record;
-	void* RP2 = LV2->record;
+	uint8_t* RP1 = LV1->record;
+	uint8_t* RP2 = LV2->record;
 
 	//while (A != nullptr) {
 	for (AssignD* a : A) {
@@ -219,7 +219,7 @@ void AssignRecFld(Instr_assign* PD)
 {
 	FieldDescr* field_d = PD->RecFldD;
 	FileD* file_d = PD->AssLV->FD;
-	void* record = PD->AssLV->record;
+	uint8_t* record = PD->AssLV->record;
 
 	file_d->SetRecordUpdateFlag(record);
 	AssgnFrml(file_d, record, field_d, PD->Frml, file_d->HasTWorkFlag(record), PD->Add);
@@ -235,7 +235,7 @@ void SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
 
 void MergeProc(Instr_merge_display* PD)
 {
-	void* p = nullptr; void* p2 = nullptr;
+	uint8_t* p = nullptr; uint8_t* p2 = nullptr;
 	MarkBoth(p, p2);
 
 	const std::unique_ptr merge = std::make_unique<Merge>();
@@ -400,7 +400,7 @@ void ExecPgm(Instr_exec* PD)
 void CallRdbProc(Instr_call* PD)
 {
 	bool b = false;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	wwmix ww;
 	MarkStore(p);
 	// TODO: tady se ma ulozit stav (MyBP - ProcStkD)
@@ -467,7 +467,7 @@ void EditTxtProc(Instr_edittxt* PD)
 	uint8_t a = 0;
 	std::string* lp = nullptr;
 	MsgStr MsgS;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	MarkStore(p);
 	i = 1;
 	if (PD->TxtPos != nullptr) {
@@ -579,7 +579,7 @@ void AppendRecProc(FileD* file_d)
 	file_d->OldLockMode(md);
 }
 
-void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, void* new_data)
+void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, uint8_t* new_data)
 {
 	uint8_t* old_data = file_d->GetRecSpace();
 	file_d->ReadRec(rec_nr, old_data);
@@ -753,7 +753,7 @@ void ForAllProc(Instr_forall* PD)
 	FileD* FD = nullptr; XKey* Key = nullptr; XKey* k = nullptr; FrmlElem* Bool = nullptr;
 	LinkD* LD = nullptr;
 	//KeyInD* KI = nullptr;
-	void* cr = nullptr; void* p = nullptr; void* lr = nullptr;
+	uint8_t* cr = nullptr; uint8_t* p = nullptr; uint8_t* lr = nullptr;
 	XScan* xScan = nullptr; LockMode md, md1; XString xx;
 	//KeyFldD* KF = nullptr;
 	LocVar* LVi = nullptr; LocVar* LVr = nullptr;
@@ -856,7 +856,7 @@ label1:
 				CRecPtr = lr;
 				CFile->ClearRecordUpdateFlag(lr);
 				//CFile->DelTFlds(lr);
-				CFile->CopyRec((uint8_t*)cr, (uint8_t*)lr, true);
+				CFile->CopyRec(cr, lr, true);
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr; // metoda LocVarAd byla odstranena z access.cpp
 		if (LVi != nullptr) {
@@ -1089,7 +1089,7 @@ void PutTxt(Instr_puttxt* PD)
 }
 
 // ulozi do katalogu hodnotu promenne
-void AssgnCatFld(Instr_assign* PD, void* record)
+void AssgnCatFld(Instr_assign* PD, uint8_t* record)
 {
 	if (PD->FD3 != nullptr) {
 		PD->FD3->CloseFile();
@@ -1649,8 +1649,8 @@ void RunProcedure(std::vector<Instr*>& PDRoot)
 
 void CallProcedure(Instr_proc* PD)
 {
-	void* p1 = nullptr;
-	void* p2 = nullptr;
+	uint8_t* p1 = nullptr;
+	uint8_t* p2 = nullptr;
 
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it0;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;

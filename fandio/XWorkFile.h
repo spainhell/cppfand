@@ -25,12 +25,12 @@ public:
 	WPage* PW2 = nullptr;
 	int FreeNr[5]{ 0, 0, 0, 0, 0 };
 
-	void Main(char Typ, void* record);
-	void CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, void* record);
-	bool GetCRec(void* record);
-	void Output(XKey* xKey, WRec* R, void* record);
+	void Main(char Typ, uint8_t* record);
+	void CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, uint8_t* record);
+	bool GetCRec(uint8_t* record);
+	void Output(XKey* xKey, WRec* R, uint8_t* record);
 	void Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NRecs);
-	void SortMerge(XKey* xKey, void* record);
+	void SortMerge(XKey* xKey, uint8_t* record);
 
 private:
 	FileD* _parent;
@@ -42,8 +42,8 @@ private:
 	void FinishIndex(XKey* xKey);
 	int GetFreeNr();
 	void ReadWPage(WPage* W, int Pg);
-	void WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Chn, void* record);
-	void Merge(XKey* xKey, void* record);
-	void Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, void* record);
+	void WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Chn, uint8_t* record);
+	void Merge(XKey* xKey, uint8_t* record);
+	void Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, uint8_t* record);
 	void PutFreeNr(int N);
 };

@@ -2011,7 +2011,7 @@ void TextEditor::Calculate()
 	std::string txt;
 	size_t I;
 	std::string Msg;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 	char FTyp;
 	double R;
 	bool Del;
@@ -2301,7 +2301,7 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 	return result;
 }
 
-void DelStorClpBd(void* P1, LongStr* sp)
+void DelStorClpBd(uint8_t* P1, LongStr* sp)
 {
 	TWork.Delete(ClpBdPos);
 	std::string data = std::string(sp->A, sp->LL);
@@ -2309,13 +2309,13 @@ void DelStorClpBd(void* P1, LongStr* sp)
 	ReleaseStore(&P1);
 }
 
-void MarkRdClpBd(void* P1, LongStr* sp)
+void MarkRdClpBd(uint8_t* P1, LongStr* sp)
 {
 	MarkStore(P1);
 	//sp = TWork.ReadLongStr(ClpBdPos);
 }
 
-bool TextEditor::BlockGrasp(char Oper, void* P1, LongStr* sp)
+bool TextEditor::BlockGrasp(char Oper, uint8_t* P1, LongStr* sp)
 {
 	int L, L1, L2, ln;
 	WORD I1;
@@ -2350,7 +2350,7 @@ bool TextEditor::BlockGrasp(char Oper, void* P1, LongStr* sp)
 	return result;
 }
 
-void TextEditor::BlockDrop(char Oper, void* P1, LongStr* sp)
+void TextEditor::BlockDrop(char Oper, uint8_t* P1, LongStr* sp)
 {
 	WORD I, I2;
 	if (Oper == 'D') MarkRdClpBd(P1, sp);
@@ -2372,7 +2372,7 @@ void TextEditor::BlockDrop(char Oper, void* P1, LongStr* sp)
 	PosDekFindLine(BegBLn, BegBPos, true); /*ChangeScr = true;*/
 }
 
-bool TextEditor::BlockCGrasp(char Oper, void* P1, LongStr* sp)
+bool TextEditor::BlockCGrasp(char Oper, uint8_t* P1, LongStr* sp)
 {
 	WORD i, I2;
 	int L;
@@ -2416,7 +2416,7 @@ void TextEditor::InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp)
 	if (UpdatedL) KodLine();
 }
 
-void TextEditor::BlockCDrop(char Oper, void* P1, LongStr* sp)
+void TextEditor::BlockCDrop(char Oper, uint8_t* P1, LongStr* sp)
 {
 	WORD i, I1, I3, ww;
 	if (Oper == 'D') MarkRdClpBd(P1, sp);
@@ -2456,7 +2456,7 @@ void TextEditor::BlockCDrop(char Oper, void* P1, LongStr* sp)
 	}
 }
 
-void TextEditor::BlockCopyMove(char Oper, void* P1, LongStr* sp)
+void TextEditor::BlockCopyMove(char Oper, uint8_t* P1, LongStr* sp)
 {
 	bool b = false;
 	if (!BlockExist()) return;

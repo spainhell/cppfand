@@ -25,7 +25,7 @@ XWorkFile::~XWorkFile()
 	FlushF(Handle, HandleError);
 }
 
-void XWorkFile::Main(char Typ, void* record)
+void XWorkFile::Main(char Typ, uint8_t* record)
 {
 	xPage = new XPage();
 	nextXPage = xwFile->NewPage(xPage);
@@ -64,7 +64,7 @@ void XWorkFile::Main(char Typ, void* record)
 	delete xPage; xPage = nullptr;
 }
 
-void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, void* record)
+void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, uint8_t* record)
 {
 
 	WRec* r = new WRec();
@@ -99,7 +99,7 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, void* re
 	RunMsgOff();
 }
 
-bool XWorkFile::GetCRec(void* record)
+bool XWorkFile::GetCRec(uint8_t* record)
 {
 	bool result = false;
 	xScan->GetRec(record);
@@ -109,7 +109,7 @@ bool XWorkFile::GetCRec(void* record)
 	return result;
 }
 
-void XWorkFile::Output(XKey* xKey, WRec* R, void* record)
+void XWorkFile::Output(XKey* xKey, WRec* R, uint8_t* record)
 {
 	xxPage->AddToLeaf(_parent, R, xKey, record);
 }
@@ -171,7 +171,7 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NR
 }
 
 /// precte zaznamy, vytvori uplnou delku klice, setridi zaznamy
-void XWorkFile::SortMerge(XKey* xKey, void* record)
+void XWorkFile::SortMerge(XKey* xKey, uint8_t* record)
 {// z 'PW->A' se postupne berou jednotlive WRec;
 	// ty pak projdou upravou;
 	// a zpatky se vraci na stejne misto do PW->A;
@@ -282,7 +282,7 @@ void XWorkFile::ReadWPage(WPage* W, int Pg)
 	TestErr();
 }
 
-void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Chn, void* record)
+void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Chn, uint8_t* record)
 {
 	size_t offset = 0;
 	PgWritten++;
@@ -311,7 +311,7 @@ void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Ch
 	}
 }
 
-void XWorkFile::Merge(XKey* xKey, void* record)
+void XWorkFile::Merge(XKey* xKey, uint8_t* record)
 {
 	int npairs, newli, nxtnew, pg1, pg2;
 	int nxt = 0;
@@ -347,7 +347,7 @@ label1:
 	goto label1;
 }
 
-void XWorkFile::Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, void* record)
+void XWorkFile::Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, uint8_t* record)
 {
 	bool eof1 = false;
 	bool eof2 = false;

@@ -1108,7 +1108,7 @@ bool Compiler::FindLocVar(LocVarBlock* LVB, LocVar** LV)
 bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 {
 	FileD* CF = CFile;
-	void* CR = CRecPtr;
+	uint8_t* CR = CRecPtr;
 	CFile = Chpt;
 	CRecPtr = Chpt->GetRecSpace();
 	RdbD* R = CRdb;
@@ -1412,7 +1412,7 @@ label1:
 
 	switch (Z->Op) {
 	case _field: {
-		FrmlElemAccess* iZ7 = static_cast<FrmlElemAccess*>(Z);
+		FrmlElemRecVarField* iZ7 = static_cast<FrmlElemRecVarField*>(Z);
 		result = SrchF(F1, iZ7->Field);
 		break;
 	}
@@ -2566,7 +2566,7 @@ FrmlElem* Compiler::RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 	return Z;
 }
 
-FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
+FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, uint8_t* RP)
 {
 	auto Z1 = new FrmlElemNewFile(_newfile, 8);
 	Z1->Frml = Z;
@@ -2577,7 +2577,7 @@ FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
 
 FrmlElem* Compiler::MakeFldFrml(FieldDescr* F, char& FTyp)
 {
-	auto Z = new FrmlElemAccess(_field, 4);
+	auto Z = new FrmlElemRecVarField(_field, 4);
 	Z->Field = F;
 	FTyp = F->frml_type;
 	return Z;

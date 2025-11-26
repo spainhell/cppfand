@@ -518,7 +518,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 	int j = 0;
 	CHAR_INFO LastL[161];
 	LongStr* sp = nullptr;
-	void* P1 = nullptr;
+	uint8_t* P1 = nullptr;
 	bool bb = false;
 	//EdExitD* X = nullptr;
 

@@ -617,7 +617,7 @@ void BackUp(bool IsBackup, bool compress, WORD Ir, bool NoCancel)
 void BackupM(Instr_backup* PD)
 {
 	std::string mask;
-	void* p = nullptr;
+	uint8_t* p = nullptr;
 
 	MarkStore(p);
 	if (PD->IsBackup) {
@@ -700,7 +700,7 @@ void CodingCRdb(EditD* edit, bool rotate)
 	crdb->CodeRdb(edit, rotate);
 }
 
-void AddLicNr(FileD* file_d, FieldDescr* field_d, void* record)
+void AddLicNr(FileD* file_d, FieldDescr* field_d, uint8_t* record)
 {
 	if (file_d->loadT(field_d, record) != 0) {
 		file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record);
@@ -731,7 +731,7 @@ void CopyH(HANDLE H, pstring Nm)
 bool PromptCodeRdb(EditD* edit)
 {
 	FileD* cf;
-	void* cr;
+	uint8_t* cr;
 	auto wx = std::make_unique<wwmix>();
 	Coding::SetPassword(Chpt, 1, "");
 	Coding::SetPassword(Chpt, 2, "");

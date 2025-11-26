@@ -43,6 +43,11 @@ FrmlElemAccess::FrmlElemAccess(instr_type Op, size_t buff_size) : FrmlElem(Op, b
 {
 }
 
+FrmlElemRecVarField::FrmlElemRecVarField(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+{
+	
+}
+
 FrmlElemNewFile::FrmlElemNewFile(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }

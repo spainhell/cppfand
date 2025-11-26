@@ -581,7 +581,7 @@ void FileD::SeekRec(int n)
 	}
 }
 
-void FileD::CreateRec(int n, void* record) const
+void FileD::CreateRec(int n, uint8_t* record) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -596,7 +596,7 @@ void FileD::CreateRec(int n, void* record) const
 	}
 }
 
-void FileD::PutRec(void* record)
+void FileD::PutRec(uint8_t* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -611,7 +611,7 @@ void FileD::PutRec(void* record)
 	}
 }
 
-void FileD::DeleteRec(int n, void* record) const
+void FileD::DeleteRec(int n, uint8_t* record) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -724,7 +724,7 @@ void FileD::IndexesMaintenance(bool remove_deleted)
 	}
 }
 
-bool FileD::loadB(FieldDescr* field_d, void* record)
+bool FileD::loadB(FieldDescr* field_d, uint8_t* record)
 {
 	bool result;
 
@@ -748,7 +748,7 @@ bool FileD::loadB(FieldDescr* field_d, void* record)
 	return result;
 }
 
-double FileD::loadR(FieldDescr* field_d, void* record)
+double FileD::loadR(FieldDescr* field_d, uint8_t* record)
 {
 	double result;
 
@@ -772,7 +772,7 @@ double FileD::loadR(FieldDescr* field_d, void* record)
 	return result;
 }
 
-std::string FileD::loadS(FieldDescr* field_d, void* record)
+std::string FileD::loadS(FieldDescr* field_d, uint8_t* record)
 {
 	std::string result;
 
@@ -796,7 +796,7 @@ std::string FileD::loadS(FieldDescr* field_d, void* record)
 	return result;
 }
 
-int FileD::loadT(FieldDescr* field_d, void* record)
+int FileD::loadT(FieldDescr* field_d, uint8_t* record)
 {
 	int result;
 
@@ -815,7 +815,7 @@ int FileD::loadT(FieldDescr* field_d, void* record)
 	return result;
 }
 
-void FileD::saveB(FieldDescr* field_d, bool b, void* record)
+void FileD::saveB(FieldDescr* field_d, bool b, uint8_t* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -829,7 +829,7 @@ void FileD::saveB(FieldDescr* field_d, bool b, void* record)
 	}
 }
 
-void FileD::saveR(FieldDescr* field_d, double r, void* record)
+void FileD::saveR(FieldDescr* field_d, double r, uint8_t* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -843,7 +843,7 @@ void FileD::saveR(FieldDescr* field_d, double r, void* record)
 	}
 }
 
-void FileD::saveS(FieldDescr* field_d, const std::string& s, void* record)
+void FileD::saveS(FieldDescr* field_d, const std::string& s, uint8_t* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -857,7 +857,7 @@ void FileD::saveS(FieldDescr* field_d, const std::string& s, void* record)
 	}
 }
 
-int FileD::saveT(FieldDescr* field_d, int pos, void* record) const
+int FileD::saveT(FieldDescr* field_d, int pos, uint8_t* record) const
 {
 	int result;
 
@@ -1148,7 +1148,7 @@ void FileD::RunErrorM(LockMode mode)
 	OldLockMode(mode);
 }
 
-void FileD::SetTWorkFlag(void* record)
+void FileD::SetTWorkFlag(uint8_t* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -1162,7 +1162,7 @@ void FileD::SetTWorkFlag(void* record)
 	}
 }
 
-bool FileD::HasTWorkFlag(void* record)
+bool FileD::HasTWorkFlag(uint8_t* record)
 {
 	bool result;
 
@@ -1181,7 +1181,7 @@ bool FileD::HasTWorkFlag(void* record)
 	return result;
 }
 
-void FileD::SetRecordUpdateFlag(void* record)
+void FileD::SetRecordUpdateFlag(uint8_t* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -1195,7 +1195,7 @@ void FileD::SetRecordUpdateFlag(void* record)
 	}
 }
 
-void FileD::ClearRecordUpdateFlag(void* record)
+void FileD::ClearRecordUpdateFlag(uint8_t* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -1209,7 +1209,7 @@ void FileD::ClearRecordUpdateFlag(void* record)
 	}
 }
 
-bool FileD::HasRecordUpdateFlag(void* record)
+bool FileD::HasRecordUpdateFlag(uint8_t* record)
 {
 	bool result;
 
@@ -1228,7 +1228,7 @@ bool FileD::HasRecordUpdateFlag(void* record)
 	return result;
 }
 
-bool FileD::DeletedFlag(void* record)
+bool FileD::DeletedFlag(uint8_t* record)
 {
 	bool result;
 
@@ -1247,7 +1247,7 @@ bool FileD::DeletedFlag(void* record)
 	return result;
 }
 
-void FileD::ClearDeletedFlag(void* record) const
+void FileD::ClearDeletedFlag(uint8_t* record) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -1261,7 +1261,7 @@ void FileD::ClearDeletedFlag(void* record) const
 	}
 }
 
-void FileD::SetDeletedFlag(void* record) const
+void FileD::SetDeletedFlag(uint8_t* record) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -1353,7 +1353,7 @@ bool FileD::HasTextFile() const
 	return result;
 }
 
-bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record) const
+bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record) const
 {
 	return FF->SearchKey(XX, Key, NN, record);
 }
@@ -1424,7 +1424,7 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 	MyDeleteFile(CPath);
 }
 
-void FileD::ZeroAllFlds(void* record, bool delTFields)
+void FileD::ZeroAllFlds(uint8_t* record, bool delTFields)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -1536,7 +1536,7 @@ void FileD::CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields)
 	}
 }
 
-void FileD::DelAllDifTFlds(void* record, void* comp_record)
+void FileD::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -2138,7 +2138,7 @@ void FileD::CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<Fi
 void FileD::CopyH(HANDLE h1, HANDLE h2)
 {
 	const WORD BufSize = 32768;
-	void* p = new uint8_t[BufSize];
+	uint8_t* p = new uint8_t[BufSize];
 	int sz = FileSizeH(h1);
 	SeekH(h1, 0);
 	SeekH(h2, 0);

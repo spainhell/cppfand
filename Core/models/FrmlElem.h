@@ -92,13 +92,23 @@ public:
 	LinkD* Link = nullptr; // 7  {Link=nil for param} {_access} {Link=RecPtr} {_recvarfld}
 };
 
+class FrmlElemRecVarField : public FrmlElem
+{
+public:
+	FrmlElemRecVarField(instr_type Op, size_t buff_size);
+	FieldDescr* Field = nullptr; // 7 {_field}
+	FrmlElem* Frml = nullptr;
+	FileD* File = nullptr;
+	uint8_t* record = nullptr; // 7  {Link=nil for param} {_access} {Link=RecPtr} {_recvarfld}
+};
+
 class FrmlElemNewFile : public FrmlElem
 {
 public:
 	FrmlElemNewFile(instr_type Op, size_t buff_size);
 	FrmlElem* Frml = nullptr;
 	FileD* NewFile = nullptr;
-	void* NewRP = nullptr; // 8 {_newfile}
+	uint8_t* NewRP = nullptr; // 8 {_newfile}
 };
 
 class FrmlElem9 : public FrmlElem

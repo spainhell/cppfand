@@ -87,7 +87,7 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 }
 
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
-bool LinkUpw(LinkD* LD, int& N, bool WithT, void* record, uint8_t** newRecord)
+bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord)
 {
 	FileD* from_FD = LD->FromFD;
 	FileD* to_FD = LD->ToFD;
@@ -260,7 +260,7 @@ std::string CExtToT(const std::string& dir, const std::string& name, std::string
 	return dir + name + ext;
 }
 
-std::string TWork_LoadS(FieldDescr* field, void* record)
+std::string TWork_LoadS(FieldDescr* field, uint8_t* record)
 {
 	std::string result;
 	if (field->field_type == FieldType::TEXT && field->isStored())
@@ -278,7 +278,7 @@ std::string TWork_LoadS(FieldDescr* field, void* record)
 	return result;
 }
 
-void TWork_SaveS(FieldDescr* field, const std::string& text, void* record)
+void TWork_SaveS(FieldDescr* field, const std::string& text, uint8_t* record)
 {
 	if (field->field_type == FieldType::TEXT && field->isStored())
 	{
@@ -306,7 +306,7 @@ void TWork_SaveS(FieldDescr* field, const std::string& text, void* record)
 }
 
 
-void TWork_DeleteT(FieldDescr* field, void* record)
+void TWork_DeleteT(FieldDescr* field, uint8_t* record)
 {
 	char* source = (char*)record + field->Displ;
 	int32_t* pos = reinterpret_cast<int32_t*>(source);
@@ -315,7 +315,7 @@ void TWork_DeleteT(FieldDescr* field, void* record)
 	*pos = 0;
 }
 
-void TWork_DeleteAllT(const std::vector<FieldDescr*>& fields, void* record)
+void TWork_DeleteAllT(const std::vector<FieldDescr*>& fields, uint8_t* record)
 {
 	for (FieldDescr* field : fields) {
 		if (field->field_type == FieldType::TEXT && field->isStored()) {

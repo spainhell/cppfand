@@ -28,7 +28,7 @@ public:
 	~Fand0File() override;
 
 	unsigned short RecLen = 0;
-	void* RecPtr = nullptr;
+	uint8_t* RecPtr = nullptr;
 	int NRecs = 0;
 	bool WasWrRec = false;
 	bool WasRdOnly = false;
@@ -45,11 +45,10 @@ public:
 	LockMode ExLMode = NullMode;
 	LockMode TaLMode = NullMode;
 
-	size_t ReadRec(size_t rec_nr, void* record);
-	size_t WriteRec(size_t rec_nr, void* record);
-	void CreateRec(int n, void* record);
-	void DeleteRec(int n, void* record);
-	void DelAllDifTFlds(void* record, void* comp_record);
+	size_t ReadRec(size_t rec_nr, uint8_t* record);
+	size_t WriteRec(size_t rec_nr, uint8_t* record);
+	void CreateRec(int n, uint8_t* record);
+	void DeleteRec(int n, uint8_t* record);
 
 	void CompileRecLen();
 	int UsedFileSize() const;
@@ -60,19 +59,20 @@ public:
 	void DecNRecs(int n);
 	void PutRec(void* record, int& i_rec);
 
-	bool loadB(FieldDescr* field_d, void* record);
-	double loadR(FieldDescr* field_d, void* record);
-	std::string loadS(FieldDescr* field_d, void* record);
-	int loadT(FieldDescr* F, void* record);
+	bool loadB(FieldDescr* field_d, uint8_t* record);
+	double loadR(FieldDescr* field_d, uint8_t* record);
+	std::string loadS(FieldDescr* field_d, uint8_t* record);
+	int loadT(FieldDescr* F, uint8_t* record);
 
-	void saveB(FieldDescr* field_d, bool b, void* record);
-	void saveR(FieldDescr* field_d, double r, void* record);
-	void saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record);
-	int saveT(FieldDescr* field_d, int pos, void* record);
+	void saveB(FieldDescr* field_d, bool b, uint8_t* record);
+	void saveR(FieldDescr* field_d, double r, uint8_t* record);
+	void saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t* record);
+	int saveT(FieldDescr* field_d, int pos, uint8_t* record);
 
-	void DelTFld(FieldDescr* field_d, void* record);
-	void DelTFlds(void* record);
-	void DelDifTFld(FieldDescr* field_d, void* record, void* comp_record);
+	void DelTFld(FieldDescr* field_d, uint8_t* record);
+	void DelTFlds(uint8_t* record);
+	void DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record);
+	void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
 
 	uint16_t RdPrefix();
 	int RdPrefixes();
@@ -87,16 +87,16 @@ public:
 	void CloseFile();
 	void Close();
 
-	void SetTWorkFlag(void* record) const;
-	bool HasTWorkFlag(void* record) const;
+	void SetTWorkFlag(uint8_t* record) const;
+	bool HasTWorkFlag(uint8_t* record) const;
 
-	void SetRecordUpdateFlag(void* record);
-	void ClearRecordUpdateFlag(void* record);
-	bool HasRecordUpdateFlag(void* record);
+	void SetRecordUpdateFlag(uint8_t* record);
+	void ClearRecordUpdateFlag(uint8_t* record);
+	bool HasRecordUpdateFlag(uint8_t* record);
 
-	bool DeletedFlag(void* record);
-	void ClearDeletedFlag(void* record);
-	void SetDeletedFlag(void* record);
+	bool DeletedFlag(uint8_t* record);
+	void ClearDeletedFlag(uint8_t* record);
+	void SetDeletedFlag(uint8_t* record);
 
 	void ClearXFUpdLock();
 	int XFNotValid();
@@ -108,11 +108,11 @@ public:
 	bool SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record);
 	int XNRecs(std::vector<XKey*>& K);
 	void TryInsertAllIndexes(int RecNr, uint8_t* record);
-	void DeleteAllIndexes(int RecNr, void* record);
+	void DeleteAllIndexes(int RecNr, uint8_t* record);
 	void DeleteXRec(int RecNr, bool DelT, uint8_t* record);
 	void OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record);
 
-	void GenerateNew000File(XScan* x, void* record, void (*msgFuncUpdate)(int32_t));
+	void GenerateNew000File(XScan* x, uint8_t* record, void (*msgFuncUpdate)(int32_t));
 	void CreateWIndex(XScan* Scan, XWKey* K, char Typ);
 	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ);
 	void SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)());

@@ -90,5 +90,5 @@ public:
 	int OwnerRecNo = 0;
 	LinkD* ShiftF7_link = nullptr;
 	EditD* ShiftF7_caller = nullptr;
-	void* AfterE = nullptr;
+	uint8_t* AfterE = nullptr;
 };

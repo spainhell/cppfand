@@ -1942,8 +1942,8 @@ void Report::PutMFlds(std::vector<KeyFldD*>& M)
 	if (MinID == nullptr) return;
 	FileD* cf = CFile;
 	FileD* cf1 = MinID->Scan->FD;
-	void* cr = CRecPtr;
-	void* cr1 = MinID->ForwRecPtr;
+	uint8_t* cr = CRecPtr;
+	uint8_t* cr1 = MinID->ForwRecPtr;
 	//KeyFldD* m1 = MinID->MFld;
 
 	//while (M != nullptr) {

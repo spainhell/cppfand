@@ -1,5 +1,6 @@
 #pragma once
 #include "../fandio/FileEnums.h"
+#include <cstdint>
 
 class FileD;
 

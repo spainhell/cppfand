@@ -16,8 +16,8 @@ public:
 	int NRecs = 0, IRec = 0, RecNr = 0;
 	bool hasSQLFilter = false, eof = false;
 	XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT);
-	void Reset(FrmlElem* ABool, bool SQLFilter, void* record);
-	void ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record);
+	void Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record);
+	void ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, uint8_t* record);
 	void SubstWIndex(XWKey* WK);
 	void ResetOwner(XString* XX, FrmlElem* aBool);
 	[[nodiscard]] int32_t ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool);

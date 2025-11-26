@@ -89,11 +89,11 @@ FrmlElem* RdRecVarFldFrml(Compiler* compiler, LocVar* LV, char& FTyp)
 
 	switch (LV->f_typ) {
 	case 'r': {
-		FrmlElemAccess* fe7 = new FrmlElemAccess(_recvarfld, 12);
+		FrmlElemRecVarField* fe7 = new FrmlElemRecVarField(_recvarfld, 12);
 		FileD* previous = compiler->processing_F;
 		compiler->processing_F = LV->FD;
 		fe7->File = LV->FD;
-		fe7->Link = (LinkD*)LV->record;
+		fe7->record = LV->record;
 		bool fa = FileVarsAllowed;
 		FileVarsAllowed = true;
 		fe7->Frml = compiler->RdFldNameFrmlF(FTyp, nullptr);
@@ -3158,11 +3158,11 @@ void ReadDeclChpt(Compiler* compiler)
 	}
 }
 
-FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, void* record)
+FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, uint8_t* record)
 {
 	FileD* cf = CFile;
 	CFile = file_d;
-	void* cr = CRecPtr;
+	uint8_t* cr = CRecPtr;
 	CRecPtr = record;
 
 	LocVarBlock oldLVBD = LVBD;
