@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "../Core/Rdb.h"
+#include "../fandio/Record.h"
 #include "../fandio/Fand0File.h"
 #include "../fandio/DbfFile.h"
 #include "../fandio/locks.h" // to be visible in other parts of code
@@ -62,8 +63,8 @@ public:
 	void Reset();
 	size_t GetRecordSize();
 
-	size_t ReadRec(size_t rec_nr, uint8_t* record) const;
-	size_t WriteRec(size_t rec_nr, uint8_t* record) const;
+	size_t ReadRec(size_t rec_nr, Record* record) const;
+	size_t WriteRec(size_t rec_nr, Record* record) const;
 	int UsedFileSize() const;
 
 	bool GetWasRdOnly() const;

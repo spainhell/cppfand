@@ -225,17 +225,17 @@ size_t FileD::GetRecordSize()
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-size_t FileD::ReadRec(size_t rec_nr, uint8_t* record) const
+size_t FileD::ReadRec(size_t rec_nr, Record* record) const
 {
 	size_t result;
 
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		result = FF->ReadRec(rec_nr, record);
+		result = FF->ReadRec(rec_nr, record->GetRecord());
 		break;
 	}
 	case DataFileType::DBF: {
-		result = DbfF->ReadRec(rec_nr, record);
+		result = DbfF->ReadRec(rec_nr, record->GetRecord());
 		break;
 	}
 	default: {
@@ -247,17 +247,17 @@ size_t FileD::ReadRec(size_t rec_nr, uint8_t* record) const
 	return result;
 }
 
-size_t FileD::WriteRec(size_t rec_nr, uint8_t* record) const
+size_t FileD::WriteRec(size_t rec_nr, Record* record) const
 {
 	size_t result;
 
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		result = FF->WriteRec(rec_nr, record);
+		result = FF->WriteRec(rec_nr, record->GetRecord());
 		break;
 	}
 	case DataFileType::DBF: {
-		result = DbfF->WriteRec(rec_nr, record);
+		result = DbfF->WriteRec(rec_nr, record->GetRecord());
 		break;
 	}
 	default: {

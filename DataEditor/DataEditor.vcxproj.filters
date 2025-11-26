@@ -27,9 +27,6 @@
     <ClInclude Include="EditD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Record.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EditReader.cpp">
@@ -42,9 +39,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EditD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Record.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
