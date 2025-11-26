@@ -37,6 +37,7 @@
 DataEditor::DataEditor()
 {
 	params_ = std::make_unique<DataEditorParams>();
+	current_rec_ = new Record();
 }
 
 DataEditor::DataEditor(EditD* edit)
@@ -631,7 +632,7 @@ label2:
 	return result;
 }
 
-
+// can be moved from DataEditor
 void DataEditor::WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R)
 {
 	WORD x = 0, y = 0, d = 0, LWw = 0;
@@ -670,6 +671,7 @@ void DataEditor::WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std:
 	}
 }
 
+// can be moved from DataEditor
 bool DataEditor::PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F)
 {
 	std::string Txt;
@@ -683,6 +685,7 @@ bool DataEditor::PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	return result;
 }
 
+// can be moved from DataEditor
 std::string DataEditor::PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 {
 	std::string Txt;
@@ -696,6 +699,7 @@ std::string DataEditor::PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	return result;
 }
 
+// can be moved from DataEditor
 double DataEditor::PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F)
 {
 	std::string Txt;
@@ -716,7 +720,6 @@ double DataEditor::PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F)
 int DataEditor::CRec()
 {
 	return BaseRec + IRec - 1;
-	//return 0;
 }
 
 int DataEditor::CNRecs() const
@@ -1064,7 +1067,7 @@ void DataEditor::DisplRec(WORD I)
 		}
 	}
 
-	file_d_->ClearRecSpace(p);
+	file_d_->ClearRecSpace(p->GetRecord());
 	delete p; p = nullptr;
 	current_rec_ = prev_rec;
 }
@@ -1923,7 +1926,7 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 
 	for (LinkD* LD : LinkDRoot) {
 		if ((LD->MemberRef != 0) && (LD->ToFD == cf) && ((PNew != nullptr) || (LD->MemberRef != 2))) {
-			//kf2 = &LD->ToKey->KFlds;
+			//kf2 = &Link->ToKey->KFlds;
 			xold.PackKF(cf, LD->ToKey->KFlds, POld);
 			if (PNew != nullptr) {
 				xnew.PackKF(cf, LD->ToKey->KFlds, PNew);
@@ -1962,7 +1965,7 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 				}
 				else {
 					Move(p, p2, LD->FromFD->FF->RecLen);
-					//kf = &LD->ToKey->KFlds;
+					//kf = &Link->ToKey->KFlds;
 					for (size_t i = 0; i < LD->Args.size(); i++) {
 						KeyFldD* arg = LD->Args[i];
 						KeyFldD* k1 = LD->ToKey->KFlds[i];
@@ -2336,13 +2339,13 @@ void DataEditor::FindExistTest(FrmlElem* Z, LinkD** LD)
 
 	switch (Z->Op) {
 	case _field: {
-		auto iZ = (FrmlElem7*)Z;
+		auto iZ = (FrmlElemAccess*)Z;
 		if ((iZ->Field->Flg & f_Stored) == 0) FindExistTest(iZ->Field->Frml, LD);
 		break;
 	}
 	case _access: {
-		auto iZ = (FrmlElem7*)Z;
-		if (iZ->P011 == nullptr) *LD = iZ->LD; /*file.exist*/
+		auto iZ = (FrmlElemAccess*)Z;
+		if (iZ->Frml == nullptr) *LD = iZ->Link; /*file.exist*/
 		break;
 	}
 	default: {
@@ -2410,7 +2413,7 @@ std::string DataEditor::GetFileViewName(FileD* FD, const std::string& view_name)
 
 void DataEditor::SetPointTo(LinkD* LD, std::string* s1, std::string* s2)
 {
-	//KeyFldD* KF = LD->Args;
+	//KeyFldD* KF = Link->Args;
 	//while (KF != nullptr) {
 	for (KeyFldD* arg : LD->Args) {
 		if (arg->FldD == (*CFld)->FldD) {
@@ -2579,7 +2582,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		EO->UserSelFlds = false;
 		std::string sl1;
 
-		//std::vector<std::string> SL = LD->ToFD->ViewNames;
+		//std::vector<std::string> SL = Link->ToFD->ViewNames;
 		//while (SL != nullptr) {
 		//	if (data_editor2->TestAccRight(SL)) {
 		//		SL1 = SL;

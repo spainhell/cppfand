@@ -1412,14 +1412,14 @@ label1:
 
 	switch (Z->Op) {
 	case _field: {
-		FrmlElem7* iZ7 = static_cast<FrmlElem7*>(Z);
+		FrmlElemAccess* iZ7 = static_cast<FrmlElemAccess*>(Z);
 		result = SrchF(F1, iZ7->Field);
 		break;
 	}
 	case _access: {
-		FrmlElem7* iZ7 = static_cast<FrmlElem7*>(Z);
-		if (iZ7->LD != nullptr) {
-			for (KeyFldD* KF : iZ7->LD->Args) {
+		FrmlElemAccess* iZ7 = static_cast<FrmlElemAccess*>(Z);
+		if (iZ7->Link != nullptr) {
+			for (KeyFldD* KF : iZ7->Link->Args) {
 				result = SrchF(F1, KF->FldD);
 			}
 		}
@@ -2206,7 +2206,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 					return nullptr;
 				}
 
-				if ((Z->Op != _access) || (((FrmlElem7*)Z)->LD != nullptr)) {
+				if ((Z->Op != _access) || (((FrmlElemAccess*)Z)->Link != nullptr)) {
 					FrstSumVar = false;
 				}
 			}
@@ -2547,9 +2547,9 @@ bool Compiler::IsRoleName(bool both, FileD* file_d, FileD** up_file_d, LinkD** l
 FrmlElem* Compiler::RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 {
 	TestIdentif();
-	auto Z = new FrmlElem7(_access, 12);
-	Z->File2 = FD;
-	Z->LD = LD;
+	auto Z = new FrmlElemAccess(_access, 12);
+	Z->File = FD;
+	Z->Link = LD;
 	if ((LD != nullptr) && EquUpCase("EXIST", LexWord)) {
 		RdLex();
 		FTyp = 'B';
@@ -2559,7 +2559,7 @@ FrmlElem* Compiler::RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 		FileVarsAllowed = true;
 		FileD* previous = processing_F;
 		processing_F = FD;
-		Z->P011 = RdFldNameFrmlF(FTyp, nullptr);
+		Z->Frml = RdFldNameFrmlF(FTyp, nullptr);
 		processing_F = previous;
 		FileVarsAllowed = fa;
 	}
@@ -2577,7 +2577,7 @@ FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
 
 FrmlElem* Compiler::MakeFldFrml(FieldDescr* F, char& FTyp)
 {
-	auto Z = new FrmlElem7(_field, 4);
+	auto Z = new FrmlElemAccess(_field, 4);
 	Z->Field = F;
 	FTyp = F->frml_type;
 	return Z;

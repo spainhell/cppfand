@@ -19,7 +19,7 @@ struct InpD
 	std::vector<KeyFldD*> SK;
 	LockMode Md = NullMode;
 	int IRec = 0;
-	void* ForwRecPtr = nullptr;
+	uint8_t* ForwRecPtr = nullptr;
 	FrmlElem* Bool = nullptr;
 	bool SQLFilter = false;
 	std::vector<KeyFldD*> MFld;

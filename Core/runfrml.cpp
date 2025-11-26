@@ -704,40 +704,40 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _field: {
-		FrmlElem7* x7 = (FrmlElem7*)X;
+		FrmlElemAccess* x7 = (FrmlElemAccess*)X;
 		result = file_d->loadB(x7->Field, record);
 		break;
 	}
 	case _access: {
 		// nacita hodnotu ze souboru
-		auto iX = (FrmlElem7*)X;
+		auto iX = (FrmlElemAccess*)X;
 		bool b7 = false;
 		int RecNo;
 		uint8_t* newRecord = nullptr;
-		if (iX->LD != nullptr) {
-			b7 = LinkUpw(iX->LD, RecNo, false, record, &newRecord);
-			if ((iX->P011 == nullptr)) {
+		if (iX->Link != nullptr) {
+			b7 = LinkUpw(iX->Link, RecNo, false, record, &newRecord);
+			if ((iX->Frml == nullptr)) {
 				result = b7;
 			}
 			else {
-				result = RunBool(file_d, iX->P011, newRecord);
+				result = RunBool(file_d, iX->Frml, newRecord);
 			}
 		}
 		else {
-			b7 = LinkLastRec(iX->File2, RecNo, false, &newRecord);
-			if ((iX->P011 == nullptr)) {
+			b7 = LinkLastRec(iX->File, RecNo, false, &newRecord);
+			if ((iX->Frml == nullptr)) {
 				result = b7;
 			}
 			else {
-				result = RunBool(iX->File2, iX->P011, newRecord);
+				result = RunBool(iX->File, iX->Frml, newRecord);
 			}
 		}
 		delete[] newRecord; newRecord = nullptr;
 		break;
 	}
 	case _recvarfld: {
-		auto iX = (FrmlElem7*)X;
-		result = RunBool(iX->File2, iX->P011, iX->LD);
+		auto iX = (FrmlElemAccess*)X;
+		result = RunBool(iX->File, iX->Frml, iX->Link);
 		break;
 	}
 	case _eval: {
@@ -914,7 +914,7 @@ label1:
 	auto iX0 = (FrmlElemFunction*)X;
 	switch (X->Op) {
 	case _field: {
-		auto iX = (FrmlElem7*)X;
+		auto iX = (FrmlElemAccess*)X;
 		result = file_d->loadR(iX->Field, record);
 		break;
 	}
@@ -939,23 +939,23 @@ label1:
 		result = RunReal(file_d, iX0->P1, record) * RunReal(file_d, iX0->P2, record); break;
 	}
 	case _access: {
-		auto iX = (FrmlElem7*)X;
+		auto iX = (FrmlElemAccess*)X;
 		uint8_t* newRecord = nullptr;
-		if (iX->LD != nullptr) {
-			LinkUpw(iX->LD, RecNo, false, record, &newRecord);
-			result = RunReal(iX->LD->ToFD, iX->P011, newRecord);
+		if (iX->Link != nullptr) {
+			LinkUpw(iX->Link, RecNo, false, record, &newRecord);
+			result = RunReal(iX->Link->ToFD, iX->Frml, newRecord);
 		}
 		else {
-			LinkLastRec(iX->File2, RecNo, false, &newRecord);
-			result = RunReal(iX->File2, iX->P011, newRecord);
+			LinkLastRec(iX->File, RecNo, false, &newRecord);
+			result = RunReal(iX->File, iX->Frml, newRecord);
 		}
 
 		delete[] newRecord; newRecord = nullptr;
 		break;
 	}
 	case _recvarfld: {
-		auto iX = (FrmlElem7*)X;
-		result = RunReal(iX->File2, iX->P011, iX->LD);
+		auto iX = (FrmlElemAccess*)X;
+		result = RunReal(iX->File, iX->Frml, iX->Link);
 		break;
 	}
 	case _eval: {
@@ -1236,7 +1236,7 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 		break;
 	}
 	case _field: {
-		FrmlElem7* iZ = (FrmlElem7*)Z;
+		FrmlElemAccess* iZ = (FrmlElemAccess*)Z;
 		FieldDescr* f1 = iZ->Field;
 		if ((f1->field_type != FieldType::TEXT) || ((f1->Flg & f_Stored) == 0)) return;
 		if (F == nullptr) {
@@ -1263,23 +1263,23 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 	}
 	case _access: {
 		int n;
-		FrmlElem7* iZ = (FrmlElem7*)Z;
-		LockMode md = iZ->File2->NewLockMode(RdMode);
+		FrmlElemAccess* iZ = (FrmlElemAccess*)Z;
+		LockMode md = iZ->File->NewLockMode(RdMode);
 		uint8_t* newRecord = nullptr;
-		if (iZ->LD != nullptr) {
-			LinkUpw(iZ->LD, n, true, record, &newRecord);
-			TestTFrml(iZ->LD->ToFD, F, iZ->P011, TF02, TFD02, TF02Pos, newRecord);
+		if (iZ->Link != nullptr) {
+			LinkUpw(iZ->Link, n, true, record, &newRecord);
+			TestTFrml(iZ->Link->ToFD, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord);
 		}
 		else {
-			LinkLastRec(iZ->File2, n, true, &newRecord);
-			TestTFrml(iZ->File2, F, iZ->P011, TF02, TFD02, TF02Pos, newRecord);
+			LinkLastRec(iZ->File, n, true, &newRecord);
+			TestTFrml(iZ->File, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord);
 		}
-		iZ->File2->OldLockMode(md);
+		iZ->File->OldLockMode(md);
 		break;
 	}
 	case _recvarfld: {
-		FrmlElem7* iZ = (FrmlElem7*)Z;
-		TestTFrml(iZ->File2, F, iZ->P011, TF02, TFD02, TF02Pos, iZ->LD);
+		FrmlElemAccess* iZ = (FrmlElemAccess*)Z;
+		TestTFrml(iZ->File, F, iZ->Frml, TF02, TFD02, TF02Pos, iZ->Link);
 		break;
 	}
 	}
@@ -1541,7 +1541,7 @@ XKey* GetFromKey(LinkD* LD)
 {
 	if (LD->FromFD->Keys.empty()) return nullptr;
 
-	// find key in LD->FromFD->Keys with the same index root as LD->IndexRoot
+	// find key in Link->FromFD->Keys with the same index root as Link->IndexRoot
 	vector<XKey*>::iterator it = ranges::find_if(LD->FromFD->Keys, [LD](XKey* K) {
 		return K->IndexRoot == LD->IndexRoot;
 		});
@@ -1616,7 +1616,7 @@ std::string RunString(FileD* file_d, FrmlElem* X, void* record)
 label1:
 	switch (X->Op) {
 	case _field: {
-		auto iX7 = (FrmlElem7*)X;
+		auto iX7 = (FrmlElemAccess*)X;
 		result = file_d->loadS(iX7->Field, record);
 		break;
 	}
@@ -1624,26 +1624,26 @@ label1:
 		return ((FrmlElemLocVar*)X)->locvar->S;
 	}
 	case _access: {
-		FrmlElem7* iX7 = (FrmlElem7*)X;
-		LockMode lm = iX7->File2->NewLockMode(RdMode);
+		FrmlElemAccess* iX7 = (FrmlElemAccess*)X;
+		LockMode lm = iX7->File->NewLockMode(RdMode);
 		uint8_t* newRecord = nullptr;
-		if (iX7->LD != nullptr) {
-			LinkUpw(iX7->LD, RecNo, true, record, &newRecord);
-			result = RunString(iX7->LD->ToFD, iX7->P011, newRecord);
+		if (iX7->Link != nullptr) {
+			LinkUpw(iX7->Link, RecNo, true, record, &newRecord);
+			result = RunString(iX7->Link->ToFD, iX7->Frml, newRecord);
 		}
 		else {
-			LinkLastRec(iX7->File2, RecNo, true, &newRecord);
-			result = RunString(iX7->File2, iX7->P011, newRecord);
+			LinkLastRec(iX7->File, RecNo, true, &newRecord);
+			result = RunString(iX7->File, iX7->Frml, newRecord);
 		}
 
-		iX7->File2->OldLockMode(lm);  /*possibly reading .T*/
-		iX7->File2->ClearRecSpace(newRecord);
+		iX7->File->OldLockMode(lm);  /*possibly reading .T*/
+		iX7->File->ClearRecSpace(newRecord);
 		delete[] newRecord; newRecord = nullptr;
 		break;
 	}
 	case _recvarfld: {
-		auto iX7 = (FrmlElem7*)X;
-		result = RunString(iX7->File2, iX7->P011, iX7->LD);
+		auto iX7 = (FrmlElemAccess*)X;
+		result = RunString(iX7->File, iX7->Frml, iX7->Link);
 		break;
 	}
 	case _eval: {

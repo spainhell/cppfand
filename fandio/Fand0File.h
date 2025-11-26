@@ -105,12 +105,12 @@ public:
 
 	FileD* GetFileD();
 
-	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record);
+	bool SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record);
 	int XNRecs(std::vector<XKey*>& K);
-	void TryInsertAllIndexes(int RecNr, void* record);
+	void TryInsertAllIndexes(int RecNr, uint8_t* record);
 	void DeleteAllIndexes(int RecNr, void* record);
-	void DeleteXRec(int RecNr, bool DelT, void* record);
-	void OverWrXRec(int RecNr, void* P2, void* P, void* record);
+	void DeleteXRec(int RecNr, bool DelT, uint8_t* record);
+	void OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record);
 
 	void GenerateNew000File(XScan* x, void* record, void (*msgFuncUpdate)(int32_t));
 	void CreateWIndex(XScan* Scan, XWKey* K, char Typ);

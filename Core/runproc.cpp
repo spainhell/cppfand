@@ -773,7 +773,7 @@ void ForAllProc(Instr_forall* PD)
 #endif
 	if (LD != nullptr) {
 		CFile = LD->ToFD;
-		//KF = LD->ToKey->KFlds;
+		//KF = Link->ToKey->KFlds;
 		switch (PD->COwnerTyp) {
 		case 'r': {
 			CRecPtr = PD->CLV->record;

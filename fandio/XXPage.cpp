@@ -64,7 +64,7 @@ void XXPage::PageFull()
 	XW->xwFile->WrPage(this, n);
 }
 
-void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, void* record)
+void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, uint8_t* record)
 {
 	unsigned char m, l;
 	int n;

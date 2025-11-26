@@ -27,7 +27,7 @@ public:
 	void ResetLV(void* aRP);
 	void Close();
 	void SeekRec(int I);
-	void GetRec(void* record);
+	void GetRec(uint8_t* record);
 private:
 	std::vector<KeyInD*> KIRoot;
 	LocVar* OwnerLV = nullptr;

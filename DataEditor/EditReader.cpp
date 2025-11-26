@@ -726,7 +726,7 @@ void EditReader::TestedFlagOff()
 void EditReader::SetFrmlFlags(FrmlElem* Z)
 {
 	auto iZ0 = (FrmlElemFunction*)Z;
-	auto iZ7 = (FrmlElem7*)Z;
+	auto iZ7 = (FrmlElemAccess*)Z;
 	if (Z == nullptr) return;
 
 	switch (Z->Op) {
@@ -735,10 +735,10 @@ void EditReader::SetFrmlFlags(FrmlElem* Z)
 		break;
 	}
 	case _access: {
-		if (iZ7->LD != nullptr) {
-			//KeyFldD* Arg = iZ7->LD->Args;
+		if (iZ7->Link != nullptr) {
+			//KeyFldD* Arg = iZ7->Link->Args;
 			//while (Arg != nullptr) {
-			for (auto& arg : iZ7->LD->Args) {
+			for (auto& arg : iZ7->Link->Args) {
 				SetFlag(arg->FldD);
 				//Arg = Arg->pChain;
 			}

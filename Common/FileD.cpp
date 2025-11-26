@@ -225,7 +225,7 @@ size_t FileD::GetRecordSize()
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-size_t FileD::ReadRec(size_t rec_nr, void* record) const
+size_t FileD::ReadRec(size_t rec_nr, uint8_t* record) const
 {
 	size_t result;
 
@@ -247,7 +247,7 @@ size_t FileD::ReadRec(size_t rec_nr, void* record) const
 	return result;
 }
 
-size_t FileD::WriteRec(size_t rec_nr, void* record) const
+size_t FileD::WriteRec(size_t rec_nr, uint8_t* record) const
 {
 	size_t result;
 
@@ -500,7 +500,7 @@ std::unique_ptr<uint8_t[]> FileD::GetRecSpaceUnique() const
 /// Deletes all text fields in the record from the TWork file
 /// </summary>
 /// <param name="record">data record pointer</param>
-void FileD::ClearRecSpace(void* record)
+void FileD::ClearRecSpace(uint8_t* record)
 {
 	if (HasTextFile()) {
 		if (HasTWorkFlag(record)) {
@@ -626,7 +626,7 @@ void FileD::DeleteRec(int n, void* record) const
 	}
 }
 
-void FileD::RecallRec(int recNr, void* record)
+void FileD::RecallRec(int recNr, uint8_t* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {

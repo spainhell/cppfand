@@ -341,7 +341,7 @@ void XScan::NextIntvl()
 	}
 }
 
-void XScan::GetRec(void* record)
+void XScan::GetRec(uint8_t* record)
 {
 	XString xx;
 	size_t item = 0;

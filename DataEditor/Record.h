@@ -18,6 +18,7 @@ public:
 class Record
 {
 public:
+	Record();
 	Record(FileD* file_d);
 	Record(FileD* file_d, uint8_t* record);
 	~Record();
@@ -30,7 +31,7 @@ public:
 
 private:
 	FileD* _file_d;
-	uint8_t* _record;
+	uint8_t* _buffer;
 	std::vector<BRS_Value> _values;
 
 	bool _delete_record_on_destroy = true;

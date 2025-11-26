@@ -893,7 +893,7 @@ FileD* Fand0File::GetFileD()
 	return _parent;
 }
 
-bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
+bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record)
 {
 	int R = 0;
 	XString x;
@@ -955,7 +955,7 @@ int Fand0File::XNRecs(std::vector<XKey*>& K)
 	}
 }
 
-void Fand0File::TryInsertAllIndexes(int RecNr, void* record)
+void Fand0File::TryInsertAllIndexes(int RecNr, uint8_t* record)
 {
 	TestXFExist();
 	XKey* lastK = nullptr;
@@ -995,7 +995,7 @@ void Fand0File::DeleteAllIndexes(int RecNr, void* record)
 	}
 }
 
-void Fand0File::DeleteXRec(int RecNr, bool DelT, void* record)
+void Fand0File::DeleteXRec(int RecNr, bool DelT, uint8_t* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
@@ -1009,7 +1009,7 @@ void Fand0File::DeleteXRec(int RecNr, bool DelT, void* record)
 	XF->NRecs--;
 }
 
-void Fand0File::OverWrXRec(int RecNr, void* P2, void* P, void* record)
+void Fand0File::OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record)
 {
 	XString x, x2;
 	record = P2;

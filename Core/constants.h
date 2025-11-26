@@ -128,7 +128,7 @@ enum instr_type
 	_unminus = 0x73, _abs = 0x74, _int = 0x75, _frac = 0x76, _sqr = 0x77,
 	_sqrt = 0x78, _sin = 0x79, _cos = 0x7A, _arctan = 0x7b, _ln = 0x7c,
 	_exp = 0x7d, _typeday = 0x7e, _color = 0x7f,
-	_link = 0x90, // {LD}, // {rdb}
+	_link = 0x90, // {Link}, // {rdb}
 	_val = 0x91, _valdate = 0x92, _length = 0x93, _linecnt = 0x94, // {maskstring}
 	_diskfree = 0x95, _ord = 0x96, _eval = 0x97,  // {Typ},  // {RS}
 	_accrecno = 0x98,  // {v_files,FldD},    // {rdb,S,B}

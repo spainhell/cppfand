@@ -7,7 +7,7 @@ struct OutpFD
 {
 	FileD* FD = nullptr;
 	LockMode Md = NullMode;
-	void* RecPtr = nullptr;
+	uint8_t* RecPtr = nullptr;
 	FileD* InplFD = nullptr;
 	bool Append = false;
 #ifdef FandSQL

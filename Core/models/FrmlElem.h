@@ -82,14 +82,14 @@ public:
 	pstring Mask; // 6
 };
 
-class FrmlElem7 : public FrmlElem
+class FrmlElemAccess : public FrmlElem
 {
 public:
-	FrmlElem7(instr_type Op, size_t buff_size);
+	FrmlElemAccess(instr_type Op, size_t buff_size);
 	FieldDescr* Field = nullptr; // 7 {_field}
-	FrmlElem* P011 = nullptr;
-	FileD* File2 = nullptr;
-	LinkD* LD = nullptr; // 7  {LD=nil for param} {_access} {LD=RecPtr} {_recvarfld}
+	FrmlElem* Frml = nullptr;
+	FileD* File = nullptr;
+	LinkD* Link = nullptr; // 7  {Link=nil for param} {_access} {Link=RecPtr} {_recvarfld}
 };
 
 class FrmlElemNewFile : public FrmlElem

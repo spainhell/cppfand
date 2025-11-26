@@ -62,8 +62,8 @@ public:
 	void Reset();
 	size_t GetRecordSize();
 
-	size_t ReadRec(size_t rec_nr, void* record) const;
-	size_t WriteRec(size_t rec_nr, void* record) const;
+	size_t ReadRec(size_t rec_nr, uint8_t* record) const;
+	size_t WriteRec(size_t rec_nr, uint8_t* record) const;
 	int UsedFileSize() const;
 
 	bool GetWasRdOnly() const;
@@ -77,7 +77,7 @@ public:
 	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
 
 	// delete 'T' from working file if exists
-	void ClearRecSpace(void* record);
+	void ClearRecSpace(uint8_t* record);
 	void CompileRecLen() const;
 
 	void IncNRecs(int n);
@@ -86,7 +86,7 @@ public:
 	void CreateRec(int n, void* record) const;
 	void PutRec(void* record);
 	void DeleteRec(int n, void* record) const;
-	void RecallRec(int recNr, void* record);
+	void RecallRec(int recNr, uint8_t* record);
 	void AssignNRecs(bool Add, int N);
 
 	void SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const;
