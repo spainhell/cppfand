@@ -764,10 +764,10 @@ bool PromptCodeRdb(EditD* edit)
 		CFile = Chpt;
 		CRecPtr = CFile->GetRecSpace();
 		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
-			CFile->ReadRec(i, CRecPtr);
+			CFile->FF->ReadRec(i, CRecPtr);
 			AddLicNr(CFile, ChptOldTxt, CRecPtr);
 			AddLicNr(CFile, ChptTxt, CRecPtr);
-			CFile->WriteRec(i, CRecPtr);
+			CFile->FF->WriteRec(i, CRecPtr);
 		}
 		ReleaseStore(&CRecPtr);
 		CFile = cf;

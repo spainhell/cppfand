@@ -15,6 +15,7 @@
 #include "../Core/rdrun.h"
 #include "../Core/runfrml.h"
 #include "../fandio/XWKey.h"
+#include "../fandio/Record.h"
 
 //std::vector<EditD*> v_edits;
 
@@ -434,7 +435,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	edit_->OwnerTyp = EO->OwnerTyp;
 	edit_->DownLD = EO->DownLD;
 	edit_->DownLV = EO->DownLV;
-	edit_->DownRecPtr = EO->DownRecPtr;
+	edit_->DownRecord = EO->DownRecord->Clone();
 	edit_->LVRecPtr = EO->LVRecPtr;
 	edit_->KIRoot = EO->KIRoot;
 	edit_->SQLFilter = EO->SQLFilter;
@@ -545,12 +546,12 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 			}
 			switch (edit_->OwnerTyp) {
 			case 'r': {
-				edit_->DownRecPtr = edit_->DownLV->record;
+				edit_->DownRecord = new Record(nullptr, edit_->DownLV->record);
 				break;
 			}
 			case 'F': {
 				edit_->OwnerRecNo = RunInt(file_d, (FrmlElem*)EO->DownLV, record->GetRecord());
-				edit_->DownRecPtr = edit_->DownLD->ToFD->GetRecSpace();
+				edit_->DownRecord = new Record(edit_->DownLD->ToFD);
 				break;
 			}
 			default:;

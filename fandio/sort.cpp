@@ -6,6 +6,7 @@
 #include "../Core/models/Instr.h"
 #include "../Core/runfrml.h"
 #include "../Logging/Logging.h"
+#include "../fandio/Record.h"
 
 
 int32_t GetIndex(Instr_getindex* PD)
@@ -14,7 +15,7 @@ int32_t GetIndex(Instr_getindex* PD)
 	FileD* lvFD = PD->loc_var1->FD;
 	XWKey* k = (XWKey*)PD->loc_var1->record;
 
-	uint8_t* record = lvFD->GetRecSpace();
+	Record* record = new Record(lvFD);
 
 	LockMode md = lvFD->NewLockMode(RdMode);
 	if (PD->mode == ' ') {
@@ -27,7 +28,7 @@ int32_t GetIndex(Instr_getindex* PD)
 		}
 
 		std::unique_ptr<XScan> Scan = std::make_unique<XScan>(lvFD, PD->keys, PD->key_in_root, false);
-		FrmlElem* cond = RunEvalFrml(lvFD, PD->condition, record);
+		FrmlElem* cond = RunEvalFrml(lvFD, PD->condition, record->GetRecord());
 
 		switch (PD->owner_type) {
 		case 'i': {
@@ -52,7 +53,7 @@ int32_t GetIndex(Instr_getindex* PD)
 		case 'F': {
 			lvFD = ld->ToFD;
 			md = ld->ToFD->NewLockMode(RdMode);
-			ld->ToFD->ReadRec(RunInt(ld->ToFD, (FrmlElem*)PD->loc_var2, record), record);
+			ld->ToFD->ReadRec(RunInt(ld->ToFD, (FrmlElem*)PD->loc_var2, record->GetRecord()), record);
 
 			if (link_exists) {
 				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
@@ -67,7 +68,7 @@ int32_t GetIndex(Instr_getindex* PD)
 			break;
 		}
 		default: {
-			Scan->Reset(cond, PD->sql_filter, record);
+			Scan->Reset(cond, PD->sql_filter, record->GetRecord());
 			break;
 		}
 		}
@@ -86,27 +87,28 @@ int32_t GetIndex(Instr_getindex* PD)
 		*k = *kNew;
 	}
 	else {
-		int nr = RunInt(lvFD, PD->condition, record);
+		int nr = RunInt(lvFD, PD->condition, record->GetRecord());
 
 		if ((nr > 0) && (nr <= lvFD->FF->NRecs)) {
 			lvFD->ReadRec(nr, record);
 			if (PD->mode == '+') {
-				if (!lvFD->DeletedFlag(record)) {
-					x.PackKF(lvFD, k->KFlds, record);
-					if (!k->RecNrToPath(lvFD, x, nr, record)) {
+				if (!lvFD->DeletedFlag(record->GetRecord())) {
+					x.PackKF(lvFD, k->KFlds, record->GetRecord());
+					if (!k->RecNrToPath(lvFD, x, nr, record->GetRecord())) {
 						k->InsertOnPath(lvFD, x, nr);
 						k->NR++;
 					}
 				}
 			}
 			else {
-				if (k->Delete(lvFD, nr, record)) {
+				if (k->Delete(lvFD, nr, record->GetRecord())) {
 					k->NR--;
 				}
 			}
 		}
 	}
-	delete[] record; record = nullptr;
+
+	delete record; record = nullptr;
 	lvFD->OldLockMode(md);
 }
 

@@ -360,7 +360,7 @@ void XScan::GetRec(uint8_t* record)
 			switch (Kind) {
 			case 0: {
 				RecNr = IRec;
-				FD->ReadRec(RecNr, record);
+				FD->FF->ReadRec(RecNr, record);
 				if (FD->DeletedFlag(record)) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;
@@ -378,7 +378,7 @@ void XScan::GetRec(uint8_t* record)
 				else if (page_->GreaterPage > 0) {
 					SeekOnPage(page_->GreaterPage, 1);
 				}
-				FD->ReadRec(RecNr, record);
+				FD->FF->ReadRec(RecNr, record);
 				if (FD->DeletedFlag(record)) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;

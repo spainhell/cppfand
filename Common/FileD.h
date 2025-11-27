@@ -2,11 +2,12 @@
 #include <memory>
 
 #include "../Core/Rdb.h"
-#include "../fandio/Record.h"
+// #include "../fandio/Record.h"
 #include "../fandio/Fand0File.h"
 #include "../fandio/DbfFile.h"
 #include "../fandio/locks.h" // to be visible in other parts of code
 
+class Record;
 class FieldDescr;
 class Additive;
 
@@ -87,7 +88,7 @@ public:
 	void CreateRec(int n, uint8_t* record) const;
 	void PutRec(uint8_t* record);
 	void DeleteRec(int n, uint8_t* record) const;
-	void RecallRec(int recNr, uint8_t* record);
+	void RecallRec(int recNr, Record* record);
 	void AssignNRecs(bool Add, int N);
 
 	void SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const;

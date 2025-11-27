@@ -111,6 +111,7 @@ public:
 	void DeleteAllIndexes(int RecNr, uint8_t* record);
 	void DeleteXRec(int RecNr, bool DelT, uint8_t* record);
 	void OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record);
+	void RecallRec(int recNr, uint8_t* record);
 
 	void GenerateNew000File(XScan* x, uint8_t* record, void (*msgFuncUpdate)(int32_t));
 	void CreateWIndex(XScan* Scan, XWKey* K, char Typ);

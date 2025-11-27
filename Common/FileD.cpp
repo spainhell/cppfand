@@ -9,6 +9,7 @@
 #include "../Common/compare.h"
 #include "../Logging/Logging.h"
 #include "../Common/textfunc.h"
+#include "../fandio/Record.h"
 
 
 FileD::FileD(DataFileType f_type)
@@ -626,17 +627,11 @@ void FileD::DeleteRec(int n, uint8_t* record) const
 	}
 }
 
-void FileD::RecallRec(int recNr, uint8_t* record)
+void FileD::RecallRec(int recNr, Record* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		FF->TestXFExist();
-		FF->XF->NRecs++;
-		for (auto& K : Keys) {
-			K->Insert(this, recNr, false, record);
-		}
-		FF->ClearDeletedFlag(record);
-		WriteRec(recNr, record);
+		FF->RecallRec(recNr, record->GetRecord());
 		break;
 	}
 	case DataFileType::DBF: {
@@ -696,16 +691,17 @@ void FileD::AssignNRecs(bool Add, int N)
 		return;
 	}
 
-	uint8_t* record = GetRecSpace();
-	ZeroAllFlds(record, false);
-	SetDeletedFlag(record);
+	Record* record = new Record(this);
+	// ZeroAllFlds(record, false);
+	record->SetDeleted();
+	SetDeletedFlag(record->GetRecord());
 	IncNRecs(N - OldNRecs);
 
 	for (int i = OldNRecs + 1; i <= N; i++) {
 		WriteRec(i, record);
 	}
 
-	delete[] record; record = nullptr;
+	delete record; record = nullptr;
 
 	OldLockMode(md);
 }

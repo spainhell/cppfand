@@ -1017,11 +1017,11 @@ label1:
 	TxtF = CFile->FldD[1];
 	if (!ByName) {
 		i = MaxW(1, MinW(IRec, CFile->FF->NRecs));
-		CFile->ReadRec(i, CRecPtr);
+		CFile->FF->ReadRec(i, CRecPtr);
 		goto label2;
 	}
 	for (i = 1; i <= CFile->FF->NRecs; i++) {
-		CFile->ReadRec(i, CRecPtr);
+		CFile->FF->ReadRec(i, CRecPtr);
 		Nm = OldTrailChar(' ', CFile->loadS(NmF, CRecPtr));
 		if (CFile == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
@@ -1037,7 +1037,7 @@ label1:
 				goto label3;
 			}
 			i++;
-			CFile->ReadRec(i, CRecPtr);
+			CFile->FF->ReadRec(i, CRecPtr);
 			goto label2;
 		}
 	}

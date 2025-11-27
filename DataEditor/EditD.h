@@ -44,7 +44,8 @@ public:
 	char OwnerTyp = '\0'; /* #0=CtrlF7 */        /*          "          */
 	LinkD* DownLD = nullptr;                     /*          "          */
 	LocVar* DownLV = nullptr;                    /*          "          */
-	uint8_t* DownRecPtr; void* LVRecPtr;         /*          "          */
+	Record* DownRecord;							 /*          "          */
+	void* LVRecPtr;								 /*          "          */
 	std::vector<KeyInD*> KIRoot;                 /*          "          */
 	bool SQLFilter = false;                      /*          "          */
 	XWKey* SelKey = nullptr;                     /*          "          */

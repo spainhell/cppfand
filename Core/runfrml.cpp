@@ -373,7 +373,7 @@ int AbsLogRecNoFun(FileD* file_d, FrmlElemRecNo* Z, uint8_t* record)
 		funcFD->FF->TestXFExist();
 		if (Z->Op == _recnolog) {
 			uint8_t* newRecord = funcFD->GetRecSpace();
-			funcFD->ReadRec(N, newRecord);
+			funcFD->FF->ReadRec(N, newRecord);
 			if (funcFD->DeletedFlag(newRecord)) {
 				funcFD->OldLockMode(md);
 				return result;
@@ -416,7 +416,7 @@ double LinkProc(FrmlElemLink* X, uint8_t* record)
 			RunError(609);
 		}
 		uint8_t* newRecord = fromFD->GetRecSpace();
-		fromFD->ReadRec(N, newRecord);
+		fromFD->FF->ReadRec(N, newRecord);
 		fromFD->OldLockMode(md);
 		if (!LinkUpw(LD, N, false, newRecord, &rec)) N = -N;
 		delete[] newRecord; newRecord = nullptr;
@@ -2137,7 +2137,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg, uint8_t** record)
 		fd->RunErrorM(md);
 		RunError(Msg);
 	}
-	fd->ReadRec(N, *record);
+	fd->FF->ReadRec(N, *record);
 	fd->OldLockMode(md);
 }
 

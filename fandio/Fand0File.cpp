@@ -913,7 +913,7 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record)
 			L = N + 1;
 		}
 		N = (L + R) / 2;
-		_parent->ReadRec(N, record);
+		ReadRec(N, record);
 		x.PackKF(_parent, Key->KFlds, record);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
@@ -925,11 +925,11 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record)
 		if (Key->Duplic && (Result == _equ)) {
 			while (N > 1) {
 				N--;
-				_parent->ReadRec(N, record);
+				ReadRec(N, record);
 				x.PackKF(_parent, Key->KFlds, record);
 				if (CompStr(x.S, XX.S) != _equ) {
 					N++;
-					_parent->ReadRec(N, record);
+					ReadRec(N, record);
 					break;
 				}
 			}
@@ -976,7 +976,7 @@ label1:
 		K1->Delete(_parent, RecNr, record);
 	}
 	_parent->SetDeletedFlag(record);
-	_parent->WriteRec(RecNr, record);
+	WriteRec(RecNr, record);
 
 	if (XF->FirstDupl) {
 		SetMsgPar(_parent->Name);
@@ -1005,7 +1005,7 @@ void Fand0File::DeleteXRec(int RecNr, bool DelT, uint8_t* record)
 		_parent->DelAllDifTFlds(record, nullptr);
 	}
 	SetDeletedFlag(record);
-	_parent->WriteRec(RecNr, record);
+	WriteRec(RecNr, record);
 	XF->NRecs--;
 }
 
@@ -1015,7 +1015,7 @@ void Fand0File::OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record)
 	record = P2;
 	if (_parent->DeletedFlag(record)) {
 		record = P;
-		_parent->RecallRec(RecNr, record);
+		RecallRec(RecNr, record);
 		return;
 	}
 	TestXFExist();
@@ -1033,7 +1033,18 @@ void Fand0File::OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record)
 	}
 
 	record = P;
-	_parent->WriteRec(RecNr, record);
+	WriteRec(RecNr, record);
+}
+
+void Fand0File::RecallRec(int recNr, uint8_t* record)
+{
+	TestXFExist();
+	XF->NRecs++;
+	for (auto& K : _parent->Keys) {
+		K->Insert(_parent, recNr, false, record);
+	}
+	_parent->ClearDeletedFlag(record);
+	WriteRec(recNr, record);
 }
 
 void Fand0File::GenerateNew000File(XScan* x, uint8_t* record, void (*msgFuncUpdate)(int32_t))
@@ -1249,7 +1260,7 @@ void Fand0File::IndexFileProc(bool Compress)
 	if (Compress) {
 		FileD* FD2 = _parent->OpenDuplicateF(false);
 		for (int rec_nr = 1; rec_nr <= NRecs; rec_nr++) {
-			_parent->ReadRec(rec_nr, record);
+			ReadRec(rec_nr, record);
 			if (!_parent->DeletedFlag(record)) {
 				FD2->PutRec(record);
 			}

@@ -267,7 +267,7 @@ bool IsDuplFileName(DataEditor* data_editor, std::string name)
 		uint8_t* record = CFile->GetRecSpace();
 		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
 			if (i != data_editor->CRec()) {
-				CFile->ReadRec(i, record);
+				CFile->FF->ReadRec(i, record);
 				if (CFile->loadS(ChptTyp, record) == "F") {
 					GetSplitChapterName(CFile, record, n, e);
 					if (EquUpCase(name, n)) {
@@ -425,14 +425,14 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	NmF = CFile->FldD[0];
 	TxtF = CFile->FldD[1];
 	for (i = 1; i <= CFile->FF->NRecs; i++) {
-		CFile->ReadRec(i, CRecPtr);
+		CFile->FF->ReadRec(i, CRecPtr);
 		std::string NmFtext = CFile->loadS(NmF, CRecPtr);
 		std::string nm = TrailChar(NmFtext, ' ');
 		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
 			while ((i < CFile->FF->NRecs) && (CFile->loadT(TxtF, CRecPtr) == 0)) {
 				i++;
-				CFile->ReadRec(i, CRecPtr);
+				CFile->FF->ReadRec(i, CRecPtr);
 			}
 			result = i;
 			goto label2;
@@ -1003,7 +1003,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 	CRdb = RP.rdb;
 	PrevCompInp.clear();
 
-	rdb_editor->GetFileD()->ReadRec(rdb_editor->CRec(), rdb_editor->GetRecord());
+	rdb_editor->GetFileD()->FF->ReadRec(rdb_editor->CRec(), rdb_editor->GetRecord());
 	if (IsCompileErr) {
 		result = false;
 	}
@@ -1013,7 +1013,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 			return result;
 		}
 		rdb_editor->GetFileD()->saveB(ChptVerif, false, rdb_editor->GetRecord());
-		rdb_editor->GetFileD()->WriteRec(rdb_editor->CRec(), rdb_editor->GetRecord());
+		rdb_editor->GetFileD()->FF->WriteRec(rdb_editor->CRec(), rdb_editor->GetRecord());
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
 		}
@@ -1385,7 +1385,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 		//CRecPtr = v_files->FF->RecPtr;
 		Encryp = CRdb->Encrypted;
 		for (I = 1; I <= rdb_file->FF->NRecs; I++) {
-			rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
+			rdb_file->FF->ReadRec(I, rdb_file->FF->RecPtr);
 			RP.i_rec = I;
 			Verif = rdb_file->loadB(ChptVerif, rdb_file->FF->RecPtr);
 			STyp = rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr);
@@ -1412,13 +1412,13 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 						for (J = 1; J <= I - 1; J++) {
-							rdb_file->ReadRec(J, rdb_file->FF->RecPtr);
+							rdb_file->FF->ReadRec(J, rdb_file->FF->RecPtr);
 							if ((STyp == rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr))
 								&& EquUpCase(Name, OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr)))) {
 								gc->GoCompileErr(I, 649);
 							}
 						}
-						rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
+						rdb_file->FF->ReadRec(I, rdb_file->FF->RecPtr);
 					}
 				}
 				switch (Typ) {
@@ -1437,7 +1437,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 							dbf_file->MakeDbfDcl(nm);
 
 							Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
-							rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+							rdb_file->FF->WriteRec(I, rdb_file->FF->RecPtr);
 						}
 					}
 #ifndef FandSQL
@@ -1475,7 +1475,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 									if (merged) {
 										// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
 										rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
-										rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+										rdb_file->FF->WriteRec(I, rdb_file->FF->RecPtr);
 									}
 									else {
 										throw std::exception("Merge of an old and a new file declaration unsuccessful.");
@@ -1484,7 +1484,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 								else {
 									// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
 									rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
-									rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+									rdb_file->FF->WriteRec(I, rdb_file->FF->RecPtr);
 								}
 							}
 						}
@@ -1524,7 +1524,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 							gc->GoCompileErr(I, 1145);
 						}
 						rdb_file->saveS(ChptTxt, RprtTxt, rdb_file->FF->RecPtr);
-						rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+						rdb_file->FF->WriteRec(I, rdb_file->FF->RecPtr);
 					}
 					else {
 						const std::unique_ptr report = std::make_unique<Report>();
@@ -1601,9 +1601,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			//CFile = Chpt;
 			//CRecPtr = v_files->FF->RecPtr;
 			if (Verif) {
-				rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
+				rdb_file->FF->ReadRec(I, rdb_file->FF->RecPtr);
 				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr);
-				rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+				rdb_file->FF->WriteRec(I, rdb_file->FF->RecPtr);
 			}
 		}
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
@@ -1674,7 +1674,7 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 	data_editor->CFld = data_editor->GetEditD()->GetEFldIter(data_editor->GetEditD()->LastFld);
 	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
 	data_editor->GetFileD()->saveR(ChptTxtPos, gc->input_pos, data_editor->GetRecord());
-	data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
+	data_editor->GetFileD()->FF->WriteRec(data_editor->CRec(), data_editor->GetRecord());
 	data_editor->EditFreeTxt(ChptTxt, s, true, Brk);
 }
 
@@ -1967,7 +1967,7 @@ void UpdateUTxt()
 		WrLLF10Msg(9);
 		return;
 	}
-	CFile->ReadRec(1, CRecPtr);
+	CFile->FF->ReadRec(1, CRecPtr);
 	if (CFile->loadS(ChptTyp, CRecPtr) != "U") {
 		WrLLF10Msg(9);
 		return;
@@ -1999,7 +1999,7 @@ void UpdateUTxt()
 			b = false;
 			if (Upd) {
 				StoreChptTxt(ChptTxt, s, true);
-				CFile->WriteRec(1, CRecPtr);
+				CFile->FF->WriteRec(1, CRecPtr);
 			}
 			break;
 		}

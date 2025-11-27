@@ -90,12 +90,12 @@ void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, uint8_t* record)
 						}
 						XW->msgWritten = true;
 					}
-					file_d->ReadRec(n, record);
+					file_d->FF->ReadRec(n, record);
 					for (XKey* K : file_d->Keys) {
 						K->Delete(file_d, n, record);
 					}
 					file_d->SetDeletedFlag(record);
-					file_d->WriteRec(n, record);
+					file_d->FF->WriteRec(n, record);
 					return;
 				}
 			}

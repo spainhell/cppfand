@@ -19,6 +19,7 @@ EditD::~EditD()
 	//OldRec = nullptr;
 	//delete NewRec;
 	//NewRec = nullptr;
+	delete DownRecord; DownRecord = nullptr;
 }
 
 std::vector<EFldD*>::iterator EditD::GetEFldIter(EFldD* e_fld)

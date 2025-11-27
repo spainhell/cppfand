@@ -47,7 +47,7 @@ bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord)
 			N = 1;
 		}
 		else {
-			file_d->ReadRec(N, *newRecord);
+			file_d->FF->ReadRec(N, *newRecord);
 		}
 	}
 	file_d->OldLockMode(md);
@@ -76,11 +76,11 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 
 		if (!LinkLastRec(file_d, n, true, &rec)) {
 			file_d->IncNRecs(1);
-			file_d->WriteRec(n, rec);
+			file_d->FF->WriteRec(n, rec);
 		}
 
 		AssgnFrml(file_d, rec, field_d, frml, true, add);
-		file_d->WriteRec(n, rec);
+		file_d->FF->WriteRec(n, rec);
 		file_d->OldLockMode(md);
 		delete[] rec; rec = nullptr;
 	}
@@ -119,7 +119,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord
 	}
 
 	if (lu) {
-		to_FD->ReadRec(N, *newRecord);
+		to_FD->FF->ReadRec(N, *newRecord);
 	}
 	else {
 		to_FD->ZeroAllFlds(*newRecord, false);

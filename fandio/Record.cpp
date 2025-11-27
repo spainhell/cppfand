@@ -2,6 +2,7 @@
 
 Record::Record()
 {
+	_file_d = nullptr;
 	_buffer = nullptr;
 }
 
@@ -54,6 +55,11 @@ void Record::Reset()
 void Record::SetRecordUpdateFlag()
 {
 	_was_updated = true;
+}
+
+void Record::SetDeleted()
+{
+	_deleted = true;
 }
 
 uint8_t* Record::PrepareRecord()

@@ -25,7 +25,7 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 	WORD irec = ChptTF->IRec;
 	bool compileAll = ChptTF->CompileAll;
 	for (int i = 1; i <= CFile->FF->NRecs; i++) {
-		CFile->ReadRec(i, CRecPtr);
+		CFile->FF->ReadRec(i, CRecPtr);
 		RunMsgN(i);
 		s = CFile->loadS(ChptTyp, CRecPtr);
 		std::string chapter_name = CFile->loadS(ChptName, CRecPtr);
@@ -34,13 +34,13 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 		else {
 			CodeF(Rotate, i, ChptTxt, s[0]);
 			CodeF(Rotate, i, ChptOldTxt, s[0]);
-			CFile->WriteRec(i, CRecPtr);
+			CFile->FF->WriteRec(i, CRecPtr);
 		}
 	}
 	if (Rotate) {
 		int i = 1;
 		while (i <= CFile->FF->NRecs) {
-			CFile->ReadRec(i, CRecPtr);
+			CFile->FF->ReadRec(i, CRecPtr);
 			s = CFile->loadS(ChptTyp, CRecPtr);
 			if (s[0] == ' ' || s[0] == 'I') {
 				CFile->DeleteRec(i, CRecPtr);
@@ -284,7 +284,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	//CFile = Chpt;
 	//CRecPtr = edit->NewRec->GetRecord();
 	//CFile->ReadRec(data_editor->CRec(), CRecPtr);
-	Chpt->ReadRec(data_editor->CRec(), data_editor->GetRecord());
+	Chpt->FF->ReadRec(data_editor->CRec(), data_editor->GetRecord());
 
 	ChptTF->CompileAll = false;
 	ChptTF->CompileProc = false;

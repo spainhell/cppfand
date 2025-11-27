@@ -47,7 +47,7 @@ public:
 	char OwnerTyp = '\0';
 	LinkD* DownLD = nullptr;
 	LocVar* DownLV = nullptr;
-	uint8_t* DownRecPtr = nullptr;
+	Record* DownRecord = nullptr;
 	void* LVRecPtr = nullptr;
 	std::vector<KeyInD*> KIRoot;
 	bool SQLFilter = false;

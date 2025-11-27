@@ -106,7 +106,7 @@ extern "C" int FAND_API LoadRecord(int32_t recNr)
 	if (recNr == 0 || recNr > rdbFile->FF->NRecs) {
 		return -1;
 	}
-	rdbFile->ReadRec(recNr, data);
+	rdbFile->FF->ReadRec(recNr, data);
 	return 0;
 }
 
@@ -177,7 +177,7 @@ extern "C" int FAND_API UpdateChapter(int32_t recNr, char* chapterType, char* ch
 	std::string chapter_code = ConvertUnicodetoCP852(chapterCode);
 	rdbFile->saveS(rdbFile->FldD[5], chapter_code, data);
 
-	rdbFile->WriteRec(recNr, data);
+	rdbFile->FF->WriteRec(recNr, data);
 
 	return rdbFile->FF->NRecs;
 }

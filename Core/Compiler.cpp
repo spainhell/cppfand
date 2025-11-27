@@ -168,7 +168,7 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	RdbD* rdb = rdb_pos->rdb;
 	uint8_t* rec = rdb->v_files[0]->GetRecSpace();
 
-	rdb->v_files[0]->ReadRec(rdb_pos->i_rec, rec);
+	rdb->v_files[0]->FF->ReadRec(rdb_pos->i_rec, rec);
 	int pos;
 	if (FromTxt) {
 		pos = rdb->v_files[0]->loadT(ChptTxt, rec);
@@ -1116,7 +1116,7 @@ bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	while (R != nullptr) {
 		CFile = R->v_files[0];
 		for (WORD i = 1; i <= CFile->FF->NRecs; i++) {
-			CFile->ReadRec(i, CRecPtr);
+			CFile->FF->ReadRec(i, CRecPtr);
 			std::string chapterType = CFile->loadS(ChptTyp, CRecPtr);
 			std::string chapterName = CFile->loadS(ChptName, CRecPtr);
 			chapterName = TrailChar(chapterName, ' ');

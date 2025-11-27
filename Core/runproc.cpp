@@ -36,6 +36,7 @@
 #include "../MergeReport/Report.h"
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
+#include "../fandio/Record.h"
 
 
 void UserHeadLine(std::string UserHeader)
@@ -166,7 +167,7 @@ void AssignField(Instr_assign* PD)
 		goto label1;
 	}
 	CRecPtr = CFile->GetRecSpace();
-	CFile->ReadRec(N, CRecPtr);
+	CFile->FF->ReadRec(N, CRecPtr);
 	if (PD->Indexarg && !CFile->DeletedFlag(CRecPtr)) {
 		msg = 627;
 	label1:
@@ -175,7 +176,7 @@ void AssignField(Instr_assign* PD)
 		RunError(msg);
 	}
 	AssgnFrml(CFile, CRecPtr, F, PD->Frml, true, PD->Add);
-	CFile->WriteRec(N, CRecPtr);
+	CFile->FF->WriteRec(N, CRecPtr);
 	ReleaseStore(&CRecPtr);
 	CFile->OldLockMode(md);
 }
@@ -343,7 +344,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 	else {
 		CFile = R->v_files[0];
 		CRecPtr = Chpt->FF->RecPtr;
-		CFile->ReadRec(IRec, CRecPtr);
+		CFile->FF->ReadRec(IRec, CRecPtr);
 		int pos = CFile->loadT(ChptTxt, CRecPtr);
 		str = CFile->FF->TF->Read(pos);
 		if (R->Encrypted) {
@@ -554,7 +555,7 @@ void DeleteRecProc(Instr_recs* PD)
 			return;
 		}
 	}
-	CFile->ReadRec(n, CRecPtr);
+	CFile->FF->ReadRec(n, CRecPtr);
 	if (PD->AdUpd && !CFile->DeletedFlag(CRecPtr)) {
 		LastExitCode = (!RunAddUpdate(CFile, '-', nullptr, nullptr, CRecPtr));
 	}
@@ -582,7 +583,7 @@ void AppendRecProc(FileD* file_d)
 void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, uint8_t* new_data)
 {
 	uint8_t* old_data = file_d->GetRecSpace();
-	file_d->ReadRec(rec_nr, old_data);
+	file_d->FF->ReadRec(rec_nr, old_data);
 
 	const bool deleted = file_d->DeletedFlag(old_data);
 
@@ -599,7 +600,7 @@ void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, uint8_t* new_data)
 		file_d->FF->OverWrXRec(rec_nr, old_data, new_data, new_data);
 	}
 	else {
-		file_d->WriteRec(rec_nr, new_data);
+		file_d->FF->WriteRec(rec_nr, new_data);
 	}
 
 	if (!deleted) {
@@ -621,7 +622,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	bool ad = PD->AdUpd;
 	LockMode md = lv->FD->GetLMode();
 	bool app = false;
-	uint8_t* record1 = lv->FD->GetRecSpace();
+	Record* record1 = new Record(lv->FD);
 	if (PD->ByKey) {
 		x.S = RunString(lv->FD, PD->RecNr, lv->record);
 #ifdef FandSQL
@@ -660,7 +661,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				label0:
 					//CFile->DelTFlds(CRecPtr);
 					lv->FD->ZeroAllFlds(lv->record, true);
-					delete[] record1; record1 = nullptr;
+					delete record1; record1 = nullptr;
 					lv->FD->OldLockMode(md);
 					return;
 				}
@@ -681,7 +682,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				//CFile->DelTFlds(CRecPtr);
 				lv->FD->ZeroAllFlds(lv->record, true);
 				lv->FD->SetDeletedFlag(lv->record);
-				delete[] record1; record1 = nullptr;
+				delete record1; record1 = nullptr;
 				lv->FD->OldLockMode(md);
 				return;
 			}
@@ -702,10 +703,10 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 
 	if (IsRead) {
 		lv->FD->ReadRec(N, record1);
-		lv->FD->CopyRec(record1, lv->record, true);
+		lv->FD->CopyRec(record1->GetRecord(), lv->record, true);
 	}
 	else {
-		lv->FD->CopyRec(lv->record, record1, false);
+		lv->FD->CopyRec(lv->record, record1->GetRecord(), false);
 		if (app) {
 			if (lv->FD->FileType == DataFileType::FandFile && lv->FD->FF->file_type == FandFileType::INDEX) {
 				lv->FD->RecallRec(N, record1);
@@ -715,15 +716,15 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			}
 
 			if (ad) {
-				LastExitCode = !RunAddUpdate(lv->FD, '+', nullptr, nullptr, record1);
+				LastExitCode = !RunAddUpdate(lv->FD, '+', nullptr, nullptr, record1->GetRecord());
 			}
 		}
 		else {
-			UpdRec(lv->FD, N, ad, record1);
+			UpdRec(lv->FD, N, ad, record1->GetRecord());
 		}
 	}
 
-	delete[] record1; record1 = nullptr;
+	delete record1; record1 = nullptr;
 	lv->FD->OldLockMode(md);
 }
 
@@ -783,7 +784,7 @@ void ForAllProc(Instr_forall* PD)
 		case 'F': {
 			md = CFile->NewLockMode(RdMode);
 			CRecPtr = CFile->GetRecSpace();
-			CFile->ReadRec(RunInt(CFile, (FrmlElem*)PD->CLV, CRecPtr), CRecPtr);
+			CFile->FF->ReadRec(RunInt(CFile, (FrmlElem*)PD->CLV, CRecPtr), CRecPtr);
 			xx.PackKF(CFile, LD->ToKey->KFlds, CRecPtr);
 			ReleaseStore(&p);
 			CFile->OldLockMode(md);
@@ -1180,9 +1181,9 @@ void RecallRecProc(Instr_recs* PD)
 	CRecPtr = CFile->GetRecSpace();
 	LockMode md = CFile->NewLockMode(CrMode);
 	if ((N > 0) && (N <= CFile->FF->NRecs)) {
-		CFile->ReadRec(N, CRecPtr);
+		CFile->FF->ReadRec(N, CRecPtr);
 		if (CFile->DeletedFlag(CRecPtr)) {
-			CFile->RecallRec(N, CRecPtr);
+			CFile->FF->RecallRec(N, CRecPtr);
 			if (PD->AdUpd) {
 				LastExitCode = !RunAddUpdate(CFile, '+', nullptr, nullptr, CRecPtr);
 			}

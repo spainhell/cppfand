@@ -9,6 +9,7 @@
 #include "../Core/Compiler.h"
 #include "../Core/EditOpt.h"
 #include "../fandio/FieldDescr.h"
+#include "../fandio/Record.h"
 #include "../Common/FileD.h"
 #include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
@@ -786,7 +787,7 @@ int DataEditor::LogRecNo(int N)
 	if ((N <= 0) || (N > file_d_->GetNRecs())) return result;
 
 	LockMode md = file_d_->NewLockMode(RdMode);
-	file_d_->ReadRec(N, current_rec_->GetRecord());
+	file_d_->ReadRec(N, current_rec_);
 	if (!file_d_->DeletedFlag(current_rec_->GetRecord())) {
 		if (params_->Subset) {
 			result = WK->RecNrToNr(file_d_, N, current_rec_->GetRecord());
@@ -856,7 +857,7 @@ void DataEditor::RdRec(int nr, Record* record)
 #endif
 	{
 		md = file_d_->NewLockMode(RdMode);
-		file_d_->ReadRec(AbsRecNr(nr), record->GetRecord());
+		file_d_->ReadRec(AbsRecNr(nr), record);
 		file_d_->OldLockMode(md);
 	}
 	record->Expand();
@@ -869,7 +870,7 @@ bool DataEditor::CheckOwner(EditD* E)
 	if (edit_->DownSet && (edit_->OwnerTyp != 'i')) {
 		XString X, X1;
 		X.PackKF(file_d_, edit_->DownKey->KFlds, current_rec_->GetRecord());
-		X1.PackKF(edit_->DownLD->ToFD, edit_->DownLD->ToKey->KFlds, edit_->DownRecPtr);
+		X1.PackKF(edit_->DownLD->ToFD, edit_->DownLD->ToKey->KFlds, edit_->DownRecord->GetRecord());
 		X.S[0] = (char)(MinW(X.S.length(), X1.S.length()));
 		if (X.S != X1.S) result = false;
 	}
@@ -920,7 +921,7 @@ bool DataEditor::ELockRec(EditD* E, int N, bool IsNewRec, bool Subset)
 				return result;
 			}
 			md = file_d_->NewLockMode(RdMode);
-			file_d_->ReadRec(N, current_rec_->GetRecord());
+			file_d_->ReadRec(N, current_rec_);
 			file_d_->OldLockMode(md);
 			if (Subset && !
 				((params_->NoCondCheck || RunBool(file_d_, edit_->Cond, current_rec_->GetRecord()) && CheckKeyIn(E)) && CheckOwner(E))) {
@@ -1483,7 +1484,7 @@ void DataEditor::DuplOwnerKey()
 
 	for (KeyFldD* KF : edit_->DownLD->ToKey->KFlds) {
 		for (KeyFldD* arg : edit_->DownLD->Args) {
-			DuplFld(edit_->DownLD->ToFD, file_d_, edit_->DownRecPtr, current_rec_->GetRecord(), original_rec_->GetRecord(),
+			DuplFld(edit_->DownLD->ToFD, file_d_, edit_->DownRecord->GetRecord(), current_rec_->GetRecord(), original_rec_->GetRecord(),
 				KF->FldD, arg->FldD);
 		}
 	}
@@ -1550,7 +1551,7 @@ void DataEditor::BuildWork()
 				}
 			}
 			else {
-				xx.PackKF(edit_->DownLD->ToFD, edit_->DownLD->ToKey->KFlds, edit_->DownRecPtr);
+				xx.PackKF(edit_->DownLD->ToFD, edit_->DownLD->ToKey->KFlds, edit_->DownRecord->GetRecord());
 				Scan->ResetOwner(&xx, boolP);
 			}
 			if (!edit_->KIRoot.empty()) {
@@ -1729,7 +1730,7 @@ bool DataEditor::OpenEditWw()
 			RunError(611);
 		}
 
-		edit_->DownLD->ToFD->ReadRec(n, edit_->DownRecPtr);
+		edit_->DownLD->ToFD->ReadRec(n, edit_->DownRecord);
 		edit_->DownLD->ToFD->OldLockMode(md1);
 	}
 
@@ -2019,7 +2020,7 @@ void DataEditor::WrJournal(char Upd, void* RP, double Time)
 
 		LockMode md = file_d_->NewLockMode(CrMode);
 		file_d_->IncNRecs(1);
-		file_d_->WriteRec(file_d_->FF->NRecs, newData.get());
+		file_d_->FF->WriteRec(file_d_->FF->NRecs, newData.get());
 		file_d_->OldLockMode(md);
 		
 		file_d_ = edit_->FD;
@@ -2265,7 +2266,7 @@ bool DataEditor::DeleteRecProc()
 		IRec = 1;
 		edit_->EdUpdated = true;
 		for (I = 1; I <= file_d_->FF->NRecs; I++) {
-			file_d_->ReadRec(I, current_rec_->GetRecord());
+			file_d_->ReadRec(I, current_rec_);
 			if (fail) goto label2;
 			if (params_->Subset) {
 				if ((BaseRec > WK->NRecs()) || (WK->NrToRecNr(file_d_, BaseRec) != J + 1)) goto label2;
@@ -2286,7 +2287,7 @@ bool DataEditor::DeleteRecProc()
 				if (params_->Subset) BaseRec++;
 			label2:
 				J++;
-				file_d_->WriteRec(J, current_rec_->GetRecord());
+				file_d_->WriteRec(J, current_rec_);
 			}
 		}
 		file_d_->DecNRecs(file_d_->FF->NRecs - J);
@@ -2692,7 +2693,7 @@ bool DataEditor::OldRecDiffers()
 		!file_d_->IsSQLFile &&
 #endif 
 		(!file_d_->NotCached()))) return result;
-	uint8_t* rec = file_d_->GetRecSpace();
+	Record* rec = new Record(file_d_);
 #ifdef FandSQL
 	if (file_d_->IsSQLFile) {
 		x.S = WK->NrToStr(CRec); Strm1->KeyAcc(WK, @x); f = file_d_->FldD;
@@ -2708,15 +2709,15 @@ bool DataEditor::OldRecDiffers()
 #endif
 
 		file_d_->ReadRec(edit_->LockedRec, rec);
-	if (CompArea(rec, original_rec_->GetRecord(), file_d_->FF->RecLen) != _equ) {
+	if (CompArea(rec->GetRecord(), original_rec_->GetRecord(), file_d_->FF->RecLen) != _equ) {
 	label1:
 		file_d_->DelAllDifTFlds(current_rec_->GetRecord(), original_rec_->GetRecord());
-		Move(rec, current_rec_->GetRecord(), file_d_->FF->RecLen);
+		Move(rec->GetRecord(), current_rec_->GetRecord(), file_d_->FF->RecLen);
 		params_->WasUpdated = false;
 		result = true;
 	}
 label2:
-	file_d_->ClearRecSpace(rec);
+	file_d_->ClearRecSpace(rec->GetRecord());
 	delete[] rec; rec = nullptr;
 
 	return result;
@@ -2909,7 +2910,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 				UpdMemberRef(original_rec_->GetRecord(), current_rec_->GetRecord());
 			}
 			CNew = UpdateIndexes();
-			file_d_->WriteRec(edit_->LockedRec, current_rec_->GetRecord());
+			file_d_->WriteRec(edit_->LockedRec, current_rec_);
 		}
 		if (CNew != CRec()) {
 			SetNewCRec(CNew, true);
@@ -2960,7 +2961,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			goto label1;
 		}
 		}
-		file_d_->WriteRec(edit_->LockedRec, current_rec_->GetRecord());
+		file_d_->WriteRec(edit_->LockedRec, current_rec_);
 	}
 	time = Today() + CurrTime();
 	if (IsNewRec) WrJournal('+', current_rec_->GetRecord(), time);
@@ -3139,7 +3140,7 @@ bool DataEditor::PromptSearch(bool create)
 	}
 	if (HasIndex && edit_->DownSet && (VK == edit_->DownKey)) {
 		FileD* FD2 = edit_->DownLD->ToFD;
-		void* RP2 = edit_->DownRecPtr;
+		// Record* RP2 = edit_->DownRecord;
 		std::vector<KeyFldD*>::iterator KF2 = edit_->DownLD->ToKey->KFlds.begin();
 
 		while (KF2 != edit_->DownLD->ToKey->KFlds.end()) {
@@ -3758,7 +3759,7 @@ bool DataEditor::GetChpt(pstring Heslo, int& NN)
 	pstring s(12);
 
 	for (int j = 1; j <= file_d_->FF->NRecs; j++) {
-		file_d_->ReadRec(j, current_rec_->GetRecord());
+		file_d_->ReadRec(j, current_rec_);
 		if (IsCurrChpt(file_d_)) {
 			s = OldTrailChar(' ', file_d_->loadS(ChptName, current_rec_->GetRecord()));
 			short i = s.first('.');
@@ -4207,24 +4208,26 @@ void DataEditor::PromptSelect()
 
 void DataEditor::SwitchRecs(short Delta)
 {
-	LockMode md; int n1, n2;
-	uint8_t* p1; uint8_t* p2;
+	LockMode md; 
+	int n1, n2;
+	Record* p1 = new Record(file_d_); 
+	Record* p2 = new Record(file_d_);
 	XString x1, x2;
 #ifdef FandSQL
 	if (file_d_->IsSQLFile) return;
 #endif
 	if (params_->NoCreate && params_->NoDelete || params_->WasWK) return;
 	if (!file_d_->TryLockMode(WrMode, md, 1)) return;
-	p1 = file_d_->GetRecSpace();
-	p2 = file_d_->GetRecSpace();
 
 	n1 = AbsRecNr(CRec());
 	file_d_->ReadRec(n1, p1);
-	if (HasIndex) x1.PackKF(file_d_, VK->KFlds, p1);
+	if (HasIndex) {
+		x1.PackKF(file_d_, VK->KFlds, p1->GetRecord());
+	}
 	n2 = AbsRecNr(CRec() + Delta);
 	file_d_->ReadRec(n2, p2);
 	if (HasIndex) {
-		x2.PackKF(file_d_, VK->KFlds, p2);
+		x2.PackKF(file_d_, VK->KFlds, p2->GetRecord());
 		if (x1.S != x2.S) {
 			goto label1;
 		}
@@ -4234,10 +4237,10 @@ void DataEditor::SwitchRecs(short Delta)
 	if (HasIndex) {
 		for (XKey* k : file_d_->Keys) {
 			if (k != VK) {
-				k->Delete(file_d_, n1, p1);
-				k->Delete(file_d_, n2, p2);
-				k->Insert(file_d_, n2, true, p1);
-				k->Insert(file_d_, n1, true, p2);
+				k->Delete(file_d_, n1, p1->GetRecord());
+				k->Delete(file_d_, n2, p2->GetRecord());
+				k->Insert(file_d_, n2, true, p1->GetRecord());
+				k->Insert(file_d_, n1, true, p2->GetRecord());
 			}
 		}
 	}
@@ -4248,7 +4251,9 @@ void DataEditor::SwitchRecs(short Delta)
 	if (IsCurrChpt(file_d_)) SetCompileAll();
 label1:
 	file_d_->OldLockMode(md);
-	delete[] p1; p1 = nullptr;
+	
+	delete p1; p1 = nullptr;
+	delete p2; p2 = nullptr;
 }
 
 bool DataEditor::FinArgs(LinkD* LD, FieldDescr* F)
@@ -4471,7 +4476,7 @@ void DataEditor::DownEdit()
 		}
 		if (data_editor2->SelFldsForEO(EO, LD)) {
 			EO->DownLD = LD;
-			EO->DownRecPtr = current_rec_->GetRecord();
+			EO->DownRecord = new Record(file_d_);
 			EditReader* reader = new EditReader();
 			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->current_rec_->GetRecord());
 			data_editor2->edit_ = reader->GetEditD();

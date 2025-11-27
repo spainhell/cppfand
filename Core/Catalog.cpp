@@ -260,22 +260,22 @@ void Catalog::TurnCat(FileD* file_d, uint16_t Frst, uint16_t N, short I)
 	uint16_t last = Frst + N - 1;
 	if (I > 0)
 		while (I > 0) {
-			file_d->ReadRec(Frst, q);
+			file_d->FF->ReadRec(Frst, q);
 			for (uint16_t j = 1; j <= N - 1; j++) {
-				file_d->ReadRec(Frst + j, p);
-				file_d->WriteRec(Frst + j - 1, p);
+				file_d->FF->ReadRec(Frst + j, p);
+				file_d->FF->WriteRec(Frst + j - 1, p);
 			}
-			file_d->WriteRec(last, q);
+			file_d->FF->WriteRec(last, q);
 			I--;
 		}
 	else
 		while (I < 0) {
-			file_d->ReadRec(last, q);
+			file_d->FF->ReadRec(last, q);
 			for (uint16_t j = 1; j <= N - 1; j++) {
-				file_d->ReadRec(last - j, p);
-				file_d->WriteRec(last - j + 1, p);
+				file_d->FF->ReadRec(last - j, p);
+				file_d->FF->WriteRec(last - j + 1, p);
 			}
-			file_d->WriteRec(Frst, q);
+			file_d->FF->WriteRec(Frst, q);
 			I++;
 		}
 	delete[] p; p = nullptr;
@@ -284,7 +284,7 @@ void Catalog::TurnCat(FileD* file_d, uint16_t Frst, uint16_t N, short I)
 
 std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)
 {
-	cat_file_->ReadRec(rec_nr, record_);
+	cat_file_->FF->ReadRec(rec_nr, record_);
 	std::string value = cat_file_->loadS(field, record_);
 	std::string result = TrailChar(value, ' ');
 	return result;
@@ -292,7 +292,7 @@ std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)
 
 void Catalog::setValue(size_t rec_nr, FieldDescr* field, const std::string& value)
 {
-	cat_file_->ReadRec(rec_nr, record_);
+	cat_file_->FF->ReadRec(rec_nr, record_);
 	cat_file_->saveS(field, value, record_);
-	cat_file_->WriteRec(rec_nr, record_);
+	cat_file_->FF->WriteRec(rec_nr, record_);
 }

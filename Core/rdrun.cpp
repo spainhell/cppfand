@@ -10,6 +10,7 @@
 #include "obaseww.h"
 #include "runfrml.h"
 #include "../Common/DateTime.h"
+#include "../fandio/Record.h"
 
 
 XString OldMXStr;                  /* Merge */
@@ -65,7 +66,7 @@ bool Add(FileD* file_d, Additive* add_d, uint8_t* record, double value, bool bac
 void CrIndRec(FileD* file_d, uint8_t* record)
 {
 	file_d->CreateRec(file_d->FF->NRecs + 1, record);
-	file_d->RecallRec(file_d->FF->NRecs, record);
+	file_d->FF->RecallRec(file_d->FF->NRecs, record);
 }
 
 bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, uint8_t* record, uint8_t** linkedRecord)
@@ -90,7 +91,7 @@ bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, uint8_t* record, 
 #endif
 			) {
 			file_d->IncNRecs(1);
-			file_d->WriteRec(1, *linkedRecord);
+			file_d->FF->WriteRec(1, *linkedRecord);
 		}
 		return result;
 	}
@@ -124,7 +125,7 @@ bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, uint8_t* RP, uint8_t* new_
 	if (Kind2 == '+') {
 		return RunAddUpdate(file_d, '+', nullptr, Back, nullptr, nullptr, new_record);
 	}
-	uint8_t* rec = file_d->GetRecSpace();
+	Record* rec = new Record(file_d);
 #ifdef FandSQL
 	// TODO: cele pripadne predelat, po refactoringu uz to nesedi
 	if (CFile->IsSQLFile) {
@@ -138,9 +139,9 @@ bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, uint8_t* RP, uint8_t* new_
 #endif
 		file_d->ReadRec(N, rec);
 
-	bool result = RunAddUpdate(file_d, 'd', rec, Back, nullptr, nullptr, new_record);
+	bool result = RunAddUpdate(file_d, 'd', rec->GetRecord(), Back, nullptr, nullptr, new_record);
 
-	delete[] rec; rec = nullptr;
+	delete rec; rec = nullptr;
 	return result;
 }
 
@@ -158,7 +159,7 @@ void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, uint8_t* rp, uint8_t* n
 	}
 	else
 #endif
-		file_d->WriteRec(n, new_record);
+		file_d->FF->WriteRec(n, new_record);
 }
 
 bool Assign(FileD* file_d, Additive* add_d, uint8_t* record)
@@ -221,7 +222,7 @@ bool Assign(FileD* file_d, Additive* add_d, uint8_t* record)
 		break;
 	}
 	}
-	add_d->File2->WriteRec(n2, linkedRecord);
+	add_d->File2->FF->WriteRec(n2, linkedRecord);
 
 	delete[] linkedRecord; linkedRecord = nullptr;
 	return true;
