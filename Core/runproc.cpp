@@ -36,7 +36,7 @@
 #include "../MergeReport/Report.h"
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
-#include "../fandio/Record.h"
+#include "../Common/Record.h"
 
 
 void UserHeadLine(std::string UserHeader)

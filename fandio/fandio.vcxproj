@@ -174,7 +174,6 @@
     <ClInclude Include="KeyFldD.h" />
     <ClInclude Include="locks.h" />
     <ClInclude Include="realFix.h" />
-    <ClInclude Include="Record.h" />
     <ClInclude Include="sort.h" />
     <ClInclude Include="TextFile.h" />
     <ClInclude Include="WPage.h" />
@@ -205,7 +204,6 @@
     <ClCompile Include="KeyFldD.cpp" />
     <ClCompile Include="locks.cpp" />
     <ClCompile Include="realFix.cpp" />
-    <ClCompile Include="Record.cpp" />
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="TextFile.cpp" />
     <ClCompile Include="WPage.cpp" />

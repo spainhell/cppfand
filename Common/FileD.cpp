@@ -9,7 +9,7 @@
 #include "../Common/compare.h"
 #include "../Logging/Logging.h"
 #include "../Common/textfunc.h"
-#include "../fandio/Record.h"
+#include "Record.h"
 
 
 FileD::FileD(DataFileType f_type)

@@ -15,7 +15,7 @@
 #include "../Core/rdrun.h"
 #include "../Core/runfrml.h"
 #include "../fandio/XWKey.h"
-#include "../fandio/Record.h"
+#include "../Common/Record.h"
 
 //std::vector<EditD*> v_edits;
 
@@ -435,7 +435,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	edit_->OwnerTyp = EO->OwnerTyp;
 	edit_->DownLD = EO->DownLD;
 	edit_->DownLV = EO->DownLV;
-	edit_->DownRecord = EO->DownRecord->Clone();
+	edit_->DownRecord = EO->DownRecord == nullptr ? nullptr : EO->DownRecord->Clone();
 	edit_->LVRecPtr = EO->LVRecPtr;
 	edit_->KIRoot = EO->KIRoot;
 	edit_->SQLFilter = EO->SQLFilter;

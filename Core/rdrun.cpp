@@ -10,7 +10,7 @@
 #include "obaseww.h"
 #include "runfrml.h"
 #include "../Common/DateTime.h"
-#include "../fandio/Record.h"
+#include "../Common/Record.h"
 
 
 XString OldMXStr;                  /* Merge */

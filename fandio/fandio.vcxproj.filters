@@ -120,9 +120,6 @@
     <ClInclude Include="KeyFldD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Record.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Fand0File.cpp">
@@ -207,9 +204,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KeyFldD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Record.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
