@@ -917,8 +917,7 @@ void Compiler::RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vec
 			//	k->IndexLen += kf->FldD->NBytes;
 			//	kf = kf->pChain;
 			//}
-			XWKey* k = new XWKey(f, true, true, kf1);
-			locvar->record = reinterpret_cast<uint8_t*>(k);
+			locvar->key = new XWKey(f, true, true, kf1);
 		}
 	}
 }

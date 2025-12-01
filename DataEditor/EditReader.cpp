@@ -546,7 +546,8 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 			}
 			switch (edit_->OwnerTyp) {
 			case 'r': {
-				edit_->DownRecord = new Record(nullptr, edit_->DownLV->record);
+				edit_->DownRecord = edit_->DownLV->record == nullptr 
+					? nullptr : edit_->DownLV->record->Clone(); // new Record(nullptr, edit_->DownLV->record);
 				break;
 			}
 			case 'F': {

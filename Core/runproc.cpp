@@ -185,45 +185,40 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 {
 	FileD* FD1 = LV1->FD;  // destination record
 	FileD* FD2 = LV2->FD;  // source record
-	uint8_t* RP1 = LV1->record;
-	uint8_t* RP2 = LV2->record;
+	Record* RP1 = LV1->record;
+	Record* RP2 = LV2->record;
 
-	//while (A != nullptr) {
+
 	for (AssignD* a : A) {
 		switch (a->Kind) {
 		case MInstrCode::_zero: {
 			FieldDescr* F = a->outputFldD;
-			CFile = FD1;
-			CRecPtr = RP1;
 			switch (F->frml_type) {
-			case 'S': { CFile->saveS(F, "", CRecPtr); break; }
-			case 'R': { CFile->saveR(F, 0.0, CRecPtr); break; }
-			default: { CFile->saveB(F, false, CRecPtr); break; }
+			case 'S': { FD1->saveS(F, "", RP1->GetRecord()); break; }
+			case 'R': { FD1->saveR(F, 0.0, RP1->GetRecord()); break; }
+			default: { FD1->saveB(F, false, RP1->GetRecord()); break; }
 			}
 			break;
 		}
 		case MInstrCode::_output: {
-			CFile = FD1;
-			CRecPtr = RP1;
-			((FrmlElemNewFile*)a->Frml)->NewRP = RP2;
-			AssgnFrml(CFile, CRecPtr, a->OFldD, a->Frml, false, false);
+			((FrmlElemNewFile*)a->Frml)->NewRP = RP2->GetRecord();
+			AssgnFrml(FD1, RP1->GetRecord(), a->OFldD, a->Frml, false, false);
 			break;
 		}
 		}
-		//A = A->pChain;
 	}
-	CFile = FD1; CRecPtr = RP1;
-	CFile->SetRecordUpdateFlag(CRecPtr);
+
+	FD1->SetRecordUpdateFlag(RP1->GetRecord());
 }
 
 void AssignRecFld(Instr_assign* PD)
 {
 	FieldDescr* field_d = PD->RecFldD;
 	FileD* file_d = PD->AssLV->FD;
-	uint8_t* record = PD->AssLV->record;
+	uint8_t* rec = PD->AssLV->record->GetRecord();
 
-	file_d->SetRecordUpdateFlag(record);
-	AssgnFrml(file_d, record, field_d, PD->Frml, file_d->HasTWorkFlag(record), PD->Add);
+	file_d->SetRecordUpdateFlag(rec);
+	AssgnFrml(file_d, rec, field_d, PD->Frml, file_d->HasTWorkFlag(rec), PD->Add);
 }
 
 void SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
@@ -624,7 +619,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	bool app = false;
 	Record* record1 = new Record(lv->FD);
 	if (PD->ByKey) {
-		x.S = RunString(lv->FD, PD->RecNr, lv->record);
+		x.S = RunString(lv->FD, PD->RecNr, lv->record->GetRecord());
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
 			if (IsRead) if (Strm1->SelectXRec(k, @x, PD->CompOp, true)) goto label4; else goto label2;
@@ -633,7 +628,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 #endif
 	}
 	else {
-		N = RunInt(lv->FD, PD->RecNr, lv->record);
+		N = RunInt(lv->FD, PD->RecNr, lv->record->GetRecord());
 	}
 
 	if (IsRead) {
@@ -660,7 +655,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				if (IsRead) {
 				label0:
 					//CFile->DelTFlds(CRecPtr);
-					lv->FD->ZeroAllFlds(lv->record, true);
+					lv->FD->ZeroAllFlds(lv->record->GetRecord(), true);
 					delete record1; record1 = nullptr;
 					lv->FD->OldLockMode(md);
 					return;
@@ -680,8 +675,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		else if (!lv->FD->SearchXKey(k, x, N)) {
 			if (IsRead) {
 				//CFile->DelTFlds(CRecPtr);
-				lv->FD->ZeroAllFlds(lv->record, true);
-				lv->FD->SetDeletedFlag(lv->record);
+				lv->FD->ZeroAllFlds(lv->record->GetRecord(), true);
+				lv->FD->SetDeletedFlag(lv->record->GetRecord());
 				delete record1; record1 = nullptr;
 				lv->FD->OldLockMode(md);
 				return;
@@ -703,10 +698,10 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 
 	if (IsRead) {
 		lv->FD->ReadRec(N, record1);
-		lv->FD->CopyRec(record1->GetRecord(), lv->record, true);
+		lv->FD->CopyRec(record1->GetRecord(), lv->record->GetRecord(), true);
 	}
 	else {
-		lv->FD->CopyRec(lv->record, record1->GetRecord(), false);
+		lv->FD->CopyRec(lv->record->GetRecord(), record1->GetRecord(), false);
 		if (app) {
 			if (lv->FD->FileType == DataFileType::FandFile && lv->FD->FF->file_type == FandFileType::INDEX) {
 				lv->FD->RecallRec(N, record1);
@@ -1821,7 +1816,7 @@ void CallProcedure(Instr_proc* PD)
 			switch ((*it0)->f_typ) {
 			case 'r': {
 				LocVar* loc_var = *it0;
-				loc_var->FD->ClearRecSpace(loc_var->record);
+				loc_var->FD->ClearRecSpace(loc_var->record->GetRecord());
 				delete[] loc_var->record;
 				loc_var->record = nullptr;
 				break;

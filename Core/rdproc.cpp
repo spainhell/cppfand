@@ -104,7 +104,7 @@ FrmlElem* RdRecVarFldFrml(Compiler* compiler, LocVar* LV, char& FTyp)
 	}
 	case 'i': {
 		FrmlElem22* fe22 = new FrmlElem22(_indexnrecs, 4);
-		fe22->WKey = (XWKey*)LV->record;
+		fe22->WKey = LV->key;
 		compiler->AcceptKeyWord("nrecs");
 		FTyp = 'R';
 		Z = fe22;

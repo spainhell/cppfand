@@ -1024,13 +1024,13 @@ void DataEditor::DisplFld(EFldD* D, WORD I, uint8_t Color, Record* record)
 }
 
 // Display a form record
-void DataEditor::DisplRec(WORD I)
+void DataEditor::DisplayRecord(uint16_t i)
 {
 	//EFldD* D = nullptr;
 	bool NewFlds = false;
 	uint8_t a = edit_->dNorm;
-	int N = BaseRec + I - 1;
-	bool is_curr_new_rec = IsNewRec && (I == IRec);
+	int N = BaseRec + i - 1;
+	bool is_curr_new_rec = IsNewRec && (i == IRec);
 	
 	Record* display_rec = nullptr;
 
@@ -1038,7 +1038,7 @@ void DataEditor::DisplRec(WORD I)
 		NewFlds = true;
 	}
 	else {
-		if (I == IRec) {
+		if (i == IRec) {
 			display_rec = current_rec_; // print current record
 		}
 		else {
@@ -1049,7 +1049,7 @@ void DataEditor::DisplRec(WORD I)
 		NewFlds = false;
 
 		if (!IsNewRec) {
-			a = RecAttr(I, display_rec);
+			a = RecAttr(i, display_rec);
 		}
 	}
 
@@ -1063,10 +1063,10 @@ void DataEditor::DisplRec(WORD I)
 		// Display an item of the record
 		if (D->Page == CPage) {
 			if (NewFlds) {
-				DisplEmptyFld(D, I);
+				DisplEmptyFld(D, i);
 			}
 			else {
-				DisplFld(D, I, TextAttr, display_rec);
+				DisplFld(D, i, TextAttr, display_rec);
 			}
 		}
 
@@ -1093,7 +1093,7 @@ bool DataEditor::LockRec(bool Displ)
 	result = ELockRec(edit_, AbsRecNr(CRec()), IsNewRec, params_->Subset);
 	
 	if (result && !IsNewRec && !params_->EdRecVar && file_d_->NotCached() && Displ) {
-		DisplRec(IRec);
+		DisplayRecord(IRec);
 	}
 	return result;
 }
@@ -1351,7 +1351,7 @@ void DataEditor::DisplAllWwRecs()
 	}
 
 	for (WORD i = 1; i <= n; i++) {
-		DisplRec(i);
+		DisplayRecord(i);
 	}
 
 	IVon();
@@ -1904,12 +1904,12 @@ void DataEditor::GotoRecFld(int NewRec, const std::vector<EFldD*>::iterator& New
 
 	if (D > 0) {
 		MoveDispl(D + 1, 1, Max - D);
-		for (i = Max - D + 1; i <= Max; i++) DisplRec(i);
+		for (i = Max - D + 1; i <= Max; i++) DisplayRecord(i);
 	}
 	else {
 		D = -D;
 		MoveDispl(Max - D, Max, Max - D);
-		for (i = 1; i <= D; i++) DisplRec(i);
+		for (i = 1; i <= D; i++) DisplayRecord(i);
 	}
 label1:
 	DisplRecNr(CRec());
@@ -2155,7 +2155,7 @@ void DataEditor::UndoRecord()
 		Move(original_rec_->GetRecord(), current_rec_->GetRecord(), file_d_->FF->RecLen);
 		params_->WasUpdated = false; params_->NoDelTFlds = false;
 		UnLockRec(edit_);
-		DisplRec(IRec);
+		DisplayRecord(IRec);
 		IVon();
 	}
 }
@@ -2870,7 +2870,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			UnLockRec(edit_);
 			UnLockWithDep(OldMd);
 			WrLLF10Msg(149);
-			DisplRec(CRec());
+			DisplayRecord(CRec());
 			IVon();
 			return result;
 		}
@@ -3028,7 +3028,7 @@ void DataEditor::InsertRecProc(void* RP)
 	IVoff();
 	MoveDispl(edit_->NRecs - 1, edit_->NRecs, edit_->NRecs - IRec);
 	FirstEmptyFld = CFld;
-	DisplRec(IRec);
+	DisplayRecord(IRec);
 	IVon();
 	NewDisplLL = true;
 	NewRecExit();
@@ -3044,7 +3044,7 @@ void DataEditor::AppendRecord(void* RP)
 	if (IRec < Max) {
 		IRec++;
 		MoveDispl(Max - 1, Max, Max - IRec);
-		DisplRec(IRec);
+		DisplayRecord(IRec);
 		IVon();
 	}
 	else if (Max == 1) {
@@ -3748,12 +3748,12 @@ label2:
 		}
 		if (D > 0) {
 			MoveDispl(D + 1, 1, Max - D);
-			for (i = Max - D + 1; i <= Max; i++) DisplRec(i);
+			for (i = Max - D + 1; i <= Max; i++) DisplayRecord(i);
 		}
 		else if (D < 0) {
 			D = -D;
 			MoveDispl(Max - D, Max, Max - D);
-			for (i = 1; i <= D; i++) DisplRec(i);
+			for (i = 1; i <= D; i++) DisplayRecord(i);
 		}
 	}
 label3:

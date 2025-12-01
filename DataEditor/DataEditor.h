@@ -82,7 +82,7 @@ private:
     void DisplEmptyFld(EFldD* D, WORD I);
     void Wr1Line(FieldDescr* field, const Record* record) const;
     void DisplFld(EFldD* D, WORD I, uint8_t Color, Record* record);
-    void DisplRec(WORD I);
+    void DisplayRecord(uint16_t i);
     bool LockRec(bool Displ);
     void UnLockRec(EditD* E);
     void NewRecExit();

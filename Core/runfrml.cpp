@@ -29,6 +29,7 @@
 #include "runproc.h"
 #include "wwmix.h"
 #include "../Common/DateTime.h"
+#include "../Common/Record.h"
 
 double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, uint8_t* record)
 {
@@ -405,7 +406,9 @@ double LinkProc(FrmlElemLink* X, uint8_t* record)
 	LinkD* LD = X->LinkLD;
 	FileD* fromFD = LD->FromFD;
 	if (X->LinkFromRec) {
-		if (!LinkUpw(LD, N, false, X->LinkLV->record, &rec)) N = -N;
+		if (!LinkUpw(LD, N, false, X->LinkLV->record->GetRecord(), &rec)) {
+			N = -N;
+		}
 	}
 	else {
 		N = RunInt(fromFD, X->LinkRecFrml, record);
@@ -737,7 +740,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, uint8_t* record)
 	}
 	case _recvarfld: {
 		auto iX = (FrmlElemRecVarField*)X;
-		result = RunBool(iX->File, iX->Frml, iX->record);
+		result = RunBool(iX->File, iX->Frml, iX->record->GetRecord());
 		break;
 	}
 	case _eval: {
@@ -783,7 +786,8 @@ bool RunBool(FileD* file_d, FrmlElem* X, uint8_t* record)
 	}
 	case _lvdeleted: {
 		FrmlElem20* iX = (FrmlElem20*)X;
-		result = iX->LV->FD->DeletedFlag(iX->LV->record);
+		//result = iX->LV->FD->DeletedFlag(iX->LV->record);
+		result = iX->LV->record->IsDeleted();
 		break;
 	}
 	case _trust: {
@@ -955,7 +959,7 @@ label1:
 	}
 	case _recvarfld: {
 		auto iX = (FrmlElemRecVarField*)X;
-		result = RunReal(iX->File, iX->Frml, iX->record);
+		result = RunReal(iX->File, iX->Frml, iX->record->GetRecord());
 		break;
 	}
 	case _eval: {
@@ -1279,7 +1283,7 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 	}
 	case _recvarfld: {
 		FrmlElemRecVarField* iZ = (FrmlElemRecVarField*)Z;
-		TestTFrml(iZ->File, F, iZ->Frml, TF02, TFD02, TF02Pos, iZ->record);
+		TestTFrml(iZ->File, F, iZ->Frml, TF02, TFD02, TF02Pos, iZ->record->GetRecord());
 		break;
 	}
 	}
@@ -1643,7 +1647,7 @@ label1:
 	}
 	case _recvarfld: {
 		auto iX7 = (FrmlElemRecVarField*)X;
-		result = RunString(iX7->File, iX7->Frml, iX7->record);
+		result = RunString(iX7->File, iX7->Frml, iX7->record->GetRecord());
 		break;
 	}
 	case _eval: {
@@ -1908,7 +1912,7 @@ label1:
 	case _keyof: {
 		auto iZ = (FrmlElem20*)X;
 		XString x;
-		x.PackKF(iZ->LV->FD, iZ->PackKey->KFlds, iZ->LV->record);
+		x.PackKF(iZ->LV->FD, iZ->PackKey->KFlds, iZ->LV->record->GetRecord());
 		result = x.S;
 		break;
 	}

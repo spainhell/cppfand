@@ -40,7 +40,7 @@ int32_t GetIndex(Instr_getindex* PD)
 		}
 		case 'r': {
 			if (link_exists) {
-				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
+				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record->GetRecord());
 			}
 			else {
 				//x.PackKF(ld->ToFD, nullptr, lv2->record);
@@ -56,7 +56,7 @@ int32_t GetIndex(Instr_getindex* PD)
 			ld->ToFD->ReadRec(RunInt(ld->ToFD, (FrmlElem*)PD->loc_var2, record->GetRecord()), record);
 
 			if (link_exists) {
-				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
+				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record->GetRecord());
 			}
 			else {
 				//x.PackKF(ld->ToFD, nullptr, lv2->record);

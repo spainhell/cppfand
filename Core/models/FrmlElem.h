@@ -3,6 +3,7 @@
 #include "../constants.h"
 #include "../../fandio/XKey.h"
 
+class Record;
 struct MergOpSt;
 struct InpD;
 class XWKey;
@@ -99,7 +100,7 @@ public:
 	FieldDescr* Field = nullptr; // 7 {_field}
 	FrmlElem* Frml = nullptr;
 	FileD* File = nullptr;
-	uint8_t* record = nullptr; // 7  {Link=nil for param} {_access} {Link=RecPtr} {_recvarfld}
+	Record* record = nullptr; // 7  {Link=nil for param} {_access} {Link=RecPtr} {_recvarfld}
 };
 
 class FrmlElemNewFile : public FrmlElem
