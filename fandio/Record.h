@@ -24,9 +24,17 @@ public:
 	~Record();
 	uint8_t* GetRecord() const;
 	Record* Clone() const;
+	
 	void Reset();
-	void SetRecordUpdateFlag();
+
+	void SetUpdated();
+	void ClearUpdated();
+	bool IsUpdated() const;
+
 	void SetDeleted();
+	void ClearDeleted();
+	bool IsDeleted() const;
+
 	uint8_t* PrepareRecord();
 	void Expand();
 
@@ -36,7 +44,7 @@ private:
 	std::vector<BRS_Value> _values;
 
 	bool _delete_record_on_destroy = true;
-	bool _was_updated = false;
+	bool _updated = false;
 	bool _deleted = false;
 
 	std::vector<BRS_Value> _getValuesFromRecord();

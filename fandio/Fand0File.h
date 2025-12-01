@@ -92,7 +92,7 @@ public:
 
 	void SetRecordUpdateFlag(uint8_t* record);
 	void ClearRecordUpdateFlag(uint8_t* record);
-	bool HasRecordUpdateFlag(uint8_t* record);
+	bool HasRecordUpdateFlag(const uint8_t* record);
 
 	bool DeletedFlag(uint8_t* record);
 	void ClearDeletedFlag(uint8_t* record);

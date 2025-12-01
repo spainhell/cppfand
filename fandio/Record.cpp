@@ -36,7 +36,7 @@ Record* Record::Clone() const
 {
 	Record* clone = new Record(_file_d);
 	clone->_values = this->_values;
-	clone->_was_updated = this->_was_updated;
+	clone->_updated = this->_updated;
 	return clone;
 }
 
@@ -52,14 +52,34 @@ void Record::Reset()
 	}
 }
 
-void Record::SetRecordUpdateFlag()
+void Record::SetUpdated()
 {
-	_was_updated = true;
+	_updated = true;
+}
+
+void Record::ClearUpdated()
+{
+	_updated = false;
+}
+
+bool Record::IsUpdated() const
+{
+	return _updated;
 }
 
 void Record::SetDeleted()
 {
 	_deleted = true;
+}
+
+void Record::ClearDeleted()
+{
+	_deleted = false;
+}
+
+bool Record::IsDeleted() const
+{
+	return _deleted;
 }
 
 uint8_t* Record::PrepareRecord()

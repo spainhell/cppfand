@@ -751,39 +751,34 @@ void Fand0File::Close()
 
 void Fand0File::SetTWorkFlag(uint8_t* record) const
 {
-	uint8_t* p = (uint8_t*)record;
-	p[RecLen] = 1;
+	record[RecLen] = 1;
 }
 
 bool Fand0File::HasTWorkFlag(uint8_t* record) const
 {
-	uint8_t* p = (uint8_t*)record;
-	const bool workFlag = p[RecLen] == 1;
+	const bool workFlag = record[RecLen] == 1;
 	return workFlag;
 }
 
 void Fand0File::SetRecordUpdateFlag(uint8_t* record)
 {
-	uint8_t* p = (uint8_t*)record;
-	p[RecLen + 1] = 1;
+	record[RecLen + 1] = 1;
 }
 
 void Fand0File::ClearRecordUpdateFlag(uint8_t* record)
 {
-	uint8_t* p = (uint8_t*)record;
-	p[RecLen + 1] = 0;
+	record[RecLen + 1] = 0;
 }
 
-bool Fand0File::HasRecordUpdateFlag(uint8_t* record)
+bool Fand0File::HasRecordUpdateFlag(const uint8_t* record)
 {
-	uint8_t* p = (uint8_t*)record;
-	return p[RecLen + 1] == 1;
+	return record[RecLen + 1] == 1;
 }
 
 bool Fand0File::DeletedFlag(uint8_t* record)
 {
 	if (file_type == FandFileType::INDEX) {
-		if (((uint8_t*)record)[0] == 0) return false;
+		if (record[0] == 0) return false;
 		else return true;
 	}
 
@@ -792,17 +787,15 @@ bool Fand0File::DeletedFlag(uint8_t* record)
 
 void Fand0File::ClearDeletedFlag(uint8_t* record)
 {
-	uint8_t* ptr = (uint8_t*)record;
 	if (file_type == FandFileType::INDEX) {
-		ptr[0] = 0;
+		record[0] = 0;
 	}
 }
 
 void Fand0File::SetDeletedFlag(uint8_t* record)
 {
-	uint8_t* ptr = (uint8_t*)record;
 	if (file_type == FandFileType::INDEX) {
-		ptr[0] = 1;
+		record[0] = 1;
 	}
 }
 
