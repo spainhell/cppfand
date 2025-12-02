@@ -728,18 +728,18 @@ void LinkRecProc(Instr_assign* assign_instr)
 	int n = 0;
 	uint8_t* rec = nullptr;
 	LinkD* ld = assign_instr->LinkLD;
-	uint8_t* lr2 = assign_instr->RecLV2->record;
+	Record* lr2 = assign_instr->RecLV2->record;
 
-	ld->ToFD->ClearRecSpace(lr2);
+	ld->ToFD->ClearRecSpace(lr2->GetRecord());
 
-	if (LinkUpw(ld, n, true, assign_instr->RecLV1->record, &rec)) {
+	if (LinkUpw(ld, n, true, assign_instr->RecLV1->record->GetRecord(), &rec)) {
 		LastExitCode = 0;
 	}
 	else {
 		LastExitCode = 1;
 	}
 
-	ld->ToFD->CopyRec(rec, lr2, true);
+	ld->ToFD->CopyRec(rec, lr2->GetRecord(), true);
 
 	delete[] rec; rec = nullptr;
 }
@@ -748,10 +748,9 @@ void ForAllProc(Instr_forall* PD)
 {
 	FileD* FD = nullptr; XKey* Key = nullptr; XKey* k = nullptr; FrmlElem* Bool = nullptr;
 	LinkD* LD = nullptr;
-	//KeyInD* KI = nullptr;
-	uint8_t* cr = nullptr; uint8_t* p = nullptr; uint8_t* lr = nullptr;
+	uint8_t* cr = nullptr; uint8_t* p = nullptr; 
+	Record* lr = nullptr;
 	XScan* xScan = nullptr; LockMode md, md1; XString xx;
-	//KeyFldD* KF = nullptr;
 	LocVar* LVi = nullptr; LocVar* LVr = nullptr;
 	bool lk = false, b = false;
 #ifdef FandSQL
@@ -768,21 +767,20 @@ void ForAllProc(Instr_forall* PD)
 	if (PD->inSQL && !v_files->IsSQLFile) return;
 #endif
 	if (LD != nullptr) {
-		CFile = LD->ToFD;
 		//KF = Link->ToKey->KFlds;
 		switch (PD->COwnerTyp) {
 		case 'r': {
-			CRecPtr = PD->CLV->record;
-			xx.PackKF(CFile, LD->ToKey->KFlds, CRecPtr);
+			xx.PackKF(LD->ToFD, LD->ToKey->KFlds, PD->CLV->record->GetRecord());
 			break;
 		}
 		case 'F': {
-			md = CFile->NewLockMode(RdMode);
-			CRecPtr = CFile->GetRecSpace();
-			CFile->FF->ReadRec(RunInt(CFile, (FrmlElem*)PD->CLV, CRecPtr), CRecPtr);
-			xx.PackKF(CFile, LD->ToKey->KFlds, CRecPtr);
+			md = LD->ToFD->NewLockMode(RdMode);
+			uint8_t* rec = LD->ToFD->GetRecSpace();
+			LD->ToFD->FF->ReadRec(RunInt(LD->ToFD, (FrmlElem*)PD->CLV, rec), rec);
+			xx.PackKF(LD->ToFD, LD->ToKey->KFlds, rec);
 			ReleaseStore(&p);
-			CFile->OldLockMode(md);
+			LD->ToFD->OldLockMode(md);
+			delete[] rec; rec = nullptr;
 			break;
 		}
 		}
@@ -791,10 +789,11 @@ void ForAllProc(Instr_forall* PD)
 #ifdef FandSQL
 	sql = CFile->IsSQLFile;
 #endif
-	md = CFile->NewLockMode(RdMode);
-	cr = CFile->GetRecSpace();
-	CRecPtr = cr; lr = cr;
-	xScan = new XScan(CFile, Key, PD->CKIRoot, true);
+	md = FD->NewLockMode(RdMode);
+	//cr = FD->GetRecSpace();
+	//CRecPtr = cr; lr = cr;
+	lr = new Record(FD);
+	xScan = new XScan(FD, Key, PD->CKIRoot, true);
 #ifdef FandSQL
 	if (PD->inSQL) Scan->ResetSQLTxt(Bool); else
 #endif
@@ -810,24 +809,24 @@ void ForAllProc(Instr_forall* PD)
 			}
 		}
 		else {
-			xScan->Reset(Bool, PD->CSQLFilter, CRecPtr);
+			xScan->Reset(Bool, PD->CSQLFilter, cr);
 		}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
 		if (Key != nullptr) {
 			if (PD->CWIdx) {
-				CFile->FF->ScanSubstWIndex(xScan, Key->KFlds, 'W');
+				FD->FF->ScanSubstWIndex(xScan, Key->KFlds, 'W');
 			}
 			else {
-				CFile->FF->XF->UpdLockCnt++;
+				FD->FF->XF->UpdLockCnt++;
 				lk = true;
 			}
 		}
 	if (LVr != nullptr) {
 		lr = LVr->record;
 	}
-	k = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
+	k = FD->Keys.empty() ? nullptr : FD->Keys[0];
 	b = PD->CProcent;
 	if (b) {
 		RunMsgOn('F', xScan->NRecs);
@@ -838,7 +837,7 @@ label1:
 	else
 #endif
 		CRecPtr = cr;
-	xScan->GetRec(CRecPtr);
+	xScan->GetRec(cr);
 	if (b) {
 		RunMsgN(xScan->IRec);
 	}
@@ -849,33 +848,33 @@ label1:
 		else
 #endif
 			if (LVr != nullptr) {
-				CRecPtr = lr;
-				CFile->ClearRecordUpdateFlag(lr);
+				//CRecPtr = lr;
+				FD->ClearRecordUpdateFlag(lr->GetRecord());
 				//CFile->DelTFlds(lr);
-				CFile->CopyRec(cr, lr, true);
+				FD->CopyRec(cr, lr->GetRecord(), true);
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr; // metoda LocVarAd byla odstranena z access.cpp
 		if (LVi != nullptr) {
 			LVi->R = xScan->RecNr;
 		}
 		RunInstr(PD->CInstr);
-		CFile = FD;
-		CRecPtr = lr;
+		//CFile = FD;
+		//CRecPtr = lr;
 #ifdef FandSQL
 		if (sql) {
 			if (HasUpdFlag && !PD->inSQL) {
-				if (k = nullptr) CFileError(650); Strm1->UpdateXRec(k, @xx, CFile->Add != nullptr);
+				if (k = nullptr) CFileError(650); Strm1->UpdateXRec(k, @xx, FD->Add != nullptr);
 			}
 		}
 		else
 #endif
 		{
-			CFile->OpenCreateF(CPath, Shared);
-			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasRecordUpdateFlag(CRecPtr)) {
-				md1 = CFile->NewLockMode(WrMode);
-				CFile->CopyRec((uint8_t*)lr, (uint8_t*)cr, false);
-				UpdRec(CFile, xScan->RecNr, true, cr);
-				CFile->OldLockMode(md1);
+			FD->OpenCreateF(CPath, Shared);
+			if ((LVr != nullptr) && (LVi == nullptr) && FD->HasRecordUpdateFlag(lr->GetRecord())) {
+				md1 = FD->NewLockMode(WrMode);
+				FD->CopyRec(lr->GetRecord(), cr, false);
+				UpdRec(FD, xScan->RecNr, true, cr);
+				FD->OldLockMode(md1);
 			}
 		}
 		if (!(ExitP || BreakP)) {
@@ -883,7 +882,7 @@ label1:
 #ifdef FandSQL
 				!sql &&
 #endif 
-				(Key == nullptr) && (xScan->NRecs > CFile->FF->NRecs)) {
+				(Key == nullptr) && (xScan->NRecs > FD->FF->NRecs)) {
 				xScan->IRec--;
 				xScan->NRecs--;
 			}
@@ -891,10 +890,10 @@ label1:
 		}
 	}
 	if (lk) {
-		CFile->FF->XF->UpdLockCnt--;
+		FD->FF->XF->UpdLockCnt--;
 	}
 	xScan->Close();
-	CFile->OldLockMode(md);
+	FD->OldLockMode(md);
 	if (b) {
 		RunMsgOff();
 	}
@@ -1748,11 +1747,11 @@ void CallProcedure(Instr_proc* PD)
 	while (it0 != PD->loc_var_block.variables.end()) {
 		if ((*it0)->f_typ == 'r') {
 			FileD* fd = (*it0)->FD;
-			uint8_t* record = fd->GetRecSpace();
-			fd->SetTWorkFlag(record);
-			fd->ZeroAllFlds(record, false);
-			fd->ClearDeletedFlag(record);
-			(*it0)->record = record;
+			Record* rec = new Record(fd); //->GetRecSpace();
+			fd->SetTWorkFlag(rec->GetRecord());
+			fd->ZeroAllFlds(rec->GetRecord(), false);
+			fd->ClearDeletedFlag(rec->GetRecord());
+			(*it0)->record = rec;
 		}
 		else if ((*it0)->f_typ == 'f') {
 			// dynamic file definition

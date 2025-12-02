@@ -418,11 +418,11 @@ double LinkProc(FrmlElemLink* X, uint8_t* record)
 			fromFD->RunErrorM(md);
 			RunError(609);
 		}
-		uint8_t* newRecord = fromFD->GetRecSpace();
-		fromFD->FF->ReadRec(N, newRecord);
+		Record* newRecord = new Record(fromFD); // ->GetRecSpace();
+		fromFD->ReadRec(N, newRecord);
 		fromFD->OldLockMode(md);
-		if (!LinkUpw(LD, N, false, newRecord, &rec)) N = -N;
-		delete[] newRecord; newRecord = nullptr;
+		if (!LinkUpw(LD, N, false, newRecord->GetRecord(), &rec)) N = -N;
+		delete newRecord; newRecord = nullptr;
 	}
 
 	delete[] rec; rec = nullptr;
