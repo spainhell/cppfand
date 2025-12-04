@@ -5,6 +5,16 @@
 
 struct KeyInD;
 
+enum class ScanMode : unsigned char
+{
+	Sequential = 0,      // Sequential scan (no index)
+	Index = 1,           // Index scan (ordered by key)
+	Interval = 2,        // Interval scan (key ranges)
+	WorkingIndex = 3,    // Working index scan
+	SQL = 4,             // SQL scan
+	LocalVariable = 5    // Local variable record
+};
+
 class XScan
 {
 public:
@@ -13,7 +23,7 @@ public:
 	FileD* FD = nullptr;
 	XKey* Key = nullptr;
 	FrmlElem* Bool = nullptr;
-	unsigned char Kind = 0;
+	ScanMode Kind = ScanMode::Sequential;
 	int NRecs = 0, IRec = 0, RecNr = 0;
 	bool hasSQLFilter = false, eof = false;
 	void Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record);

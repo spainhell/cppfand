@@ -1087,7 +1087,7 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ
 	unsigned short n = 0;
 	XWKey* k2 = new XWKey(_parent);
 
-	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) {
+	if (Scan->FD->IsSQLFile && (Scan->Kind == ScanMode::WorkingIndex)) {
 		/* F6-autoreport & sort */
 		XKey* k = Scan->Key;
 		n = k->IndexLen;

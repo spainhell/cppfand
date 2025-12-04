@@ -39,7 +39,7 @@ void XWorkFile::Main(char Typ, uint8_t* record)
 		xxPage->IsLeaf = true;
 		XKey* k = xScan->Key;
 
-		if (xScan->Kind == 1 &&
+		if (xScan->Kind == ScanMode::Index &&
 #ifdef FandSQL
 			!xScan->v_files->IsSQLFile &&
 #endif
@@ -429,5 +429,6 @@ void XWorkFile::PutFreeNr(int N)
 	NFreeNr++;
 	FreeNr[NFreeNr] = N;
 }
+
 
 

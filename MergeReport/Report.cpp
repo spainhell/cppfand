@@ -1874,7 +1874,7 @@ void Report::OpenInp()
 	NRecsAll = 0;
 	for (short i = 1; i <= MaxIi; i++) {
 		CFile = IDA[i]->Scan->FD;
-		if (IDA[i]->Scan->Kind == 5) IDA[i]->Scan->SeekRec(0);
+		if (IDA[i]->Scan->Kind == ScanMode::LocalVariable) IDA[i]->Scan->SeekRec(0);
 		else {
 			IDA[i]->Md = CFile->NewLockMode(RdMode);
 			IDA[i]->Scan->ResetSort(IDA[i]->SK, IDA[i]->Bool, IDA[i]->Md, IDA[i]->SQLFilter, CRecPtr);
@@ -1886,7 +1886,7 @@ void Report::OpenInp()
 void Report::CloseInp()
 {
 	for (WORD i = 1; i <= MaxIi; i++) {
-		if (IDA[i]->Scan->Kind != 5) {
+		if (IDA[i]->Scan->Kind != ScanMode::LocalVariable) {
 			IDA[i]->Scan->Close();
 			CFile->ClearRecSpace(IDA[i]->ForwRecPtr);
 			CFile->OldLockMode(IDA[i]->Md);
