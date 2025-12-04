@@ -748,7 +748,7 @@ void ForAllProc(Instr_forall* PD)
 {
 	FileD* FD = nullptr; XKey* Key = nullptr; XKey* k = nullptr; FrmlElem* Bool = nullptr;
 	LinkD* LD = nullptr;
-	uint8_t* cr = nullptr; uint8_t* p = nullptr; 
+	Record* cr = nullptr; uint8_t* p = nullptr; 
 	Record* lr = nullptr;
 	XScan* xScan = nullptr; LockMode md, md1; XString xx;
 	LocVar* LVi = nullptr; LocVar* LVr = nullptr;
@@ -775,12 +775,12 @@ void ForAllProc(Instr_forall* PD)
 		}
 		case 'F': {
 			md = LD->ToFD->NewLockMode(RdMode);
-			uint8_t* rec = LD->ToFD->GetRecSpace();
-			LD->ToFD->FF->ReadRec(RunInt(LD->ToFD, (FrmlElem*)PD->CLV, rec), rec);
-			xx.PackKF(LD->ToFD, LD->ToKey->KFlds, rec);
+			Record* rec = new Record(LD->ToFD); // ->GetRecSpace();
+			LD->ToFD->ReadRec(RunInt(LD->ToFD, (FrmlElem*)PD->CLV, rec->GetRecord()), rec);
+			xx.PackKF(LD->ToFD, LD->ToKey->KFlds, rec->GetRecord());
 			ReleaseStore(&p);
 			LD->ToFD->OldLockMode(md);
-			delete[] rec; rec = nullptr;
+			delete rec; rec = nullptr;
 			break;
 		}
 		}
@@ -790,7 +790,7 @@ void ForAllProc(Instr_forall* PD)
 	sql = CFile->IsSQLFile;
 #endif
 	md = FD->NewLockMode(RdMode);
-	//cr = FD->GetRecSpace();
+	cr = new Record(FD); // ->GetRecSpace();
 	//CRecPtr = cr; lr = cr;
 	lr = new Record(FD);
 	xScan = new XScan(FD, Key, PD->CKIRoot, true);
@@ -809,7 +809,7 @@ void ForAllProc(Instr_forall* PD)
 			}
 		}
 		else {
-			xScan->Reset(Bool, PD->CSQLFilter, cr);
+			xScan->Reset(Bool, PD->CSQLFilter, cr->GetRecord());
 		}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
@@ -836,8 +836,8 @@ label1:
 	if (sql) CRecPtr = lr;
 	else
 #endif
-		CRecPtr = cr;
-	xScan->GetRec(cr);
+		//CRecPtr = cr;
+	xScan->GetRec(cr->GetRecord());
 	if (b) {
 		RunMsgN(xScan->IRec);
 	}
@@ -851,7 +851,7 @@ label1:
 				//CRecPtr = lr;
 				FD->ClearRecordUpdateFlag(lr->GetRecord());
 				//CFile->DelTFlds(lr);
-				FD->CopyRec(cr, lr->GetRecord(), true);
+				FD->CopyRec(cr->GetRecord(), lr->GetRecord(), true);
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr; // metoda LocVarAd byla odstranena z access.cpp
 		if (LVi != nullptr) {
@@ -872,8 +872,8 @@ label1:
 			FD->OpenCreateF(CPath, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && FD->HasRecordUpdateFlag(lr->GetRecord())) {
 				md1 = FD->NewLockMode(WrMode);
-				FD->CopyRec(lr->GetRecord(), cr, false);
-				UpdRec(FD, xScan->RecNr, true, cr);
+				FD->CopyRec(lr->GetRecord(), cr->GetRecord(), false);
+				UpdRec(FD, xScan->RecNr, true, cr->GetRecord());
 				FD->OldLockMode(md1);
 			}
 		}
@@ -1817,7 +1817,7 @@ void CallProcedure(Instr_proc* PD)
 			case 'r': {
 				LocVar* loc_var = *it0;
 				loc_var->FD->ClearRecSpace(loc_var->record->GetRecord());
-				delete[] loc_var->record;
+				delete loc_var->record;
 				loc_var->record = nullptr;
 				break;
 			}

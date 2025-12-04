@@ -33,11 +33,6 @@ void CompKIFrml(FileD* file_d, XKey* K, std::vector<KeyInD*>& KI, bool AddFF, ui
 	}
 }
 
-XScan::~XScan()
-{
-	delete page_;
-}
-
 XScan::XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT)
 {
 	FD = aFD;
@@ -60,6 +55,11 @@ XScan::XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT)
 			}
 		}
 	}
+}
+
+XScan::~XScan()
+{
+	delete page_;
 }
 
 void XScan::Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record)

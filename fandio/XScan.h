@@ -8,6 +8,7 @@ struct KeyInD;
 class XScan
 {
 public:
+	XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT);
 	~XScan();
 	FileD* FD = nullptr;
 	XKey* Key = nullptr;
@@ -15,7 +16,6 @@ public:
 	unsigned char Kind = 0;
 	int NRecs = 0, IRec = 0, RecNr = 0;
 	bool hasSQLFilter = false, eof = false;
-	XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT);
 	void Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record);
 	void ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, uint8_t* record);
 	void SubstWIndex(XWKey* WK);
