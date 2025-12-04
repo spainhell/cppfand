@@ -22,6 +22,7 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
+#include "../Common/Record.h"
 #include "../Drivers/constants.h"
 
 
@@ -311,15 +312,14 @@ void ExportTxt(CopyD* CD)
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
 		if (CD->HdFD != nullptr) {
 			int n = 0;
-			uint8_t* rec = nullptr;
-			LinkLastRec(CD->HdFD, n, true, &rec);
-			pstring s = CFile->loadS(CD->HdF, rec);
+			Record* rec = CD->HdFD->LinkLastRec(n);
+			pstring s = CFile->loadS(CD->HdF, rec->GetRecord());
 			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);
 			F2->WrString("\r\n");
-			CFile->ClearRecSpace(rec);
-			delete[] rec; rec = nullptr;
+			CFile->ClearRecSpace(rec->GetRecord());
+			delete rec; rec = nullptr;
 		}
 		CFile = CD->FD1;
 		CRecPtr = CD->FD1->GetRecSpace();

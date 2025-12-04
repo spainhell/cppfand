@@ -6,6 +6,7 @@
 #include "GlobalVariables.h"
 #include "../fandio/KeyFldD.h"
 #include "../Common/LinkD.h"
+#include "../Common/Record.h"
 #include "obaseww.h"
 #include "runfrml.h"
 #include "../fandio/Fand0File.h"
@@ -23,36 +24,36 @@ void TestCPathError()
 	}
 }
 
-bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord)
-{
-	*newRecord = file_d->GetRecSpace();
-	LockMode md = file_d->NewLockMode(RdMode);
-	auto result = true;
-#ifdef FandSQL
-	if (file_d->IsSQLFile) {
-		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1;
-		else {
-			file_d->ZeroAllFlds(*newRecord, false);
-			result = false;
-			N = 1;
-		}
-	}
-	else
-#endif
-	{
-		N = file_d->FF->NRecs;
-		if (N == 0) {
-			file_d->ZeroAllFlds(*newRecord, false);
-			result = false;
-			N = 1;
-		}
-		else {
-			file_d->FF->ReadRec(N, *newRecord);
-		}
-	}
-	file_d->OldLockMode(md);
-	return result;
-}
+//bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord)
+//{
+//	*newRecord = file_d->GetRecSpace();
+//	LockMode md = file_d->NewLockMode(RdMode);
+//	auto result = true;
+//#ifdef FandSQL
+//	if (file_d->IsSQLFile) {
+//		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1;
+//		else {
+//			file_d->ZeroAllFlds(*newRecord, false);
+//			result = false;
+//			N = 1;
+//		}
+//	}
+//	else
+//#endif
+//	{
+//		N = file_d->FF->NRecs;
+//		if (N == 0) {
+//			file_d->ZeroAllFlds(*newRecord, false);
+//			result = false;
+//			N = 1;
+//		}
+//		else {
+//			file_d->FF->ReadRec(N, *newRecord);
+//		}
+//	}
+//	file_d->OldLockMode(md);
+//	return result;
+//}
 
 // ulozi hodnotu parametru do souboru
 void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add)
@@ -72,17 +73,21 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 	{
 		int n = 0;
 		LockMode md = file_d->NewLockMode(WrMode);
-		uint8_t* rec = nullptr;
+		
+		Record* rec = file_d->LinkLastRec(n);
 
-		if (!LinkLastRec(file_d, n, true, &rec)) {
+		if (rec == nullptr)
+		{
+			// add a new empty record to the file
 			file_d->IncNRecs(1);
-			file_d->FF->WriteRec(n, rec);
+			rec = new Record(file_d);
+			file_d->WriteRec(n, rec);
 		}
 
-		AssgnFrml(file_d, rec, field_d, frml, true, add);
-		file_d->FF->WriteRec(n, rec);
+		AssgnFrml(file_d, rec->GetRecord(), field_d, frml, true, add);
+		file_d->WriteRec(n, rec);
 		file_d->OldLockMode(md);
-		delete[] rec; rec = nullptr;
+		delete rec; rec = nullptr;
 	}
 }
 

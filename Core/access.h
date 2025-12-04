@@ -31,7 +31,8 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d = nullptr, WORD i = 0);
 std::string TranslateOrd(std::string text);
 
 bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord);
-bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord);
+//bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord);
+
 
 void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add);
 

@@ -2179,6 +2179,31 @@ std::string FileD::SetPathForH(HANDLE handle)
 	return CPath;
 }
 
+Record* FileD::LinkLastRec(int& n)
+{
+	Record* result = nullptr;
+	LockMode md = NewLockMode(RdMode);
+#ifdef FandSQL
+	if (IsSQLFile) {
+		strm1->SelectXRec(nullptr, nullptr, _equ, withT);
+		n = 1;
+	}
+	else
+#endif
+	{
+		n = FF->NRecs;
+		if (n == 0) {
+			n = 1;
+		}
+		else {
+			result = new Record(this);
+			ReadRec(n, result);
+		}
+	}
+	OldLockMode(md);
+	return result;
+}
+
 void FileD::lock_excl_and_write_prefix()
 {
 	if (IsShared() && (GetLMode() < ExclMode)) {

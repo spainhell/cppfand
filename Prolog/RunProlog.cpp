@@ -226,7 +226,7 @@ std::string RunProlog::ReadFromParamFile(FileD* file_d, FieldDescr* field_d)
 
 	LockMode lm = file_d->NewLockMode(RdMode);
 	uint8_t* newRecord = nullptr;
-	LinkLastRec(file_d, RecNo, true, &newRecord);
+	//LinkLastRec(file_d, RecNo, true, &newRecord);
 
 	std::string result = file_d->loadS(field_d, newRecord);
 
@@ -242,7 +242,7 @@ void RunProlog::SaveToParamFile(FileD* file_d, FieldDescr* field_d, std::string 
 	int n = 0;
 	LockMode md = file_d->NewLockMode(WrMode);
 	uint8_t* rec = nullptr;
-	LinkLastRec(file_d, n, true, &rec);
+	//LinkLastRec(file_d, n, true, &rec);
 
 	file_d->FF->DelTFld(field_d, rec);
 	file_d->saveS(field_d, value, rec);

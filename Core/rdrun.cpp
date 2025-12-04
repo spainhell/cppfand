@@ -85,30 +85,29 @@ bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, uint8_t* record, 
 		SetMsgPar(ld->RoleName);
 	}
 	else {
-		if (!LinkLastRec(add_d->File2, n, false, linkedRecord)
-#ifdef FandSQL
-			&& !file_d->IsSQLFile
-#endif
-			) {
+		// cond. for FandSQL removed
+		Record* r = add_d->File2->LinkLastRec(n);
+		if (r == nullptr) {
+			r = new Record(add_d->File2);
 			file_d->IncNRecs(1);
-			file_d->FF->WriteRec(1, *linkedRecord);
+			file_d->WriteRec(1, r);
+			*linkedRecord = add_d->File2->GetRecSpace();
+			memcpy(*linkedRecord, r->GetRecord(), add_d->File2->GetRecordSize());
+			delete r; r = nullptr;
 		}
+
 		return result;
 	}
 	kind2 = '+';
 	if ((add_d->Create == 2) || (add_d->Create == 1) && PromptYN(132)) {
-#ifdef FandSQL
-		if (file_d->IsSQLFile) Strm1->InsertRec(false, true) else
-#endif
-		{
-			file_d->ClearDeletedFlag(*linkedRecord);
-			if ((ld != nullptr) && (file_d->FF->file_type == FandFileType::INDEX)) {
-				CrIndRec(file_d, *linkedRecord);
-				n = file_d->FF->NRecs;
-			}
-			else {
-				file_d->CreateRec(n, *linkedRecord);
-			}
+		// cond. for FandSQL removed
+		file_d->ClearDeletedFlag(*linkedRecord);
+		if ((ld != nullptr) && (file_d->FF->file_type == FandFileType::INDEX)) {
+			CrIndRec(file_d, *linkedRecord);
+			n = file_d->FF->NRecs;
+		}
+		else {
+			file_d->CreateRec(n, *linkedRecord);
 		}
 		return result;
 	}
@@ -195,7 +194,7 @@ bool Assign(FileD* file_d, Additive* add_d, uint8_t* record)
 		break;
 	}
 	}
-	
+
 	uint8_t* linkedRecord = nullptr;
 
 	if (!Link(file_d, add_d, n2, kind2, record, &linkedRecord)) {
