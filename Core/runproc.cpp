@@ -1695,29 +1695,30 @@ void CallProcedure(Instr_proc* PD)
 				gc->input_pos = 0;
 				gc->Error(119);
 			}
-			(*it0)->record = static_cast<uint8_t*>(PD->TArg[i].RecPtr);
+			(*it0)->record = PD->TArg[i].record;
 			break;
 		}
 		case 'f': {
-			if (PD->TArg[i].RecPtr != nullptr) {
+			FileD* proc_file = nullptr;
+			if (PD->TArg[i].record != nullptr) {
 				const auto state = gc->SaveCompState();
 				std::string code = RunString(CFile, PD->TArg[i].TxtFrml, CRecPtr);
 				gc->SetInpStdStr(code, true);
-				CFile = RdFileD(PD->TArg[i].Name, DataFileType::FandFile, FandFileType::FAND16, "$");
-				CRdb->v_files.push_back(CFile);
+				proc_file = RdFileD(PD->TArg[i].Name, DataFileType::FandFile, FandFileType::FAND16, "$");
+				CRdb->v_files.push_back(proc_file);
 				gc->RestoreCompState(state);
 			}
 			else {
-				CFile = PD->TArg[i].FD;
+				proc_file = PD->TArg[i].FD;
 			}
 			it1 = it0;
 			while (it1 != PD->loc_var_block.variables.end()) {
 				if (((*it1)->f_typ == 'i' || (*it1)->f_typ == 'r') && ((*it1)->FD == (*it0)->FD)) {
-					(*it1)->FD = CFile;
+					(*it1)->FD = proc_file;
 				}
 				++it1;
 			}
-			(*it0)->FD = CFile;
+			(*it0)->FD = proc_file;
 			FDLocVarAllowed = true;
 			break;
 		}

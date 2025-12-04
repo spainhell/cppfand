@@ -4789,7 +4789,7 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 
 	// upravime argumenty exit procedury
 	ExitProc->TArg[ExitProc->N - 1].FD = file_d_;
-	ExitProc->TArg[ExitProc->N - 1].RecPtr = current_rec_->GetRecord();
+	ExitProc->TArg[ExitProc->N - 1].record = current_rec_;
 
 	// some methods use RunString "_edfile" to identify caller
 	EditDRoot = edit_;

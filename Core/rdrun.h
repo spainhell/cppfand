@@ -145,7 +145,7 @@ struct TypAndFrml
 	FrmlElem* Frml = nullptr; 
 	bool FromProlog = false, IsRetPar = false;
 	FileD* FD = nullptr; 
-	void* RecPtr = nullptr;
+	Record* record = nullptr;
 	FrmlElem* TxtFrml = nullptr; 
 	std::string Name; // if RecPtr != nullptr
 };

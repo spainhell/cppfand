@@ -1046,7 +1046,7 @@ Instr_proc* RdProcArg(Compiler* compiler, char Caller)
 			compiler->RdLex();
 			TArg[N].FTyp = LV->f_typ;
 			TArg[N].FD = LV->FD;
-			TArg[N].RecPtr = LV->record;
+			TArg[N].record = LV->record;
 		}
 		else if (compiler->Lexem == '@') {
 			compiler->RdLex();
