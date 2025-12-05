@@ -1284,7 +1284,9 @@ bool RdViewOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 			RdKeyList(compiler, X);
 			if (compiler->IsKeyWord("QUIT")) X->Typ = 'Q';
 			else if (compiler->IsKeyWord("REPORT")) {
-				if (X->AtWrRec || (EO->LVRecPtr != nullptr)) compiler->OldError(144);
+				if (X->AtWrRec || (EO->LvRec != nullptr)) {
+					compiler->OldError(144);
+				}
 				compiler->Accept('(');
 				X->Typ = 'R';
 				RO = compiler->GetRprtOpt();
@@ -1316,7 +1318,7 @@ bool RdViewOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 		}
 		compiler->Accept(')');
 	}
-	else if (EO->LVRecPtr != nullptr) {
+	else if (EO->LvRec != nullptr) {
 		result = false;
 	}
 	else if (compiler->IsOpt("COND")) {
@@ -1671,7 +1673,7 @@ Instr_edit* RdEditCall(Compiler* compiler)
 	instr_edit->options.UserSelFlds = true;
 
 	if (IsRecVar(compiler, &lv)) {
-		instr_edit->options.LVRecPtr = lv->record;
+		instr_edit->options.LvRec = lv->record;
 		instr_edit->EditFD = lv->FD;
 	}
 	else {
@@ -1709,7 +1711,7 @@ void RdEditOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 	if (compiler->IsOpt("FIELD")) {
 		EO->StartFieldZ = compiler->RdStrFrml(nullptr);
 	}
-	else if (EO->LVRecPtr != nullptr) {
+	else if (EO->LvRec != nullptr) {
 		compiler->Error(125);
 	}
 	else if (compiler->IsOpt("OWNER")) {

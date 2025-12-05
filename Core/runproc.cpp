@@ -1664,7 +1664,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = gc->input_string;
-	if (srcCode.find("tuto sestavu vypnete") != std::string::npos) {
+	if (srcCode.find("pgm:='(VetaD:record of DENIK)'+ 'begin '+ 'edit(VetaD,'+cond(") != std::string::npos) {
 		printf("");
 	}
 #endif

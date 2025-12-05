@@ -20,6 +20,7 @@
 #include "../Drivers/constants.h"
 #include "access.h"
 #include "../Common/Coding.h"
+#include "../Common/Record.h"
 #include "Compiler.h"
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
@@ -1788,7 +1789,8 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 		EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
 
 		EditReader* reader = new EditReader();
-		reader->NewEditD(Chpt, EO, static_cast<uint8_t*>(CRecPtr));
+		Record* temp_rec = new Record(Chpt, (uint8_t*)CRecPtr);
+		reader->NewEditD(Chpt, EO, temp_rec);
 		EditD* edit = reader->GetEditD();
 		edit->params_->MustCheck = true; /*ChptTyp*/
 		if (CRdb->Encrypted) {

@@ -61,7 +61,9 @@ DataEditor::DataEditor(FileD* file_d)
 DataEditor::~DataEditor()
 {
 	delete original_rec_;
-	delete current_rec_;
+	if (!current_rec_is_ref) {
+		delete current_rec_;
+	}
 }
 
 FileD* DataEditor::GetFileD()
@@ -1186,9 +1188,16 @@ void DataEditor::ReadParamsFromE(const EditD* edit)
 	if (VK == nullptr) params_->OnlySearch = false;
 
 	file_d_ = edit->FD;
-	//record_ = edit->NewRec->GetRecord();
-	delete current_rec_; 
-	current_rec_ = new Record(file_d_);
+	
+	delete current_rec_; current_rec_ = nullptr;
+	if (edit->LvRec != nullptr) {
+		current_rec_ = edit->LvRec;
+		current_rec_is_ref = true;
+	}
+	else {
+		current_rec_ = new Record(file_d_);
+	}
+
 	delete original_rec_;
 	original_rec_ = current_rec_->Clone();
 
@@ -2628,7 +2637,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 
 	if (data_editor2->SelFldsForEO(EO, nullptr)) {
 		EditReader* reader = new EditReader();
-		reader->NewEditD(LD->ToFD, EO, data_editor2->current_rec_->GetRecord());
+		reader->NewEditD(LD->ToFD, EO, data_editor2->current_rec_);
 		data_editor2->edit_ = reader->GetEditD();
 		data_editor2->edit_->ShiftF7_link = LkD;
 		data_editor2->edit_->ShiftF7_caller = edit_;
@@ -4397,7 +4406,7 @@ void DataEditor::ImbeddEdit()
 
 		if (data_editor2->SelFldsForEO(EO, nullptr)) {
 			std::unique_ptr<EditReader> reader = std::make_unique<EditReader>();
-			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->current_rec_->GetRecord());
+			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->current_rec_);
 			data_editor2->edit_ = reader->GetEditD();
 			if (data_editor2->OpenEditWw()) {
 				data_editor2->RunEdit(nullptr, Brk);
@@ -4487,7 +4496,7 @@ void DataEditor::DownEdit()
 			EO->DownLD = LD;
 			EO->DownRecord = new Record(file_d_);
 			EditReader* reader = new EditReader();
-			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->current_rec_->GetRecord());
+			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->current_rec_);
 			data_editor2->edit_ = reader->GetEditD();
 			if (data_editor2->OpenEditWw()) {
 				WORD Brk;
@@ -5696,7 +5705,7 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 		IsCompileErr = false;
 
 		try {
-			reader->NewEditD(FD, EO, current_rec_->GetRecord());
+			reader->NewEditD(FD, EO, current_rec_);
 		}
 		catch (std::exception& e) {
 			// TODO: log error
@@ -5713,7 +5722,7 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 		//PopEdit();
 		return;
 	}
-	reader->NewEditD(FD, EO, current_rec_->GetRecord());
+	reader->NewEditD(FD, EO, current_rec_);
 
 	delete edit_;
 	edit_ = reader->GetEditD();

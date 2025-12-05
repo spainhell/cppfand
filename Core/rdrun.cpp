@@ -87,14 +87,16 @@ bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, uint8_t* record, 
 	else {
 		// cond. for FandSQL removed
 		Record* r = add_d->File2->LinkLastRec(n);
+		
 		if (r == nullptr) {
 			r = new Record(add_d->File2);
 			file_d->IncNRecs(1);
 			file_d->WriteRec(1, r);
-			*linkedRecord = add_d->File2->GetRecSpace();
-			memcpy(*linkedRecord, r->GetRecord(), add_d->File2->GetRecordSize());
-			delete r; r = nullptr;
 		}
+
+		*linkedRecord = add_d->File2->GetRecSpace();
+		memcpy(*linkedRecord, r->GetRecord(), add_d->File2->GetRecordSize());
+		delete r; r = nullptr;
 
 		return result;
 	}

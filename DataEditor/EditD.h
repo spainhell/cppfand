@@ -45,7 +45,7 @@ public:
 	LinkD* DownLD = nullptr;                     /*          "          */
 	LocVar* DownLV = nullptr;                    /*          "          */
 	Record* DownRecord;							 /*          "          */
-	void* LVRecPtr;								 /*          "          */
+	Record* LvRec;								 /*          "          */
 	std::vector<KeyInD*> KIRoot;                 /*          "          */
 	bool SQLFilter = false;                      /*          "          */
 	XWKey* SelKey = nullptr;                     /*          "          */

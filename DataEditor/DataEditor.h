@@ -62,7 +62,8 @@ private:
     //uint8_t* original_record_ = nullptr;
     Record* current_rec_ = nullptr;
     Record* original_rec_ = nullptr;
-    std::unique_ptr<DataEditorParams> params_;
+    bool current_rec_is_ref = false;    // current record is owned by another object (will not be deleted in destructor)
+	std::unique_ptr<DataEditorParams> params_;
     EditD* edit_ = nullptr;
 
     std::vector<EFldD*>::iterator FirstEmptyFld;

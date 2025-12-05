@@ -409,7 +409,7 @@ std::string EditReader::GetStr_E(FrmlElem* Z, uint8_t* record)
 	}
 }
 
-void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
+void EditReader::NewEditD(FileD* file_d, EditOpt* EO, Record* rec)
 {
 	file_d_ = file_d;
 	edit_->FD = file_d;
@@ -435,23 +435,23 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	edit_->OwnerTyp = EO->OwnerTyp;
 	edit_->DownLD = EO->DownLD;
 	edit_->DownLV = EO->DownLV;
-	edit_->DownRecord = EO->DownRecord == nullptr ? nullptr : EO->DownRecord->Clone();
-	edit_->LVRecPtr = EO->LVRecPtr;
+	edit_->DownRecord = EO->DownRecord == nullptr ? nullptr : EO->DownRecord->Clone(); // TODO: opravdu clone? neni to hodnota predana odkazem do procedury?
+	edit_->LvRec = EO->LvRec;
 	edit_->KIRoot = EO->KIRoot;
 	edit_->SQLFilter = EO->SQLFilter;
 	edit_->SelKey = static_cast<XWKey*>(EO->SelKey);
 	//rectxt
 
-	edit_->Attr = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZAttr, screen.colors.dTxt, rec));
-	edit_->dNorm = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdNorm, screen.colors.dNorm, rec));
-	edit_->dHiLi = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdHiLi, screen.colors.dHili, rec));
-	edit_->dSubSet = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSubset, screen.colors.dSubset, rec));
-	edit_->dDel = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdDel, screen.colors.dDeleted, rec));
-	edit_->dTab = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdTab, edit_->Attr | 0x08, rec));
-	edit_->dSelect = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSelect, screen.colors.dSelect, rec));
-	edit_->Top = RunString(file_d, EO->Top, rec);
+	edit_->Attr = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZAttr, screen.colors.dTxt, rec->GetRecord()));
+	edit_->dNorm = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdNorm, screen.colors.dNorm, rec->GetRecord()));
+	edit_->dHiLi = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdHiLi, screen.colors.dHili, rec->GetRecord()));
+	edit_->dSubSet = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSubset, screen.colors.dSubset, rec->GetRecord()));
+	edit_->dDel = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdDel, screen.colors.dDeleted, rec->GetRecord()));
+	edit_->dTab = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdTab, edit_->Attr | 0x08, rec->GetRecord()));
+	edit_->dSelect = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSelect, screen.colors.dSelect, rec->GetRecord()));
+	edit_->Top = RunString(file_d, EO->Top, rec->GetRecord());
 	if (EO->Mode != nullptr) {
-		std::string mode = RunString(file_d, EO->Mode, rec);
+		std::string mode = RunString(file_d, EO->Mode, rec->GetRecord());
 		int result = edit_->params_->SetFromString(mode, false);
 		if (result != 0) {
 			gc->Error(92);
@@ -463,7 +463,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		edit_->params_->OnlyTabs = true;
 		edit_->params_->OnlySearch = false;
 	}
-	if (edit_->LVRecPtr != nullptr) {
+	if (edit_->LvRec != nullptr) {
 		edit_->params_->EdRecVar = true;
 		edit_->params_->Only1Record = true;
 	}
@@ -471,7 +471,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		edit_->params_->OnlySearch = false;
 	}
 	if (EO->W.C1 != nullptr) {
-		RunWFrml(file_d, EO->W, edit_->WFlags, edit_->V, rec);
+		RunWFrml(file_d, EO->W, edit_->WFlags, edit_->V, rec->GetRecord());
 		edit_->WwPart = true;
 		if ((edit_->WFlags & WShadow) != 0) {
 			edit_->ShdwX = MinW(2, TxtCols - edit_->V.C2);
@@ -547,7 +547,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 			switch (edit_->OwnerTyp) {
 			case 'r': {
 				edit_->DownRecord = edit_->DownLV->record == nullptr 
-					? nullptr : edit_->DownLV->record->Clone(); // new Record(nullptr, edit_->DownLV->record);
+					? nullptr : edit_->DownLV->record->Clone(); // TODO: ??? // new Record(nullptr, edit_->DownLV->record);
 				break;
 			}
 			case 'F': {

@@ -35,8 +35,10 @@ Record::~Record()
 Record* Record::Clone() const
 {
 	Record* clone = new Record(_file_d);
+	memcpy(clone->_buffer, this->_buffer, this->_file_d->GetRecLen());
 	clone->_values = this->_values;
 	clone->_updated = this->_updated;
+	clone->_deleted = this->_deleted;
 	return clone;
 }
 

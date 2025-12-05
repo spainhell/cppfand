@@ -16,7 +16,7 @@ class EditReader
 {
 public:
 	EditReader();
-	void NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec); // r158
+	void NewEditD(FileD* file_d, EditOpt* EO, Record* rec); // r158
 	void RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos);
 	EditD* GetEditD();
 
