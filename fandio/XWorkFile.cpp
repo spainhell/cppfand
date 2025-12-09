@@ -25,7 +25,7 @@ XWorkFile::~XWorkFile()
 	FlushF(Handle, HandleError);
 }
 
-void XWorkFile::Main(char Typ, uint8_t* record)
+void XWorkFile::Main(OperationType oper_type, uint8_t* record)
 {
 	xPage = new XPage();
 	nextXPage = xwFile->NewPage(xPage);
@@ -44,7 +44,7 @@ void XWorkFile::Main(char Typ, uint8_t* record)
 			!xScan->v_files->IsSQLFile &&
 #endif
 			(xScan->Bool == nullptr && (xKey->KFlds.empty() || KeyFldD::EquKFlds(k->KFlds, xKey->KFlds)))) {
-			CopyIndex(k, xKey->KFlds, Typ, record);
+			CopyIndex(k, xKey->KFlds, oper_type, record);
 		}
 		else {
 			if (frst) {
@@ -53,7 +53,7 @@ void XWorkFile::Main(char Typ, uint8_t* record)
 			else {
 				xScan->SeekRec(0);
 			}
-			Reset(xKey->KFlds, sizeof(XXPage) * 9, Typ, xScan->NRecs);
+			Reset(xKey->KFlds, sizeof(XXPage) * 9, oper_type, xScan->NRecs);
 			SortMerge(xKey, record);
 		}
 
@@ -64,7 +64,7 @@ void XWorkFile::Main(char Typ, uint8_t* record)
 	delete xPage; xPage = nullptr;
 }
 
-void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, uint8_t* record)
+void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper_type, uint8_t* record)
 {
 
 	WRec* r = new WRec();
@@ -73,7 +73,7 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, uint8_t*
 
 	K->NrToPath(_parent, 1);
 	int page = XPath[XPathN].Page;
-	RunMsgOn(Typ, K->NRecs());
+	RunMsgOn(static_cast<char>(oper_type), K->NRecs());
 	int count = 0;
 
 	while (page != 0) {
@@ -114,7 +114,7 @@ void XWorkFile::Output(XKey* xKey, WRec* R, uint8_t* record)
 	xxPage->AddToLeaf(_parent, R, xKey, record);
 }
 
-void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NRecs)
+void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, OperationType oper_type, int NRecs)
 {
 	int BYTEs = 0;
 	int pages = 0;
@@ -124,7 +124,7 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NR
 
 	//while (KF != nullptr) {
 	for (KeyFldD* k : KF) {
-		if (Typ == 'D') {
+		if (oper_type == OperationType::Duplicate) {
 			RecLen += 6;
 		}
 		else {
@@ -167,7 +167,7 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NR
 	//@shl ax 3, 1; cmp bx, 1; ja @1; cmp cx, 0; jne @4; mov cx, 1;
 	//@mov pages 4.unsigned short, cx;
 
-	RunMsgOn(Typ, pages);
+	RunMsgOn(static_cast<char>(oper_type), pages);
 }
 
 /// precte zaznamy, vytvori uplnou delku klice, setridi zaznamy

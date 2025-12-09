@@ -816,7 +816,7 @@ void ForAllProc(Instr_forall* PD)
 #endif
 		if (Key != nullptr) {
 			if (PD->CWIdx) {
-				FD->FF->ScanSubstWIndex(xScan, Key->KFlds, 'W');
+				FD->FF->ScanSubstWIndex(xScan, Key->KFlds, OperationType::Work);
 			}
 			else {
 				FD->FF->XF->UpdLockCnt++;

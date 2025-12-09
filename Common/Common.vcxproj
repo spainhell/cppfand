@@ -29,6 +29,7 @@
     <ClInclude Include="LinkD.h" />
     <ClInclude Include="LocVar.h" />
     <ClInclude Include="LongStr.h" />
+    <ClInclude Include="OperationType.h" />
     <ClInclude Include="pstring.h" />
     <ClInclude Include="random.h" />
     <ClInclude Include="realDouble.h" />

@@ -4,6 +4,7 @@
 #include "../Core/switches.h"
 #include "FieldDescr.h"
 #include "../Logging/Logging.h"
+#include "../Common/OperationType.h"
 
 class XWKey;
 class XScan;
@@ -114,8 +115,8 @@ public:
 	void RecallRec(int recNr, uint8_t* record);
 
 	void GenerateNew000File(XScan* x, uint8_t* record, void (*msgFuncUpdate)(int32_t));
-	void CreateWIndex(XScan* Scan, XWKey* K, char Typ);
-	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ);
+	void CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type);
+	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type);
 	void SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)());
 	void CopyIndex(XWKey* K, XKey* FromK);
 

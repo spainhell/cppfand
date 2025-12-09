@@ -82,7 +82,7 @@ int32_t GetIndex(Instr_getindex* PD)
 			kNew->Open(lvFD, k->KFlds, true, false);
 		}
 
-		lvFD->FF->CreateWIndex(Scan.get(), kNew, 'X');
+		lvFD->FF->CreateWIndex(Scan.get(), kNew, OperationType::Index);
 		k->Close(lvFD);
 		*k = *kNew;
 	}

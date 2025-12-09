@@ -127,7 +127,7 @@ void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldM
 	}
 	if (!aSK.empty()) {
 		Reset(BoolZ, false, record);
-		FD->FF->ScanSubstWIndex(this, aSK, 'S');
+		FD->FF->ScanSubstWIndex(this, aSK, OperationType::Sort);
 		BoolZ = nullptr;
 	}
 	else {

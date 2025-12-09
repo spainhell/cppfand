@@ -842,7 +842,7 @@ int Fand0File::CreateIndexFile()
 			std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
 			scan->Reset(nullptr, false, record.get());
 			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys);
-			XW->Main('X', record.get());
+			XW->Main(OperationType::Index, record.get());
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
 			if (!SaveCache(0, Handle)) GoExit(MsgLine);
@@ -1073,16 +1073,16 @@ void Fand0File::GenerateNew000File(XScan* x, uint8_t* record, void (*msgFuncUpda
 	delete[] buffer; buffer = nullptr;
 }
 
-void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
+void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type)
 {
 	std::vector<XKey*> xw_keys;
 	xw_keys.push_back(K);
 	std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
 	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys);
-	XW->Main(Typ, record.get());
+	XW->Main(oper_type, record.get());
 }
 
-void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ)
+void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type)
 {
 	unsigned short n = 0;
 	XWKey* k2 = new XWKey(_parent);
@@ -1120,7 +1120,7 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ
 		k2->Open(_parent, SK, true, false);
 	}
 
-	CreateWIndex(Scan, k2, Typ);
+	CreateWIndex(Scan, k2, oper_type);
 	Scan->SubstWIndex(k2);
 }
 
@@ -1131,7 +1131,7 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t
 	std::vector<KeyInD*> empty;
 	XScan* Scan = new XScan(_parent, nullptr, empty, false);
 	Scan->Reset(nullptr, false, record.get());
-	ScanSubstWIndex(Scan, SK, 'S');
+	ScanSubstWIndex(Scan, SK, OperationType::Sort);
 	FileD* FD2 = _parent->OpenDuplicateF(false);
 
 	if (msgFuncOn) {
@@ -1162,7 +1162,7 @@ void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
 	std::vector<KeyInD*> empty;
 	XScan* Scan = new XScan(_parent, FromK, empty, false);
 	Scan->Reset(nullptr, false, record);
-	CreateWIndex(Scan, K, 'W');
+	CreateWIndex(Scan, K, OperationType::Work);
 	_parent->OldLockMode(md);
 
 	delete[] record; record = nullptr;

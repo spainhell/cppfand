@@ -25,11 +25,11 @@ public:
 	WPage* PW2 = nullptr;
 	int FreeNr[5]{ 0, 0, 0, 0, 0 };
 
-	void Main(char Typ, uint8_t* record);
-	void CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, uint8_t* record);
+	void Main(OperationType oper_type, uint8_t* record);
+	void CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper_type, uint8_t* record);
 	bool GetCRec(uint8_t* record);
 	void Output(XKey* xKey, WRec* R, uint8_t* record);
-	void Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NRecs);
+	void Reset(std::vector<KeyFldD*>& KF, int RestBytes, OperationType oper_type, int NRecs);
 	void SortMerge(XKey* xKey, uint8_t* record);
 
 private:

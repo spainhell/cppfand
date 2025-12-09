@@ -1575,7 +1575,7 @@ void DataEditor::BuildWork()
 			if (!edit_->KIRoot.empty()) {
 				wk2 = new XWKey(file_d_);
 				wk2->Open(file_d_, *KF, true, false);
-				file_d_->FF->CreateWIndex(Scan, wk2, 'W');
+				file_d_->FF->CreateWIndex(Scan, wk2, OperationType::Work);
 				XScan* Scan2 = new XScan(file_d_, wk2, edit_->KIRoot, false);
 				Scan2->Reset(nullptr, false, current_rec_->GetRecord());
 				Scan = Scan2;
@@ -1596,7 +1596,7 @@ void DataEditor::BuildWork()
 			Scan = new XScan(file_d_, K, edit_->KIRoot, false);
 			Scan->Reset(boolP, edit_->SQLFilter, current_rec_->GetRecord());
 		}
-		file_d_->FF->CreateWIndex(Scan, WK, 'W');
+		file_d_->FF->CreateWIndex(Scan, WK, OperationType::Work);
 		Scan->Close();
 		if (wk2 != nullptr) wk2->Close(file_d_);
 		ok = true;
@@ -1966,7 +1966,7 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 #ifdef FandSQL
 			if (!sql)
 #endif
-				LD->FromFD->FF->ScanSubstWIndex(Scan, k->KFlds, 'W');
+				LD->FromFD->FF->ScanSubstWIndex(Scan, k->KFlds, OperationType::Work);
 		label1:
 			Scan->GetRec(p);
 			if (!Scan->eof) {
