@@ -429,6 +429,3 @@ void XWorkFile::PutFreeNr(int N)
 	NFreeNr++;
 	FreeNr[NFreeNr] = N;
 }
-
-
-

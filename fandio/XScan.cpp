@@ -228,7 +228,7 @@ void XScan::ResetLV(void* aRP)
 void XScan::Close()
 {
 #ifdef FandSQL
-	if (Kind = ScanMode::SQL) /* !!! with SQLStreamPtr(Strm)^ do!!! */ { InpClose; Done; }
+	if (Kind = 4) /* !!! with SQLStreamPtr(Strm)^ do!!! */ { InpClose; Done; }
 #endif
 	if (TempWX) {
 		((XWKey*)Key)->Close(FD);
@@ -346,7 +346,7 @@ void XScan::GetRec(uint8_t* record)
 	XString xx;
 	size_t item = 0;
 #ifdef FandSQL
-	if (Kind == ScanMode::SQL) {
+	if (Kind == 4) {
 		repeat EOF = !SQLStreamPtr(Strm)->GetRec
 			until EOF || hasSQLFilter || RunBool(Bool);
 		inc(i_rec); return;

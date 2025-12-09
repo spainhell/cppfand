@@ -5,7 +5,7 @@
 
 struct KeyInD;
 
-enum class ScanMode : unsigned char
+enum class ScanMode : uint8_t
 {
 	Sequential = 0,      // Sequential scan (no index)
 	Index = 1,           // Index scan (ordered by key)
