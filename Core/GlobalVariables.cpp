@@ -22,7 +22,7 @@ structXPath XPath[20];
 WORD XPathN;
 
 FandXFile XWork(nullptr);
-FandTFile TWork(nullptr);
+//FandTFile TWork(nullptr);
 int ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;

@@ -231,7 +231,7 @@ std::string RunProlog::ReadFromParamFile(FileD* file_d, FieldDescr* field_d)
 	std::string result = file_d->loadS(field_d, newRecord);
 
 	file_d->OldLockMode(lm);  /*possibly reading .T*/
-	file_d->ClearRecSpace(newRecord);
+	// TODO: is there anything in TWork?: file_d->ClearRecSpace(newRecord);
 	delete[] newRecord; newRecord = nullptr;
 
 	return result;

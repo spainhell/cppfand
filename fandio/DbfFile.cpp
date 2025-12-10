@@ -119,12 +119,12 @@ std::string DbfFile::loadS(FieldDescr* field_d, void* record)
 		break;
 	}
 	case FieldType::TEXT: { // volny text max. 65k
-		if (HasTWorkFlag(record)) {
-			S = TWork.Read(loadT(field_d, record));
-		}
-		else {
+		//if (HasTWorkFlag(record)) {
+		//	S = TWork.Read(loadT(field_d, record));
+		//}
+		//else {
 			S = TF->Read(loadT(field_d, record));
-		}
+		//}
 		if (field_d->isEncrypted()) {
 			S = Coding::Code(S);
 		}
@@ -211,12 +211,12 @@ void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* rec
 		case FieldType::TEXT: {
 			if (int previous = loadT(field_d, record)) {
 				// there already exists a text -> delete it
-				if (HasTWorkFlag(record)) {
+				/*if (HasTWorkFlag(record)) {
 					TWork.Delete(previous);
 				}
-				else {
+				else {*/
 					TF->Delete(previous);
-				}
+				//}
 			}
 
 			if (s.empty()) {
@@ -226,14 +226,14 @@ void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* rec
 				if (field_d->isEncrypted() != 0) {
 					s = Coding::Code(s);
 				}
-				if (HasTWorkFlag(record)) {
+				/*if (HasTWorkFlag(record)) {
 					int pos = TWork.Store(s);
 					saveT(field_d, pos, record);
 				}
-				else {
+				else {*/
 					int pos = TF->Store(s);
 					saveT(field_d, pos, record);
-				}
+				//}
 			}
 			break;
 		}
@@ -271,12 +271,12 @@ void DbfFile::DelTFld(FieldDescr* field_d, void* record)
 	int pos = loadT(field_d, record);
 	if (pos == 0) return;
 
-	if (HasTWorkFlag(record)) {
-		TWork.Delete(pos);
-	}
-	else {
+	//if (HasTWorkFlag(record)) {
+	//	TWork.Delete(pos);
+	//}
+	//else {
 		TF->Delete(pos);
-	}
+	//}
 
 	saveT(field_d, 0, record);
 }

@@ -401,14 +401,18 @@ int AbsLogRecNoFun(FileD* file_d, FrmlElemRecNo* Z, uint8_t* record)
 double LinkProc(FrmlElemLink* X, uint8_t* record)
 {
 	int N;
-	uint8_t* rec = nullptr;
 
 	LinkD* LD = X->LinkLD;
 	FileD* fromFD = LD->FromFD;
 	if (X->LinkFromRec) {
-		if (!LinkUpw(LD, N, false, X->LinkLV->record->GetRecord(), &rec)) {
+		//if (!LinkUpw(LD, N, false, X->LinkLV->record->GetRecord(), &rec)) {
+		//	N = -N;
+		//}
+		Record* rec = LinkUpw(LD, N, false, X->LinkLV->record);
+		if (rec == nullptr) {
 			N = -N;
 		}
+		delete rec; rec = nullptr;
 	}
 	else {
 		N = RunInt(fromFD, X->LinkRecFrml, record);
@@ -418,14 +422,16 @@ double LinkProc(FrmlElemLink* X, uint8_t* record)
 			fromFD->RunErrorM(md);
 			RunError(609);
 		}
-		Record* newRecord = new Record(fromFD); // ->GetRecSpace();
+		Record* newRecord = new Record(fromFD);
 		fromFD->ReadRec(N, newRecord);
 		fromFD->OldLockMode(md);
-		if (!LinkUpw(LD, N, false, newRecord->GetRecord(), &rec)) N = -N;
+		Record* rec = LinkUpw(LD, N, false, X->LinkLV->record);
+		if (rec == nullptr) {
+			N = -N;
+		}
+		delete rec; rec = nullptr;
 		delete newRecord; newRecord = nullptr;
 	}
-
-	delete[] rec; rec = nullptr;
 	return N;
 }
 
@@ -476,16 +482,16 @@ WORD IntTSR(FileD* file_d, FrmlElem* X, uint8_t* record)
 			break;
 		}
 		case 'S': {
-			std::string ss = s;
-			TWork.Delete((int)p);
-			int tmp = TWork.Store(ss);
-			p = &tmp;
+			//std::string ss = s;
+			//TWork.Delete((int)p);
+			//int tmp = TWork.Store(ss);
+			//p = &tmp;
 			break;
 		}
 		case 'B': {
-				p = &b;
-				break;
-			}
+			p = &b;
+			break;
+		}
 		}
 	}
 	return 0; // puvodne se vracel obsah AX registru
@@ -714,19 +720,20 @@ bool RunBool(FileD* file_d, FrmlElem* X, uint8_t* record)
 	case _access: {
 		// nacita hodnotu ze souboru
 		auto iX = (FrmlElemAccess*)X;
-		bool b7 = false;
 		int RecNo;
-		
+
 		if (iX->Link != nullptr) {
-			uint8_t* newRecord = nullptr;
-			b7 = LinkUpw(iX->Link, RecNo, false, record, &newRecord);
+			Record* tmp_record = new Record(file_d, record);
+			Record* new_rec = LinkUpw(iX->Link, RecNo, false, tmp_record);
+			delete tmp_record; tmp_record = nullptr;
+			bool b7 = (new_rec != nullptr);
 			if ((iX->Frml == nullptr)) {
 				result = b7;
 			}
 			else {
-				result = RunBool(file_d, iX->Frml, newRecord);
+				result = RunBool(file_d, iX->Frml, new_rec->GetRecord());
 			}
-			delete[] newRecord; newRecord = nullptr;
+			delete new_rec; new_rec = nullptr;
 		}
 		else {
 			Record* r = iX->File->LinkLastRec(RecNo);
@@ -740,7 +747,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, uint8_t* record)
 			}
 			delete r; r = nullptr;
 		}
-		
+
 		break;
 	}
 	case _recvarfld: {
@@ -933,28 +940,33 @@ label1:
 		break;
 	}
 	case _const: {
-		result = ((FrmlElemNumber*)X)->R; break;
+		result = ((FrmlElemNumber*)X)->R;
+		break;
 	}
 	case _plus: {
-		result = RunReal(file_d, iX0->P1, record) + RunReal(file_d, iX0->P2, record); break;
+		result = RunReal(file_d, iX0->P1, record) + RunReal(file_d, iX0->P2, record);
+		break;
 	}
 	case _minus: {
-		auto d1 = RunReal(file_d, iX0->P1, record);
-		auto d2 = RunReal(file_d, iX0->P2, record);
+		double d1 = RunReal(file_d, iX0->P1, record);
+		double d2 = RunReal(file_d, iX0->P2, record);
 		result = d1 - d2;
 		break;
 	}
 	case _times: {
-		result = RunReal(file_d, iX0->P1, record) * RunReal(file_d, iX0->P2, record); break;
+		result = RunReal(file_d, iX0->P1, record) * RunReal(file_d, iX0->P2, record);
+		break;
 	}
 	case _access: {
 		auto iX = (FrmlElemAccess*)X;
-		
+
 		if (iX->Link != nullptr) {
-			uint8_t* newRecord = nullptr;
-			LinkUpw(iX->Link, RecNo, false, record, &newRecord);
-			result = RunReal(iX->Link->ToFD, iX->Frml, newRecord);
-			delete[] newRecord; newRecord = nullptr;
+			Record* tmp_record = new Record(file_d, record);
+			Record* newRecord = LinkUpw(iX->Link, RecNo, false, tmp_record);
+			delete tmp_record; tmp_record = nullptr;
+
+			result = RunReal(iX->Link->ToFD, iX->Frml, newRecord->GetRecord());
+			delete newRecord; newRecord = nullptr;
 		}
 		else {
 			Record* r = iX->File->LinkLastRec(RecNo);
@@ -1256,9 +1268,9 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
 		*TFD02 = file_d;
 		*TF02 = file_d->FF->TF;
-		if (file_d->HasTWorkFlag(record)) {
-			*TF02 = &TWork;
-		}
+		//if (file_d->HasTWorkFlag(record)) {
+		//	*TF02 = &TWork; // TODO: is there anything in TWork?: 
+		//}
 		TF02Pos = file_d->loadT(f1, record);
 		break;
 	}
@@ -1277,9 +1289,10 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 		FrmlElemAccess* iZ = (FrmlElemAccess*)Z;
 		LockMode md = iZ->File->NewLockMode(RdMode);
 		if (iZ->Link != nullptr) {
-			uint8_t* newRecord = nullptr;
-			LinkUpw(iZ->Link, n, true, record, &newRecord);
-			TestTFrml(iZ->Link->ToFD, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord);
+			Record* tmp_rec = new Record(file_d, record);
+			Record* newRecord = LinkUpw(iZ->Link, n, true, tmp_rec);
+			delete tmp_rec; tmp_rec = nullptr;
+			TestTFrml(iZ->Link->ToFD, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord->GetRecord());
 			delete[] newRecord; newRecord = nullptr;
 		}
 		else {
@@ -1344,32 +1357,34 @@ bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, F
 	return result;
 }
 
-void AssgnFrml(FileD* file_d, uint8_t* record, FieldDescr* field_d, FrmlElem* X, bool deleteT, bool add)
+void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add)
 {
+	FileD* file_d = record->GetFileD();
+
 	switch (field_d->frml_type) {
 	case 'S': {
 		if (field_d->field_type == FieldType::TEXT) {
 			FandTFile* tf = nullptr;
 
-			bool work = file_d->HasTWorkFlag(record);
+			/*bool work = file_d->HasTWorkFlag(record);
 			if (work) {
 				tf = &TWork;
 			}
-			else if (file_d->FileType == DataFileType::FandFile) {
+			else */if (file_d->FileType == DataFileType::FandFile) {
 				tf = file_d->FF->TF;
 			}
 
 			int pos = 0;
 
-			if (file_d->FileType == DataFileType::FandFile && TryCopyT(file_d, field_d, tf, pos, X, record)) {
-				if (deleteT && !work) {
-					file_d->FF->DelTFld(field_d, record);
-				}
-				file_d->saveT(field_d, pos, record);
+			if (file_d->FileType == DataFileType::FandFile && TryCopyT(file_d, field_d, tf, pos, X, record->GetRecord())) {
+				//if (deleteT && !work) {
+				//	file_d->FF->DelTFld(field_d, record);
+				//}
+				file_d->saveT(field_d, pos, record->GetRecord());
 			}
 			else {
-				std::string s = RunString(file_d, X, record);
-				if (deleteT && !work) {
+				std::string s = RunString(file_d, X, record->GetRecord());
+				/*if (deleteT && !work) {
 					switch (file_d->FileType) {
 					case DataFileType::FandFile: {
 						file_d->FF->DelTFld(field_d, record);
@@ -1381,26 +1396,31 @@ void AssgnFrml(FileD* file_d, uint8_t* record, FieldDescr* field_d, FrmlElem* X,
 					}
 					default: break;
 					}
-				}
-				file_d->saveS(field_d, s, record);
+				}*/
+				file_d->saveS(field_d, s, record->GetRecord());
 			}
 		}
 		else {
-			file_d->saveS(field_d, RunString(file_d, X, record), record);
+			std::string s = RunString(file_d, X, record->GetRecord());
+			file_d->saveS(field_d, s, record->GetRecord());
 		}
 		break;
 	}
 	case 'R': {
 		if (add) {
-			file_d->saveR(field_d, file_d->loadR(field_d, record) + RunReal(file_d, X, record), record);
+			double r1 = file_d->loadR(field_d, record->GetRecord());
+			double r2 = RunReal(file_d, X, record->GetRecord());
+			file_d->saveR(field_d, r1 + r2, record->GetRecord());
 		}
 		else {
-			file_d->saveR(field_d, RunReal(file_d, X, record), record);
+			double r = RunReal(file_d, X, record->GetRecord());
+			file_d->saveR(field_d, r, record->GetRecord());
 		}
 		break;
 	}
 	case 'B': {
-		file_d->saveB(field_d, RunBool(file_d, X, record), record);
+		bool b = RunBool(file_d, X, record->GetRecord());
+		file_d->saveB(field_d, b, record->GetRecord());
 		break;
 	}
 	default:;
@@ -1642,13 +1662,15 @@ label1:
 	case _access: {
 		FrmlElemAccess* iX7 = (FrmlElemAccess*)X;
 		LockMode lm = iX7->File->NewLockMode(RdMode);
-		
+
 		if (iX7->Link != nullptr) {
-			uint8_t* newRecord = nullptr;
-			LinkUpw(iX7->Link, RecNo, true, record, &newRecord);
-			result = RunString(iX7->Link->ToFD, iX7->Frml, newRecord);
-			iX7->File->ClearRecSpace(newRecord);
-			delete[] newRecord; newRecord = nullptr;
+			Record* tmp_rec = new Record(file_d, record);
+			Record* newRecord = LinkUpw(iX7->Link, RecNo, true, tmp_rec);
+			delete tmp_rec; tmp_rec = nullptr;
+
+			result = RunString(iX7->Link->ToFD, iX7->Frml, newRecord->GetRecord());
+			// TODO: is there anything in TWork?: iX7->File->ClearRecSpace(newRecord);
+			delete newRecord; newRecord = nullptr;
 		}
 		else {
 			Record* r = iX7->File->LinkLastRec(RecNo);
@@ -1657,7 +1679,7 @@ label1:
 			}
 			else {
 				result = RunString(iX7->File, iX7->Frml, r->GetRecord());
-				iX7->File->ClearRecSpace(r->GetRecord());
+				// TODO: is there anything in TWork?: iX7->File->ClearRecSpace(r->GetRecord());
 				delete r; r = nullptr;
 			}
 		}
@@ -1800,7 +1822,7 @@ label1:
 		break;
 	}
 	case _clipbd: {
-		result = TWork.Read(ClpBdPos);
+		result = ""; // TWork.Read(ClpBdPos);
 		break;
 	}
 	case _char: {

@@ -497,23 +497,23 @@ std::unique_ptr<uint8_t[]> FileD::GetRecSpaceUnique() const
 	return result;
 }
 
-/// <summary>
-/// Deletes all text fields in the record from the TWork file
-/// </summary>
-/// <param name="record">data record pointer</param>
-void FileD::ClearRecSpace(uint8_t* record)
-{
-	if (HasTextFile()) {
-		if (HasTWorkFlag(record)) {
-			for (FieldDescr* f : FldD) {
-				if ((f->isStored()) && (f->field_type == FieldType::TEXT)) {
-					TWork.Delete(loadT(f, record));
-					saveT(f, 0, record);
-				}
-			}
-		}
-	}
-}
+///// <summary>
+///// Deletes all text fields in the record from the TWork file
+///// </summary>
+///// <param name="record">data record pointer</param>
+//void FileD::ClearRecSpace(Record* record)
+//{
+//	if (HasTextFile()) {
+//		if (HasTWorkFlag(record)) {
+//			for (FieldDescr* f : FldD) {
+//				if ((f->isStored()) && (f->field_type == FieldType::TEXT)) {
+//					TWork.Delete(loadT(f, record));
+//					saveT(f, 0, record);
+//				}
+//			}
+//		}
+//	}
+//}
 
 void FileD::CompileRecLen() const
 {
@@ -1077,7 +1077,7 @@ bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
 	}
 }
 
-bool FileD::Lock(int n, WORD kind) const
+bool FileD::Lock(int32_t n, WORD kind) const
 {
 	if (FileType == DataFileType::FandFile) {
 		WORD m;
@@ -1129,7 +1129,7 @@ bool FileD::Lock(int n, WORD kind) const
 	}
 }
 
-void FileD::Unlock(int n)
+void FileD::Unlock(int32_t n)
 {
 	if (FileType == DataFileType::FandFile) {
 		UnLockN(this->FF, n);
@@ -1144,38 +1144,38 @@ void FileD::RunErrorM(LockMode mode)
 	OldLockMode(mode);
 }
 
-void FileD::SetTWorkFlag(uint8_t* record)
-{
-	switch (FileType) {
-	case DataFileType::FandFile:
-		FF->SetTWorkFlag(record);
-		break;
-	case DataFileType::DBF:
-		DbfF->SetTWorkFlag(record);
-		break;
-	default:
-		break;
-	}
-}
+//void FileD::SetTWorkFlag(uint8_t* record)
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		FF->SetTWorkFlag(record);
+//		break;
+//	case DataFileType::DBF:
+//		DbfF->SetTWorkFlag(record);
+//		break;
+//	default:
+//		break;
+//	}
+//}
 
-bool FileD::HasTWorkFlag(uint8_t* record)
-{
-	bool result;
-
-	switch (FileType) {
-	case DataFileType::FandFile:
-		result = FF->HasTWorkFlag(record);
-		break;
-	case DataFileType::DBF:
-		result = DbfF->HasTWorkFlag(record);
-		break;
-	default:
-		result = false;
-		break;
-	}
-
-	return result;
-}
+//bool FileD::HasTWorkFlag(uint8_t* record)
+//{
+//	bool result;
+//
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		result = FF->HasTWorkFlag(record);
+//		break;
+//	case DataFileType::DBF:
+//		result = DbfF->HasTWorkFlag(record);
+//		break;
+//	default:
+//		result = false;
+//		break;
+//	}
+//
+//	return result;
+//}
 
 void FileD::SetRecordUpdateFlag(uint8_t* record)
 {
@@ -1447,90 +1447,89 @@ void FileD::ZeroAllFlds(uint8_t* record, bool delTFields)
 	}
 }
 
-/// \brief Copy complete record
-/// - for T: one of these files is always TWork
-/// \param src_record source record
-/// \param dst_record destination record
-/// \param delTFields deletes the existing destination T first
-void FileD::CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields)
-{
-	if (delTFields) {
-		this->FF->DelTFlds(dst_record);
-	}
+///// \brief Copy complete record
+///// - for T: one of these files is always TWork
+///// \param src_record source record
+///// \param dst_record destination record
+//void FileD::CopyRec(Record* src_record, Record* dst_record)
+//{
+	//if (delTFields) {
+	//	this->FF->DelTFlds(dst_record);
+	//}
 
-	for (FieldDescr* const& f : FldD) {
-		if (f->isStored()) {
-			switch (f->field_type) {
-			case FieldType::TEXT: {
-				bool src_is_work = HasTWorkFlag(src_record);
-				bool dst_is_work = HasTWorkFlag(dst_record);
+	//for (FieldDescr* const& f : FldD) {
+	//	if (f->isStored()) {
+	//		switch (f->field_type) {
+	//		case FieldType::TEXT: {
+	//			bool src_is_work = HasTWorkFlag(src_record);
+	//			bool dst_is_work = HasTWorkFlag(dst_record);
 
-				if (FileType == DataFileType::DBF) {
-					// if (src_t00_file->Format != FandTFile::T00Format)
-					std::string s = loadS(f, src_record);
-					saveS(f, s, dst_record);
-				}
-				else
-				{
-					FandTFile* src_t00_file = nullptr;
-					FandTFile* dst_t00_file = nullptr;
+	//			if (FileType == DataFileType::DBF) {
+	//				// if (src_t00_file->Format != FandTFile::T00Format)
+	//				std::string s = loadS(f, src_record);
+	//				saveS(f, s, dst_record);
+	//			}
+	//			else
+	//			{
+	//				FandTFile* src_t00_file = nullptr;
+	//				FandTFile* dst_t00_file = nullptr;
 
-					if (src_is_work) {
-						src_t00_file = &TWork;
-						dst_t00_file = FF->TF;
-					}
+	//				if (src_is_work) {
+	//					src_t00_file = &TWork;
+	//					dst_t00_file = FF->TF;
+	//				}
 
-					if (dst_is_work) {
-						src_t00_file = FF->TF;
-						dst_t00_file = &TWork;
-					}
+	//				if (dst_is_work) {
+	//					src_t00_file = FF->TF;
+	//					dst_t00_file = &TWork;
+	//				}
 
-					int32_t src_pos = loadT(f, src_record);
-					int32_t dst_pos = 0;
+	//				int32_t src_pos = loadT(f, src_record);
+	//				int32_t dst_pos = 0;
 
-					if (src_is_work && dst_is_work) {
-						// src and dest are in TWork
-						// don't need to lock anything
-						std::string s = src_t00_file->Read(src_pos);
-						dst_pos = dst_t00_file->Store(s);
-					}
-					else if (src_is_work) {
-						// src is in TWork
-						// lock dest for Write
-						LockMode md = NewLockMode(WrMode);
-						std::string s = src_t00_file->Read(src_pos);
-						dst_pos = dst_t00_file->Store(s);
-						OldLockMode(md);
-					}
-					else if (dst_is_work) {
-						// dest is in TWork
-						// lock src for Read
-						LockMode md = NewLockMode(RdMode);
-						std::string s = src_t00_file->Read(src_pos);
-						dst_pos = dst_t00_file->Store(s);
-						OldLockMode(md);
-					}
-					else {
-						// src and dest are single T00 file
-						// lock for Write
-						LockMode md = NewLockMode(WrMode);
-						std::string s = src_t00_file->Read(src_pos);
-						dst_pos = dst_t00_file->Store(s);
-						OldLockMode(md);
-					}
+	//				if (src_is_work && dst_is_work) {
+	//					// src and dest are in TWork
+	//					// don't need to lock anything
+	//					std::string s = src_t00_file->Read(src_pos);
+	//					dst_pos = dst_t00_file->Store(s);
+	//				}
+	//				else if (src_is_work) {
+	//					// src is in TWork
+	//					// lock dest for Write
+	//					LockMode md = NewLockMode(WrMode);
+	//					std::string s = src_t00_file->Read(src_pos);
+	//					dst_pos = dst_t00_file->Store(s);
+	//					OldLockMode(md);
+	//				}
+	//				else if (dst_is_work) {
+	//					// dest is in TWork
+	//					// lock src for Read
+	//					LockMode md = NewLockMode(RdMode);
+	//					std::string s = src_t00_file->Read(src_pos);
+	//					dst_pos = dst_t00_file->Store(s);
+	//					OldLockMode(md);
+	//				}
+	//				else {
+	//					// src and dest are single T00 file
+	//					// lock for Write
+	//					LockMode md = NewLockMode(WrMode);
+	//					std::string s = src_t00_file->Read(src_pos);
+	//					dst_pos = dst_t00_file->Store(s);
+	//					OldLockMode(md);
+	//				}
 
-					saveT(f, dst_pos, dst_record);
-				}
+	//				saveT(f, dst_pos, dst_record);
+	//			}
 
-				break;
-			}
-			default:
-				memcpy(&dst_record[f->Displ], &src_record[f->Displ], f->NBytes);
-				break;
-			}
-		}
-	}
-}
+	//			break;
+	//		}
+	//		default:
+	//			memcpy(&dst_record[f->Displ], &src_record[f->Displ], f->NBytes);
+	//			break;
+	//		}
+	//	}
+	//}
+//}
 
 void FileD::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
 {

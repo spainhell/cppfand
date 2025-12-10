@@ -477,7 +477,7 @@ void DataEditor::SetWasUpdated(FileD* file_d, uint8_t* record)
 void DataEditor::AssignFld(FieldDescr* F, FrmlElem* Z)
 {
 	SetWasUpdated(file_d_, current_rec_->GetRecord());
-	AssgnFrml(file_d_, current_rec_->GetRecord(), F, Z, false, false);
+	AssgnFrml(current_rec_, F, Z, false);
 }
 
 WORD DataEditor::FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt,
@@ -1385,7 +1385,7 @@ void DataEditor::SetNewWwRecAttr()
 		}
 	}
 	IVon();
-	file_d_->ClearRecSpace(current_rec_->GetRecord());
+	// TODO: is there TWork? file_d_->ClearRecSpace(current_rec_->GetRecord());
 	delete[] current_rec_; current_rec_ = prev_record;
 }
 
@@ -2001,7 +2001,7 @@ void DataEditor::UpdMemberRef(uint8_t* POld, uint8_t* PNew)
 				goto label1;
 			}
 			Scan->Close();
-			LD->FromFD->ClearRecSpace(p);
+			// TODO: is there TWork? LD->FromFD->ClearRecSpace(p);
 
 			delete[] p; p = nullptr;
 		}
@@ -2119,8 +2119,12 @@ label1:
 		file_d_->SetPathAndVolume();
 		SetMsgPar(CPath, LockModeTxt[md]);
 		w1 = PushWrLLMsg(825, true);
-		if (w == 0) w = w1;
-		else TWork.Delete(w1);
+		if (w == 0) {
+			w = w1;
+		}
+		else {
+			// TWork.Delete(w1);
+		}
 		LockBeep();
 		if (KbdTimer(spec.NetDelay, 1)) goto label1;
 		result = false;
@@ -2668,10 +2672,10 @@ void DataEditor::DisplChkErr(LogicControl* logic_control)
 
 		int n = 0;
 
-		uint8_t* rec = nullptr;
-		bool b = LinkUpw(LD, n, false, current_rec_->GetRecord(), &rec);
-
-		delete[] rec; rec = nullptr;
+		Record* rec = LinkUpw(LD, n, false, current_rec_);
+		bool b = (rec != nullptr);
+		delete rec; rec = nullptr;
+		
 		file_d_ = cf; 
 		delete current_rec_; current_rec_ = prev_rec;
 
@@ -2735,7 +2739,7 @@ bool DataEditor::OldRecDiffers()
 		result = true;
 	}
 label2:
-	file_d_->ClearRecSpace(rec->GetRecord());
+	// TODO: is there TWork? file_d_->ClearRecSpace(rec->GetRecord());
 	delete[] rec; rec = nullptr;
 
 	return result;
@@ -2854,7 +2858,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		//	ID = ID->pChain;
 		//}
 		for (Implicit* id : edit_->Impl) {
-			AssgnFrml(file_d_, current_rec_->GetRecord(), id->FldD, id->Frml, true, false);
+			AssgnFrml(current_rec_, id->FldD, id->Frml, false);
 		}
 	}
 	if (params_->MustCheck) {   /* repeat field checking */
@@ -2971,9 +2975,9 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		case 2: {
 			// are old and new text positions same?
 			if ((*(int*)(original_rec_->GetRecord() + ChptTxt->Displ) == *(int*)(current_rec_->GetRecord() + ChptTxt->Displ)) && PromptYN(157)) {
-				TWork.Delete(ClpBdPos);
+				// TWork.Delete(ClpBdPos);
 				std::string data = file_d_->loadS(ChptTxt, current_rec_->GetRecord());
-				ClpBdPos = TWork.Store(data);
+				// ClpBdPos = TWork.Store(data);
 			}
 			UndoRecord();
 			goto label1;
@@ -3014,7 +3018,7 @@ void DataEditor::DuplFromPrevRec()
 		uint8_t* prev_record = file_d_->GetRecSpace();
 		RdRec(CRec() - 1, current_rec_);
 		DuplFld(file_d_, file_d_, prev_record, current_rec_->GetRecord(), original_rec_->GetRecord(), F, F);
-		file_d_->ClearRecSpace(prev_record);
+		// TODO: is there TWork? file_d_->ClearRecSpace(prev_record);
 		delete[] prev_record; prev_record = nullptr;
 
 		file_d_->OldLockMode(md);
@@ -5315,8 +5319,12 @@ label81:
 					if (IsNewRec && !params_->EdRecVar) DelNewRec();
 					IVoff();
 					EdUpdated = edit_->EdUpdated;
-					if (!params_->EdRecVar) file_d_->ClearRecSpace(current_rec_->GetRecord());
-					if (params_->Subset && !params_->WasWK) WK->Close(file_d_);
+					if (!params_->EdRecVar) {
+						// TODO: is there TWork? file_d_->ClearRecSpace(current_rec_->GetRecord());
+					}
+					if (params_->Subset && !params_->WasWK) {
+						WK->Close(file_d_);
+					}
 					if (!params_->EdRecVar) {
 #ifdef FandSQL
 						if (file_d_->IsSQLFile) Strm1->EndKeyAcc(WK);

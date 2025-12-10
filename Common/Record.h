@@ -20,9 +20,11 @@ class Record
 public:
 	Record();
 	Record(FileD* file_d);
-	Record(FileD* file_d, uint8_t* record);
+	Record(FileD* file_d, uint8_t* record, bool record_owner = false);
 	~Record();
+	void CopyTo(Record* dst_record) const;
 	uint8_t* GetRecord() const;
+	FileD* GetFileD() const;
 	Record* Clone() const;
 	
 	void Reset();

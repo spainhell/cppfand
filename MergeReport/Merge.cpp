@@ -847,7 +847,8 @@ void Merge::RunAssign(std::vector<AssignD*> Assigns)
 			break;
 		}
 		case MInstrCode::_output: {
-			AssgnFrml(CFile, CRecPtr, A->OFldD, A->Frml, false, A->Add);
+			// TODO: Assign has to be changed to Record !!! 
+			// AssgnFrml(CFile, CRecPtr, A->OFldD, A->Frml, A->Add);
 			break;
 		}
 		case MInstrCode::_locvar: {
@@ -945,7 +946,7 @@ void Merge::CloseInpOutp()
 {
 	for (OutpFD* OD : OutpFDRoot) {
 		FileD* fd = OD->FD;
-		OD->FD->ClearRecSpace(OD->RecPtr);
+		// TODO: is there anything in TWork?: OD->FD->ClearRecSpace(OD->RecPtr);
 #ifdef FandSQL
 		if (f->IsSQLFile) /* !!! with Strm^ do!!! */ {
 			OutpClose(); Done();
@@ -969,7 +970,7 @@ void Merge::CloseInpOutp()
 		inp->Scan->Close();
 		FileD* fd = inp->Scan->FD;
 		if (fd != nullptr) {
-			fd->ClearRecSpace(inp->ForwRecPtr);
+			// TODO: is there anything in TWork?: fd->ClearRecSpace(inp->ForwRecPtr);
 			fd->OldLockMode(inp->Md);
 		}
 	}

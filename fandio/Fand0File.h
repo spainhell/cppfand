@@ -88,8 +88,8 @@ public:
 	void CloseFile();
 	void Close();
 
-	void SetTWorkFlag(uint8_t* record) const;
-	bool HasTWorkFlag(uint8_t* record) const;
+	//void SetTWorkFlag(uint8_t* record) const;
+	//bool HasTWorkFlag(uint8_t* record) const;
 
 	void SetRecordUpdateFlag(uint8_t* record);
 	void ClearRecordUpdateFlag(uint8_t* record);

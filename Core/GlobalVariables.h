@@ -28,7 +28,7 @@ extern FileD* HelpFD;
 extern structXPath XPath[20];
 extern WORD XPathN;
 extern FandXFile XWork;
-extern FandTFile TWork;
+//extern FandTFile TWork;
 extern int ClpBdPos;
 extern bool IsTestRun;
 extern bool IsInstallRun;

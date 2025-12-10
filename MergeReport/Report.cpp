@@ -1888,7 +1888,7 @@ void Report::CloseInp()
 	for (WORD i = 1; i <= MaxIi; i++) {
 		if (IDA[i]->Scan->Kind != ScanMode::LocalVariable) {
 			IDA[i]->Scan->Close();
-			CFile->ClearRecSpace(IDA[i]->ForwRecPtr);
+			// TODO: is there anything in TWork?: CFile->ClearRecSpace(IDA[i]->ForwRecPtr);
 			CFile->OldLockMode(IDA[i]->Md);
 		}
 	}

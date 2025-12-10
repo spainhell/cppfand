@@ -78,10 +78,17 @@ bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, uint8_t* record, 
 	kind2 = 'd';
 
 	if (ld != nullptr) {
-		if (LinkUpw(ld, n, false, record, linkedRecord)) {
-			// TODO: file_d should change after calling LinkUpw to 'ld->ToFD'
+		Record* tmp_rec = new Record(file_d, record);
+		Record* rec = LinkUpw(ld, n, false, tmp_rec);
+		delete tmp_rec; tmp_rec = nullptr;
+
+		if (rec != nullptr) {
+			*linkedRecord = add_d->File2->GetRecSpace();
+			memcpy(*linkedRecord, rec->GetRecord(), add_d->File2->GetRecordSize());
+			delete rec; rec = nullptr;
 			return result;
 		}
+
 		SetMsgPar(ld->RoleName);
 	}
 	else {

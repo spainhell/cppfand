@@ -148,7 +148,7 @@ extern "C" int FAND_API ClearRdb()
 
 extern "C" int FAND_API SaveChapter(char* chapterType, char* chapterName, char* chapterCode)
 {
-	rdbFile->ClearRecSpace(data);
+	//rdbFile->ClearRecSpace(data);
 
 	std::string chapter_type = ConvertUnicodetoCP852(chapterType);
 	rdbFile->saveS(rdbFile->FldD[3], chapter_type, data);
@@ -166,7 +166,7 @@ extern "C" int FAND_API SaveChapter(char* chapterType, char* chapterName, char* 
 
 extern "C" int FAND_API UpdateChapter(int32_t recNr, char* chapterType, char* chapterName, char* chapterCode)
 {
-	rdbFile->ClearRecSpace(data);
+	//rdbFile->ClearRecSpace(data);
 
 	std::string chapter_type = ConvertUnicodetoCP852(chapterType);
 	rdbFile->saveS(rdbFile->FldD[3], chapter_type, data);

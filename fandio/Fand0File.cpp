@@ -289,14 +289,14 @@ std::string Fand0File::loadS(FieldDescr* field_d, uint8_t* record)
 		break;
 	}
 	case FieldType::TEXT: { // volny text max. 65k
-		if (HasTWorkFlag(record)) {
-			S = TWork.Read(loadT(field_d, record));
-		}
-		else {
+		//if (HasTWorkFlag(record)) {
+		//	S = TWork.Read(loadT(field_d, record));
+		//}
+		//else {
 			md = _parent->NewLockMode(RdMode);
 			S = TF->Read(loadT(field_d, record));
 			_parent->OldLockMode(md);
-		}
+		//}
 		if ((field_d->Flg & f_Encryp) != 0) {
 			S = Coding::Code(S);
 		}
@@ -416,14 +416,14 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t
 		case FieldType::TEXT: {
 			if (int previous = loadT(field_d, record)) {
 				// there already exists a text -> delete it
-				if (HasTWorkFlag(record)) {
-					TWork.Delete(previous);
-				}
-				else {
+				//if (HasTWorkFlag(record)) {
+				//	TWork.Delete(previous);
+				//}
+				//else {
 					LockMode md = parent->NewLockMode(WrMode);
 					TF->Delete(previous);
 					parent->OldLockMode(md);
-				}
+				//}
 			}
 
 			if (s.empty()) {
@@ -433,16 +433,16 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t
 				if (field_d->isEncrypted() != 0) {
 					s = Coding::Code(s);
 				}
-				if (HasTWorkFlag(record)) {
-					int pos = TWork.Store(s);
-					saveT(field_d, pos, record);
-				}
-				else {
+				//if (HasTWorkFlag(record)) {
+				//	int pos = TWork.Store(s);
+				//	saveT(field_d, pos, record);
+				//}
+				//else {
 					LockMode md = parent->NewLockMode(WrMode);
 					int pos = TF->Store(s);
 					saveT(field_d, pos, record);
 					parent->OldLockMode(md);
-				}
+				//}
 			}
 			break;
 		}
@@ -472,14 +472,14 @@ void Fand0File::DelTFld(FieldDescr* field_d, uint8_t* record)
 	int pos = loadT(field_d, record);
 	if (pos == 0) return;
 
-	if (HasTWorkFlag(record)) {
-		TWork.Delete(pos);
-	}
-	else {
+	//if (HasTWorkFlag(record)) {
+	//	TWork.Delete(pos);
+	//}
+	//else {
 		LockMode md = _parent->NewLockMode(WrMode);
 		TF->Delete(pos);
 		_parent->OldLockMode(md);
-	}
+	//}
 
 	saveT(field_d, 0, record);
 }
@@ -749,16 +749,16 @@ void Fand0File::Close()
 	}
 }
 
-void Fand0File::SetTWorkFlag(uint8_t* record) const
-{
-	record[RecLen] = 1;
-}
-
-bool Fand0File::HasTWorkFlag(uint8_t* record) const
-{
-	const bool workFlag = record[RecLen] == 1;
-	return workFlag;
-}
+//void Fand0File::SetTWorkFlag(uint8_t* record) const
+//{
+//	record[RecLen] = 1;
+//}
+//
+//bool Fand0File::HasTWorkFlag(uint8_t* record) const
+//{
+//	const bool workFlag = record[RecLen] == 1;
+//	return workFlag;
+//}
 
 void Fand0File::SetRecordUpdateFlag(uint8_t* record)
 {

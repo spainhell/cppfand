@@ -78,8 +78,7 @@ public:
 	uint8_t* GetRecSpace() const;
 	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
 
-	// delete 'T' from working file if exists
-	void ClearRecSpace(uint8_t* record);
+	//void ClearRecSpace(Record* record); // delete 'T' from TWork
 	void CompileRecLen() const;
 
 	void IncNRecs(int n);
@@ -126,12 +125,12 @@ public:
 	LockMode NewLockMode(LockMode mode);
 	bool TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind);
 	bool ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref);
-	bool Lock(int n, uint16_t kind) const;
-	void Unlock(int n);
+	bool Lock(int32_t n, uint16_t kind) const;
+	void Unlock(int32_t n);
 	void RunErrorM(LockMode mode);
 
-	void SetTWorkFlag(uint8_t* record);
-	bool HasTWorkFlag(uint8_t* record);
+	//void SetTWorkFlag(uint8_t* record);
+	//bool HasTWorkFlag(uint8_t* record);
 
 	void SetRecordUpdateFlag(uint8_t* record);
 	void ClearRecordUpdateFlag(uint8_t* record);
@@ -154,7 +153,7 @@ public:
 	FileD* OpenDuplicateF(bool createTextFile);
 	void DeleteDuplicateF(FileD* TempFD);
 	void ZeroAllFlds(uint8_t* record, bool delTFields);
-	void CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields);
+	//void CopyRec(Record* src_record, Record* dst_record);
 	void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
 
 	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);

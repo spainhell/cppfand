@@ -158,27 +158,31 @@ void PromptAutoRprt(RprtOpt* RO)
 void AssignField(Instr_assign* PD)
 {
 	WORD msg = 0;
-	CFile = PD->FD;
-	LockMode md = CFile->NewLockMode(WrMode);
+	LockMode md = PD->FD->NewLockMode(WrMode);
 	FieldDescr* F = PD->FldD;
-	int N = RunInt(CFile, PD->RecFrml, CRecPtr);
-	if ((N <= 0) || (N > CFile->FF->NRecs)) {
+	int N = RunInt(PD->FD, PD->RecFrml, nullptr);
+	if ((N <= 0) || (N > PD->FD->FF->NRecs)) {
 		msg = 640;
-		goto label1;
-	}
-	CRecPtr = CFile->GetRecSpace();
-	CFile->FF->ReadRec(N, CRecPtr);
-	if (PD->Indexarg && !CFile->DeletedFlag(CRecPtr)) {
-		msg = 627;
-	label1:
-		SetMsgPar(CFile->Name, F->Name);
-		CFile->RunErrorM(md);
+		SetMsgPar(PD->FD->Name, F->Name);
+		PD->FD->RunErrorM(md);
 		RunError(msg);
 	}
-	AssgnFrml(CFile, CRecPtr, F, PD->Frml, true, PD->Add);
-	CFile->FF->WriteRec(N, CRecPtr);
-	ReleaseStore(&CRecPtr);
-	CFile->OldLockMode(md);
+	else {
+		Record* rec = new Record(PD->FD);
+		PD->FD->ReadRec(N, rec);
+		if (PD->Indexarg && !rec->IsDeleted()) {
+			msg = 627;
+			SetMsgPar(PD->FD->Name, F->Name);
+			PD->FD->RunErrorM(md);
+			RunError(msg);
+		}
+
+		AssgnFrml(rec, F, PD->Frml, PD->Add);
+		PD->FD->WriteRec(N, rec);
+		PD->FD->OldLockMode(md);
+
+		delete rec; rec = nullptr;
+	}
 }
 
 void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
@@ -202,7 +206,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 		}
 		case MInstrCode::_output: {
 			((FrmlElemNewFile*)a->Frml)->NewRP = RP2->GetRecord();
-			AssgnFrml(FD1, RP1->GetRecord(), a->OFldD, a->Frml, false, false);
+			AssgnFrml(RP1, a->OFldD, a->Frml, /*false,*/ false);
 			break;
 		}
 		}
@@ -215,10 +219,10 @@ void AssignRecFld(Instr_assign* PD)
 {
 	FieldDescr* field_d = PD->RecFldD;
 	FileD* file_d = PD->AssLV->FD;
-	uint8_t* rec = PD->AssLV->record->GetRecord();
+	Record* record = PD->AssLV->record;
 
-	file_d->SetRecordUpdateFlag(rec);
-	AssgnFrml(file_d, rec, field_d, PD->Frml, file_d->HasTWorkFlag(rec), PD->Add);
+	record->SetUpdated(); // file_d->SetRecordUpdateFlag(rec);
+	AssgnFrml(record, field_d, PD->Frml, /*file_d->HasTWorkFlag(rec),*/ PD->Add);
 }
 
 void SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
@@ -698,10 +702,12 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 
 	if (IsRead) {
 		lv->FD->ReadRec(N, record1);
-		lv->FD->CopyRec(record1->GetRecord(), lv->record->GetRecord(), true);
+		//lv->FD->CopyRec(record1->GetRecord(), lv->record->GetRecord(), true);
+		record1->CopyTo(lv->record);
 	}
 	else {
-		lv->FD->CopyRec(lv->record->GetRecord(), record1->GetRecord(), false);
+		//lv->FD->CopyRec(lv->record->GetRecord(), record1->GetRecord(), false);
+		lv->record->CopyTo(record1);
 		if (app) {
 			if (lv->FD->FileType == DataFileType::FandFile && lv->FD->FF->file_type == FandFileType::INDEX) {
 				lv->FD->RecallRec(N, record1);
@@ -726,22 +732,24 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 void LinkRecProc(Instr_assign* assign_instr)
 {
 	int n = 0;
-	uint8_t* rec = nullptr;
 	LinkD* ld = assign_instr->LinkLD;
 	Record* lr2 = assign_instr->RecLV2->record;
 
-	ld->ToFD->ClearRecSpace(lr2->GetRecord());
+	// TODO: is there anything in TWork?: ld->ToFD->ClearRecSpace(lr2->GetRecord());
 
-	if (LinkUpw(ld, n, true, assign_instr->RecLV1->record->GetRecord(), &rec)) {
-		LastExitCode = 0;
-	}
-	else {
+	Record* rec = LinkUpw(ld, n, true, assign_instr->RecLV1->record);
+	
+	if (rec == nullptr) {
 		LastExitCode = 1;
 	}
+	else {
+		LastExitCode = 0;
+	}
 
-	ld->ToFD->CopyRec(rec, lr2->GetRecord(), true);
+	//ld->ToFD->CopyRec(rec, lr2->GetRecord(), true);
+	rec->CopyTo(lr2);
 
-	delete[] rec; rec = nullptr;
+	delete rec; rec = nullptr;
 }
 
 void ForAllProc(Instr_forall* PD)
@@ -849,9 +857,12 @@ label1:
 #endif
 			if (LVr != nullptr) {
 				//CRecPtr = lr;
-				FD->ClearRecordUpdateFlag(lr->GetRecord());
+				//FD->ClearRecordUpdateFlag(lr->GetRecord());
+				lr->ClearUpdated();
 				//CFile->DelTFlds(lr);
-				FD->CopyRec(cr->GetRecord(), lr->GetRecord(), true);
+				//FD->CopyRec(cr->GetRecord(), lr->GetRecord(), true);
+				cr->CopyTo(lr);
+
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr; // metoda LocVarAd byla odstranena z access.cpp
 		if (LVi != nullptr) {
@@ -872,7 +883,8 @@ label1:
 			FD->OpenCreateF(CPath, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && FD->HasRecordUpdateFlag(lr->GetRecord())) {
 				md1 = FD->NewLockMode(WrMode);
-				FD->CopyRec(lr->GetRecord(), cr->GetRecord(), false);
+				//FD->CopyRec(lr->GetRecord(), cr->GetRecord(), false);
+				lr->CopyTo(cr);
 				UpdRec(FD, xScan->RecNr, true, cr->GetRecord());
 				FD->OldLockMode(md1);
 			}
@@ -1010,7 +1022,7 @@ void WithLockedProc(Instr_withshared* PD)
 				w = w1;
 			}
 			else {
-				TWork.Delete(w1);
+				//TWork.Delete(w1);
 			}
 			Beep();
 			KbdTimer(spec.NetDelay, 0);
@@ -1456,8 +1468,8 @@ void RunInstr(const std::vector<Instr*>& instructions)
 		}
 		case PInstrCode::_asgnClipbd: {
 			std::string s = RunString(CFile, ((Instr_assign*)instr)->Frml, CRecPtr);
-			TWork.Delete(ClpBdPos);
-			ClpBdPos = TWork.Store(s);
+			//TWork.Delete(ClpBdPos);
+			//ClpBdPos = TWork.Store(s);
 			break;
 		}
 		case PInstrCode::_asgnEdOk: {
@@ -1749,7 +1761,7 @@ void CallProcedure(Instr_proc* PD)
 		if ((*it0)->f_typ == 'r') {
 			FileD* fd = (*it0)->FD;
 			Record* rec = new Record(fd); //->GetRecSpace();
-			fd->SetTWorkFlag(rec->GetRecord());
+			// TODO: !!! fd->SetTWorkFlag(rec->GetRecord());
 			fd->ZeroAllFlds(rec->GetRecord(), false);
 			fd->ClearDeletedFlag(rec->GetRecord());
 			(*it0)->record = rec;
@@ -1816,7 +1828,7 @@ void CallProcedure(Instr_proc* PD)
 			switch ((*it0)->f_typ) {
 			case 'r': {
 				LocVar* loc_var = *it0;
-				loc_var->FD->ClearRecSpace(loc_var->record->GetRecord());
+				// TODO: !!! loc_var->FD->ClearRecSpace(loc_var->record->GetRecord());
 				delete loc_var->record;
 				loc_var->record = nullptr;
 				break;

@@ -2303,10 +2303,10 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 
 void DelStorClpBd(uint8_t* P1, LongStr* sp)
 {
-	TWork.Delete(ClpBdPos);
-	std::string data = std::string(sp->A, sp->LL);
-	ClpBdPos = TWork.Store(data);
-	ReleaseStore(&P1);
+	//TWork.Delete(ClpBdPos);
+	//std::string data = std::string(sp->A, sp->LL);
+	//ClpBdPos = TWork.Store(data);
+	//ReleaseStore(&P1);
 }
 
 void MarkRdClpBd(uint8_t* P1, LongStr* sp)

@@ -21,7 +21,7 @@ const int ModeLock = 0x40000000;  // MB160
 // const int RecLock = 0x0B000000;  /* base for record locking */
 const int RecLock = 0x41000000;   // MB160
 
-bool TryLockH(HANDLE Handle, int Pos, WORD Len)
+bool TryLockH(HANDLE Handle, int32_t Pos, WORD Len)
 {
 	OVERLAPPED sOverlapped;
 	sOverlapped.Offset = Pos;
@@ -209,7 +209,7 @@ LockMode NewLMode(FileD* fileD, std::string& path, LockMode Mode, uint16_t lan_n
 	return md;
 }
 
-void UnLockN(Fand0File* fand_file, int N)
+void UnLockN(Fand0File* fand_file, int32_t N)
 {
 #ifdef FandSQL
 	if (fand_file->GetFileD()->IsSQLFile) return;

@@ -17,11 +17,11 @@ Record::Record(FileD* file_d)
 	}
 }
 
-Record::Record(FileD* file_d, uint8_t* record)
+Record::Record(FileD* file_d, uint8_t* record, bool record_owner)
 {
 	_file_d = file_d;
 	_buffer = record;
-	_delete_record_on_destroy = false;
+	_delete_record_on_destroy = record_owner;
 }
 
 Record::~Record()
@@ -30,6 +30,14 @@ Record::~Record()
 		delete[] _buffer;
 		_buffer = nullptr;
 	}
+}
+
+void Record::CopyTo(Record* dst_record) const
+{
+	// memcpy(dst_record->_buffer, this->_buffer, this->_file_d->GetRecLen());
+	dst_record->_values = this->_values;
+	dst_record->_updated = this->_updated;
+	dst_record->_deleted = this->_deleted;
 }
 
 Record* Record::Clone() const
@@ -45,6 +53,11 @@ Record* Record::Clone() const
 uint8_t* Record::GetRecord() const
 {
 	return _buffer;
+}
+
+FileD* Record::GetFileD() const
+{
+	return _file_d;
 }
 
 void Record::Reset()

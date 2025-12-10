@@ -25,18 +25,18 @@ void OpenXWorkH()
 
 void OpenTWorkH()
 {
-	CVol = "";
-	if (TWork.MaxPage == 0) {
-		CPath = FandWorkTName;
-		TWork.IsWork = true;
-		TWork.Create(CPath);
-	}
-	else {
-		CPath = FandWorkTName;
-		CVol = "";
-		TWork.Handle = OpenH(CPath, _isOldNewFile, Exclusive);
-		TWork.TestErr();
-	}
+	//CVol = "";
+	//if (TWork.MaxPage == 0) {
+	//	CPath = FandWorkTName;
+	//	TWork.IsWork = true;
+	//	TWork.Create(CPath);
+	//}
+	//else {
+	//	CPath = FandWorkTName;
+	//	CVol = "";
+	//	TWork.Handle = OpenH(CPath, _isOldNewFile, Exclusive);
+	//	TWork.TestErr();
+	//}
 }
 
 void SaveFiles()
@@ -74,7 +74,7 @@ void CloseFANDFiles()
 		catalog->GetCatalogFile()->CloseFile();
 	}
 	HelpFD->CloseFile();
-	CloseH(&TWork.Handle);
+	//CloseH(&TWork.Handle);
 	CloseH(&XWork.Handle);
 }
 

@@ -590,15 +590,15 @@ void DeleteFandFiles()
 		XWork.ClearUpdateFlag();
 	}
 
-	if (TWork.Handle != nullptr) {
-		try {
-			CloseF(TWork.Handle, HandleError);
-			deleteFile(FandWorkTName);
-		}
-		catch (std::exception&) {}
-		TWork.Handle = nullptr;
-		TWork.ClearUpdateFlag();
-	}
+	//if (TWork.Handle != nullptr) {
+	//	try {
+	//		CloseF(TWork.Handle, HandleError);
+	//		deleteFile(FandWorkTName);
+	//	}
+	//	catch (std::exception&) {}
+	//	TWork.Handle = nullptr;
+	//	TWork.ClearUpdateFlag();
+	//}
 }
 
 void OpenFileDialog()
