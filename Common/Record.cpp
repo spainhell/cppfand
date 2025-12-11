@@ -1,5 +1,7 @@
 #include "Record.h"
 
+#include <utility>
+
 Record::Record()
 {
 	_file_d = nullptr;
@@ -64,6 +66,63 @@ void Record::Reset()
 {
 	for (BRS_Value& val : _values) {
 		val.Reset();
+	}
+}
+
+bool Record::LoadB(const Record* record, const std::string& field_name) const
+{
+	size_t index = _getFieldDescrIndexByName(field_name);
+	if (std::cmp_not_equal(index, -1)) {
+		return record->_values[index].B;
+	} 
+	else {
+		return false;
+	}
+}
+
+double Record::LoadR(const Record* record, const std::string& field_name) const
+{
+	size_t index = _getFieldDescrIndexByName(field_name);
+	if (std::cmp_not_equal(index, -1)) {
+		return record->_values[index].R;
+	}
+	else {
+		return 0.0;
+	}
+}
+
+std::string Record::LoadS(const Record* record, const std::string& field_name) const
+{
+	size_t index = _getFieldDescrIndexByName(field_name);
+	if (std::cmp_not_equal(index, -1)) {
+		return record->_values[index].S;
+	}
+	else {
+		return "";
+	}
+}
+
+void Record::SaveB(Record* record, const std::string& field_name, bool value) const
+{
+	size_t index = _getFieldDescrIndexByName(field_name);
+	if (std::cmp_not_equal(index, -1)) {
+		record->_values[index].B = value;
+	}
+}
+
+void Record::SaveR(Record* record, const std::string& field_name, double value) const
+{
+	size_t index = _getFieldDescrIndexByName(field_name);
+	if (std::cmp_not_equal(index, -1)) {
+		record->_values[index].R = value;
+	}
+}
+
+void Record::SaveS(Record* record, const std::string& field_name, const std::string& value) const
+{
+	size_t index = _getFieldDescrIndexByName(field_name);
+	if (std::cmp_not_equal(index, -1)) {
+		record->_values[index].S = value;
 	}
 }
 
@@ -193,4 +252,24 @@ void Record::_setRecordFromValues()
 			// calculated field -> do nothing
 		}
 	}
+}
+
+FieldDescr* Record::_getFieldDescrByName(const std::string& field_name) const
+{
+	for (FieldDescr* field : _file_d->FldD) {
+		if (field->Name == field_name) {
+			return field;
+		}
+	}
+	return nullptr; // field not found
+}
+
+size_t Record::_getFieldDescrIndexByName(const std::string& field_name) const
+{
+	for (size_t i = 0; i < _file_d->FldD.size(); i++) {
+		if (_file_d->FldD[i]->Name == field_name) {
+			return i;
+		}
+	}
+	return static_cast<size_t>(-1); // field not found
 }

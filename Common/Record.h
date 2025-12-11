@@ -26,8 +26,15 @@ public:
 	uint8_t* GetRecord() const;
 	FileD* GetFileD() const;
 	Record* Clone() const;
-	
 	void Reset();
+
+	bool LoadB(const Record* record, const std::string& field_name) const;
+	double LoadR(const Record* record, const std::string& field_name) const;
+	std::string LoadS(const Record* record, const std::string& field_name) const;
+
+	void SaveB(Record* record, const std::string& field_name, bool value) const;
+	void SaveR(Record* record, const std::string& field_name, double value) const;
+	void SaveS(Record* record, const std::string& field_name, const std::string& value) const;
 
 	void SetUpdated();
 	void ClearUpdated();
@@ -51,4 +58,7 @@ private:
 
 	std::vector<BRS_Value> _getValuesFromRecord();
 	void _setRecordFromValues();
+
+	FieldDescr* _getFieldDescrByName(const std::string& field_name) const;
+	size_t _getFieldDescrIndexByName(const std::string& field_name) const;
 };
