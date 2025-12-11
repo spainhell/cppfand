@@ -24,6 +24,7 @@ Record::Record(FileD* file_d, uint8_t* record, bool record_owner)
 	_file_d = file_d;
 	_buffer = record;
 	_delete_record_on_destroy = record_owner;
+	_getValuesFromRecord();
 }
 
 Record::~Record()
@@ -52,8 +53,9 @@ Record* Record::Clone() const
 	return clone;
 }
 
-uint8_t* Record::GetRecord() const
+uint8_t* Record::GetRecord()
 {
+	_setRecordFromValues();
 	return _buffer;
 }
 
@@ -69,60 +71,68 @@ void Record::Reset()
 	}
 }
 
-bool Record::LoadB(const Record* record, const std::string& field_name) const
+void Record::Expand()
+{
+	_getValuesFromRecord();
+}
+
+bool Record::LoadB(const std::string& field_name) const
 {
 	size_t index = _getFieldDescrIndexByName(field_name);
 	if (std::cmp_not_equal(index, -1)) {
-		return record->_values[index].B;
+		return _values[index].B;
 	} 
 	else {
 		return false;
 	}
 }
 
-double Record::LoadR(const Record* record, const std::string& field_name) const
+double Record::LoadR(const std::string& field_name) const
 {
 	size_t index = _getFieldDescrIndexByName(field_name);
 	if (std::cmp_not_equal(index, -1)) {
-		return record->_values[index].R;
+		return _values[index].R;
 	}
 	else {
 		return 0.0;
 	}
 }
 
-std::string Record::LoadS(const Record* record, const std::string& field_name) const
+std::string Record::LoadS(const std::string& field_name) const
 {
 	size_t index = _getFieldDescrIndexByName(field_name);
 	if (std::cmp_not_equal(index, -1)) {
-		return record->_values[index].S;
+		return _values[index].S;
 	}
 	else {
 		return "";
 	}
 }
 
-void Record::SaveB(Record* record, const std::string& field_name, bool value) const
+void Record::SaveB(const std::string& field_name, bool value)
 {
 	size_t index = _getFieldDescrIndexByName(field_name);
 	if (std::cmp_not_equal(index, -1)) {
-		record->_values[index].B = value;
+		_values[index].B = value;
+		SetUpdated();
 	}
 }
 
-void Record::SaveR(Record* record, const std::string& field_name, double value) const
+void Record::SaveR(const std::string& field_name, double value)
 {
 	size_t index = _getFieldDescrIndexByName(field_name);
 	if (std::cmp_not_equal(index, -1)) {
-		record->_values[index].R = value;
+		_values[index].R = value;
+		SetUpdated();
 	}
 }
 
-void Record::SaveS(Record* record, const std::string& field_name, const std::string& value) const
+void Record::SaveS(const std::string& field_name, const std::string& value)
 {
 	size_t index = _getFieldDescrIndexByName(field_name);
 	if (std::cmp_not_equal(index, -1)) {
-		record->_values[index].S = value;
+		_values[index].S = value;
+		SetUpdated();
 	}
 }
 
@@ -144,11 +154,13 @@ bool Record::IsUpdated() const
 void Record::SetDeleted()
 {
 	_deleted = true;
+	SetUpdated();
 }
 
 void Record::ClearDeleted()
 {
 	_deleted = false;
+	SetUpdated();
 }
 
 bool Record::IsDeleted() const
@@ -156,101 +168,116 @@ bool Record::IsDeleted() const
 	return _deleted;
 }
 
-uint8_t* Record::PrepareRecord()
+void Record::_getValuesFromRecord()
 {
-	_setRecordFromValues();
-	return _buffer;
-}
+	_values.clear();
 
-void Record::Expand()
-{
-	_values = _getValuesFromRecord();
-}
+	if (_buffer != nullptr) {
+		for (FieldDescr* field : _file_d->FldD) {
+			BRS_Value val;
 
-std::vector<BRS_Value> Record::_getValuesFromRecord()
-{
-	std::vector<BRS_Value> values;
-	for (FieldDescr* field : _file_d->FldD)
-	{
-		BRS_Value val;
-		
-		if (field->isStored()) {
-			switch (field->field_type) {
-			case FieldType::BOOL:
-				val.B = _file_d->loadB(field, _buffer);
-				break;
-			case FieldType::DATE:
-			case FieldType::FIXED:
-			case FieldType::REAL:
-				val.R = _file_d->loadR(field, _buffer);
-				break;
-			case FieldType::ALFANUM:
-			case FieldType::NUMERIC:
-			case FieldType::TEXT:
-				val.S = _file_d->loadS(field, _buffer);
-				break;
-			default:
-				// unknown field type
-				break;
+			if (field->isStored()) {
+				switch (field->field_type) {
+				case FieldType::BOOL:
+					val.B = _file_d->loadB(field, _buffer);
+					break;
+				case FieldType::DATE:
+				case FieldType::FIXED:
+				case FieldType::REAL:
+					val.R = _file_d->loadR(field, _buffer);
+					break;
+				case FieldType::ALFANUM:
+				case FieldType::NUMERIC:
+				case FieldType::TEXT:
+					val.S = _file_d->loadS(field, _buffer);
+					break;
+				default:
+					// unknown field type
+					break;
+				}
 			}
-		} else {
-			// TODO: calculated T fields? is it stored in TWork by default?
+			else {
+				// TODO: calculated T fields? is it stored in TWork by default?
 
-			// calculated field
-			//switch (field->field_type) {
-			//case FieldType::BOOL:
-			//	val.B = RunBool(_file_d, field->Frml, _buffer);
-			//	break;
-			//case FieldType::DATE:
-			//case FieldType::FIXED:
-			//case FieldType::REAL:
-			//	val.R = RunReal(_file_d, field->Frml, _buffer);
-			//	break;
-			//case FieldType::ALFANUM:
-			//case FieldType::NUMERIC:
-			//case FieldType::TEXT:
-			//	val.S = RunString(_file_d, field->Frml, _buffer);
-			//	break;
-			//default:
-			//	// unknown field type
-			//	break;
-			//}
+				// calculated field
+				//switch (field->field_type) {
+				//case FieldType::BOOL:
+				//	val.B = RunBool(_file_d, field->Frml, _buffer);
+				//	break;
+				//case FieldType::DATE:
+				//case FieldType::FIXED:
+				//case FieldType::REAL:
+				//	val.R = RunReal(_file_d, field->Frml, _buffer);
+				//	break;
+				//case FieldType::ALFANUM:
+				//case FieldType::NUMERIC:
+				//case FieldType::TEXT:
+				//	val.S = RunString(_file_d, field->Frml, _buffer);
+				//	break;
+				//default:
+				//	// unknown field type
+				//	break;
+				//}
+			}
+
+			_values.push_back(val);
 		}
-
-		values.push_back(val);
 	}
-	return values;
+	else
+	{
+		// buffer is null -> return empty values
+	}
 }
 
 void Record::_setRecordFromValues()
 {
-	for (size_t i = 0; i < _file_d->FldD.size(); i++) {
-		FieldDescr* field = _file_d->FldD[i];
-		
-		if (field->isStored()) {
-			BRS_Value& val = _values[i];
-			switch (field->field_type) {
-			case FieldType::BOOL:
-				_file_d->saveB(field, val.B, _buffer);
-				break;
-			case FieldType::DATE:
-			case FieldType::FIXED:
-			case FieldType::REAL:
-				_file_d->saveR(field, val.R, _buffer);
-				break;
-			case FieldType::ALFANUM:
-			case FieldType::NUMERIC:
-			case FieldType::TEXT:
-				_file_d->saveS(field, val.S, _buffer);
-				break;
-			default:
-				// unknown field type
-				break;
-			}
+	if (IsUpdated()) {
+		if (_file_d->HasIndexFile() && IsDeleted()) {
+			_file_d->SetDeletedFlag(_buffer);
 		}
 		else {
-			// calculated field -> do nothing
+			_file_d->ClearDeletedFlag(_buffer);
 		}
+
+		if (IsUpdated()) {
+			_file_d->SetRecordUpdateFlag(_buffer);
+		}
+		else {
+			_file_d->ClearRecordUpdateFlag(_buffer);
+		}
+
+		for (size_t i = 0; i < _file_d->FldD.size(); i++) {
+			FieldDescr* field = _file_d->FldD[i];
+
+			if (field->isStored()) {
+				BRS_Value& val = _values[i];
+				switch (field->field_type) {
+				case FieldType::BOOL:
+					_file_d->saveB(field, val.B, _buffer);
+					break;
+				case FieldType::DATE:
+				case FieldType::FIXED:
+				case FieldType::REAL:
+					_file_d->saveR(field, val.R, _buffer);
+					break;
+				case FieldType::ALFANUM:
+				case FieldType::NUMERIC:
+				case FieldType::TEXT:
+					_file_d->saveS(field, val.S, _buffer);
+					break;
+				default:
+					// unknown field type
+					break;
+				}
+			}
+			else {
+				// calculated field -> do nothing
+			}
+		}
+	}
+	else {
+		// not updated -> _buffer will not be changed
+
 	}
 }
 

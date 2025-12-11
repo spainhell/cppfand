@@ -1789,8 +1789,9 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 		EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
 
 		EditReader* reader = new EditReader();
-		Record* temp_rec = new Record(Chpt, (uint8_t*)CRecPtr);
+		Record* temp_rec = new Record(Chpt, CRecPtr);
 		reader->NewEditD(Chpt, EO, temp_rec);
+		delete temp_rec; temp_rec = nullptr;
 		EditD* edit = reader->GetEditD();
 		edit->params_->MustCheck = true; /*ChptTyp*/
 		if (CRdb->Encrypted) {

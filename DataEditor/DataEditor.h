@@ -81,7 +81,7 @@ private:
     WORD FldRow(EFldD* D, WORD I);
     bool HasTTWw(FieldDescr* F);
     void DisplEmptyFld(EFldD* D, WORD I);
-    void Wr1Line(FieldDescr* field, const Record* record) const;
+    void Wr1Line(const FieldDescr* field, const Record* record) const;
     void DisplFld(EFldD* D, WORD I, uint8_t Color, Record* record);
     void DisplayRecord(uint16_t i);
     bool LockRec(bool Displ);

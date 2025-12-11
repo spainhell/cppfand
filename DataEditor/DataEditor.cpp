@@ -992,11 +992,12 @@ void DataEditor::DisplEmptyFld(EFldD* D, WORD I)
 /// </summary>
 /// <param name="field"></param>
 /// <param name="record"></param>
-void DataEditor::Wr1Line(FieldDescr* field, const Record* record) const
+void DataEditor::Wr1Line(const FieldDescr* field, const Record* record) const
 {
 	auto X = screen.WhereX();
 	auto Y = screen.WhereY();
-	std::string ls = file_d_->loadS(field, record->GetRecord());
+	//std::string ls = file_d_->loadS(field, record->GetRecord());
+	std::string ls = record->LoadS(field->Name);
 	ls = GetNthLine(ls, 1, 1);
 	WORD max = field->L - 2;
 	ls = GetStyledStringOfLength(ls, 0, max);
