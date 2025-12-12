@@ -31,7 +31,7 @@ public:
     WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
 	             bool star, bool upd, bool ret, unsigned int Delta); // r86
     int CRec();
-	void UpdateEdTFld(std::string& S);
+	void UpdateTextField(std::string& text);
     bool StartExit(EdExitD* X, bool Displ);
     bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F);
     std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);
@@ -83,20 +83,23 @@ private:
     void DisplEmptyFld(EFldD* D, WORD I);
     void Wr1Line(const FieldDescr* field, const Record* record) const;
     void DisplFld(EFldD* D, WORD I, uint8_t Color, Record* record);
-    void DisplayRecord(uint16_t i);
+    void DisplayRecord(uint16_t screen_data_row_nr);
     bool LockRec(bool Displ);
     void UnLockRec(EditD* E);
     void NewRecExit();
     void SetCPage(WORD& c_page, ERecTxtD** rt);
     void DisplRecNr(int N);
     void AdjustCRec();
-    
-    void DuplFld(FileD* src_file, FileD* dst_file, uint8_t* src_rec, uint8_t* dst_rec_new, 
-        uint8_t* dst_rec_old, FieldDescr* srd_fld, FieldDescr* dst_fld);
+	
+	/* void DuplFld(FileD* src_file, FileD* dst_file, uint8_t* src_rec, uint8_t* dst_rec_new, 
+        uint8_t* dst_rec_old, FieldDescr* srd_fld, FieldDescr* dst_fld); */
+
+    void DuplicateField(Record* src_record, FieldDescr* src_field, Record* dst_record, FieldDescr* dst_field);
+
     bool IsFirstEmptyFld();
     void SetFldAttr(EFldD* D, WORD I, WORD Attr);
-    void IVoff();
-    void IVon();
+    void HighLightOff();
+    void HighLightOn();
     void SetRecAttr(WORD I);
     void DisplTabDupl();
     void DisplaySystemLine();
@@ -107,7 +110,7 @@ private:
     void WriteSL(std::vector<std::string>& SL);
     void DisplRecTxt();
     
-    void UpdMemberRef(uint8_t* POld, uint8_t* PNew);
+    void UpdMemberRef(Record* POld, Record* PNew);
     void WrJournal(char Upd, void* RP, double Time);
     bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md);
     bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd);
@@ -132,11 +135,11 @@ private:
     int UpdateIndexes();
     bool WriteCRec(bool MayDispl, bool& Displ);
     void DuplFromPrevRec();
-    void InsertRecProc(void* RP);
-    void AppendRecord(void* RP);
+    void InsertRecProc(uint8_t* RP);
+    void AppendRecord(uint8_t* RP);
     bool GotoXRec(XString* PX, int& N);
     std::vector<EFldD*>::iterator FindEFld(FieldDescr* F);
-    void CreateOrErr(bool create, void* RP, int N);
+    void CreateOrErr(bool create, uint8_t* RP, int N);
     bool PromptSearch(bool create);
     bool PromptAndSearch(bool create);
     void PromptGotoRecNr();
@@ -155,7 +158,7 @@ private:
     bool GoPrevNextRec(short Delta, bool Displ);
     bool GetChpt(pstring Heslo, int& NN);
     void SetCRec(int I);
-    bool EditItemProc(bool del, bool ed, WORD& Brk);
+    bool EditItemProc(bool del, bool ed, WORD& brk);
     void SetSwitchProc();
     void PromptSelect();
     void SwitchRecs(short Delta);
@@ -198,7 +201,7 @@ private:
 
     WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt,
                    double& RR, bool del, bool upd, bool ret, unsigned int Delta);
-    void SetWasUpdated(FileD* file_d, uint8_t* record);
+    void SetWasUpdated();
     void AssignFld(FieldDescr* F, FrmlElem* Z);
     bool TestMask(std::string& S, std::string Mask);
     void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R);

@@ -297,7 +297,7 @@ std::string Fand0File::loadS(FieldDescr* field_d, uint8_t* record)
 			S = TF->Read(loadT(field_d, record));
 			_parent->OldLockMode(md);
 		//}
-		if ((field_d->Flg & f_Encryp) != 0) {
+		if (field_d->isEncrypted()) {
 			S = Coding::Code(S);
 		}
 		break;
@@ -323,7 +323,7 @@ void Fand0File::saveB(FieldDescr* field_d, bool b, uint8_t* record)
 
 void Fand0File::saveR(FieldDescr* field_d, double r, uint8_t* record)
 {
-	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
+	uint8_t* pRec = record + field_d->Displ;
 	int l = 0;
 	if ((field_d->Flg & f_Stored) != 0) {
 		WORD m = field_d->M;

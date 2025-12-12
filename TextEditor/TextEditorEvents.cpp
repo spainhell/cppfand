@@ -438,7 +438,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, EditorMode& mode, std::v
 					//*LocalPPtr = TWork.Store(data);
 				}
 				else if (UpdatT) {
-					data_editor->UpdateEdTFld(data);
+					data_editor->UpdateTextField(data);
 					UpdatT = false;
 				}
 
