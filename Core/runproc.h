@@ -42,7 +42,7 @@ void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op);
 void HelpProc(Instr_help* PD);
 HANDLE OpenHForPutTxt(Instr_puttxt* PD);
 void PutTxt(Instr_puttxt* PD);
-void AssgnCatFld(Instr_assign* PD, uint8_t* record);
+void AssgnCatFld(Instr_assign* PD, Record* record);
 void AssgnAccRight(Instr_assign* PD);
 void AssgnUserName(Instr_assign* PD);
 void ReleaseDriveProc(FrmlElem* Z);

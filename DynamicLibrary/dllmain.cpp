@@ -113,20 +113,20 @@ extern "C" int FAND_API LoadRecord(int32_t recNr)
 
 extern "C" void FAND_API GetChapterType(char* chapterType)
 {
-	std::string chapter_type = rdbFile->loadS(rdbFile->FldD[3], data->GetRecord());
+	std::string chapter_type = rdbFile->loadS(rdbFile->FldD[3], data);
 	memcpy(chapterType, chapter_type.c_str(), chapter_type.length());
 }
 
 extern "C" void FAND_API GetChapterName(char* chapterName)
 {
-	std::string chapter_name = rdbFile->loadS(rdbFile->FldD[4], data->GetRecord());
+	std::string chapter_name = rdbFile->loadS(rdbFile->FldD[4], data);
 	chapter_name = ConvertCP852toUnicode(chapter_name);
 	memcpy(chapterName, chapter_name.c_str(), chapter_name.length());
 }
 
 extern "C" int FAND_API GetChapterCodeLength()
 {
-	code = rdbFile->loadS(rdbFile->FldD[5], data->GetRecord());
+	code = rdbFile->loadS(rdbFile->FldD[5], data);
 	code = ConvertCP852toUnicode(code);
 	return static_cast<int>(code.length());
 }

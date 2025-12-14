@@ -174,7 +174,7 @@ void Report::Read(RprtOpt* RO)
 				&&
 				((*FDL)->Cond != nullptr || (!(*FDL)->KeyIn.empty()) || (Ii == 1) && RO->UserCondQuest))
 			{
-				ID->Bool = RunEvalFrml(FD, (*FDL)->Cond, FD->FF->RecPtr->GetRecord());
+				ID->Bool = RunEvalFrml(FD, (*FDL)->Cond, FD->FF->RecPtr);
 				KI = (*FDL)->KeyIn;
 				ID->SQLFilter = (*FDL)->SQLFilter;
 				if (Ii == 1) {
@@ -322,14 +322,14 @@ void Report::Run(RprtOpt* RO)
 		}
 	}
 	if (PgeLimitZ != nullptr) {
-		PgeLimit = RunInt(CFile, PgeLimitZ, CRecPtr);
+		PgeLimit = RunInt(CFile, PgeLimitZ, nullptr);
 	}
 	else {
 		PgeLimit = spec.AutoRprtLimit;
 	}
 
 	if (PgeSizeZ != nullptr) {
-		PgeSize = RunInt(CFile, PgeSizeZ, CRecPtr);
+		PgeSize = RunInt(CFile, PgeSizeZ, nullptr);
 	}
 	else {
 		PgeSize = spec.AutoRprtLimit + spec.CpLines;
@@ -645,7 +645,7 @@ label2:
 		Ii = 0;
 	}
 	else {
-		Z = base_compiler->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr->GetRecord());
+		Z = base_compiler->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr);
 		TestSetSumIi();
 		if ((FrmlSumEl != nullptr) && !FrstSumVar && (CBlk != nullptr)) {
 			base_compiler->OldError(59);
@@ -686,7 +686,7 @@ void Report::FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 	else Z = FindIiandFldFrml(&FD, FTyp);
 	if (Z == nullptr) base_compiler->Error(8);
 	TestSetSumIi();
-	*res = base_compiler->FrmlContxt(Z, FD, FD->FF->RecPtr->GetRecord());
+	*res = base_compiler->FrmlContxt(Z, FD, FD->FF->RecPtr);
 }
 
 void Report::Rd_Oi()
@@ -1321,7 +1321,7 @@ label1:
 			L = (uint8_t)Y.P[Y.I + 1];
 			WORD M = (uint8_t)Y.P[Y.I + 2];
 			if (RF->FrmlTyp == 'R') {
-				if (!Skip) R = RunReal(CFile, RF->Frml, CRecPtr);
+				if (!Skip) R = RunReal(nullptr, RF->Frml, nullptr);
 				switch (RF->Typ) {
 				case 'R':
 				case 'F': {
@@ -1378,7 +1378,7 @@ label1:
 			}
 			else {
 				if (RF->Typ == 'P') {
-					std::string s = RunString(CFile, RF->Frml, CRecPtr);
+					std::string s = RunString(nullptr, RF->Frml, nullptr);
 					//printf("%s%c", Rprt.c_str(), 0x10);
 					text += 0x10;
 					for (size_t i = 0; i < s.length(); i++) {
@@ -1396,13 +1396,13 @@ label1:
 				else
 					switch (RF->FrmlTyp) {
 					case 'S': {
-						std::string S = RunString(CFile, RF->Frml, CRecPtr);
+						std::string S = RunString(nullptr, RF->Frml, nullptr);
 						S = TrailChar(S, ' ');
 						text += NewTxtCol(S, M, L, RF->BlankOrWrap);
 						break;
 					}
 					case 'B':
-						if (RunBool(CFile, RF->Frml, CRecPtr)) {
+						if (RunBool(nullptr, RF->Frml, nullptr)) {
 							//printf("%s%c", Rprt.c_str(), AbbrYes);
 							text += AbbrYes;
 						}
@@ -1448,10 +1448,10 @@ void Report::RunAProc(std::vector<AssignD*> vAssign)
 {
 	for (AssignD* A : vAssign) {
 		switch (A->Kind) {
-		case MInstrCode::_locvar: { LVAssignFrml(CFile, A->LV, A->Add, A->Frml, CRecPtr); break; }
+		case MInstrCode::_locvar: { LVAssignFrml(nullptr, A->LV, A->Add, A->Frml, nullptr); break; }
 		case MInstrCode::_parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
 		case MInstrCode::_ifThenElse: {
-			if (RunBool(CFile, A->Bool, CRecPtr)) {
+			if (RunBool(nullptr, A->Bool, nullptr)) {
 				RunAProc(A->Instr);
 			}
 			else {
@@ -1469,13 +1469,13 @@ void Report::PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 {
 	if (B == nullptr) return;
 	if (B->SetPage) {
-		PageNo = RunInt(CFile, B->PageNo, CRecPtr);
+		PageNo = RunInt(nullptr, B->PageNo, nullptr);
 		SetPage = true;
 	}
 	if (B != Y.Blk) {
 		FinishTuple(text);
 		if (B->AbsLine) {
-			for (int i = RprtLine; i <= RunInt(CFile, B->LineNo, CRecPtr) - 1; i++) {
+			for (int i = RprtLine; i <= RunInt(nullptr, B->LineNo, nullptr) - 1; i++) {
 				NewLine(text);
 			}
 		}
@@ -1507,15 +1507,15 @@ void Report::PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 
 bool Report::OutOfLineBound(BlkD* B)
 {
-	return ((B->LineBound != nullptr) && (RprtLine > RunReal(CFile, B->LineBound, CRecPtr))
-		|| B->AbsLine && (RunInt(CFile, B->LineNo, CRecPtr) < RprtLine));
+	return ((B->LineBound != nullptr) && (RprtLine > RunReal(nullptr, B->LineBound, nullptr))
+		|| B->AbsLine && (RunInt(nullptr, B->LineNo, nullptr) < RprtLine));
 }
 
 void Report::PrintBlkChn(std::vector<BlkD*>& block, std::string& text, bool ChkPg, bool ChkLine)
 {
 	//while (B != nullptr) {
 	for (BlkD* b : block) {
-		if (RunBool(CFile, b->Bool, CRecPtr)) {
+		if (RunBool(nullptr, b->Bool, nullptr)) {
 			if (ChkLine) {
 				if (OutOfLineBound(b)) WasFF2 = true;
 				if (b->FF1 || WasFF2) NewPage(text);
@@ -1797,7 +1797,7 @@ void Report::PrintBlock(std::vector<BlkD*>& block, std::string& text, std::vecto
 	bool pdh = false;
 	//while (b != nullptr) {
 	for (BlkD* b : block) {
-		if (RunBool(CFile, b->Bool, CRecPtr)) {
+		if (RunBool(nullptr, b->Bool, nullptr)) {
 			if (b != Y.Blk) {
 				if ((b->NTxtLines > 0) && (b->NBlksFrst < LineLenLst)) {
 					TruncLine(text);
@@ -1809,7 +1809,7 @@ void Report::PrintBlock(std::vector<BlkD*>& block, std::string& text, std::vecto
 				if ((DH != dh.end()) && (PrintDH >= (*DH)->DHLevel + 1)) {
 					std::vector<BlkD*>::iterator B1 = DH;
 					while (B1 != dh.end()) {
-						if (RunBool(CFile, (*B1)->Bool, CRecPtr)) LAfter += (*B1)->NTxtLines;
+						if (RunBool(nullptr, (*B1)->Bool, nullptr)) LAfter += (*B1)->NTxtLines;
 						++B1; // = B1->pChain;
 					}
 				}
@@ -1829,7 +1829,8 @@ void Report::PrintBlock(std::vector<BlkD*>& block, std::string& text, std::vecto
 			if ((DH == dh.end()) && WasOutput) {
 				pdh = true;
 			}
-			SumUp(CFile, b->Sum, CRecPtr);
+			// TODO: this cannot be nullptr:
+			SumUp(nullptr, b->Sum, nullptr);
 		}
 		//b = b->pChain;
 	}
@@ -1868,7 +1869,7 @@ label1:
 	}
 	RecCount++;
 	RunMsgN(RecCount);
-	if (!RunBool(ID->Scan->FD, ID->Bool, rec->GetRecord())) goto label1;
+	if (!RunBool(ID->Scan->FD, ID->Bool, rec)) goto label1;
 	delete rec; rec = nullptr;
 }
 
@@ -1880,7 +1881,8 @@ void Report::OpenInp()
 		if (IDA[i]->Scan->Kind == ScanMode::LocalVariable) IDA[i]->Scan->SeekRec(0);
 		else {
 			IDA[i]->Md = CFile->NewLockMode(RdMode);
-			IDA[i]->Scan->ResetSort(IDA[i]->SK, IDA[i]->Bool, IDA[i]->Md, IDA[i]->SQLFilter, CRecPtr);
+			// TODO: next line has CRecPtr->nullptr
+			IDA[i]->Scan->ResetSort(IDA[i]->SK, IDA[i]->Bool, IDA[i]->Md, IDA[i]->SQLFilter, nullptr);
 		}
 		NRecsAll += IDA[i]->Scan->NRecs;
 	}
@@ -1907,7 +1909,7 @@ WORD Report::CompMFlds(FileD* file_d, Record* record, std::vector<ConstListEl>& 
 		KeyFldD* m = M[i];
 		NLv++;
 		x.Clear();
-		x.StoreKF(file_d, m, record->GetRecord());
+		x.StoreKF(file_d, m, record);
 		std::string s = x.S;
 		int res = CompStr(s, c.S);
 		if (res != _equ) {
@@ -1926,7 +1928,7 @@ void Report::GetMFlds(FileD* file_d, Record* rec, std::vector<ConstListEl>& C, s
 		KeyFldD* m = M[i];
 		XString x;
 		x.Clear();
-		x.StoreKF(file_d, m, rec->GetRecord());
+		x.StoreKF(file_d, m, rec);
 		c.S = x.S;
 		//M = M->pChain;
 	}
@@ -1953,17 +1955,17 @@ void Report::PutMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 
 		switch (f->frml_type) {
 		case 'S': {
-			std::string s = cf1->loadS(f1, cr1->GetRecord());
+			std::string s = cf1->loadS(f1, cr1);
 			file_d->saveS(f, s, record->GetRecord());
 			break;
 		}
 		case 'R': {
-			double r = cf1->loadR(f1, cr1->GetRecord());
+			double r = cf1->loadR(f1, cr1);
 			file_d->saveR(f, r, record->GetRecord());
 			break;
 		}
 		default: {
-			bool b = cf1->loadB(f1, cr1->GetRecord());
+			bool b = cf1->loadB(f1, cr1);
 			file_d->saveB(f, b, record->GetRecord());
 			break;
 		}
@@ -2055,9 +2057,9 @@ void Report::MoveForwToRec(InpD* ID)
 		ID->Warning = false;
 		ID->ErrTxtFrml->S = "";
 		for (LogicControl* C : ID->Chk) {
-			if (!RunBool(f, C->Bool, rec->GetRecord())) {
+			if (!RunBool(f, C->Bool, rec)) {
 				ID->Warning = true;
-				ID->ErrTxtFrml->S = RunString(f, C->TxtZ, rec->GetRecord());
+				ID->ErrTxtFrml->S = RunString(f, C->TxtZ, rec);
 				if (!C->Warning) {
 					ID->Error = true;
 					return;
@@ -2104,7 +2106,7 @@ void Report::MergeProc(std::string& text)
 			if (PrintDH == 0) PrintDH = 1;
 		label2:
 			PrintBlock(ID->FrstLvS->Ft, text, ID->FrstLvS->Hd); /*DE*/
-			SumUp(f, ID->Sum, rec->GetRecord());
+			SumUp(f, ID->Sum, rec);
 			ReadInpFile(ID);
 			if (ID->Scan->eof) goto label4;
 			res = CompMFlds(f, rec, NewMFlds, ID->MFld, nlv);
@@ -2143,7 +2145,7 @@ bool Report::RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 
 	if (RO != nullptr) {
 		PrintCtrl = RO->PrintCtrl;
-		if (RO->Times != nullptr) Times = (WORD)RunInt(CFile, RO->Times, CRecPtr);
+		if (RO->Times != nullptr) Times = (WORD)RunInt(nullptr, RO->Times, nullptr);
 	}
 
 	if (RO == nullptr || RO->Path.empty() && RO->CatIRec == 0) {

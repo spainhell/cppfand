@@ -93,10 +93,10 @@ public:
 	void SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const;
 	void IndexesMaintenance(bool remove_deleted);
 
-	bool loadB(FieldDescr* field_d, uint8_t* record);
-	double loadR(FieldDescr* field_d, uint8_t* record);
-	std::string loadS(FieldDescr* field_d, uint8_t* record);
-	int loadT(FieldDescr* field_d, uint8_t* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
+	bool loadB(FieldDescr* field_d, Record* record);
+	double loadR(FieldDescr* field_d, Record* record);
+	std::string loadS(FieldDescr* field_d, Record* record);
+	int loadT(FieldDescr* field_d, Record* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
 
 	void saveB(FieldDescr* field_d, bool b, uint8_t* record);
 	void saveR(FieldDescr* field_d, double r, uint8_t* record);

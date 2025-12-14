@@ -18,7 +18,7 @@ std::string ReadProlog::Read(RdbPos* rdb_pos)
 	FieldDescr* ChptTxt = ChptLRdb->v_files[0]->FldD[5];
 
 	std::unique_ptr<Compiler> compiler = std::make_unique<Compiler>();
-	compiler->SetInpTTPos(ChptLRdb->v_files[0], ChptLRdb->v_files[0]->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
+	//compiler->SetInpTTPos(ChptLRdb->v_files[0], ChptLRdb->v_files[0]->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
 
 	delete[] CRecPtr;
 	CRecPtr = nullptr;

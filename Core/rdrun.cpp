@@ -56,8 +56,8 @@ bool Add(FileD* file_d, Additive* add_d, Record* record, double value, bool back
 
 	if (add_d->Chk == nullptr) return result;
 
-	if (!back && !RunBool(file_d, add_d->Chk->Bool, record->GetRecord())) {
-		SetMsgPar(RunString(file_d, add_d->Chk->TxtZ, record->GetRecord()));
+	if (!back && !RunBool(file_d, add_d->Chk->Bool, record)) {
+		SetMsgPar(RunString(file_d, add_d->Chk->TxtZ, record));
 		WrLLF10Msg(110);
 		result = false;
 	}
@@ -180,7 +180,7 @@ bool Assign(FileD* file_d, Additive* add_d, Record* record)
 	int n2;
 	char kind2;
 
-	if (!RunBool(file_d, add_d->Bool, record->GetRecord())) {
+	if (!RunBool(file_d, add_d->Bool, record)) {
 		return true;
 	}
 	FieldDescr* f = add_d->Field;
@@ -188,20 +188,20 @@ bool Assign(FileD* file_d, Additive* add_d, Record* record)
 
 	switch (f->frml_type) {
 	case 'R': {
-		r = RunReal(file_d, z, record->GetRecord());
+		r = RunReal(file_d, z, record);
 		break;
 	}
 	case 'S': {
 		if (f->field_type == FieldType::TEXT) {
-			s = RunString(file_d, z, record->GetRecord());
+			s = RunString(file_d, z, record);
 		}
 		else {
-			s = RunString(file_d, z, record->GetRecord());
+			s = RunString(file_d, z, record);
 		}
 		break;
 	}
 	default: {
-		b = RunBool(file_d, z, record->GetRecord());
+		b = RunBool(file_d, z, record);
 		break;
 	}
 	}
@@ -338,13 +338,13 @@ bool RunAddUpdate(FileD* file_d, char kind, Record* old_record, bool back, Addit
 				}
 			}
 
-			double r = RunReal(file_d, add->Frml, record->GetRecord());
+			double r = RunReal(file_d, add->Frml, record);
 			if (kind == '-') {
 				r = -r;
 			}
 			double r_old = 0;
 			if (kind == 'd') {
-				r_old = RunReal(file_d, add->Frml, old_record->GetRecord());
+				r_old = RunReal(file_d, add->Frml, old_record);
 			}
 			add_d_back = add;
 

@@ -179,17 +179,17 @@ void Record::_getValuesFromRecord()
 			if (field->isStored()) {
 				switch (field->field_type) {
 				case FieldType::BOOL:
-					val.B = _file_d->loadB(field, _buffer);
+					val.B = _file_d->loadB(field, this);
 					break;
 				case FieldType::DATE:
 				case FieldType::FIXED:
 				case FieldType::REAL:
-					val.R = _file_d->loadR(field, _buffer);
+					val.R = _file_d->loadR(field, this);
 					break;
 				case FieldType::ALFANUM:
 				case FieldType::NUMERIC:
 				case FieldType::TEXT:
-					val.S = _file_d->loadS(field, _buffer);
+					val.S = _file_d->loadS(field, this);
 					break;
 				default:
 					// unknown field type

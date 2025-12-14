@@ -85,7 +85,7 @@ Instr_assign* RdUserFuncAssign(Compiler* compiler);
 void ReadProcHead(Compiler* compiler, const std::string& name);
 std::vector<Instr*> ReadProcBody(Compiler* compiler);
 void ReadDeclChpt(Compiler* compiler);
-FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, uint8_t* record);
+FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, Record* record);
 Instr* RdCallLProc(Compiler* compiler);
 
 #ifdef FandGraph

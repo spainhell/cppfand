@@ -160,7 +160,7 @@ void Compiler::SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 {
 	if (rdb_pos->i_rec == 0) {
-		std::string run_str = RunString(CFile, (FrmlElem*)rdb_pos->rdb, CRecPtr);
+		std::string run_str = RunString(nullptr, (FrmlElem*)rdb_pos->rdb, nullptr);
 		SetInpStdStr(run_str, true);
 		return;
 	}
@@ -172,10 +172,10 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	rdb->v_files[0]->ReadRec(rdb_pos->i_rec, rec);
 	int pos;
 	if (FromTxt) {
-		pos = rdb->v_files[0]->loadT(ChptTxt, rec->GetRecord());
+		pos = rdb->v_files[0]->loadT(ChptTxt, rec);
 	}
 	else {
-		pos = rdb->v_files[0]->loadT(ChptOldTxt, rec->GetRecord());
+		pos = rdb->v_files[0]->loadT(ChptOldTxt, rec);
 	}
 	SetInpTTPos(rdb->v_files[0], pos, rdb->Encrypted);
 
@@ -2564,9 +2564,9 @@ FrmlElem* Compiler::RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 	return Z;
 }
 
-FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, uint8_t* RP)
+FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, Record* RP)
 {
-	auto Z1 = new FrmlElemNewFile(_newfile, 8);
+	FrmlElemNewFile* Z1 = new FrmlElemNewFile(_newfile, 8);
 	Z1->Frml = Z;
 	Z1->NewFile = FD;
 	Z1->NewRP = RP;
@@ -2575,7 +2575,7 @@ FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, uint8_t* RP)
 
 FrmlElem* Compiler::MakeFldFrml(FieldDescr* F, char& FTyp)
 {
-	auto Z = new FrmlElemRecVarField(_field, 4);
+	FrmlElemRecVarField* Z = new FrmlElemRecVarField(_field, 4);
 	Z->Field = F;
 	FTyp = F->frml_type;
 	return Z;

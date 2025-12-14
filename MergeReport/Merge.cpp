@@ -182,6 +182,9 @@ void Merge::Run()
 	short MinIi = 0, res = 0, NEof = 0;      /* RunMerge - body */
 	bool EmptyGroup = false, b = false;
 	//Compiler::ProcStack.push_front(&LVBD); //PushProcStk();
+	FileD* f = nullptr;
+	Record* rec = nullptr;
+
 	OpenInpM();
 	OpenOutp();
 	MergOpGroup.Group = 1.0;
@@ -193,7 +196,7 @@ void Merge::Run()
 label1:
 	MinIi = 0; NEof = 0;
 	for (short i = 1; i <= MaxIi; i++) /* !!! with IDA[I]^ do!!! */ {
-		CFile = IDA[i]->Scan->FD;
+		f = IDA[i]->Scan->FD;
 		IDA[i]->IRec = IDA[i]->Scan->IRec;
 		ZeroSumFlds(IDA[i]->Sum);
 		if (IDA[i]->Scan->eof) NEof++;
@@ -202,17 +205,17 @@ label1:
 			MinIi = 1;
 		}
 		else {
-			//CRecPtr = IDA[i]->ForwRecPtr;
+			rec = IDA[i]->ForwRecPtr;
 			IDA[i]->Exist = false;
 			IDA[i]->Count = 0.0;
 			if (!IDA[i]->Scan->eof) {
 				if (MinIi == 0) goto label2;
-				res = CompMFlds(IDA[i]->MFld);
+				res = CompMFlds(f, rec, IDA[i]->MFld);
 				if (res != _gt) {
 					if (res == _lt)
 					{
 					label2:
-						SetOldMFlds(IDA[i]->MFld);
+						SetOldMFlds(f, rec, IDA[i]->MFld);
 						MinIi = i;
 					}
 					IDA[i]->Exist = true;
@@ -224,7 +227,7 @@ label1:
 		IDA[i]->Exist = false;
 	}
 	if (NEof == MaxIi) {
-		b = SaveCache(0, CFile->FF->Handle);
+		b = SaveCache(0, f->FF->Handle);
 		RunMsgOff();
 		if (!b) {
 			GoExit(MsgLine);
@@ -235,10 +238,10 @@ label1:
 	}
 	EmptyGroup = false;
 	if (Join) {
-		JoinProc(1, EmptyGroup);
+		JoinProc(f, rec, 1, EmptyGroup);
 	}
 	else {
-		MergeProc();
+		MergeProc(f, rec);
 	}
 	if (!EmptyGroup) {
 		WriteOutp(OutpRDs);
@@ -336,7 +339,7 @@ FrmlElem* Merge::RdFldNameFrml(char& FTyp)
 		base_compiler->Error(8);
 	}
 	TestSetSumIi();
-	result = base_compiler->FrmlContxt(Z, FD, FD->FF->RecPtr->GetRecord());
+	result = base_compiler->FrmlContxt(Z, FD, FD->FF->RecPtr);
 	return result;
 }
 
@@ -434,7 +437,7 @@ label2:
 		Ii = 0;
 	}
 	else {
-		result = base_compiler->FrmlContxt(result, processed_file, processed_file->FF->RecPtr->GetRecord());
+		result = base_compiler->FrmlContxt(result, processed_file, processed_file->FF->RecPtr);
 	}
 
 	return result;
@@ -449,7 +452,7 @@ FrmlElem* Merge::RdOutpFldName(char& FTyp)
 	else {
 		FieldDescr* rdFldName = base_compiler->RdFldName(RD->OD->FD);
 		FrmlElem* makeFldFrml = base_compiler->MakeFldFrml(rdFldName, FTyp);
-		result = base_compiler->FrmlContxt(makeFldFrml, RD->OD->FD, RD->OD->RecPtr->GetRecord());
+		result = base_compiler->FrmlContxt(makeFldFrml, RD->OD->FD, RD->OD->RecPtr);
 	}
 	return result;
 }
@@ -531,7 +534,7 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 			FrmlElem* Z = base_compiler->MakeFldFrml(inputField, FTyp);
 			Z = AdjustComma_M(Z, inputField, _divide);
 			Z = AdjustComma_M(Z, outputField, _times);
-			newAssign->Frml = base_compiler->FrmlContxt(Z, inputFile, inputFile->FF->RecPtr->GetRecord());
+			newAssign->Frml = base_compiler->FrmlContxt(Z, inputFile, inputFile->FF->RecPtr);
 		}
 	}
 	//newAssign->pChain = RD_Ass;
@@ -779,14 +782,14 @@ void Merge::RdOutpRD(std::vector<OutpRD*>& RDRoot)
 	MakeImplAssign();
 }
 
-WORD Merge::CompMFlds(std::vector<KeyFldD*>& M)
+WORD Merge::CompMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 {
 	XString x;
-	x.PackKF(CFile, M, CRecPtr);
+	x.PackKF(file_d, M, record);
 	return CompStr(x.S, OldMXStr.S);
 }
 
-void Merge::SetOldMFlds(std::vector<KeyFldD*>& M)
+void Merge::SetOldMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 {
 	//ConstListEl* C = nullptr;
 	FieldDescr* F = nullptr;
@@ -797,17 +800,17 @@ void Merge::SetOldMFlds(std::vector<KeyFldD*>& M)
 		F = M[i]->FldD;
 		switch (F->frml_type) {
 		case 'S': {
-			C->S = CFile->loadS(F, CRecPtr);
+			C->S = file_d->loadS(F, record);
 			OldMXStr.StoreStr(C->S, M[i]);
 			break;
 		}
 		case 'R': {
-			C->R = CFile->loadR(F, CRecPtr);
+			C->R = file_d->loadR(F, record);
 			OldMXStr.StoreReal(C->R, M[i]);
 			break;
 		}
 		default: {
-			C->B = CFile->loadB(F, CRecPtr);
+			C->B = file_d->loadB(F, record);
 			OldMXStr.StoreBool(C->B, M[i]);
 			break;
 		}
@@ -826,7 +829,7 @@ label1:
 	if (ID->Scan->eof) return;
 	NRecsAll++;
 	RunMsgN(NRecsAll);
-	if (!RunBool(ID->Scan->FD, ID->Bool, rec->GetRecord())) {
+	if (!RunBool(ID->Scan->FD, ID->Bool, rec)) {
 		goto label1;
 	}
 	delete rec; rec = nullptr;
@@ -857,7 +860,7 @@ void Merge::RunAssign(std::vector<AssignD*> Assigns)
 			break;
 		}
 		case MInstrCode::_locvar: {
-			LVAssignFrml(CFile, A->LV, A->Add, A->Frml, CRecPtr);
+			LVAssignFrml(nullptr, A->LV, A->Add, A->Frml, nullptr);
 			break;
 		}
 		case MInstrCode::_parfile: {
@@ -865,7 +868,7 @@ void Merge::RunAssign(std::vector<AssignD*> Assigns)
 			break;
 		}
 		case MInstrCode::_ifThenElse: {
-			if (RunBool(CFile, A->Bool, CRecPtr)) {
+			if (RunBool(nullptr, A->Bool, nullptr)) {
 				RunAssign(A->Instr);
 			}
 			else {
@@ -918,7 +921,7 @@ void Merge::OpenInpM()
 		if (IDA[I]->IsInplace) IDA[I]->Md = f->NewLockMode(ExclMode);
 		else IDA[I]->Md = f->NewLockMode(RdMode);
 		// TODO: CRecPtr on the next line?
-		IDA[I]->Scan->ResetSort(IDA[I]->SK, IDA[I]->Bool, IDA[I]->Md, IDA[I]->SQLFilter, CRecPtr);
+		IDA[I]->Scan->ResetSort(IDA[I]->SK, IDA[I]->Bool, IDA[I]->Md, IDA[I]->SQLFilter, nullptr);
 		NRecsAll += IDA[I]->Scan->NRecs;
 	}
 }
@@ -990,16 +993,15 @@ void Merge::MoveForwToRecM(InpD* ID)
 	Record* rec = f->FF->RecPtr;
 	memcpy(rec->GetRecord(), ID->ForwRecPtr->GetRecord(), f->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
-	//LogicControl* C = ID->Checks;
-	//if (C != nullptr) {
+
 	if (!ID->Chk.empty()) {
 		ID->Error = false;
 		ID->Warning = false;
 		ID->ErrTxtFrml->S = "";  // ID->ErrTxtFrml->S[0] = 0;
 		for (LogicControl* C : ID->Chk) {
-			if (!RunBool(f, C->Bool, rec->GetRecord())) {
+			if (!RunBool(f, C->Bool, rec)) {
 				ID->Warning = true;
-				ID->ErrTxtFrml->S = RunString(f, C->TxtZ, rec->GetRecord());
+				ID->ErrTxtFrml->S = RunString(f, C->TxtZ, rec);
 				if (!C->Warning) {
 					ID->Error = true;
 					return;
@@ -1026,7 +1028,7 @@ void Merge::SetMFlds(std::vector<KeyFldD*>& M)
 	}
 }
 
-void Merge::MergeProc()
+void Merge::MergeProc(FileD* file_d, Record* record)
 {
 	WORD res = 0;
 	for (WORD i = 1; i <= MaxIi; i++) {
@@ -1034,25 +1036,25 @@ void Merge::MergeProc()
 		if (ID->Exist)
 			do {
 				MoveForwToRecM(ID);
-				SumUp(CFile, ID->Sum, CRecPtr);
+				SumUp(file_d, ID->Sum, record);
 				WriteOutp(ID->RD);
 				ReadInpFileM(ID);
 				if (ID->Scan->eof) res = _gt;
 				else {
-					res = CompMFlds(ID->MFld);
-					if (res == _lt) CFile->CFileError(607);
+					res = CompMFlds(file_d, record, ID->MFld);
+					if (res == _lt) file_d->CFileError(607);
 				}
 			} while (res != _gt);
 		else {
 			//CFile = ID->Scan->FD;
 			//CRecPtr = CFile->FF->RecPtr;
-			ID->Scan->FD->ZeroAllFlds(CFile->FF->RecPtr->GetRecord(), false);
+			ID->Scan->FD->ZeroAllFlds(file_d->FF->RecPtr->GetRecord(), false);
 			SetMFlds(ID->MFld);
 		}
 	}
 }
 
-void Merge::JoinProc(WORD Ii, bool& EmptyGroup)
+void Merge::JoinProc(FileD* file_d, Record* record, WORD Ii, bool& EmptyGroup)
 {
 	if (Ii > MaxIi) {
 		if (!EmptyGroup) {
@@ -1071,14 +1073,14 @@ void Merge::JoinProc(WORD Ii, bool& EmptyGroup)
 			WORD res;
 			do {
 				MoveForwToRecM(ID);
-				JoinProc(Ii + 1, EmptyGroup);
+				JoinProc(file_d, record, Ii + 1, EmptyGroup);
 				ReadInpFileM(ID);
 				if (ID->Scan->eof) {
 					res = _gt;
 				}
 				else {
-					res = CompMFlds(ID->MFld);
-					if (res == _lt) CFile->CFileError(607);
+					res = CompMFlds(file_d, record, ID->MFld);
+					if (res == _lt) file_d->CFileError(607);
 				}
 			} while (res == _gt);
 		}
@@ -1086,7 +1088,7 @@ void Merge::JoinProc(WORD Ii, bool& EmptyGroup)
 			EmptyGroup = true;
 			ID->Scan->FD->ZeroAllFlds(ID->Scan->FD->FF->RecPtr->GetRecord(), false);
 			SetMFlds(ID->MFld);
-			JoinProc(Ii + 1, EmptyGroup);
+			JoinProc(file_d, record, Ii + 1, EmptyGroup);
 		}
 	}
 }

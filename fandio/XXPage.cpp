@@ -93,7 +93,7 @@ void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, Record* record)
 					}
 					file_d->FF->ReadRec(n, record);
 					for (XKey* K : file_d->Keys) {
-						K->Delete(file_d, n, record->GetRecord());
+						K->Delete(file_d, n, record);
 					}
 					record->SetDeleted();
 					file_d->WriteRec(n, record);

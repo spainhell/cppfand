@@ -24,9 +24,8 @@ public:
     void SetEditD(EditD* edit);
 	void SetFileD(FileD* file_d);
 
-    Record* GetCurrentRecord() const;
-    uint8_t* GetRecord() const;
-    uint8_t* GetOriginalRecord() const;
+    Record* GetRecord() const;
+    Record* GetOriginalRecord() const;
 
 	void EditDataFile(FileD* FD, EditOpt* EO);
     WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,

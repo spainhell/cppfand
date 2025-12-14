@@ -43,5 +43,5 @@ private:
 	std::string StandardHead(EditD* edit);
 	//void SToSL(StringListEl** SLRoot, pstring s);
 	void TestedFlagOff();
-	std::string GetStr_E(FrmlElem* Z, uint8_t* record);
+	std::string GetStr_E(FrmlElem* Z, Record* record);
 };

@@ -840,7 +840,7 @@ int Fand0File::CreateIndexFile()
 			std::vector<KeyInD*> empty;
 			std::unique_ptr<XScan> scan = std::make_unique<XScan>(_parent, nullptr, empty, false);
 			std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
-			scan->Reset(nullptr, false, record.get()->GetRecord());
+			scan->Reset(nullptr, false, record.get());
 			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys);
 			XW->Main(OperationType::Index, record.get());
 			XF->NotValid = false;
@@ -909,7 +909,7 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, Record* record)
 		}
 		N = (L + R) / 2;
 		ReadRec(N, record);
-		x.PackKF(_parent, Key->KFlds, record->GetRecord());
+		x.PackKF(_parent, Key->KFlds, record);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
 
@@ -921,7 +921,7 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, Record* record)
 			while (N > 1) {
 				N--;
 				ReadRec(N, record);
-				x.PackKF(_parent, Key->KFlds, record->GetRecord());
+				x.PackKF(_parent, Key->KFlds, record);
 				if (CompStr(x.S, XX.S) != _equ) {
 					N++;
 					ReadRec(N, record);
@@ -956,7 +956,7 @@ void Fand0File::TryInsertAllIndexes(int RecNr, Record* record)
 	XKey* lastK = nullptr;
 	for (auto& K : _parent->Keys) {
 		lastK = K;
-		if (!K->Insert(_parent, RecNr, true, record->GetRecord())) {
+		if (!K->Insert(_parent, RecNr, true, record)) {
 			goto label1;
 		}
 	}
@@ -968,7 +968,7 @@ label1:
 		if (K1 == lastK) {
 			break;
 		}
-		K1->Delete(_parent, RecNr, record->GetRecord());
+		K1->Delete(_parent, RecNr, record);
 	}
 	record->SetDeleted(); //_parent->SetDeletedFlag(record);
 	WriteRec(RecNr, record);
@@ -980,7 +980,7 @@ label1:
 	}
 }
 
-void Fand0File::DeleteAllIndexes(int RecNr, uint8_t* record)
+void Fand0File::DeleteAllIndexes(int RecNr, Record* record)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
@@ -995,7 +995,7 @@ void Fand0File::DeleteXRec(int RecNr, bool DelT, Record* record)
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
-	DeleteAllIndexes(RecNr, record->GetRecord());
+	DeleteAllIndexes(RecNr, record);
 	if (DelT) {
 		_parent->DelAllDifTFlds(record->GetRecord(), nullptr);
 	}
@@ -1017,13 +1017,13 @@ void Fand0File::OverWrXRec(int RecNr, Record* P2, Record* P, Record* record)
 
 	for (auto& K : _parent->Keys) {
 		record = P;
-		x.PackKF(_parent, K->KFlds, record->GetRecord());
+		x.PackKF(_parent, K->KFlds, record);
 		record = P2;
-		x2.PackKF(_parent, K->KFlds, record->GetRecord());
+		x2.PackKF(_parent, K->KFlds, record);
 		if (x.S != x2.S) {
-			K->Delete(_parent, RecNr, record->GetRecord());
+			K->Delete(_parent, RecNr, record);
 			record = P;
-			K->Insert(_parent, RecNr, false, record->GetRecord());
+			K->Insert(_parent, RecNr, false, record);
 		}
 	}
 
@@ -1036,7 +1036,7 @@ void Fand0File::RecallRec(int recNr, Record* record)
 	TestXFExist();
 	XF->NRecs++;
 	for (auto& K : _parent->Keys) {
-		K->Insert(_parent, recNr, false, record->GetRecord());
+		K->Insert(_parent, recNr, false, record);
 	}
 	record->ClearDeleted(); //_parent->ClearDeletedFlag(record);
 	WriteRec(recNr, record);
@@ -1132,7 +1132,7 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t
 
 	std::vector<KeyInD*> empty;
 	XScan* Scan = new XScan(_parent, nullptr, empty, false);
-	Scan->Reset(nullptr, false, record.get()->GetRecord());
+	Scan->Reset(nullptr, false, record.get());
 	ScanSubstWIndex(Scan, SK, OperationType::Sort);
 	FileD* FD2 = _parent->OpenDuplicateF(false);
 
@@ -1157,7 +1157,7 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t
 
 void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
 {
-	uint8_t* record = _parent->GetRecSpace();
+	Record* record = new Record(_parent);
 
 	K->Release(_parent);
 	LockMode md = _parent->NewLockMode(RdMode);
@@ -1167,7 +1167,7 @@ void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
 	CreateWIndex(Scan, K, OperationType::Work);
 	_parent->OldLockMode(md);
 
-	delete[] record; record = nullptr;
+	delete record; record = nullptr;
 }
 
 void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)

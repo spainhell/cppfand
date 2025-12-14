@@ -724,17 +724,17 @@ void FileD::IndexesMaintenance(bool remove_deleted)
 	}
 }
 
-bool FileD::loadB(FieldDescr* field_d, uint8_t* record)
+bool FileD::loadB(FieldDescr* field_d, Record* record)
 {
 	bool result;
 
 	if (field_d->isStored()) {
 		switch (FileType) {
 		case DataFileType::FandFile:
-			result = FF->loadB(field_d, record);
+			result = FF->loadB(field_d, record->GetRecord());
 			break;
 		case DataFileType::DBF:
-			result = DbfF->loadB(field_d, record);
+			result = DbfF->loadB(field_d, record->GetRecord());
 			break;
 		default:
 			result = false;
@@ -748,17 +748,17 @@ bool FileD::loadB(FieldDescr* field_d, uint8_t* record)
 	return result;
 }
 
-double FileD::loadR(FieldDescr* field_d, uint8_t* record)
+double FileD::loadR(FieldDescr* field_d, Record* record)
 {
 	double result;
 
 	if (field_d->isStored()) {
 		switch (FileType) {
 		case DataFileType::FandFile:
-			result = FF->loadR(field_d, record);
+			result = FF->loadR(field_d, record->GetRecord());
 			break;
 		case DataFileType::DBF:
-			result = DbfF->loadR(field_d, record);
+			result = DbfF->loadR(field_d, record->GetRecord());
 			break;
 		default:
 			result = 0.0;
@@ -772,17 +772,17 @@ double FileD::loadR(FieldDescr* field_d, uint8_t* record)
 	return result;
 }
 
-std::string FileD::loadS(FieldDescr* field_d, uint8_t* record)
+std::string FileD::loadS(FieldDescr* field_d, Record* record)
 {
 	std::string result;
 
 	if (field_d->isStored()) {
 		switch (FileType) {
 		case DataFileType::FandFile:
-			result = FF->loadS(field_d, record);
+			result = FF->loadS(field_d, record->GetRecord());
 			break;
 		case DataFileType::DBF:
-			result = DbfF->loadS(field_d, record);
+			result = DbfF->loadS(field_d, record->GetRecord());
 			break;
 		default:
 			result = "";
@@ -796,16 +796,16 @@ std::string FileD::loadS(FieldDescr* field_d, uint8_t* record)
 	return result;
 }
 
-int FileD::loadT(FieldDescr* field_d, uint8_t* record)
+int FileD::loadT(FieldDescr* field_d, Record* record)
 {
 	int result;
 
 	switch (FileType) {
 	case DataFileType::FandFile:
-		result = FF->loadT(field_d, record);
+		result = FF->loadT(field_d, record->GetRecord());
 		break;
 	case DataFileType::DBF:
-		result = DbfF->loadT(field_d, record);
+		result = DbfF->loadT(field_d, record->GetRecord());
 		break;
 	default:
 		result = 0;

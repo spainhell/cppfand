@@ -144,7 +144,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 	if (!F1->IsEOL) F1->RdDelim('\r');
 }
 
-void VarFixExp(ThFile* F2, CpOption Opt)
+void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 {
 	WORD i, n;
 	std::string s, s1;
@@ -152,14 +152,14 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 	bool first; double r;
 
 	first = true;
-	for (auto& F : CFile->FldD) {
+	for (auto& F : file_d->FldD) {
 		if ((F->Flg & f_Stored) != 0) {
 			if (first) first = false;
 			else if (Opt == CpOption::cpVar) F2->WrChar(',');
 
 			switch (F->field_type) {
 			case FieldType::FIXED: {
-				r = CFile->loadR(F, CRecPtr);
+				r = file_d->loadR(F, record);
 				if ((F->Flg & f_Comma) != 0) r = r / Power10[F->M];
 				str(r, F->L, F->M, s);
 				if (s.length() > F->L) {
@@ -178,7 +178,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::ALFANUM: {
-				s = CFile->loadS(F, CRecPtr);
+				s = file_d->loadS(F, record);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, ' ');
 					else s = LeadChar(' ', s);
@@ -192,7 +192,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::NUMERIC: {
-				s = CFile->loadS(F, CRecPtr);
+				s = file_d->loadS(F, record);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, '0');
 					else s = LeadChar('0', s);
@@ -201,7 +201,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			}
 			case FieldType::DATE:
 			case FieldType::REAL: {
-				r = CFile->loadR(F, CRecPtr);
+				r = file_d->loadR(F, record);
 				if ((r == 0.0) && (Opt == CpOption::cpVar)) s = "";
 				else if (F->field_type == FieldType::REAL) str(r, F->L, s);
 				else {
@@ -211,13 +211,13 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::BOOL: {
-				if (CFile->loadB(F, CRecPtr)) s = 'A';
+				if (file_d->loadB(F, record)) s = 'A';
 				else s = 'N';
 				break;
 			}
 			case FieldType::TEXT: {
 				if (Opt == CpOption::cpVar) {
-					std::string xs = CFile->loadS(F, CRecPtr);
+					std::string xs = file_d->loadS(F, record);
 					F2->WrString(xs, true);
 					// delete x;
 				}
@@ -317,7 +317,7 @@ void ExportTxt(CopyD* CD)
 		if (CD->HdFD != nullptr) {
 			int n = 0;
 			Record* rec = CD->HdFD->LinkLastRec(n);
-			pstring s = CFile->loadS(CD->HdF, rec->GetRecord());
+			pstring s = CFile->loadS(CD->HdF, rec);
 			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);
@@ -330,12 +330,12 @@ void ExportTxt(CopyD* CD)
 		md = f->NewLockMode(RdMode);
 		std::vector<KeyInD*> empty;
 		Scan = new XScan(f, CD->ViewKey, empty, true);
-		Scan->Reset(nullptr, false, rec->GetRecord());
+		Scan->Reset(nullptr, false, rec);
 		RunMsgOn('C', Scan->NRecs);
 		while (true) {
 			Scan->GetRec(rec);
 			if (!Scan->eof) {
-				VarFixExp(F2, CD->Opt2);
+				VarFixExp(F2->FD, rec, F2, CD->Opt2);
 				F2->WrString("\r\n");
 				RunMsgN(Scan->IRec);
 				continue;
@@ -627,10 +627,10 @@ void BackupM(Instr_backup* PD)
 
 	MarkStore(p);
 	if (PD->IsBackup) {
-		mask = RunString(CFile, PD->bmMasks, CRecPtr);
+		mask = RunString(nullptr, PD->bmMasks, nullptr);
 	}
 
-	std::string aDir = RunString(CFile, PD->bmDir, CRecPtr);
+	std::string aDir = RunString(nullptr, PD->bmDir, nullptr);
 	TzFile* F = new TzFile(PD->IsBackup, !PD->NoCompress, PD->bmSubDir, PD->bmOverwr, PD->BrCatIRec, aDir);
 
 	try {
@@ -706,10 +706,10 @@ void CodingCRdb(EditD* edit, bool rotate)
 	crdb->CodeRdb(edit, rotate);
 }
 
-void AddLicNr(FileD* file_d, FieldDescr* field_d, uint8_t* record)
+void AddLicNr(FileD* file_d, FieldDescr* field_d, Record* record)
 {
 	if (file_d->loadT(field_d, record) != 0) {
-		file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record);
+		file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record->GetRecord());
 	}
 }
 
@@ -767,8 +767,8 @@ bool PromptCodeRdb(EditD* edit)
 		record = new Record(Chpt);
 		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
 			Chpt->ReadRec(i, record);
-			AddLicNr(Chpt, ChptOldTxt, record->GetRecord());
-			AddLicNr(Chpt, ChptTxt, record->GetRecord());
+			AddLicNr(Chpt, ChptOldTxt, record);
+			AddLicNr(Chpt, ChptTxt, record);
 			Chpt->WriteRec(i, record);
 		}
 		//ReleaseStore(&CRecPtr);

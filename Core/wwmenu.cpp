@@ -371,10 +371,10 @@ void TMenu::WrText(WORD I)
 
 void TMenu::SetPalette(Instr_menu* aPD)
 {
-	Palette[0] = RunWordImpl(CFile, aPD->mAttr[0], screen.colors.mNorm, CRecPtr);
-	Palette[1] = RunWordImpl(CFile, aPD->mAttr[1], screen.colors.mHili, CRecPtr);
-	Palette[2] = RunWordImpl(CFile, aPD->mAttr[2], screen.colors.mFirst, CRecPtr);
-	Palette[3] = RunWordImpl(CFile, aPD->mAttr[3], screen.colors.mDisabled, CRecPtr);
+	Palette[0] = RunWordImpl(nullptr, aPD->mAttr[0], screen.colors.mNorm, nullptr);
+	Palette[1] = RunWordImpl(nullptr, aPD->mAttr[1], screen.colors.mHili, nullptr);
+	Palette[2] = RunWordImpl(nullptr, aPD->mAttr[2], screen.colors.mFirst, nullptr);
+	Palette[3] = RunWordImpl(nullptr, aPD->mAttr[3], screen.colors.mDisabled, nullptr);
 }
 
 ChoiceD* TMenu::getChoice(size_t order)
@@ -401,12 +401,12 @@ void TMenu::countChoices(bool isMenuBar)
 	std::string s;
 	bool b = false;
 	for (auto& C : choices) {
-		b = RunBool(CFile, C->Condition, CRecPtr);
+		b = RunBool(nullptr, C->Condition, nullptr);
 		C->Displ = false;
 		if (b || C->DisplEver) {
 			C->Displ = true;
 			nTxt++;
-			s = RunString(CFile, C->TxtFrml, CRecPtr);
+			s = RunString(nullptr, C->TxtFrml, nullptr);
 			if (s.length() != 0) {
 				short maxLen = min(s.length(), TxtCols - 6);
 				if (s.length() > maxLen) s = s.substr(0, maxLen);
@@ -597,15 +597,15 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
 {
 	PD = aPD;
 	parent = aParent;
-	pstring s = RunString(CFile, aPD->HdLine, CRecPtr);
+	pstring s = RunString(nullptr, aPD->HdLine, nullptr);
 	s[0] = (char)MinI(s.length(), TxtCols - 6);
 	HdTxt = s;
 	HlpRdb = aPD->HelpRdb;
 	this->insertChoices(aPD->Choices, false);
 	SetPalette(aPD);
 	if (aPD->X != nullptr) {
-		C1 = RunInt(CFile, aPD->X, CRecPtr);
-		R1 = RunInt(CFile, aPD->Y, CRecPtr);
+		C1 = RunInt(nullptr, aPD->X, nullptr);
+		R1 = RunInt(nullptr, aPD->Y, nullptr);
 	}
 	else if (aPD->PullDown && aParent == nullptr) {
 		C1 = MenuX;
@@ -876,12 +876,12 @@ TMenuBarP::TMenuBarP(Instr_menu* aPD)
 	this->insertChoices(aPD->Choices, true);
 	SetPalette(PD);
 	y1 = 1;
-	if (PD->Y != nullptr) y1 = RunInt(CFile, PD->Y, CRecPtr);
+	if (PD->Y != nullptr) y1 = RunInt(nullptr, PD->Y, nullptr);
 	x1 = 1;
 	l1 = TxtCols;
 	if (PD->X != nullptr) {
-		x1 = RunInt(CFile, PD->X, CRecPtr);
-		l1 = RunInt(CFile, PD->XSz, CRecPtr);
+		x1 = RunInt(nullptr, PD->X, nullptr);
+		l1 = RunInt(nullptr, PD->XSz, nullptr);
 	}
 	InitTMenuBar(x1, y1, l1);
 }

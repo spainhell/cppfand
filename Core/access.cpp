@@ -162,7 +162,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 
 	XKey* K = LD->ToKey;
 	XString x;
-	x.PackKF(from_FD, LD->Args, record->GetRecord());
+	x.PackKF(from_FD, LD->Args, record);
 
 	// TODO: FandSQL removed
 
@@ -191,17 +191,17 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 			if (F2->isStored()) {
 				switch (F->frml_type) {
 				case 'S': {
-					x.S = from_FD->loadS(F, record->GetRecord());
+					x.S = from_FD->loadS(F, record);
 					to_FD->saveS(F2, x.S, up_rec->GetRecord());
 					break;
 				}
 				case 'R': {
-					const double r = from_FD->loadR(F, record->GetRecord());
+					const double r = from_FD->loadR(F, record);
 					to_FD->saveR(F2, r, up_rec->GetRecord());
 					break;
 				}
 				case 'B': {
-					const bool b = from_FD->loadB(F, record->GetRecord());
+					const bool b = from_FD->loadB(F, record);
 					to_FD->saveB(F2, b, up_rec->GetRecord());
 					break;
 				}

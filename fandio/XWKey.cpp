@@ -78,14 +78,14 @@ void XWKey::ReleaseTree(FileD* file_d, int Page, bool IsClose)
 	//ReleaseStore(p);
 }
 
-void XWKey::OneRecIdx(FileD* file_d, const std::vector<KeyFldD*>& key_fields, int N, uint8_t* record)
+void XWKey::OneRecIdx(FileD* file_d, const std::vector<KeyFldD*>& key_fields, int N, Record* record)
 {
 	Open(file_d, key_fields, true, false);
 	Insert(file_d, N, true, record);
 	NR++;
 }
 
-void XWKey::InsertAtNr(FileD* file_d, int I, int RecNr, uint8_t* record)
+void XWKey::InsertAtNr(FileD* file_d, int I, int RecNr, Record* record)
 {
 	XString x;
 	x.PackKF(file_d, KFlds, record);
@@ -94,7 +94,7 @@ void XWKey::InsertAtNr(FileD* file_d, int I, int RecNr, uint8_t* record)
 	InsertOnPath(file_d, x, RecNr);
 }
 
-int XWKey::InsertGetNr(FileD* file_d, int RecNr, uint8_t* record)
+int XWKey::InsertGetNr(FileD* file_d, int RecNr, Record* record)
 {
 	XString x; int n;
 	NR++; x.PackKF(file_d, KFlds, record);

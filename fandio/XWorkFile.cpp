@@ -198,7 +198,7 @@ void XWorkFile::SortMerge(XKey* xKey, Record* record)
 		auto r = std::make_unique<WRec>();
 		r->PutN(RecNr);
 		r->PutIR(IRec);
-		r->X.PackKF(_parent, KFRoot, record->GetRecord());
+		r->X.PackKF(_parent, KFRoot, record);
 		size_t serLen = r->Serialize(buffer);
 		memcpy(&PW->A[offsetOfPwA], buffer, serLen);
 		n++;

@@ -16,7 +16,7 @@ void AddFFs(XKey* K, pstring& s)
 
 /// asi vytvori XStringy pro zacatek a konec (rozsah) vyhledavani
 /// pokud se hleda interval v klici
-void CompKIFrml(FileD* file_d, XKey* K, std::vector<KeyInD*>& KI, bool AddFF, uint8_t* record)
+void CompKIFrml(FileD* file_d, XKey* K, std::vector<KeyInD*>& KI, bool AddFF, Record* record)
 {
 	XString x;
 	//while (KI != nullptr) {
@@ -63,7 +63,7 @@ XScan::~XScan()
 	delete page_;
 }
 
-void XScan::Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record)
+void XScan::Reset(FrmlElem* ABool, bool SQLFilter, Record* record)
 {
 	KeyInD* k = nullptr;
 	int n = 0;
@@ -112,7 +112,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record)
 	SeekRec(0);
 }
 
-void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, uint8_t* record)
+void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, Record* record)
 {
 	LockMode m;
 	if (Kind == ScanMode::SQL) {
@@ -363,7 +363,7 @@ void XScan::GetRec(Record* record)
 				RecNr = IRec;
 				FD->ReadRec(RecNr, record);
 				if (record->IsDeleted()) continue;
-				if (!RunBool(FD, Bool, record->GetRecord())) continue;
+				if (!RunBool(FD, Bool, record)) continue;
 				break;
 			}
 			case ScanMode::Index:
@@ -381,7 +381,7 @@ void XScan::GetRec(Record* record)
 				}
 				FD->FF->ReadRec(RecNr, record);
 				if (record->IsDeleted()) continue;
-				if (!RunBool(FD, Bool, record->GetRecord())) continue;
+				if (!RunBool(FD, Bool, record)) continue;
 				break;
 			}
 #ifdef FandSQL

@@ -28,7 +28,7 @@ int32_t GetIndex(Instr_getindex* PD)
 		}
 
 		std::unique_ptr<XScan> Scan = std::make_unique<XScan>(lvFD, PD->keys, PD->key_in_root, false);
-		FrmlElem* cond = RunEvalFrml(lvFD, PD->condition, record->GetRecord());
+		FrmlElem* cond = RunEvalFrml(lvFD, PD->condition, record);
 
 		switch (PD->owner_type) {
 		case 'i': {
@@ -40,7 +40,7 @@ int32_t GetIndex(Instr_getindex* PD)
 		}
 		case 'r': {
 			if (link_exists) {
-				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record->GetRecord());
+				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
 			}
 			else {
 				//x.PackKF(ld->ToFD, nullptr, lv2->record);
@@ -53,10 +53,10 @@ int32_t GetIndex(Instr_getindex* PD)
 		case 'F': {
 			lvFD = ld->ToFD;
 			md = ld->ToFD->NewLockMode(RdMode);
-			ld->ToFD->ReadRec(RunInt(ld->ToFD, (FrmlElem*)PD->loc_var2, record->GetRecord()), record);
+			ld->ToFD->ReadRec(RunInt(ld->ToFD, (FrmlElem*)PD->loc_var2, record), record);
 
 			if (link_exists) {
-				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record->GetRecord());
+				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
 			}
 			else {
 				//x.PackKF(ld->ToFD, nullptr, lv2->record);
@@ -68,7 +68,7 @@ int32_t GetIndex(Instr_getindex* PD)
 			break;
 		}
 		default: {
-			Scan->Reset(cond, PD->sql_filter, record->GetRecord());
+			Scan->Reset(cond, PD->sql_filter, record);
 			break;
 		}
 		}
@@ -87,21 +87,21 @@ int32_t GetIndex(Instr_getindex* PD)
 		*k = *kNew;
 	}
 	else {
-		int nr = RunInt(lvFD, PD->condition, record->GetRecord());
+		int nr = RunInt(lvFD, PD->condition, record);
 
 		if ((nr > 0) && (nr <= lvFD->FF->NRecs)) {
 			lvFD->ReadRec(nr, record);
 			if (PD->mode == '+') {
 				if (!lvFD->DeletedFlag(record->GetRecord())) {
-					x.PackKF(lvFD, k->KFlds, record->GetRecord());
-					if (!k->RecNrToPath(lvFD, x, nr, record->GetRecord())) {
+					x.PackKF(lvFD, k->KFlds, record);
+					if (!k->RecNrToPath(lvFD, x, nr, record)) {
 						k->InsertOnPath(lvFD, x, nr);
 						k->NR++;
 					}
 				}
 			}
 			else {
-				if (k->Delete(lvFD, nr, record->GetRecord())) {
+				if (k->Delete(lvFD, nr, record)) {
 					k->NR--;
 				}
 			}

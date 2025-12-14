@@ -3160,12 +3160,12 @@ void ReadDeclChpt(Compiler* compiler)
 	}
 }
 
-FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, uint8_t* record)
+FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, Record* record)
 {
-	FileD* cf = CFile;
-	CFile = file_d;
-	uint8_t* cr = CRecPtr;
-	CRecPtr = record;
+	//FileD* cf = CFile;
+	//CFile = file_d;
+	//uint8_t* cr = CRecPtr;
+	//CRecPtr = record;
 
 	LocVarBlock oldLVBD = LVBD;
 	//LVBD = Compiler::ProcStack.front();
@@ -3218,7 +3218,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, uint8_t* record)
 		}
 	}
 
-	CFile = cf; CRecPtr = cr;
+	//CFile = cf; CRecPtr = cr;
 	LVBD = oldLVBD; /*for cond before cycle called when PushProcStk is !ready*/
 
 	return result;

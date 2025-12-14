@@ -110,7 +110,7 @@ public:
 	bool SearchKey(XString& XX, XKey* Key, int& NN, Record* record);
 	int XNRecs(std::vector<XKey*>& K);
 	void TryInsertAllIndexes(int RecNr, Record* record);
-	void DeleteAllIndexes(int RecNr, uint8_t* record);
+	void DeleteAllIndexes(int RecNr, Record* record);
 	void DeleteXRec(int RecNr, bool DelT, Record* record);
 	void OverWrXRec(int RecNr, Record* P2, Record* P, Record* record);
 	void RecallRec(int recNr, Record* record);
