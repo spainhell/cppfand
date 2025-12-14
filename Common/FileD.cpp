@@ -815,58 +815,58 @@ int FileD::loadT(FieldDescr* field_d, Record* record)
 	return result;
 }
 
-void FileD::saveB(FieldDescr* field_d, bool b, uint8_t* record)
+void FileD::saveB(FieldDescr* field_d, bool b, Record* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
-		FF->saveB(field_d, b, record);
+		FF->saveB(field_d, b, record->GetRecord());
 		break;
 	case DataFileType::DBF:
-		DbfF->saveB(field_d, b, record);
+		DbfF->saveB(field_d, b, record->GetRecord());
 		break;
 	default:
 		break;
 	}
 }
 
-void FileD::saveR(FieldDescr* field_d, double r, uint8_t* record)
+void FileD::saveR(FieldDescr* field_d, double r, Record* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
-		FF->saveR(field_d, r, record);
+		FF->saveR(field_d, r, record->GetRecord());
 		break;
 	case DataFileType::DBF:
-		DbfF->saveR(field_d, r, record);
+		DbfF->saveR(field_d, r, record->GetRecord());
 		break;
 	default:
 		break;
 	}
 }
 
-void FileD::saveS(FieldDescr* field_d, const std::string& s, uint8_t* record)
+void FileD::saveS(FieldDescr* field_d, const std::string& s, Record* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
-		FF->saveS(this, field_d, s, record);
+		FF->saveS(this, field_d, s, record->GetRecord());
 		break;
 	case DataFileType::DBF:
-		DbfF->saveS(this, field_d, s, record);
+		DbfF->saveS(this, field_d, s, record->GetRecord());
 		break;
 	default:
 		break;
 	}
 }
 
-int FileD::saveT(FieldDescr* field_d, int pos, uint8_t* record) const
+int FileD::saveT(FieldDescr* field_d, int pos, Record* record) const
 {
 	int result;
 
 	switch (FileType) {
 	case DataFileType::FandFile:
-		result = FF->saveT(field_d, pos, record);
+		result = FF->saveT(field_d, pos, record->GetRecord());
 		break;
 	case DataFileType::DBF:
-		result = DbfF->saveT(field_d, pos, record);
+		result = DbfF->saveT(field_d, pos, record->GetRecord());
 		break;
 	default:
 		result = 0;
@@ -1424,21 +1424,21 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 	MyDeleteFile(CPath);
 }
 
-void FileD::ZeroAllFlds(uint8_t* record, bool delTFields)
+void FileD::ZeroAllFlds(Record* record, bool delTFields)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
 		if (delTFields) {
-			this->FF->DelTFlds(record);
+			this->FF->DelTFlds(record->GetRecord());
 		}
-		memset(record, 0, FF->RecLen);
+		memset(record->GetRecord(), 0, FF->RecLen);
 		break;
 	}
 	case DataFileType::DBF: {
 		if (delTFields) {
-			this->DbfF->DelTFlds(record);
+			this->DbfF->DelTFlds(record->GetRecord());
 		}
-		memset(record, 0, DbfF->RecLen);
+		memset(record->GetRecord(), 0, DbfF->RecLen);
 		break;
 	}
 	default:;
@@ -1451,99 +1451,15 @@ void FileD::ZeroAllFlds(uint8_t* record, bool delTFields)
 	}
 }
 
-///// \brief Copy complete record
-///// - for T: one of these files is always TWork
-///// \param src_record source record
-///// \param dst_record destination record
-//void FileD::CopyRec(Record* src_record, Record* dst_record)
-//{
-	//if (delTFields) {
-	//	this->FF->DelTFlds(dst_record);
-	//}
-
-	//for (FieldDescr* const& f : FldD) {
-	//	if (f->isStored()) {
-	//		switch (f->field_type) {
-	//		case FieldType::TEXT: {
-	//			bool src_is_work = HasTWorkFlag(src_record);
-	//			bool dst_is_work = HasTWorkFlag(dst_record);
-
-	//			if (FileType == DataFileType::DBF) {
-	//				// if (src_t00_file->Format != FandTFile::T00Format)
-	//				std::string s = loadS(f, src_record);
-	//				saveS(f, s, dst_record);
-	//			}
-	//			else
-	//			{
-	//				FandTFile* src_t00_file = nullptr;
-	//				FandTFile* dst_t00_file = nullptr;
-
-	//				if (src_is_work) {
-	//					src_t00_file = &TWork;
-	//					dst_t00_file = FF->TF;
-	//				}
-
-	//				if (dst_is_work) {
-	//					src_t00_file = FF->TF;
-	//					dst_t00_file = &TWork;
-	//				}
-
-	//				int32_t src_pos = loadT(f, src_record);
-	//				int32_t dst_pos = 0;
-
-	//				if (src_is_work && dst_is_work) {
-	//					// src and dest are in TWork
-	//					// don't need to lock anything
-	//					std::string s = src_t00_file->Read(src_pos);
-	//					dst_pos = dst_t00_file->Store(s);
-	//				}
-	//				else if (src_is_work) {
-	//					// src is in TWork
-	//					// lock dest for Write
-	//					LockMode md = NewLockMode(WrMode);
-	//					std::string s = src_t00_file->Read(src_pos);
-	//					dst_pos = dst_t00_file->Store(s);
-	//					OldLockMode(md);
-	//				}
-	//				else if (dst_is_work) {
-	//					// dest is in TWork
-	//					// lock src for Read
-	//					LockMode md = NewLockMode(RdMode);
-	//					std::string s = src_t00_file->Read(src_pos);
-	//					dst_pos = dst_t00_file->Store(s);
-	//					OldLockMode(md);
-	//				}
-	//				else {
-	//					// src and dest are single T00 file
-	//					// lock for Write
-	//					LockMode md = NewLockMode(WrMode);
-	//					std::string s = src_t00_file->Read(src_pos);
-	//					dst_pos = dst_t00_file->Store(s);
-	//					OldLockMode(md);
-	//				}
-
-	//				saveT(f, dst_pos, dst_record);
-	//			}
-
-	//			break;
-	//		}
-	//		default:
-	//			memcpy(&dst_record[f->Displ], &src_record[f->Displ], f->NBytes);
-	//			break;
-	//		}
-	//	}
-	//}
-//}
-
-void FileD::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
+void FileD::DelAllDifTFlds(Record* record, Record* comp_record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		FF->DelAllDifTFlds(record, comp_record);
+		FF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->DelAllDifTFlds(record, comp_record);
+		DbfF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
 		break;
 	}
 	default:

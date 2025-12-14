@@ -135,11 +135,11 @@ private:
     int UpdateIndexes();
     bool WriteCRec(bool MayDispl, bool& Displ);
     void DuplFromPrevRec();
-    void InsertRecProc(uint8_t* RP);
-    void AppendRecord(uint8_t* RP);
+    void InsertRecProc(Record* RP);
+    void AppendRecord(Record* RP);
     bool GotoXRec(XString* PX, int& N);
     std::vector<EFldD*>::iterator FindEFld(FieldDescr* F);
-    void CreateOrErr(bool create, uint8_t* RP, int N);
+    void CreateOrErr(bool create, Record* RP, int N);
     bool PromptSearch(bool create);
     bool PromptAndSearch(bool create);
     void PromptGotoRecNr();

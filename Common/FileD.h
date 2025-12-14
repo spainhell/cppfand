@@ -98,10 +98,10 @@ public:
 	std::string loadS(FieldDescr* field_d, Record* record);
 	int loadT(FieldDescr* field_d, Record* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
 
-	void saveB(FieldDescr* field_d, bool b, uint8_t* record);
-	void saveR(FieldDescr* field_d, double r, uint8_t* record);
-	void saveS(FieldDescr* field_d, const std::string& s, uint8_t* record);
-	int saveT(FieldDescr* field_d, int pos, uint8_t* record) const;
+	void saveB(FieldDescr* field_d, bool b, Record* record);
+	void saveR(FieldDescr* field_d, double r, Record* record);
+	void saveS(FieldDescr* field_d, const std::string& s, Record* record);
+	int saveT(FieldDescr* field_d, int pos, Record* record) const;
 
 	void SetDrive(uint8_t drive) const;
 	void SetUpdateFlag() const;
@@ -152,9 +152,8 @@ public:
 
 	FileD* OpenDuplicateF(bool createTextFile);
 	void DeleteDuplicateF(FileD* TempFD);
-	void ZeroAllFlds(uint8_t* record, bool delTFields);
-	//void CopyRec(Record* src_record, Record* dst_record);
-	void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
+	void ZeroAllFlds(Record* record, bool delTFields);
+	void DelAllDifTFlds(Record* record, Record* comp_record);
 
 	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
 	std::string SetTempCExt(char typ, bool isNet);

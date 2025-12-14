@@ -198,9 +198,9 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 		case MInstrCode::_zero: {
 			FieldDescr* F = a->outputFldD;
 			switch (F->frml_type) {
-			case 'S': { FD1->saveS(F, "", RP1->GetRecord()); break; }
-			case 'R': { FD1->saveR(F, 0.0, RP1->GetRecord()); break; }
-			default: { FD1->saveB(F, false, RP1->GetRecord()); break; }
+			case 'S': { FD1->saveS(F, "", RP1); break; }
+			case 'R': { FD1->saveR(F, 0.0, RP1); break; }
+			default: { FD1->saveB(F, false, RP1); break; }
 			}
 			break;
 		}
@@ -573,8 +573,8 @@ void AppendRecProc(FileD* file_d)
 {
 	LockMode md = file_d->NewLockMode(CrMode);
 	Record* record = new Record(file_d);
-	file_d->ZeroAllFlds(record->GetRecord(), false);
-	file_d->SetDeletedFlag(record->GetRecord());
+	file_d->ZeroAllFlds(record, false);
+	record->SetDeleted();
 	file_d->CreateRec(file_d->FF->NRecs + 1, record);
 	delete record; record = nullptr;
 	file_d->OldLockMode(md);
@@ -604,7 +604,7 @@ void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data)
 	}
 
 	if (!deleted) {
-		file_d->DelAllDifTFlds(old_data->GetRecord(), nullptr);
+		file_d->DelAllDifTFlds(old_data, nullptr);
 	}
 
 	delete old_data; old_data = nullptr;
@@ -660,7 +660,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				if (IsRead) {
 				label0:
 					//CFile->DelTFlds(CRecPtr);
-					lv->FD->ZeroAllFlds(lv->record->GetRecord(), true);
+					lv->FD->ZeroAllFlds(lv->record, true);
 					delete record1; record1 = nullptr;
 					lv->FD->OldLockMode(md);
 					return;
@@ -680,8 +680,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		else if (!lv->FD->SearchXKey(k, x, N)) {
 			if (IsRead) {
 				//CFile->DelTFlds(CRecPtr);
-				lv->FD->ZeroAllFlds(lv->record->GetRecord(), true);
-				lv->FD->SetDeletedFlag(lv->record->GetRecord());
+				lv->FD->ZeroAllFlds(lv->record, true);
+				lv->record->SetDeleted();
 				delete record1; record1 = nullptr;
 				lv->FD->OldLockMode(md);
 				return;
@@ -1767,7 +1767,7 @@ void CallProcedure(Instr_proc* PD)
 			fd = (*it0)->FD;
 			Record* rec = new Record(fd); //->GetRecSpace();
 			// TODO: !!! fd->SetTWorkFlag(rec->GetRecord());
-			fd->ZeroAllFlds(rec->GetRecord(), false);
+			fd->ZeroAllFlds(rec, false);
 			fd->ClearDeletedFlag(rec->GetRecord());
 			(*it0)->record = rec;
 		}

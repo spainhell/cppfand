@@ -1329,7 +1329,7 @@ bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, F
 
 	if (Z->Op == _gettxt) {
 		std::string text = GetTxt(dst_file, (FrmlElem16*)Z, record);
-		dst_file->saveS(F, text, record->GetRecord());
+		dst_file->saveS(F, text, record);
 		pos = dst_file->FF->loadT(F, record->GetRecord());
 		result = true;
 	}
@@ -1375,7 +1375,7 @@ void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add)
 				//if (deleteT && !work) {
 				//	file_d->FF->DelTFld(field_d, record);
 				//}
-				file_d->saveT(field_d, pos, record->GetRecord());
+				file_d->saveT(field_d, pos, record);
 			}
 			else {
 				std::string s = RunString(file_d, X, record);
@@ -1392,12 +1392,12 @@ void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add)
 					default: break;
 					}
 				}*/
-				file_d->saveS(field_d, s, record->GetRecord());
+				file_d->saveS(field_d, s, record);
 			}
 		}
 		else {
 			std::string s = RunString(file_d, X, record);
-			file_d->saveS(field_d, s, record->GetRecord());
+			file_d->saveS(field_d, s, record);
 		}
 		break;
 	}
@@ -1405,17 +1405,17 @@ void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add)
 		if (add) {
 			double r1 = file_d->loadR(field_d, record);
 			double r2 = RunReal(file_d, X, record);
-			file_d->saveR(field_d, r1 + r2, record->GetRecord());
+			file_d->saveR(field_d, r1 + r2, record);
 		}
 		else {
 			double r = RunReal(file_d, X, record);
-			file_d->saveR(field_d, r, record->GetRecord());
+			file_d->saveR(field_d, r, record);
 		}
 		break;
 	}
 	case 'B': {
 		bool b = RunBool(file_d, X, record);
-		file_d->saveB(field_d, b, record->GetRecord());
+		file_d->saveB(field_d, b, record);
 		break;
 	}
 	default:;

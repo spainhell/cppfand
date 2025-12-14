@@ -45,9 +45,18 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 		if ((F->Flg & f_Stored) != 0) {
 			if (F1->IsEOL) {
 				switch (F->frml_type) {
-				case 'R': file_d->saveR(F, 0, record->GetRecord()); break;
-				case 'B': file_d->saveB(F, false, record->GetRecord()); break;
-				case 'S': file_d->saveS(F, "", record->GetRecord()); break;
+				case 'R': {
+					record->SaveR(F->Name, 0);
+					break;
+				}
+				case 'B': {
+					record->SaveB(F->Name, false);
+					break;
+				}
+				case 'S': {
+					record->SaveS(F->Name, "");
+					break;
+				}
 				default: ;
 				}
 			}
@@ -63,13 +72,13 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 					val(LeadChar(' ', s), r, err);
 					if ((F->Flg & f_Comma) != 0) {
 						r = r * Power10[F->M];
-						file_d->saveR(F, r, record->GetRecord());
+						record->SaveR(F->Name, r);
 					}
 					break;
 				}
 				case FieldType::ALFANUM: {
 					if (Opt == CpOption::cpFix) {
-						file_d->saveS(F, F1->RdFix(F->L), record->GetRecord());
+						record->SaveS(F->Name, F1->RdFix(F->L));
 					}
 					else {
 						char c = (char)gc->ForwChar;
@@ -81,16 +90,16 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 						else {
 							s = F1->RdDelim(',');
 						}
-						file_d->saveS(F, s, record->GetRecord());
+						record->SaveS(F->Name, s);
 					}
 					break;
 				}
 				case FieldType::NUMERIC: {
 					if (Opt == CpOption::cpFix) {
-						file_d->saveS(F, F1->RdFix(F->L), record->GetRecord());
+						record->SaveS(F->Name, F1->RdFix(F->L));
 					}
 					else {
-						file_d->saveS(F, F1->RdDelim(','), record->GetRecord());
+						record->SaveS(F->Name, F1->RdDelim(','));
 					}
 					break;
 				}
@@ -106,20 +115,20 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 						}
 					}
 					if (s == "") {
-						file_d->saveR(F, 0.0, record->GetRecord());
+						record->SaveR(F->Name, 0.0);
 					}
 					else if (F->field_type == FieldType::REAL) {
 						val(s, r, err);
-						file_d->saveR(F, r, record->GetRecord());
+						record->SaveR(F->Name, r);
 					}
 					else {
-						file_d->saveR(F, ValDate(s, F->Mask), record->GetRecord());
+						record->SaveR(F->Name, ValDate(s, F->Mask));
 					}
 					break;
 				}
 				case FieldType::BOOL: {
 					s = F1->RdFix(1);
-					file_d->saveB(F, s[1] = 'A', record->GetRecord());
+					record->SaveB(F->Name, s[1] == 'A');
 					if (Opt == CpOption::cpVar) {
 						F1->RdDelim(',');
 					}
@@ -129,10 +138,10 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 					if (Opt == CpOption::cpVar) {
 						std::string x = F1->RdLongStr();
 						s = F1->RdDelim(',');
-						file_d->saveS(F, x, record->GetRecord());
+						record->SaveS(F->Name, x);
 					}
 					else {
-						file_d->saveT(F, 0, record->GetRecord());
+						file_d->saveT(F, 0, record);
 					}
 					break;
 				}
@@ -263,7 +272,7 @@ void ImportTxt(CopyD* CD)
 			md = f->FF->RewriteFile(CD->Append);
 
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
-			f->ZeroAllFlds(rec->GetRecord(), false);
+			f->ZeroAllFlds(rec, false);
 			f->ClearDeletedFlag(rec->GetRecord());
 			VarFixImp(f, rec, F1, CD->Opt1);
 			F1->ForwChar(); //{set IsEOF at End}
@@ -708,7 +717,7 @@ void CodingCRdb(EditD* edit, bool rotate)
 void AddLicNr(FileD* file_d, FieldDescr* field_d, Record* record)
 {
 	if (file_d->loadT(field_d, record) != 0) {
-		file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record->GetRecord());
+		file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record);
 	}
 }
 

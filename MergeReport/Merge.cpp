@@ -430,7 +430,7 @@ FrmlElem* Merge::RdDirFilVar_M(char& FTyp, bool wasIiPrefix)
 	label1:
 		base_compiler->Error(9);
 	}
-label2: 
+label2:
 	base_compiler->Accept('.'); // '.'
 	result = base_compiler->RdFAccess(FD, LD, FTyp);
 	if (LD == nullptr) {
@@ -847,9 +847,21 @@ void Merge::RunAssign(FileD* file_d, Record* record, std::vector<AssignD*> Assig
 		}
 		case MInstrCode::_zero: {
 			switch (A->outputFldD->frml_type) {
-			case 'S': { file_d->saveS(A->outputFldD, "", record->GetRecord()); break; }
-			case 'R': { file_d->saveR(A->outputFldD, 0, record->GetRecord()); break; }
-			default: { file_d->saveB(A->outputFldD, false, record->GetRecord()); break; }
+			case 'S': {
+				//file_d->saveS(A->outputFldD, "", record); 
+				record->SaveS(A->outputFldD->Name, "");
+				break;
+			}
+			case 'R': {
+				//file_d->saveR(A->outputFldD, 0, record); 
+				record->SaveR(A->outputFldD->Name, 0);
+				break;
+			}
+			case 'B': {
+				//file_d->saveB(A->outputFldD, false, record); 
+				record->SaveB(A->outputFldD->Name, false);
+				break;
+			}
 			}
 			break;
 		}
@@ -1018,9 +1030,21 @@ void Merge::SetMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 	for (KeyFldD* m : M) {
 		F = m->FldD;
 		switch (F->frml_type) {
-		case 'S': { file_d->saveS(F, it0->S, record->GetRecord()); break; }
-		case 'R': { file_d->saveR(F, it0->R, record->GetRecord()); break; }
-		default: { file_d->saveB(F, it0->B, record->GetRecord()); break; }
+		case 'S': {
+				//file_d->saveS(F, it0->S, record->GetRecord());
+				record->SaveS(F->Name, it0->S);
+				break;
+			}
+		case 'R': {
+				//file_d->saveR(F, it0->R, record->GetRecord());
+				record->SaveR(F->Name, it0->R);
+				break;
+			}
+		default: {
+				//file_d->saveB(F, it0->B, record->GetRecord()); 
+				record->SaveB(F->Name, it0->B);
+				break;
+			}
 		}
 
 		if (it0 != OldMFlds.end()) ++it0;
@@ -1047,7 +1071,7 @@ void Merge::MergeProc(FileD* file_d, Record* record)
 		else {
 			//CFile = ID->Scan->FD;
 			//CRecPtr = CFile->FF->RecPtr;
-			ID->Scan->FD->ZeroAllFlds(file_d->FF->RecPtr->GetRecord(), false);
+			ID->Scan->FD->ZeroAllFlds(file_d->FF->RecPtr, false);
 			SetMFlds(file_d, file_d->FF->RecPtr, ID->MFld);
 		}
 	}
@@ -1085,7 +1109,7 @@ void Merge::JoinProc(FileD* file_d, Record* record, WORD Ii, bool& EmptyGroup)
 		}
 		else {
 			EmptyGroup = true;
-			ID->Scan->FD->ZeroAllFlds(ID->Scan->FD->FF->RecPtr->GetRecord(), false);
+			ID->Scan->FD->ZeroAllFlds(ID->Scan->FD->FF->RecPtr, false);
 			SetMFlds(ID->Scan->FD, ID->Scan->FD->FF->RecPtr, ID->MFld);
 			JoinProc(file_d, record, Ii + 1, EmptyGroup);
 		}

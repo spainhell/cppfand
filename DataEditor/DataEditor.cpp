@@ -1146,7 +1146,7 @@ void DataEditor::AdjustCRec()
 			IsNewRec = true;
 			params_->Append = true;
 			FirstEmptyFld = CFld;
-			file_d_->ZeroAllFlds(current_rec_->GetRecord(), false);
+			file_d_->ZeroAllFlds(current_rec_, false);
 			SetWasUpdated();
 			NewRecExit();
 		}
@@ -1773,7 +1773,7 @@ bool DataEditor::OpenEditWw()
 			IsNewRec = true;
 			params_->Append = true;
 			LockRec(false);
-			file_d_->ZeroAllFlds(current_rec_->GetRecord(), false);
+			file_d_->ZeroAllFlds(current_rec_, false);
 			DuplOwnerKey();
 			SetWasUpdated();
 		}
@@ -1981,7 +1981,7 @@ void DataEditor::WrJournal(char Upd, uint8_t* RP, double Time)
 		file_d_ = edit_->Journal;
 		//record_ = GetRecSpace();
 
-		const std::unique_ptr newData = std::make_unique<uint8_t[]>(file_d_->FF->RecLen + 2);
+		const std::unique_ptr newData = std::make_unique<Record>(file_d_);
 
 		std::vector<FieldDescr*>::iterator it = file_d_->FldD.begin();
 
@@ -1991,8 +1991,8 @@ void DataEditor::WrJournal(char Upd, uint8_t* RP, double Time)
 		file_d_->saveR(*it++, Time, newData.get());							// timestamp
 
 		char* src = (char*)RP;
-		memcpy(&newData.get()[(*it)->Displ], &src[srcOffset], l);					// record data
-		Record* record = new Record(edit_->Journal, newData.get(), false);
+		memcpy(&newData.get()->GetRecord()[(*it)->Displ], &src[srcOffset], l);					// record data
+		Record* record = new Record(edit_->Journal);
 
 		LockMode md = file_d_->NewLockMode(CrMode);
 		file_d_->IncNRecs(1);
@@ -2121,10 +2121,10 @@ void DataEditor::UndoRecord()
 			}
 		}
 		else { // je toto spravne zanorene???
-			file_d_->DelAllDifTFlds(current_rec_->GetRecord(), original_rec_->GetRecord());
+			file_d_->DelAllDifTFlds(current_rec_, original_rec_);
 		}
 
-		Move(original_rec_->GetRecord(), current_rec_->GetRecord(), file_d_->FF->RecLen);
+		memcpy(current_rec_->GetRecord(), original_rec_->GetRecord(), file_d_->FF->RecLen);
 		params_->WasUpdated = false; params_->NoDelTFlds = false;
 		UnLockRec(edit_);
 		DisplayRecord(IRec);
@@ -2262,7 +2262,7 @@ bool DataEditor::DeleteRecProc()
 					WK->DeleteAtNr(file_d_, BaseRec);
 					WK->AddToRecNr(file_d_, J + 1, -1);
 				}
-				file_d_->DelAllDifTFlds(current_rec_->GetRecord(), nullptr);
+				file_d_->DelAllDifTFlds(current_rec_, nullptr);
 			}
 			else {
 				if (params_->Subset) BaseRec++;
@@ -2692,7 +2692,7 @@ bool DataEditor::OldRecDiffers()
 		file_d_->ReadRec(edit_->LockedRec, rec);
 	if (CompArea(rec->GetRecord(), original_rec_->GetRecord(), file_d_->FF->RecLen) != _equ) {
 	label1:
-		file_d_->DelAllDifTFlds(current_rec_->GetRecord(), original_rec_->GetRecord());
+		file_d_->DelAllDifTFlds(current_rec_, original_rec_);
 		Move(rec->GetRecord(), current_rec_->GetRecord(), file_d_->FF->RecLen);
 		params_->WasUpdated = false;
 		result = true;
@@ -2963,7 +2963,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 
 label2:
 	if (!IsNewRec && !params_->NoDelTFlds) {
-		file_d_->DelAllDifTFlds(original_rec_->GetRecord(), current_rec_->GetRecord());
+		file_d_->DelAllDifTFlds(original_rec_, current_rec_);
 	}
 	edit_->EdUpdated = true;
 	params_->NoDelTFlds = false;
@@ -2997,16 +2997,16 @@ void DataEditor::DuplFromPrevRec()
 	}
 }
 
-void DataEditor::InsertRecProc(uint8_t* RP)
+void DataEditor::InsertRecProc(Record* RP)
 {
 	GotoRecFld(CRec(), edit_->FirstFld.begin());
 	IsNewRec = true;
 	LockRec(false);
 	if (RP != nullptr) {
-		memcpy(current_rec_->GetRecord(), RP, file_d_->GetRecLen());
+		memcpy(current_rec_->GetRecord(), RP->GetRecord(), file_d_->GetRecLen());
 	}
 	else {
-		file_d_->ZeroAllFlds(current_rec_->GetRecord(), false);
+		file_d_->ZeroAllFlds(current_rec_, false);
 	}
 	DuplOwnerKey();
 	SetWasUpdated();
@@ -3019,7 +3019,7 @@ void DataEditor::InsertRecProc(uint8_t* RP)
 	NewRecExit();
 }
 
-void DataEditor::AppendRecord(uint8_t* RP)
+void DataEditor::AppendRecord(Record* RP)
 {
 	HighLightOff();
 	IsNewRec = true;
@@ -3042,10 +3042,10 @@ void DataEditor::AppendRecord(uint8_t* RP)
 		DisplAllWwRecs();
 	}
 	if (RP != nullptr) {
-		Move(RP, current_rec_->GetRecord(), file_d_->GetRecLen());
+		memcpy(current_rec_->GetRecord(), RP, file_d_->GetRecLen());
 	}
 	else {
-		file_d_->ZeroAllFlds(current_rec_->GetRecord(), false);
+		file_d_->ZeroAllFlds(current_rec_, false);
 	}
 	DuplOwnerKey();
 	DisplRecNr(CRec());
@@ -3086,7 +3086,7 @@ std::vector<EFldD*>::iterator DataEditor::FindEFld(FieldDescr* F)
 	return D;
 }
 
-void DataEditor::CreateOrErr(bool create, uint8_t* RP, int N)
+void DataEditor::CreateOrErr(bool create, Record* RP, int N)
 {
 	if (create) {
 		if (N > CNRecs()) {
@@ -3118,10 +3118,10 @@ bool DataEditor::PromptSearch(bool create)
 	if (params_->Subset) K = WK;
 	std::vector<KeyFldD*>::iterator KF = K->KFlds.begin();
 
-	uint8_t* RP = file_d_->GetRecSpace();
+	Record* RP = new Record(file_d_);
 	//record_ = RP;
 
-	file_d_->ZeroAllFlds(current_rec_->GetRecord(), false);
+	file_d_->ZeroAllFlds(current_rec_, false);
 	x.Clear();
 	bool li = params_->F3LeadIn && !IsNewRec;
 	int w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
@@ -3129,7 +3129,7 @@ bool DataEditor::PromptSearch(bool create)
 		result = true;
 		//record_ = edit_->NewRecPtr;
 		PopW(w);
-		ReleaseStore(&RP);
+		delete RP; RP = nullptr;
 		return result;
 	}
 	if (HasIndex && edit_->DownSet && (VK == edit_->DownKey)) {
@@ -3144,19 +3144,19 @@ bool DataEditor::PromptSearch(bool create)
 			case 'S': {
 				s = FD2->loadS(F2, current_rec_);
 				x.StoreStr(s, *KF);
-				file_d_->saveS(F, s, RP);
+				RP->SaveS(F->Name, s);
 				break;
 			}
 			case 'R': {
 				r = FD2->loadR(F2, current_rec_);
 				x.StoreReal(r, *KF);
-				file_d_->saveR(F, r, RP);
+				RP->SaveR(F->Name, r);
 				break;
 			}
 			case 'B': {
 				b = FD2->loadB(F2, current_rec_);
 				x.StoreBool(b, *KF);
-				file_d_->saveB(F, b, RP);
+				RP->SaveB(F->Name, b);
 				break;
 			}
 			}
@@ -3168,7 +3168,7 @@ bool DataEditor::PromptSearch(bool create)
 	if (KF == K->KFlds.end()) {
 		result = true;
 		PopW(w);
-		ReleaseStore(&RP);
+		delete RP; RP = nullptr;
 		return result;
 	}
 
@@ -3200,24 +3200,24 @@ bool DataEditor::PromptSearch(bool create)
 			const XString x_old = x;
 			if (Event.Pressed.KeyCombination() == __ESC || (Event.What == evKeyDown)) {
 				PopW(w);
-				ReleaseStore(&RP);
+				delete RP; RP = nullptr;
 				return result;
 			}
 			switch (F->frml_type) {
 			case 'S': {
 				x.StoreStr(s, *KF);
-				file_d_->saveS(F, s, RP);
+				RP->SaveS(F->Name, s);
 				break;
 			}
 			case 'R': {
 				x.StoreReal(r, *KF);
-				file_d_->saveR(F, r, RP);
+				RP->SaveR(F->Name, r);
 				break;
 			}
 			case 'B': {
 				b = s[0] = AbbrYes;
 				x.StoreBool(b, *KF);
-				file_d_->saveB(F, b, RP);
+				RP->SaveB(F->Name, b);
 				break;
 			}
 			}
@@ -3241,7 +3241,7 @@ bool DataEditor::PromptSearch(bool create)
 		if (!found) CreateOrErr(create, RP, n);
 	}
 	else if (IsNewRec) {
-		Move(RP, current_rec_->GetRecord(), file_d_->FF->RecLen);
+		memcpy(current_rec_->GetRecord(), RP->GetRecord(),file_d_->FF->RecLen);
 	}
 	else if (!GotoXRec(&x, n)) {
 		CreateOrErr(create, RP, n);
@@ -3249,7 +3249,7 @@ bool DataEditor::PromptSearch(bool create)
 	result = true;
 
 	PopW(w);
-	ReleaseStore(&RP);
+	delete RP; RP = nullptr;
 	return result;
 }
 
@@ -3806,7 +3806,7 @@ void DataEditor::UpdateTxtPos(WORD TxtPos)
 	if (IsCurrChpt(file_d_)) {
 		md = file_d_->NewLockMode(WrMode);
 		SetWasUpdated();
-		file_d_->saveR(ChptTxtPos, (short)TxtPos, current_rec_->GetRecord());
+		current_rec_->SaveR(ChptTxtPos->Name, (short)TxtPos);
 		file_d_->OldLockMode(md);
 	}
 }
@@ -4629,7 +4629,7 @@ void DataEditor::Calculate2()
 						else if ((Z->Op == _unminus) && (iZ02->Op == _const)) R = -iZ02->R;
 						else goto label5;
 						SetWasUpdated();
-						file_d_->saveR(F, R * Power10[F->M], current_rec_->GetRecord());
+						current_rec_->SaveR(F->Name, R * Power10[F->M]);
 					}
 					else
 						label5:
@@ -4684,7 +4684,7 @@ label3:
 void DataEditor::DelNewRec()
 {
 	LockMode md;
-	file_d_->DelAllDifTFlds(current_rec_->GetRecord(), nullptr);
+	file_d_->DelAllDifTFlds(current_rec_, nullptr);
 	if (CNRecs() == 1) return;
 	IsNewRec = false;
 	params_->Append = false;

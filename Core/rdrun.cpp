@@ -215,20 +215,20 @@ bool Assign(FileD* file_d, Additive* add_d, Record* record)
 	else {
 		switch (f->frml_type) {
 		case 'R': {
-			add_d->File2->saveR(f, r, linked->GetRecord());
+			add_d->File2->saveR(f, r, linked);
 			break;
 		}
 		case 'S': {
 			if (f->field_type == FieldType::TEXT) {
-				add_d->File2->saveS(f, s, linked->GetRecord());
+				add_d->File2->saveS(f, s, linked);
 			}
 			else {
-				add_d->File2->saveS(f, s, linked->GetRecord());
+				add_d->File2->saveS(f, s, linked);
 			}
 			break;
 		}
 		default: {
-			add_d->File2->saveB(f, b, linked->GetRecord());
+			add_d->File2->saveB(f, b, linked);
 			break;
 		}
 		}

@@ -257,7 +257,7 @@ void CodingRdb::CodeF(FileD* file_d, Record* record, bool rotate, WORD IRec, Fie
 	}
 label2:
 	const std::string str(s->A, s->LL);
-	file_d->saveS(F, str, record->GetRecord());
+	record->SaveS(F->Name, str);
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
 }

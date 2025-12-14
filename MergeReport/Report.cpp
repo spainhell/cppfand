@@ -1958,18 +1958,18 @@ void Report::PutMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 
 		switch (f->frml_type) {
 		case 'S': {
-			std::string s = cf1->loadS(f1, cr1);
-			file_d->saveS(f, s, record->GetRecord());
+			std::string s = cr1->LoadS(f1->Name);
+			record->SaveS(f->Name, s);
 			break;
 		}
 		case 'R': {
-			double r = cf1->loadR(f1, cr1);
-			file_d->saveR(f, r, record->GetRecord());
+			double r = cr1->LoadR(f1->Name);
+			record->SaveR(f->Name, r);
 			break;
 		}
 		default: {
-			bool b = cf1->loadB(f1, cr1);
-			file_d->saveB(f, b, record->GetRecord());
+			bool b = cr1->LoadB(f1->Name);
+			record->SaveB(f->Name, b);
 			break;
 		}
 		}
@@ -2082,7 +2082,7 @@ void Report::MoveFrstRecs()
 		else {
 			FileD* f = IDA[i]->Scan->FD;
 			Record* rec = f->FF->RecPtr;
-			f->ZeroAllFlds(rec->GetRecord(), false);
+			f->ZeroAllFlds(rec, false);
 			PutMFlds(f, rec, IDA[i]->MFld);
 		}
 	}

@@ -184,25 +184,25 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 		to_FD->FF->ReadRec(N, up_rec);
 	}
 	else {
-		to_FD->ZeroAllFlds(up_rec->GetRecord(), false);
+		to_FD->ZeroAllFlds(up_rec, false);
 		for (size_t i = 0; i < LD->Args.size(); i++) {
 			FieldDescr* F = LD->Args[i]->FldD;
 			FieldDescr* F2 = K->KFlds[i]->FldD;
 			if (F2->isStored()) {
 				switch (F->frml_type) {
 				case 'S': {
-					x.S = from_FD->loadS(F, record);
-					to_FD->saveS(F2, x.S, up_rec->GetRecord());
+					const std::string s = record->LoadS(F->Name);
+					up_rec->SaveS(F2->Name, s);
 					break;
 				}
 				case 'R': {
-					const double r = from_FD->loadR(F, record);
-					to_FD->saveR(F2, r, up_rec->GetRecord());
+					const double r = record->LoadR(F->Name);
+					up_rec->SaveR(F2->Name, r);
 					break;
 				}
 				case 'B': {
-					const bool b = from_FD->loadB(F, record);
-					to_FD->saveB(F2, b, up_rec->GetRecord());
+					const bool b = record->LoadB(F->Name);
+					up_rec->SaveB(F2->Name, b);
 					break;
 				}
 				}

@@ -367,7 +367,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(edit, &Old)) return result;
-		edit->FD->saveT(ChptOldTxt, 0, data_editor->GetRecord()->GetRecord());
+		edit->FD->saveT(ChptOldTxt, 0, data_editor->GetRecord());
 		if (New.Typ == 'F') {
 			ReleaseFilesAndLinksAfterChapter(edit);
 		}
@@ -402,7 +402,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		}
 	}
 label2:
-	edit->FD->saveB(ChptVerif, true, data_editor->GetRecord()->GetRecord());
+	edit->FD->saveB(ChptVerif, true, data_editor->GetRecord());
 	result = 0;
 	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 	return result;
@@ -553,10 +553,10 @@ void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 	const int pos = ChptTF->Store(text);
 
 	if (LicNr == 0) {
-		Chpt->saveT(F, pos, Chpt->FF->RecPtr->GetRecord());
+		Chpt->saveT(F, pos, Chpt->FF->RecPtr);
 	}
 	else {
-		Chpt->saveT(F, pos + LicNr, Chpt->FF->RecPtr->GetRecord());
+		Chpt->saveT(F, pos + LicNr, Chpt->FF->RecPtr);
 	}
 
 	ReleaseStore(&p);
@@ -1010,7 +1010,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 		if (WasError) {
 			return result;
 		}
-		rdb_editor->GetFileD()->saveB(ChptVerif, false, rdb_editor->GetRecord()->GetRecord());
+		rdb_editor->GetFileD()->saveB(ChptVerif, false, rdb_editor->GetRecord());
 		rdb_editor->GetFileD()->WriteRec(rdb_editor->CRec(), rdb_editor->GetRecord());
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
@@ -1428,7 +1428,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					if ((Txt == 0) && IsTestRun) {
 						SetMsgPar(Name);
 						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
-							rdb_file->saveT(ChptOldTxt, 0, rdb_file->FF->RecPtr->GetRecord());
+							rdb_file->saveT(ChptOldTxt, 0, rdb_file->FF->RecPtr);
 							OldTxt = 0;
 
 							std::unique_ptr<DbfFile> dbf_file = std::make_unique<DbfFile>(nullptr);
@@ -1472,7 +1472,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 									if (merged) {
 										// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
-										rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr->GetRecord());
+										rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
 										rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 									}
 									else {
@@ -1481,7 +1481,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 								}
 								else {
 									// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
-									rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr->GetRecord());
+									rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
 									rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 								}
 							}
@@ -1521,7 +1521,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						if (RprtTxt.empty()) {
 							gc->GoCompileErr(I, 1145);
 						}
-						rdb_file->saveS(ChptTxt, RprtTxt, rdb_file->FF->RecPtr->GetRecord());
+						rdb_file->saveS(ChptTxt, RprtTxt, rdb_file->FF->RecPtr);
 						rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 					}
 					else {
@@ -1600,7 +1600,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			//CRecPtr = v_files->FF->RecPtr;
 			if (Verif) {
 				rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
-				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr->GetRecord());
+				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr);
 				rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 			}
 		}
@@ -1671,7 +1671,7 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 	}
 	data_editor->CFld = data_editor->GetEditD()->GetEFldIter(data_editor->GetEditD()->LastFld);
 	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
-	data_editor->GetFileD()->saveR(ChptTxtPos, gc->input_pos, data_editor->GetRecord()->GetRecord());
+	data_editor->GetFileD()->saveR(ChptTxtPos, gc->input_pos, data_editor->GetRecord());
 	data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
 	data_editor->EditFreeTxt(ChptTxt, s, true, Brk);
 }

@@ -997,7 +997,7 @@ void Fand0File::DeleteXRec(int RecNr, bool DelT, Record* record)
 	TestXFExist();
 	DeleteAllIndexes(RecNr, record);
 	if (DelT) {
-		_parent->DelAllDifTFlds(record->GetRecord(), nullptr);
+		_parent->DelAllDifTFlds(record, nullptr);
 	}
 	record->SetDeleted(); //SetDeletedFlag(record);
 	WriteRec(RecNr, record);

@@ -253,17 +253,17 @@ void Record::_setRecordFromValues()
 				BRS_Value& val = _values[i];
 				switch (field->field_type) {
 				case FieldType::BOOL:
-					_file_d->saveB(field, val.B, _buffer);
+					_file_d->saveB(field, val.B, this);
 					break;
 				case FieldType::DATE:
 				case FieldType::FIXED:
 				case FieldType::REAL:
-					_file_d->saveR(field, val.R, _buffer);
+					_file_d->saveR(field, val.R, this);
 					break;
 				case FieldType::ALFANUM:
 				case FieldType::NUMERIC:
 				case FieldType::TEXT:
-					_file_d->saveS(field, val.S, _buffer);
+					_file_d->saveS(field, val.S, this);
 					break;
 				default:
 					// unknown field type
