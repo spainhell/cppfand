@@ -3,6 +3,7 @@
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
+#include "../Common/Record.h"
 #include "../Core/runfrml.h"
 
 
@@ -341,7 +342,7 @@ void XScan::NextIntvl()
 	}
 }
 
-void XScan::GetRec(uint8_t* record)
+void XScan::GetRec(Record* record)
 {
 	XString xx;
 	size_t item = 0;
@@ -360,9 +361,9 @@ void XScan::GetRec(uint8_t* record)
 			switch (Kind) {
 			case ScanMode::Sequential: {
 				RecNr = IRec;
-				FD->FF->ReadRec(RecNr, record);
-				if (FD->DeletedFlag(record)) continue;
-				if (!RunBool(FD, Bool, record)) continue;
+				FD->ReadRec(RecNr, record);
+				if (record->IsDeleted()) continue;
+				if (!RunBool(FD, Bool, record->GetRecord())) continue;
 				break;
 			}
 			case ScanMode::Index:
@@ -379,8 +380,8 @@ void XScan::GetRec(uint8_t* record)
 					SeekOnPage(page_->GreaterPage, 1);
 				}
 				FD->FF->ReadRec(RecNr, record);
-				if (FD->DeletedFlag(record)) continue;
-				if (!RunBool(FD, Bool, record)) continue;
+				if (record->IsDeleted()) continue;
+				if (!RunBool(FD, Bool, record->GetRecord())) continue;
 				break;
 			}
 #ifdef FandSQL

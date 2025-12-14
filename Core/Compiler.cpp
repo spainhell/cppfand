@@ -20,6 +20,7 @@
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
 #include "../Common/DateTime.h"
+#include "../Common/Record.h"
 
 const uint8_t MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
@@ -166,19 +167,19 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	InpRdbPos = *rdb_pos;
 
 	RdbD* rdb = rdb_pos->rdb;
-	uint8_t* rec = rdb->v_files[0]->GetRecSpace();
+	Record* rec = new Record(rdb->v_files[0]);
 
-	rdb->v_files[0]->FF->ReadRec(rdb_pos->i_rec, rec);
+	rdb->v_files[0]->ReadRec(rdb_pos->i_rec, rec);
 	int pos;
 	if (FromTxt) {
-		pos = rdb->v_files[0]->loadT(ChptTxt, rec);
+		pos = rdb->v_files[0]->loadT(ChptTxt, rec->GetRecord());
 	}
 	else {
-		pos = rdb->v_files[0]->loadT(ChptOldTxt, rec);
+		pos = rdb->v_files[0]->loadT(ChptOldTxt, rec->GetRecord());
 	}
 	SetInpTTPos(rdb->v_files[0], pos, rdb->Encrypted);
 
-	delete[] rec; rec = nullptr;
+	delete rec; rec = nullptr;
 }
 
 void Compiler::SetInpTTxtPos(FileD* file_d)
@@ -1106,18 +1107,17 @@ bool Compiler::FindLocVar(LocVarBlock* LVB, LocVar** LV)
 
 bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 {
-	FileD* CF = CFile;
-	uint8_t* CR = CRecPtr;
-	CFile = Chpt;
-	CRecPtr = Chpt->GetRecSpace();
+	Record* record = new Record(Chpt);
 	RdbD* R = CRdb;
-	auto result = false;
+	bool result = false;
 	while (R != nullptr) {
-		CFile = R->v_files[0];
-		for (WORD i = 1; i <= CFile->FF->NRecs; i++) {
-			CFile->FF->ReadRec(i, CRecPtr);
-			std::string chapterType = CFile->loadS(ChptTyp, CRecPtr);
-			std::string chapterName = CFile->loadS(ChptName, CRecPtr);
+		FileD* f = R->v_files[0];
+		for (int32_t i = 1; i <= f->FF->NRecs; i++) {
+			f->ReadRec(i, record);
+			//std::string chapterType = f->loadS(ChptTyp, record);
+			std::string chapterType = record->LoadS(ChptTyp->Name);
+			//std::string chapterName = f->loadS(ChptName, record);
+			std::string chapterName = record->LoadS(ChptName->Name);
 			chapterName = TrailChar(chapterName, ' ');
 
 			if (chapterType.length() == 1
@@ -1134,8 +1134,7 @@ bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 		R = R->ChainBack;
 	}
 label1:
-	ReleaseStore(&CRecPtr);
-	CFile = CF; CRecPtr = CR;
+	// ReleaseStore(&CRecPtr);
 	return result;
 }
 

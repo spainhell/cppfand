@@ -229,10 +229,12 @@ size_t FileD::GetRecordSize()
 size_t FileD::ReadRec(size_t rec_nr, Record* record) const
 {
 	size_t result;
+	
+	record->Reset();
 
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		result = FF->ReadRec(rec_nr, record->GetRecord());
+		result = FF->ReadRec(rec_nr, record);
 		break;
 	}
 	case DataFileType::DBF: {
@@ -245,6 +247,8 @@ size_t FileD::ReadRec(size_t rec_nr, Record* record) const
 	}
 	}
 
+	record->Expand();
+
 	return result;
 }
 
@@ -254,7 +258,7 @@ size_t FileD::WriteRec(size_t rec_nr, Record* record) const
 
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		result = FF->WriteRec(rec_nr, record->GetRecord());
+		result = FF->WriteRec(rec_nr, record);
 		break;
 	}
 	case DataFileType::DBF: {
@@ -582,7 +586,7 @@ void FileD::SeekRec(int n)
 	}
 }
 
-void FileD::CreateRec(int n, uint8_t* record) const
+void FileD::CreateRec(int n, Record* record) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -590,14 +594,14 @@ void FileD::CreateRec(int n, uint8_t* record) const
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->CreateRec(n, record);
+		DbfF->CreateRec(n, record->GetRecord());
 		break;
 	}
 	default: break;
 	}
 }
 
-void FileD::PutRec(uint8_t* record)
+void FileD::PutRec(Record* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -605,14 +609,14 @@ void FileD::PutRec(uint8_t* record)
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->PutRec(record, IRec);
+		DbfF->PutRec(record->GetRecord(), IRec);
 		break;
 	}
 	default: break;
 	}
 }
 
-void FileD::DeleteRec(int n, uint8_t* record) const
+void FileD::DeleteRec(int n, Record* record) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -620,7 +624,7 @@ void FileD::DeleteRec(int n, uint8_t* record) const
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->DeleteRec(n, record);
+		DbfF->DeleteRec(n, record->GetRecord());
 		break;
 	}
 	default: break;
@@ -631,11 +635,11 @@ void FileD::RecallRec(int recNr, Record* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		FF->RecallRec(recNr, record->GetRecord());
+		FF->RecallRec(recNr, record);
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->ClearDeletedFlag(record);
+		DbfF->ClearDeletedFlag(record->GetRecord());
 		WriteRec(recNr, record);
 		break;
 	}
@@ -1349,7 +1353,7 @@ bool FileD::HasTextFile() const
 	return result;
 }
 
-bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record) const
+bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, Record* record) const
 {
 	return FF->SearchKey(XX, Key, NN, record);
 }
@@ -1361,7 +1365,7 @@ bool FileD::SearchXKey(XKey* K, XString& X, int& N)
 		return K->SearchInterval(this, X, false, N);
 	}
 	else {
-		std::unique_ptr<uint8_t[]> record = GetRecSpaceUnique();
+		std::unique_ptr<Record> record = std::make_unique<Record>(this);
 		return SearchKey(X, K, N, record.get());
 	}
 }

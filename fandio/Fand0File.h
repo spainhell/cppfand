@@ -6,6 +6,7 @@
 #include "../Logging/Logging.h"
 #include "../Common/OperationType.h"
 
+class Record;
 class XWKey;
 class XScan;
 class FileD;
@@ -29,8 +30,8 @@ public:
 	~Fand0File() override;
 
 	unsigned short RecLen = 0;
-	uint8_t* RecPtr = nullptr;
-	int NRecs = 0;
+	Record* RecPtr = nullptr;
+	int32_t NRecs = 0;
 	bool WasWrRec = false;
 	bool WasRdOnly = false;
 	bool Eof = false;
@@ -46,10 +47,10 @@ public:
 	LockMode ExLMode = NullMode;
 	LockMode TaLMode = NullMode;
 
-	size_t ReadRec(size_t rec_nr, uint8_t* record);
-	size_t WriteRec(size_t rec_nr, uint8_t* record);
-	void CreateRec(int n, uint8_t* record);
-	void DeleteRec(int n, uint8_t* record);
+	size_t ReadRec(size_t rec_nr, Record* record);
+	size_t WriteRec(size_t rec_nr, Record* record);
+	void CreateRec(int n, Record* record);
+	void DeleteRec(int n, Record* record);
 
 	void CompileRecLen();
 	int UsedFileSize() const;
@@ -106,15 +107,15 @@ public:
 
 	FileD* GetFileD();
 
-	bool SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record);
+	bool SearchKey(XString& XX, XKey* Key, int& NN, Record* record);
 	int XNRecs(std::vector<XKey*>& K);
-	void TryInsertAllIndexes(int RecNr, uint8_t* record);
+	void TryInsertAllIndexes(int RecNr, Record* record);
 	void DeleteAllIndexes(int RecNr, uint8_t* record);
-	void DeleteXRec(int RecNr, bool DelT, uint8_t* record);
-	void OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record);
-	void RecallRec(int recNr, uint8_t* record);
+	void DeleteXRec(int RecNr, bool DelT, Record* record);
+	void OverWrXRec(int RecNr, Record* P2, Record* P, Record* record);
+	void RecallRec(int recNr, Record* record);
 
-	void GenerateNew000File(XScan* x, uint8_t* record, void (*msgFuncUpdate)(int32_t));
+	void GenerateNew000File(XScan* x, Record* record, void (*msgFuncUpdate)(int32_t));
 	void CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type);
 	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type);
 	void SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)());

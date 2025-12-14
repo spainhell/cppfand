@@ -3,6 +3,7 @@
 #include "../fandio/FandXFile.h"
 #include "../Core/access.h"
 #include "KeyFldD.h"
+#include "../Common/Record.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"
@@ -25,7 +26,7 @@ XWorkFile::~XWorkFile()
 	FlushF(Handle, HandleError);
 }
 
-void XWorkFile::Main(OperationType oper_type, uint8_t* record)
+void XWorkFile::Main(OperationType oper_type, Record* record)
 {
 	xPage = new XPage();
 	nextXPage = xwFile->NewPage(xPage);
@@ -64,7 +65,7 @@ void XWorkFile::Main(OperationType oper_type, uint8_t* record)
 	delete xPage; xPage = nullptr;
 }
 
-void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper_type, uint8_t* record)
+void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper_type, Record* record)
 {
 
 	WRec* r = new WRec();
@@ -99,7 +100,7 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper
 	RunMsgOff();
 }
 
-bool XWorkFile::GetCRec(uint8_t* record)
+bool XWorkFile::GetCRec(Record* record)
 {
 	bool result = false;
 	xScan->GetRec(record);
@@ -109,7 +110,7 @@ bool XWorkFile::GetCRec(uint8_t* record)
 	return result;
 }
 
-void XWorkFile::Output(XKey* xKey, WRec* R, uint8_t* record)
+void XWorkFile::Output(XKey* xKey, WRec* R, Record* record)
 {
 	xxPage->AddToLeaf(_parent, R, xKey, record);
 }
@@ -171,7 +172,7 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, OperationType op
 }
 
 /// precte zaznamy, vytvori uplnou delku klice, setridi zaznamy
-void XWorkFile::SortMerge(XKey* xKey, uint8_t* record)
+void XWorkFile::SortMerge(XKey* xKey, Record* record)
 {// z 'PW->A' se postupne berou jednotlive WRec;
 	// ty pak projdou upravou;
 	// a zpatky se vraci na stejne misto do PW->A;
@@ -197,7 +198,7 @@ void XWorkFile::SortMerge(XKey* xKey, uint8_t* record)
 		auto r = std::make_unique<WRec>();
 		r->PutN(RecNr);
 		r->PutIR(IRec);
-		r->X.PackKF(_parent, KFRoot, record);
+		r->X.PackKF(_parent, KFRoot, record->GetRecord());
 		size_t serLen = r->Serialize(buffer);
 		memcpy(&PW->A[offsetOfPwA], buffer, serLen);
 		n++;
@@ -282,7 +283,7 @@ void XWorkFile::ReadWPage(WPage* W, int Pg)
 	TestErr();
 }
 
-void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Chn, uint8_t* record)
+void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Chn, Record* record)
 {
 	size_t offset = 0;
 	PgWritten++;
@@ -311,7 +312,7 @@ void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Ch
 	}
 }
 
-void XWorkFile::Merge(XKey* xKey, uint8_t* record)
+void XWorkFile::Merge(XKey* xKey, Record* record)
 {
 	int npairs, newli, nxtnew, pg1, pg2;
 	int nxt = 0;
@@ -347,7 +348,7 @@ label1:
 	goto label1;
 }
 
-void XWorkFile::Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, uint8_t* record)
+void XWorkFile::Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, Record* record)
 {
 	bool eof1 = false;
 	bool eof2 = false;

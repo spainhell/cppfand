@@ -233,6 +233,8 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 void ImportTxt(CopyD* CD)
 {
 	ThFile* F1 = nullptr;
+	FileD* f = nullptr;
+	Record* rec = nullptr;
 	LockMode md;
 	auto FE = std::make_unique<FrmlElemString>(_const, 0);
 
@@ -249,30 +251,30 @@ void ImportTxt(CopyD* CD)
 			FE->S = F1->RdDelim(0x1A); //^Z
 			AsgnParFldFrml(CD->HdFD, CD->HdF, FE.get(), false);
 		}
-		CFile = CD->FD2;
-		CRecPtr = CD->FD2->GetRecSpace();
+		f = CD->FD2;
+		rec = new Record(CD->FD2);
 #ifdef FandSQL
-		if (CFile->IsSQLFile) {
+		if (f->IsSQLFile) {
 			New(q, init);
 			q->OutpRewrite(Append);
 		}
 		else
 #endif
-			md = CFile->FF->RewriteFile(CD->Append);
+			md = f->FF->RewriteFile(CD->Append);
 
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
-			CFile->ZeroAllFlds(CRecPtr, false);
-			CFile->ClearDeletedFlag(CRecPtr);
+			f->ZeroAllFlds(rec->GetRecord(), false);
+			f->ClearDeletedFlag(rec->GetRecord());
 			VarFixImp(F1, CD->Opt1);
 			F1->ForwChar(); //{set IsEOF at End}
 #ifdef FandSQL
-			if (CFile->IsSQLFile) q->PutRec();
+			if (f->IsSQLFile) q->PutRec();
 			else
 #endif
 			{
-				CFile->PutRec(CRecPtr);
-				if (CD->Append && (CFile->FF->file_type == FandFileType::INDEX)) {
-					CFile->FF->TryInsertAllIndexes(CFile->IRec, CRecPtr);
+				f->PutRec(rec);
+				if (CD->Append && (f->FF->file_type == FandFileType::INDEX)) {
+					f->FF->TryInsertAllIndexes(f->IRec, rec);
 				}
 			}
 		}
@@ -285,12 +287,12 @@ void ImportTxt(CopyD* CD)
 #ifdef FandSQL
 	if (q != nullptr) {
 		q->OutpClose();
-		ClearRecSpace(CRecPtr);
+		ClearRecSpace(rec);
 	};
 #endif
 	if ((F1 != nullptr) && (F1->Handle != nullptr)) {
 		delete F1;
-		CFile->OldLockMode(md);
+		f->OldLockMode(md);
 	}
 }
 
@@ -299,6 +301,8 @@ void ExportTxt(CopyD* CD)
 	ThFile* F2 = nullptr;
 	LockMode md = NullMode;
 	XScan* Scan = nullptr;
+	FileD* f = nullptr;
+	Record* rec = nullptr;
 
 	try {
 		InOutMode m;
@@ -321,15 +325,15 @@ void ExportTxt(CopyD* CD)
 			// TODO: is there TWork? CFile->ClearRecSpace(rec->GetRecord());
 			delete rec; rec = nullptr;
 		}
-		CFile = CD->FD1;
-		CRecPtr = CD->FD1->GetRecSpace();
-		md = CFile->NewLockMode(RdMode);
+		f = CD->FD1;
+		rec = new Record(CD->FD1);
+		md = f->NewLockMode(RdMode);
 		std::vector<KeyInD*> empty;
-		Scan = new XScan(CFile, CD->ViewKey, empty, true);
-		Scan->Reset(nullptr, false, CRecPtr);
+		Scan = new XScan(f, CD->ViewKey, empty, true);
+		Scan->Reset(nullptr, false, rec->GetRecord());
 		RunMsgOn('C', Scan->NRecs);
 		while (true) {
-			Scan->GetRec(CRecPtr);
+			Scan->GetRec(rec);
 			if (!Scan->eof) {
 				VarFixExp(F2, CD->Opt2);
 				F2->WrString("\r\n");
@@ -348,7 +352,7 @@ void ExportTxt(CopyD* CD)
 	if (Scan != nullptr) {
 		Scan->Close();
 		// TODO: is there TWork? CFile->ClearRecSpace(CRecPtr);
-		CFile->OldLockMode(md);
+		f->OldLockMode(md);
 	}
 	if (F2 != nullptr && F2->Handle != nullptr) {
 		if (LastExitCode != 0) {
@@ -356,6 +360,8 @@ void ExportTxt(CopyD* CD)
 		}
 		delete F2;
 	}
+
+	delete rec; rec = nullptr;
 }
 
 void Cpy(HANDLE h, int sz, ThFile* F2)
@@ -730,8 +736,7 @@ void CopyH(HANDLE H, pstring Nm)
 
 bool PromptCodeRdb(EditD* edit)
 {
-	FileD* cf;
-	uint8_t* cr;
+	Record* record;
 	auto wx = std::make_unique<wwmix>();
 	Coding::SetPassword(Chpt, 1, "");
 	Coding::SetPassword(Chpt, 2, "");
@@ -748,8 +753,7 @@ bool PromptCodeRdb(EditD* edit)
 			goto label1;
 		}
 		if (b) {
-			CFile = Chpt;
-			CFile->FF->WrPrefixes();
+			Chpt->FF->WrPrefixes();
 			// TODO: SaveCache(0);
 			std::string s = CRdb->RdbDir;
 			AddBackSlash(s);
@@ -759,19 +763,15 @@ bool PromptCodeRdb(EditD* edit)
 		}
 		CodingCRdb(edit, true);
 		ChptTF->LicenseNr = (WORD)UserLicNrShow & 0x7FFF;
-		cf = CFile;
-		cr = CRecPtr;
-		CFile = Chpt;
-		CRecPtr = CFile->GetRecSpace();
+
+		record = new Record(Chpt);
 		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
-			CFile->FF->ReadRec(i, CRecPtr);
-			AddLicNr(CFile, ChptOldTxt, CRecPtr);
-			AddLicNr(CFile, ChptTxt, CRecPtr);
-			CFile->FF->WriteRec(i, CRecPtr);
+			Chpt->ReadRec(i, record);
+			AddLicNr(Chpt, ChptOldTxt, record->GetRecord());
+			AddLicNr(Chpt, ChptTxt, record->GetRecord());
+			Chpt->WriteRec(i, record);
 		}
-		ReleaseStore(&CRecPtr);
-		CFile = cf;
-		CRecPtr = cr;
+		//ReleaseStore(&CRecPtr);
 		return result;
 	}
 	if (b) {

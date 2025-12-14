@@ -98,6 +98,11 @@ void DataEditor::SetFileD(FileD* file_d)
 	current_rec_ = original_rec_->Clone();
 }
 
+Record* DataEditor::GetCurrentRecord() const
+{
+	return current_rec_;
+}
+
 uint8_t* DataEditor::GetRecord() const
 {
 	return current_rec_->GetRecord();
@@ -1931,14 +1936,14 @@ void DataEditor::UpdMemberRef(Record* POld, Record* PNew)
 			// TODO: FandSQL condition removed
 			link_descr->FromFD->FF->ScanSubstWIndex(Scan, k->KFlds, OperationType::Work);
 		label1:
-			Scan->GetRec(src_rec1->GetRecord());
+			Scan->GetRec(src_rec1);
 			if (!Scan->eof) {
 				// TODO: FandSQL condition removed
 				if (PNew == nullptr) {
-					RunAddUpdate(link_descr->FromFD, '-', nullptr, false, nullptr, link_descr, src_rec1->GetRecord());
+					RunAddUpdate(link_descr->FromFD, '-', nullptr, false, nullptr, link_descr, src_rec1);
 					UpdMemberRef(src_rec1, nullptr);
 					// TODO: FandSQL condition removed
-					link_descr->FromFD->FF->DeleteXRec(Scan->RecNr, true, src_rec1->GetRecord());
+					link_descr->FromFD->FF->DeleteXRec(Scan->RecNr, true, src_rec1);
 				}
 				else {
 					//memcpy(src_rec2->GetRecord(), src_rec1->GetRecord(), link_descr->FromFD->FF->RecLen);
@@ -1949,10 +1954,10 @@ void DataEditor::UpdMemberRef(Record* POld, Record* PNew)
 						//DuplFld(cf, link_descr->FromFD, PNew, src_rec2, nullptr, k1->FldD, arg->FldD);
 						DuplicateField(PNew, k1->FldD, src_rec2, arg->FldD);
 					}
-					RunAddUpdate(link_descr->FromFD, 'd', src_rec1->GetRecord(), false, nullptr, link_descr, src_rec2->GetRecord());
+					RunAddUpdate(link_descr->FromFD, 'd', src_rec1, false, nullptr, link_descr, src_rec2);
 					UpdMemberRef(src_rec1, src_rec2);
 					// TODO: FandSQL condition removed
-					link_descr->FromFD->FF->OverWrXRec(Scan->RecNr, src_rec1->GetRecord(), src_rec2->GetRecord(), src_rec2->GetRecord());
+					link_descr->FromFD->FF->OverWrXRec(Scan->RecNr, src_rec1, src_rec2, src_rec2);
 				}
 				goto label1;
 			}
@@ -1965,7 +1970,7 @@ void DataEditor::UpdMemberRef(Record* POld, Record* PNew)
 	} // for
 }
 
-void DataEditor::WrJournal(char Upd, void* RP, double Time)
+void DataEditor::WrJournal(char Upd, uint8_t* RP, double Time)
 {
 	// Upd:
 	// + new record; - deleted record; O old record data; N new record data
@@ -1974,7 +1979,7 @@ void DataEditor::WrJournal(char Upd, void* RP, double Time)
 	if (edit_->Journal != nullptr) {
 		WORD l = file_d_->FF->RecLen;
 		int n = AbsRecNr(CRec());
-		if (file_d_->FF->XF != nullptr) {
+		if (file_d_->HasIndexFile()) {
 			srcOffset += 2;
 			l--;
 		}
@@ -1992,14 +1997,16 @@ void DataEditor::WrJournal(char Upd, void* RP, double Time)
 
 		char* src = (char*)RP;
 		memcpy(&newData.get()[(*it)->Displ], &src[srcOffset], l);					// record data
+		Record* record = new Record(edit_->Journal, newData.get(), false);
 
 		LockMode md = file_d_->NewLockMode(CrMode);
 		file_d_->IncNRecs(1);
-		file_d_->FF->WriteRec(file_d_->FF->NRecs, newData.get());
+		file_d_->WriteRec(file_d_->FF->NRecs, record);
 		file_d_->OldLockMode(md);
 
 		file_d_ = edit_->FD;
 		//record_ = edit_->NewRec->GetRecord();
+		delete record; record = nullptr;
 		delete current_rec_; current_rec_ = new Record(file_d_);
 	}
 	UpdCount++;
@@ -2154,7 +2161,7 @@ bool DataEditor::CleanUp()
 				return false;
 			}
 		}
-		if (!RunAddUpdate(file_d_, '-', nullptr, false, nullptr, nullptr, current_rec_->GetRecord())) return false;
+		if (!RunAddUpdate(file_d_, '-', nullptr, false, nullptr, nullptr, current_rec_)) return false;
 		UpdMemberRef(current_rec_, nullptr);
 	}
 	if (!ChptDel(file_d_, this)) {
@@ -2168,7 +2175,7 @@ bool DataEditor::DelIndRec(int I, int N)
 {
 	bool result = false;
 	if (CleanUp()) {
-		file_d_->FF->DeleteXRec(N, true, current_rec_->GetRecord());
+		file_d_->FF->DeleteXRec(N, true, current_rec_);
 		//SetUpdHandle(file_d_->FF->Handle); // navic
 		file_d_->FF->SetUpdateFlag(); // -''- navic
 		//SetUpdHandle(file_d_->FF->XF->Handle); // navic
@@ -2277,7 +2284,7 @@ bool DataEditor::DeleteRecProc()
 			WK->DeleteAtNr(file_d_, CRec());
 			WK->AddToRecNr(file_d_, N, -1);
 		}
-		file_d_->DeleteRec(N, current_rec_->GetRecord());
+		file_d_->DeleteRec(N, current_rec_);
 	}
 
 	CFld = edit_->FirstFld.begin();
@@ -2697,7 +2704,7 @@ bool DataEditor::OldRecDiffers()
 	}
 label2:
 	// TODO: is there TWork? file_d_->ClearRecSpace(rec->GetRecord());
-	delete[] rec; rec = nullptr;
+	delete rec; rec = nullptr;
 
 	return result;
 }
@@ -2877,15 +2884,15 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 
 		if (IsNewRec) {
 			if (params_->AddSwitch
-				&& !RunAddUpdate(file_d_, '+', nullptr, false, nullptr, nullptr, current_rec_->GetRecord())) {
+				&& !RunAddUpdate(file_d_, '+', nullptr, false, nullptr, nullptr, current_rec_)) {
 				goto label1;
 			}
 			CNew = UpdateIndexes();
-			file_d_->CreateRec(file_d_->FF->NRecs + 1, current_rec_->GetRecord());
+			file_d_->CreateRec(file_d_->FF->NRecs + 1, current_rec_);
 		}
 		else {
 			if (params_->AddSwitch) {
-				if (!RunAddUpdate(file_d_, 'd', original_rec_->GetRecord(), false, nullptr, nullptr, current_rec_->GetRecord())) goto label1;
+				if (!RunAddUpdate(file_d_, 'd', original_rec_, false, nullptr, nullptr, current_rec_)) goto label1;
 				UpdMemberRef(original_rec_, current_rec_);
 			}
 			CNew = UpdateIndexes();
@@ -2912,11 +2919,11 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			}
 		}
 		
-		if (params_->AddSwitch && !RunAddUpdate(file_d_, '+', nullptr, false, nullptr, nullptr, current_rec_->GetRecord())) goto label1;
+		if (params_->AddSwitch && !RunAddUpdate(file_d_, '+', nullptr, false, nullptr, nullptr, current_rec_)) goto label1;
 		
 		if (ChptWriteCRec(this, edit_) != 0) goto label1;
 		
-		file_d_->CreateRec(N, current_rec_->GetRecord());
+		file_d_->CreateRec(N, current_rec_);
 		
 		if (params_->Subset) {
 			WK->AddToRecNr(file_d_, N, 1);
@@ -2925,7 +2932,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 	}
 	else {
 		if (params_->AddSwitch) {
-			if (!RunAddUpdate(file_d_, 'd', original_rec_->GetRecord(), false, nullptr, nullptr, current_rec_->GetRecord())) goto label1;
+			if (!RunAddUpdate(file_d_, 'd', original_rec_, false, nullptr, nullptr, current_rec_)) goto label1;
 			UpdMemberRef(original_rec_, current_rec_);
 		}
 		WORD chptWrite = ChptWriteCRec(this, edit_);
@@ -3063,7 +3070,7 @@ bool DataEditor::GotoXRec(XString* PX, int& N)
 		N = k->PathToNr(file_d_);
 	}
 	else {
-		result = file_d_->SearchKey(*PX, k, N, current_rec_->GetRecord());
+		result = file_d_->SearchKey(*PX, k, N, current_rec_);
 	}
 	RdRec(CRec(), current_rec_);
 	GotoRecFld(N, CFld);

@@ -158,7 +158,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 {
 	FileD* from_FD = LD->FromFD;
 	FileD* to_FD = LD->ToFD;
-	uint8_t* up_rec = to_FD->GetRecSpace();
+	Record* up_rec = new Record(to_FD);
 
 	XKey* K = LD->ToKey;
 	XString x;
@@ -184,7 +184,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 		to_FD->FF->ReadRec(N, up_rec);
 	}
 	else {
-		to_FD->ZeroAllFlds(up_rec, false);
+		to_FD->ZeroAllFlds(up_rec->GetRecord(), false);
 		for (size_t i = 0; i < LD->Args.size(); i++) {
 			FieldDescr* F = LD->Args[i]->FldD;
 			FieldDescr* F2 = K->KFlds[i]->FldD;
@@ -192,17 +192,17 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 				switch (F->frml_type) {
 				case 'S': {
 					x.S = from_FD->loadS(F, record->GetRecord());
-					to_FD->saveS(F2, x.S, up_rec);
+					to_FD->saveS(F2, x.S, up_rec->GetRecord());
 					break;
 				}
 				case 'R': {
 					const double r = from_FD->loadR(F, record->GetRecord());
-					to_FD->saveR(F2, r, up_rec);
+					to_FD->saveR(F2, r, up_rec->GetRecord());
 					break;
 				}
 				case 'B': {
 					const bool b = from_FD->loadB(F, record->GetRecord());
-					to_FD->saveB(F2, b, up_rec);
+					to_FD->saveB(F2, b, up_rec->GetRecord());
 					break;
 				}
 				}
@@ -213,9 +213,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 	// TODO: FandSQL removed
 	to_FD->OldLockMode(md);
 
-	Record* result = new Record(to_FD, up_rec, true);
-
-	return result;
+	return up_rec;
 }
 
 LocVar* LocVarBlock::GetRoot()

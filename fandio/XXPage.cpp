@@ -2,6 +2,7 @@
 
 #include "XWorkFile.h"
 #include "../Common/FileD.h"
+#include "../Common/Record.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 
@@ -64,7 +65,7 @@ void XXPage::PageFull()
 	XW->xwFile->WrPage(this, n);
 }
 
-void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, uint8_t* record)
+void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, Record* record)
 {
 	unsigned char m, l;
 	int n;
@@ -92,10 +93,10 @@ void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, uint8_t* record)
 					}
 					file_d->FF->ReadRec(n, record);
 					for (XKey* K : file_d->Keys) {
-						K->Delete(file_d, n, record);
+						K->Delete(file_d, n, record->GetRecord());
 					}
-					file_d->SetDeletedFlag(record);
-					file_d->FF->WriteRec(n, record);
+					record->SetDeleted();
+					file_d->WriteRec(n, record);
 					return;
 				}
 			}

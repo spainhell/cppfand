@@ -14,6 +14,7 @@
 #include "../TextEditor/EditorHelp.h"
 #include "../Common/codePages.h"
 #include "../Common/textfunc.h"
+#include "../Common/Record.h"
 #include "../Drivers/constants.h"
 
 
@@ -993,62 +994,59 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	//FileD* cf = nullptr;
 	uint8_t* p = nullptr;
 	LockMode md = LockMode::NullMode;
-	uint8_t* cr = CRecPtr;
 	std::string result;
+	Record* record = nullptr;
 
 	if (ByName) {
 		if (R == nullptr) goto label5;
-		//CFile = (FileD*)rdb;  // TODO: toto je nesmysl
-		CFile = R->help_file;
-		if (CFile == HelpFD) {
-			if (CFile->FF->Handle == nullptr) goto label5;
+		if (R->help_file == HelpFD) {
+			if (R->help_file->FF->Handle == nullptr) goto label5;
 		}
 		else {
-			// CFile = rdb->help_file;
-			if (CFile == nullptr) goto label5;
+			if (R->help_file == nullptr) goto label5;
 		}
 		ConvToNoDiakr(&S[0], S.length(), fonts.VFont);
 	}
 label1:
-	md = CFile->NewLockMode(RdMode);
-	if (CFile->FF->Handle == nullptr) goto label5;
-	CRecPtr = new uint8_t[CFile->FF->RecLen + 2]{ '\0' };
-	NmF = CFile->FldD[0];
-	TxtF = CFile->FldD[1];
+	md = R->help_file->NewLockMode(RdMode);
+	if (R->help_file->FF->Handle == nullptr) goto label5;
+	record = new Record(R->help_file); //new uint8_t[R->help_file->FF->RecLen + 2]{ '\0' };
+	NmF = R->help_file->FldD[0];
+	TxtF = R->help_file->FldD[1];
 	if (!ByName) {
-		i = MaxW(1, MinW(IRec, CFile->FF->NRecs));
-		CFile->FF->ReadRec(i, CRecPtr);
+		i = MaxW(1, MinW(IRec, R->help_file->FF->NRecs));
+		R->help_file->FF->ReadRec(i, record);
 		goto label2;
 	}
-	for (i = 1; i <= CFile->FF->NRecs; i++) {
-		CFile->FF->ReadRec(i, CRecPtr);
-		Nm = OldTrailChar(' ', CFile->loadS(NmF, CRecPtr));
-		if (CFile == HelpFD) fo = TVideoFont::foKamen;
+	for (i = 1; i <= R->help_file->FF->NRecs; i++) {
+		R->help_file->FF->ReadRec(i, record);
+		Nm = OldTrailChar(' ', record->LoadS(NmF->Name));
+		if (R->help_file == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
 		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
 		if (EqualsMask(S, Nm)) {
 		label2:
-			result = CFile->loadS(TxtF, CRecPtr);
-			if (!ByName || (result.length() > 0) || (i == CFile->FF->NRecs)) {
-				if (CFile == HelpFD) {
+			result = record->LoadS(TxtF->Name); //R->help_file->loadS(TxtF, record);
+			if (!ByName || (!result.empty()) || (i == R->help_file->FF->NRecs)) {
+				if (R->help_file == HelpFD) {
 					ConvKamenToCurr(result, !fonts.NoDiakrSupported);
 				}
 				IRec = i;
 				goto label3;
 			}
 			i++;
-			CFile->FF->ReadRec(i, CRecPtr);
+			R->help_file->FF->ReadRec(i, record);
 			goto label2;
 		}
 	}
 label3:
-	CFile->OldLockMode(md);
-	if ((result.empty()) && (CFile != HelpFD)) {
+	R->help_file->OldLockMode(md);
+	if ((result.empty()) && (R->help_file != HelpFD)) {
 	label4:
 		R = R->ChainBack;
 		if (R != nullptr)
-			if ((R->help_file != nullptr) && (R->help_file != CFile)) {
-				CFile = R->help_file;
+			if ((R->help_file != nullptr) && (R->help_file != R->help_file)) {
+				R->help_file = R->help_file;
 				goto label1;
 			}
 			else {
@@ -1056,7 +1054,6 @@ label3:
 			}
 	}
 label5:
-	CRecPtr = cr;
 	return result;
 }
 

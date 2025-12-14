@@ -53,19 +53,19 @@ double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, uint8_t* r
 	}
 	else {
 		r = 0;
-		uint8_t* newRecord = fromFD->GetRecSpace();
+		Record* newRecord = new Record(fromFD);
 		std::vector<KeyInD*> empty;
 		XScan* Scan = new XScan(fromFD, K, empty, true);
 		Scan->ResetOwner(&x, nullptr);
 		while (true) {
 			Scan->GetRec(newRecord);
 			if (!Scan->eof) {
-				if (RunBool(fromFD, Bool, newRecord)) {
+				if (RunBool(fromFD, Bool, newRecord->GetRecord())) {
 					if (Sum == nullptr) {
 						r = r + 1;
 					}
 					else {
-						r = r + RunReal(fromFD, Sum, newRecord);
+						r = r + RunReal(fromFD, Sum, newRecord->GetRecord());
 					}
 				}
 				continue;
@@ -73,7 +73,7 @@ double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, uint8_t* r
 			break;
 		}
 		Scan->Close();
-		delete[] newRecord; newRecord = nullptr;
+		delete newRecord; newRecord = nullptr;
 	}
 	fromFD->OldLockMode(md);
 
@@ -335,7 +335,7 @@ int RecNoFun(FileD* file_d, FrmlElemRecNo* Z, uint8_t* record)
 	FileD* funcFD = Z->FFD;
 
 	LockMode md = funcFD->NewLockMode(RdMode);
-	uint8_t* newRecord = funcFD->GetRecSpace();
+	Record* newRecord = new Record(funcFD);
 	if (funcFD->FF->NRecs > 0) {
 		bool b;
 		if (funcFD->FF->file_type == FandFileType::INDEX) {
@@ -349,7 +349,7 @@ int RecNoFun(FileD* file_d, FrmlElemRecNo* Z, uint8_t* record)
 		n = -1;
 	}
 	funcFD->OldLockMode(md);
-	delete[] newRecord; newRecord = nullptr;
+	delete newRecord; newRecord = nullptr;
 
 	return n;
 }
@@ -373,14 +373,14 @@ int AbsLogRecNoFun(FileD* file_d, FrmlElemRecNo* Z, uint8_t* record)
 	if (funcFD->FF->file_type == FandFileType::INDEX) {
 		funcFD->FF->TestXFExist();
 		if (Z->Op == _recnolog) {
-			uint8_t* newRecord = funcFD->GetRecSpace();
+			Record* newRecord = new Record(funcFD);
 			funcFD->FF->ReadRec(N, newRecord);
-			if (funcFD->DeletedFlag(newRecord)) {
+			if (newRecord->IsDeleted()) {
 				funcFD->OldLockMode(md);
 				return result;
 			}
-			result = k->RecNrToNr(funcFD, N, newRecord);
-			delete[] newRecord; newRecord = nullptr;
+			result = k->RecNrToNr(funcFD, N, newRecord->GetRecord());
+			delete newRecord; newRecord = nullptr;
 		}
 		else /*_recnoabs*/ {
 			if (N > k->NRecs()) {
@@ -779,21 +779,21 @@ bool RunBool(FileD* file_d, FrmlElem* X, uint8_t* record)
 	}
 	case _accrecno: {
 		FrmlElem14* iX = (FrmlElem14*)X;
-		uint8_t* rec = nullptr;
-		AccRecNoProc(iX, 640, &rec);
-		result = iX->RecFD->loadB(iX->RecFldD, rec);
-		delete[] rec; rec = nullptr;
+		Record* rec = new Record(iX->RecFD);
+		AccRecNoProc(iX, 640, rec);
+		result = rec->LoadB(iX->RecFldD->Name); //iX->RecFD->loadB(iX->RecFldD, rec);
+		delete rec; rec = nullptr;
 		break;
 	}
 	case _edupdated: result = EdUpdated; break;
 	case _keypressed: result = KeyPressed(); break;/*Kbdpressed?*/
 	case _escprompt: result = EscPrompt; break;
 	case _isdeleted: {
-		auto iX = (FrmlElem14*)X;
-		uint8_t* rec = nullptr;
-		AccRecNoProc(iX, 642, &rec);
-		result = iX->RecFD->DeletedFlag(rec);
-		delete[] rec; rec = nullptr;
+		FrmlElem14* iX = (FrmlElem14*)X;
+		Record* rec = new Record(iX->RecFD);
+		AccRecNoProc(iX, 642, rec);
+		result = rec->IsDeleted(); // iX->RecFD->DeletedFlag(rec);
+		delete rec; rec = nullptr;
 		break;
 	}
 	case _lvdeleted: {
@@ -1124,10 +1124,10 @@ label1:
 	}
 	case _accrecno: {
 		FrmlElem14* iX = (FrmlElem14*)X;
-		uint8_t* rec = nullptr;
-		AccRecNoProc(iX, 640, &rec);
-		result = iX->RecFD->loadR(iX->RecFldD, rec);
-		delete[] rec; rec = nullptr;
+		Record* rec = new Record(iX->RecFD);
+		AccRecNoProc(iX, 640, rec);
+		result = iX->RecFD->loadR(iX->RecFldD, rec->GetRecord());
+		delete rec; rec = nullptr;
 		break;
 	}
 	case _link: {
@@ -1791,10 +1791,10 @@ label1:
 	}
 	case _accrecno: {
 		FrmlElem14* iX = (FrmlElem14*)X;
-		uint8_t* rec = nullptr;
-		AccRecNoProc(iX, 640, &rec);
-		result = iX->RecFD->loadS(iX->RecFldD, rec);
-		delete[] rec; rec = nullptr;
+		Record* rec = new Record(iX->RecFD);
+		AccRecNoProc(iX, 640, rec);
+		result = iX->RecFD->loadS(iX->RecFldD, rec->GetRecord());
+		delete rec; rec = nullptr;
 		break;
 	}
 	case _gettxt: {
@@ -2167,23 +2167,20 @@ double RoundReal(double RR, short M)
 	return int(R) / Power10[M];
 }
 
-void AccRecNoProc(FrmlElem14* X, WORD Msg, uint8_t** record)
+void AccRecNoProc(FrmlElem14* X, WORD Msg, Record* record)
 {
 	FileD* fd = X->RecFD;
 	LockMode md = fd->NewLockMode(RdMode);
 
-	if (*record != nullptr) {
-		delete[] * record; *record = nullptr;
-	}
+	record->Reset();
 
-	*record = fd->GetRecSpace();
-	int N = RunInt(fd, X->P1, *record);
+	int N = RunInt(fd, X->P1, record->GetRecord());
 	if ((N <= 0) || (N > fd->FF->NRecs)) {
 		SetMsgPar(fd->Name, X->RecFldD->Name);
 		fd->RunErrorM(md);
 		RunError(Msg);
 	}
-	fd->FF->ReadRec(N, *record);
+	fd->ReadRec(N, record);
 	fd->OldLockMode(md);
 }
 

@@ -84,9 +84,9 @@ public:
 	void IncNRecs(int n);
 	void DecNRecs(int n);
 	void SeekRec(int n);
-	void CreateRec(int n, uint8_t* record) const;
-	void PutRec(uint8_t* record);
-	void DeleteRec(int n, uint8_t* record) const;
+	void CreateRec(int n, Record* record) const;
+	void PutRec(Record* record);
+	void DeleteRec(int n, Record* record) const;
 	void RecallRec(int recNr, Record* record);
 	void AssignNRecs(bool Add, int N);
 
@@ -147,7 +147,7 @@ public:
 	bool HasIndexFile() const;
 	bool HasTextFile() const;
 
-	bool SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record) const;
+	bool SearchKey(XString& XX, XKey* Key, int& NN, Record* record) const;
 	bool SearchXKey(XKey* K, XString& X, int& N);
 
 	FileD* OpenDuplicateF(bool createTextFile);

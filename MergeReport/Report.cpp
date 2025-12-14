@@ -21,6 +21,7 @@
 #include "../Core/wwmix.h"
 #include "../Core/rdfildcl.h"
 #include "../Common/DateTime.h"
+#include "../Common/Record.h"
 
 Report::Report()
 {
@@ -152,8 +153,8 @@ void Report::Read(RprtOpt* RO)
 			ID->OpErr = _const;
 			ID->OpWarn = _const;
 			KI.clear();
-			ID->ForwRecPtr = base_compiler->processing_F->GetRecSpace();
-			FD->FF->RecPtr = base_compiler->processing_F->GetRecSpace();
+			ID->ForwRecPtr = new Record(base_compiler->processing_F);
+			FD->FF->RecPtr = new Record(base_compiler->processing_F);
 
 			if (base_compiler->Lexem == '(') {
 				base_compiler->RdLex();
@@ -173,7 +174,7 @@ void Report::Read(RprtOpt* RO)
 				&&
 				((*FDL)->Cond != nullptr || (!(*FDL)->KeyIn.empty()) || (Ii == 1) && RO->UserCondQuest))
 			{
-				ID->Bool = RunEvalFrml(FD, (*FDL)->Cond, FD->FF->RecPtr);
+				ID->Bool = RunEvalFrml(FD, (*FDL)->Cond, FD->FF->RecPtr->GetRecord());
 				KI = (*FDL)->KeyIn;
 				ID->SQLFilter = (*FDL)->SQLFilter;
 				if (Ii == 1) {
@@ -644,7 +645,7 @@ label2:
 		Ii = 0;
 	}
 	else {
-		Z = base_compiler->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr);
+		Z = base_compiler->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr->GetRecord());
 		TestSetSumIi();
 		if ((FrmlSumEl != nullptr) && !FrstSumVar && (CBlk != nullptr)) {
 			base_compiler->OldError(59);
@@ -685,7 +686,7 @@ void Report::FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 	else Z = FindIiandFldFrml(&FD, FTyp);
 	if (Z == nullptr) base_compiler->Error(8);
 	TestSetSumIi();
-	*res = base_compiler->FrmlContxt(Z, FD, FD->FF->RecPtr);
+	*res = base_compiler->FrmlContxt(Z, FD, FD->FF->RecPtr->GetRecord());
 }
 
 void Report::Rd_Oi()
@@ -1856,9 +1857,10 @@ void Report::Headings(LvDescr* L, LvDescr* L2, std::string& text)
 
 void Report::ReadInpFile(InpD* ID)
 {
-	CRecPtr = ID->ForwRecPtr;
+	//CRecPtr = ID->ForwRecPtr;
+	Record* rec = new Record(ID->Scan->FD/*, ID->ForwRecPtr->GetRecord()*/);
 label1:
-	ID->Scan->GetRec(CRecPtr);
+	ID->Scan->GetRec(rec);
 	if (ID->Scan->eof) return;
 	if (ESCPressed() && PromptYN(24)) {
 		WasLPTCancel = true;
@@ -1866,7 +1868,8 @@ label1:
 	}
 	RecCount++;
 	RunMsgN(RecCount);
-	if (!RunBool(CFile, ID->Bool, CRecPtr)) goto label1;
+	if (!RunBool(ID->Scan->FD, ID->Bool, rec->GetRecord())) goto label1;
+	delete rec; rec = nullptr;
 }
 
 void Report::OpenInp()
@@ -1894,7 +1897,7 @@ void Report::CloseInp()
 	}
 }
 
-WORD Report::CompMFlds(std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M, short& NLv)
+WORD Report::CompMFlds(FileD* file_d, Record* record, std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M, short& NLv)
 {
 	XString x;
 	NLv = 0;
@@ -1904,7 +1907,7 @@ WORD Report::CompMFlds(std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M, sh
 		KeyFldD* m = M[i];
 		NLv++;
 		x.Clear();
-		x.StoreKF(CFile, m, CRecPtr);
+		x.StoreKF(file_d, m, record->GetRecord());
 		std::string s = x.S;
 		int res = CompStr(s, c.S);
 		if (res != _equ) {
@@ -1915,7 +1918,7 @@ WORD Report::CompMFlds(std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M, sh
 	return _equ;
 }
 
-void Report::GetMFlds(std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M)
+void Report::GetMFlds(FileD* file_d, Record* rec, std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M)
 {
 	//for (auto& c : C) {
 	for (size_t i = 0; i < C.size(); i++) {
@@ -1923,7 +1926,7 @@ void Report::GetMFlds(std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M)
 		KeyFldD* m = M[i];
 		XString x;
 		x.Clear();
-		x.StoreKF(CFile, m, CRecPtr);
+		x.StoreKF(file_d, m, rec->GetRecord());
 		c.S = x.S;
 		//M = M->pChain;
 	}
@@ -1937,41 +1940,31 @@ void Report::MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C
 	}
 }
 
-void Report::PutMFlds(std::vector<KeyFldD*>& M)
+void Report::PutMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 {
 	if (MinID == nullptr) return;
-	FileD* cf = CFile;
-	FileD* cf1 = MinID->Scan->FD;
-	uint8_t* cr = CRecPtr;
-	uint8_t* cr1 = MinID->ForwRecPtr;
-	//KeyFldD* m1 = MinID->MFld;
 
-	//while (M != nullptr) {
+	FileD* cf1 = MinID->Scan->FD;
+	Record* cr1 = MinID->ForwRecPtr;
+
 	for (size_t i = 0; i < M.size(); i++) {
 		FieldDescr* f = M[i]->FldD;
 		FieldDescr* f1 = MinID->MFld[i]->FldD;
-		CFile = cf1;
-		CRecPtr = cr1;
+
 		switch (f->frml_type) {
 		case 'S': {
-			std::string s = CFile->loadS(f1, CRecPtr);
-			CFile = cf;
-			CRecPtr = cr;
-			CFile->saveS(f, s, CRecPtr);
+			std::string s = cf1->loadS(f1, cr1->GetRecord());
+			file_d->saveS(f, s, record->GetRecord());
 			break;
 		}
 		case 'R': {
-			double r = CFile->loadR(f1, CRecPtr);
-			CFile = cf;
-			CRecPtr = cr;
-			CFile->saveR(f, r, CRecPtr);
+			double r = cf1->loadR(f1, cr1->GetRecord());
+			file_d->saveR(f, r, record->GetRecord());
 			break;
 		}
 		default: {
-			bool b = CFile->loadB(f1, CRecPtr);
-			CFile = cf;
-			CRecPtr = cr;
-			CFile->saveB(f, b, CRecPtr);
+			bool b = cf1->loadB(f1, cr1->GetRecord());
+			file_d->saveB(f, b, record->GetRecord());
 			break;
 		}
 		}
@@ -1985,27 +1978,30 @@ void Report::GetMinKey()
 	short i, nlv;
 	short mini = 0; NEof = 0;
 	for (i = 1; i <= MaxIi; i++) {
-		CFile = IDA[i]->Scan->FD;
+		FileD* f = IDA[i]->Scan->FD;
 		if (IDA[i]->Scan->eof) NEof++;
 		if (OldMFlds.empty()) {
 			IDA[i]->Exist = !IDA[i]->Scan->eof;
 			mini = 1;
 		}
 		else {
-			CRecPtr = IDA[i]->ForwRecPtr;
+			Record* rec = IDA[i]->ForwRecPtr;
 			IDA[i]->Exist = false;
 			if (!IDA[i]->Scan->eof) {
-				WORD res;
-				if (mini == 0) goto label1;
-				res = CompMFlds(NewMFlds, IDA[i]->MFld, nlv);
-				if (res != _gt) {
-					if (res == _lt)
-					{
-					label1:
-						GetMFlds(NewMFlds, IDA[i]->MFld);
-						mini = i;
-					}
+				if (mini == 0) {
+					GetMFlds(f, rec, NewMFlds, IDA[i]->MFld);
+					mini = i;
 					IDA[i]->Exist = true;
+				}
+				else {
+					WORD res = CompMFlds(f, rec, NewMFlds, IDA[i]->MFld, nlv);
+					if (res != _gt) {
+						if (res == _lt) {
+							GetMFlds(f, rec, NewMFlds, IDA[i]->MFld);
+							mini = i;
+						}
+						IDA[i]->Exist = true;
+					}
 				}
 			}
 		}
@@ -2049,19 +2045,19 @@ LvDescr* Report::GetDifLevel()
 
 void Report::MoveForwToRec(InpD* ID)
 {
-	CFile = ID->Scan->FD;
-	CRecPtr = CFile->FF->RecPtr;
-	Move(ID->ForwRecPtr, CRecPtr, CFile->FF->RecLen + 1);
+	FileD* f = ID->Scan->FD;
+	Record* rec = f->FF->RecPtr;
+	memcpy(rec->GetRecord(), ID->ForwRecPtr->GetRecord(), f->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
-	// LogicControl* C = ID->Checks;
-	if (!ID->Chk.empty()) { //if (C != nullptr) {
+
+	if (!ID->Chk.empty()) {
 		ID->Error = false;
 		ID->Warning = false;
-		ID->ErrTxtFrml->S = ""; // ID->ErrTxtFrml->S[0] = 0;
-		for (LogicControl* C : ID->Chk) { //while (C != nullptr) {
-			if (!RunBool(CFile, C->Bool, CRecPtr)) {
+		ID->ErrTxtFrml->S = "";
+		for (LogicControl* C : ID->Chk) {
+			if (!RunBool(f, C->Bool, rec->GetRecord())) {
 				ID->Warning = true;
-				ID->ErrTxtFrml->S = RunString(CFile, C->TxtZ, CRecPtr);
+				ID->ErrTxtFrml->S = RunString(f, C->TxtZ, rec->GetRecord());
 				if (!C->Warning) {
 					ID->Error = true;
 					return;
@@ -2079,10 +2075,10 @@ void Report::MoveFrstRecs()
 			MoveForwToRec(IDA[i]);
 		}
 		else {
-			CFile = IDA[i]->Scan->FD;
-			CRecPtr = CFile->FF->RecPtr;
-			CFile->ZeroAllFlds(CRecPtr, false);
-			PutMFlds(IDA[i]->MFld);
+			FileD* f = IDA[i]->Scan->FD;
+			Record* rec = f->FF->RecPtr;
+			f->ZeroAllFlds(rec->GetRecord(), false);
+			PutMFlds(f, rec, IDA[i]->MFld);
 		}
 	}
 }
@@ -2091,30 +2087,33 @@ void Report::MergeProc(std::string& text)
 {
 	short nlv = 0;
 	short res = 0;
+	FileD* f = nullptr;
+	Record* rec = nullptr;
+
 	for (short i = 1; i <= MaxIi; i++) {
 		InpD* ID = IDA[i];
 		if (ID->Exist) {
-			CFile = ID->Scan->FD;
-			CRecPtr = CFile->FF->RecPtr;
+			f = ID->Scan->FD;
+			rec = f->FF->RecPtr;
 			LvDescr* L = ID->LstLvS;
 		label1:
 			ZeroSumFlds(L);
-			GetMFlds(ID->OldSFlds, ID->SFld);
+			GetMFlds(f, rec, ID->OldSFlds, ID->SFld);
 			if (WasFF2) PrintPageHd(text);
 			Headings(L, ID->FrstLvS, text);
 			if (PrintDH == 0) PrintDH = 1;
 		label2:
 			PrintBlock(ID->FrstLvS->Ft, text, ID->FrstLvS->Hd); /*DE*/
-			SumUp(CFile, ID->Sum, CRecPtr);
+			SumUp(f, ID->Sum, rec->GetRecord());
 			ReadInpFile(ID);
 			if (ID->Scan->eof) goto label4;
-			res = CompMFlds(NewMFlds, ID->MFld, nlv);
+			res = CompMFlds(f, rec, NewMFlds, ID->MFld, nlv);
 			if ((res == _lt) && (MaxIi > 1)) {
 				SetMsgPar(ID->Scan->FD->Name);
 				RunError(607);
 			}
 			if (res != _equ) goto label4;
-			res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
+			res = CompMFlds(f, rec, ID->OldSFlds, ID->SFld, nlv);
 			if (res == _equ) {
 				MoveForwToRec(ID);
 				goto label2;

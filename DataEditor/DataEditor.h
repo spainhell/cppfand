@@ -24,6 +24,7 @@ public:
     void SetEditD(EditD* edit);
 	void SetFileD(FileD* file_d);
 
+    Record* GetCurrentRecord() const;
     uint8_t* GetRecord() const;
     uint8_t* GetOriginalRecord() const;
 
@@ -111,7 +112,7 @@ private:
     void DisplRecTxt();
     
     void UpdMemberRef(Record* POld, Record* PNew);
-    void WrJournal(char Upd, void* RP, double Time);
+    void WrJournal(char Upd, uint8_t* RP, double Time);
     bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md);
     bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd);
     void UnLockWithDep(LockMode OldMd);

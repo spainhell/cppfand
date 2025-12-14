@@ -39,7 +39,7 @@ void StrMask(double R, pstring& Mask);
 std::string RunSelectStr(FileD* file_d, FrmlElemFunction* Z, uint8_t* record);
 void LowCase(std::string& text);
 double RoundReal(double RR, short M);
-void AccRecNoProc(FrmlElem14* X, WORD Msg, uint8_t** record);
+void AccRecNoProc(FrmlElem14* X, WORD Msg, Record* record);
 void GetRecNoXString(FileD* file_d, FrmlElemRecNo* Z, XString& X, uint8_t* record);
 double RunRealStr(FileD* file_d, FrmlElem* X, uint8_t* record);
 

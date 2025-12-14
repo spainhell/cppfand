@@ -5,6 +5,7 @@
 #include "../Core/Compiler.h"
 #include "../Common/Coding.h"
 #include "../Common/FileD.h"
+#include "../Common/Record.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
@@ -16,34 +17,33 @@
 void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 {
 	std::string s;
-	FileD* cf = CFile;
-	uint8_t* cr = CRecPtr;
-	CFile = Chpt;
+	Record* record = new Record(Chpt);
 
-	CRecPtr = CFile->GetRecSpace();
-	RunMsgOn('C', CFile->FF->NRecs);
+	RunMsgOn('C', Chpt->FF->NRecs);
 	WORD irec = ChptTF->IRec;
 	bool compileAll = ChptTF->CompileAll;
-	for (int i = 1; i <= CFile->FF->NRecs; i++) {
-		CFile->FF->ReadRec(i, CRecPtr);
+	for (int i = 1; i <= Chpt->FF->NRecs; i++) {
+		Chpt->ReadRec(i, record);
 		RunMsgN(i);
-		s = CFile->loadS(ChptTyp, CRecPtr);
-		std::string chapter_name = CFile->loadS(ChptName, CRecPtr);
+		//s = Chpt->loadS(ChptTyp, cr);
+		s = record->LoadS(ChptTyp->Name);
+		std::string chapter_name = Chpt->loadS(ChptName, record->GetRecord());
 		SetMsgPar(chapter_name);
 		if (Rotate && (s[0] == ' ' || s[0] == 'I')) {}
 		else {
 			CodeF(Rotate, i, ChptTxt, s[0]);
 			CodeF(Rotate, i, ChptOldTxt, s[0]);
-			CFile->FF->WriteRec(i, CRecPtr);
+			Chpt->FF->WriteRec(i, record);
 		}
 	}
 	if (Rotate) {
 		int i = 1;
-		while (i <= CFile->FF->NRecs) {
-			CFile->FF->ReadRec(i, CRecPtr);
-			s = CFile->loadS(ChptTyp, CRecPtr);
+		while (i <= Chpt->FF->NRecs) {
+			Chpt->ReadRec(i, record);
+			//s = Chpt->loadS(ChptTyp, cr);
+			s = record->LoadS(ChptTyp->Name);
 			if (s[0] == ' ' || s[0] == 'I') {
-				CFile->DeleteRec(i, CRecPtr);
+				Chpt->DeleteRec(i, record);
 			}
 			else {
 				i++;
@@ -51,9 +51,7 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 		}
 	}
 	RunMsgOff();
-	ReleaseStore(&CRecPtr);
-	CFile = cf;
-	CRecPtr = cr;
+	//ReleaseStore(&cr);
 	CompressCRdb(nullptr, edit);
 	ChptTF->IRec = irec;
 	ChptTF->CompileAll = compileAll;
@@ -268,7 +266,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 {
 	uint8_t* p = nullptr;
 	MarkStore(p);
-	uint8_t* cr = Chpt->FF->RecPtr;
+	Record* cr = Chpt->FF->RecPtr;
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
 	SpecFDNameAllowed = true;
 
@@ -284,7 +282,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	//CFile = Chpt;
 	//CRecPtr = edit->NewRec->GetRecord();
 	//CFile->ReadRec(data_editor->CRec(), CRecPtr);
-	Chpt->FF->ReadRec(data_editor->CRec(), data_editor->GetRecord());
+	Chpt->ReadRec(data_editor->CRec(), data_editor->GetCurrentRecord());
 
 	ChptTF->CompileAll = false;
 	ChptTF->CompileProc = false;

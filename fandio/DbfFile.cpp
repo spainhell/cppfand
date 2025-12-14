@@ -19,18 +19,18 @@ DbfFile::~DbfFile()
 {
 }
 
-size_t DbfFile::ReadRec(size_t rec_nr, void* record)
+size_t DbfFile::ReadRec(size_t rec_nr, uint8_t* record)
 {
 	return ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
-size_t DbfFile::WriteRec(size_t rec_nr, void* record)
+size_t DbfFile::WriteRec(size_t rec_nr, uint8_t* record)
 {
 	WasWrRec = true;
 	return WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
-void DbfFile::CreateRec(int n, void* record)
+void DbfFile::CreateRec(int n, uint8_t* record)
 {
 	IncNRecs(1);
 	uint8_t* tmp = _parent->GetRecSpace();
@@ -43,7 +43,7 @@ void DbfFile::CreateRec(int n, void* record)
 	WriteRec(n, record);
 }
 
-void DbfFile::DeleteRec(int n, void* record)
+void DbfFile::DeleteRec(int n, uint8_t* record)
 {
 	DelAllDifTFlds(record, nullptr);
 	for (int i = n; i <= NRecs - 1; i++) {
@@ -53,7 +53,7 @@ void DbfFile::DeleteRec(int n, void* record)
 	DecNRecs(1);
 }
 
-void DbfFile::DelAllDifTFlds(void* record, void* comp_record)
+void DbfFile::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
 {
 	for (auto& F : _parent->FldD) {
 		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
@@ -75,7 +75,7 @@ void DbfFile::DecNRecs(int n)
 	WasWrRec = true;
 }
 
-void DbfFile::PutRec(void* record, int& i_rec)
+void DbfFile::PutRec(uint8_t* record, int& i_rec)
 {
 	NRecs++;
 	WriteData(i_rec * RecLen + FirstRecPos, RecLen, record);
@@ -83,19 +83,19 @@ void DbfFile::PutRec(void* record, int& i_rec)
 	Eof = true;
 }
 
-bool DbfFile::loadB(FieldDescr* field_d, void* record)
+bool DbfFile::loadB(FieldDescr* field_d, uint8_t* record)
 {
 	uint8_t* CP = (uint8_t*)record + field_d->Displ;
 	return (*CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't');
 }
 
-double DbfFile::loadR(FieldDescr* field_d, void* record)
+double DbfFile::loadR(FieldDescr* field_d, uint8_t* record)
 {
 	uint8_t* source = static_cast<uint8_t*>(record) + field_d->Displ;
 	return DBF_RforD(field_d, source);
 }
 
-std::string DbfFile::loadS(FieldDescr* field_d, void* record)
+std::string DbfFile::loadS(FieldDescr* field_d, uint8_t* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	std::string S;
@@ -134,7 +134,7 @@ std::string DbfFile::loadS(FieldDescr* field_d, void* record)
 	return S;
 }
 
-int DbfFile::loadT(FieldDescr* F, void* record)
+int DbfFile::loadT(FieldDescr* F, uint8_t* record)
 {
 	// tvarime se, ze CRecPtr je pstring ...
 	// TODO: toto je asi blbe, nutno opravit pred 1. pouzitim
@@ -143,7 +143,7 @@ int DbfFile::loadT(FieldDescr* F, void* record)
 	return 0; // result;
 }
 
-void DbfFile::saveB(FieldDescr* field_d, bool b, void* record)
+void DbfFile::saveB(FieldDescr* field_d, bool b, uint8_t* record)
 {
 	char* pB = (char*)record + field_d->Displ;
 	if ((field_d->field_type == FieldType::BOOL) && ((field_d->Flg & f_Stored) != 0)) {
@@ -152,7 +152,7 @@ void DbfFile::saveB(FieldDescr* field_d, bool b, void* record)
 	}
 }
 
-void DbfFile::saveR(FieldDescr* field_d, double r, void* record)
+void DbfFile::saveR(FieldDescr* field_d, double r, uint8_t* record)
 {
 	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
 
@@ -178,7 +178,7 @@ void DbfFile::saveR(FieldDescr* field_d, double r, void* record)
 	}
 }
 
-void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record)
+void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t* record)
 {
 	const uint8_t LeftJust = 1;
 	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
@@ -245,7 +245,7 @@ void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* rec
 }
 
 
-int DbfFile::saveT(FieldDescr* field_d, int pos, void* record)
+int DbfFile::saveT(FieldDescr* field_d, int pos, uint8_t* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	int* LP = (int*)source;
@@ -266,7 +266,7 @@ int DbfFile::saveT(FieldDescr* field_d, int pos, void* record)
 	}
 }
 
-void DbfFile::DelTFld(FieldDescr* field_d, void* record)
+void DbfFile::DelTFld(FieldDescr* field_d, uint8_t* record)
 {
 	int pos = loadT(field_d, record);
 	if (pos == 0) return;
@@ -281,7 +281,7 @@ void DbfFile::DelTFld(FieldDescr* field_d, void* record)
 	saveT(field_d, 0, record);
 }
 
-void DbfFile::DelTFlds(void* record)
+void DbfFile::DelTFlds(uint8_t* record)
 {
 	for (FieldDescr* field : _parent->FldD) {
 		if (field->field_type == FieldType::TEXT && field->isStored()) {
@@ -290,7 +290,7 @@ void DbfFile::DelTFlds(void* record)
 	}
 }
 
-void DbfFile::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
+void DbfFile::DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record)
 {
 	const int n1 = loadT(field_d, comp_record);
 	const int n2 = loadT(field_d, record);
@@ -572,50 +572,50 @@ void DbfFile::Close()
 	}
 }
 
-void DbfFile::SetTWorkFlag(void* record) const
+void DbfFile::SetTWorkFlag(uint8_t* record) const
 {
 	uint8_t* p = (uint8_t*)record;
 	p[RecLen] = 1;
 }
 
-bool DbfFile::HasTWorkFlag(void* record) const
+bool DbfFile::HasTWorkFlag(uint8_t* record) const
 {
 	uint8_t* p = (uint8_t*)record;
 	const bool workFlag = p[RecLen] == 1;
 	return workFlag;
 }
 
-void DbfFile::SetRecordUpdateFlag(void* record) const
+void DbfFile::SetRecordUpdateFlag(uint8_t* record) const
 {
 	uint8_t* p = (uint8_t*)record;
 	p[RecLen + 1] = 1;
 }
 
-void DbfFile::ClearRecordUpdateFlag(void* record) const
+void DbfFile::ClearRecordUpdateFlag(uint8_t* record) const
 {
 	uint8_t* p = (uint8_t*)record;
 	p[RecLen + 1] = 0;
 }
 
-bool DbfFile::HasRecordUpdateFlag(void* record) const
+bool DbfFile::HasRecordUpdateFlag(uint8_t* record) const
 {
 	uint8_t* p = (uint8_t*)record;
 	return p[RecLen + 1] == 1;
 }
 
-bool DbfFile::DeletedFlag(void* record)
+bool DbfFile::DeletedFlag(uint8_t* record)
 {
 	if (((uint8_t*)record)[0] != '*') return false;
 	else return true;
 }
 
-void DbfFile::ClearDeletedFlag(void* record)
+void DbfFile::ClearDeletedFlag(uint8_t* record)
 {
 	uint8_t* ptr = (uint8_t*)record;
 	ptr[0] = ' ';
 }
 
-void DbfFile::SetDeletedFlag(void* record)
+void DbfFile::SetDeletedFlag(uint8_t* record)
 {
 	uint8_t* ptr = (uint8_t*)record;
 	ptr[0] = '*';
