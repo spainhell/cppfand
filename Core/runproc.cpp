@@ -144,8 +144,8 @@ void PromptAutoRprt(RprtOpt* RO)
 		}
 		//FL = (FieldList)FL->pChain;
 	}
-	CFile = RO->FDL[0]->FD;
-	if (!ww.SelFieldList(CFile, 36, true, RO2->Flds)) return;
+	//CFile = RO->FDL[0]->FD;
+	if (!ww.SelFieldList(RO->FDL[0]->FD, 36, true, RO2->Flds)) return;
 	if ((RO->FDL[0]->Cond == nullptr) &&
 		!ww.PromptFilter("", &RO2->FDL[0]->Cond, &RO2->CondTxt)) return;
 
@@ -433,7 +433,7 @@ void EditProc(Instr_edit* PD)
 	EdUpdated = false;
 	SaveFiles();
 
-	CFile = PD->EditFD; // TODO: to be certain
+	//CFile = PD->EditFD; // TODO: to be certain
 
 	// TODO: is needed to make copy of EditOptions before call edit?
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>(PD->EditFD);
@@ -794,7 +794,7 @@ void ForAllProc(Instr_forall* PD)
 		}
 		}
 	}
-	CFile = FD;
+	//CFile = FD;
 #ifdef FandSQL
 	sql = CFile->IsSQLFile;
 #endif
@@ -1072,11 +1072,13 @@ void PutTxt(Instr_puttxt* PD)
 	FandTFile* TF02;
 	int TF02Pos;
 
-	if (CFile->FileType != DataFileType::FandFile) {
+	FileD* file_d = nullptr;
+
+	if (file_d->FileType != DataFileType::FandFile) {
 		throw std::exception("runproc.cpp PutTxt() not implemented for non-FandFile");
 	}
 
-	const bool canCopyT = CanCopyT(nullptr, nullptr, z, &TF02, &TFD02, TF02Pos, nullptr);
+	const bool canCopyT = CanCopyT(file_d, nullptr, z, &TF02, &TFD02, TF02Pos, nullptr);
 
 	if (canCopyT) {
 		h = OpenHForPutTxt(PD);
@@ -1156,7 +1158,6 @@ void DrawProc(Instr_graph* PD)
 
 void ResetCatalog()
 {
-	FileD* cf = CFile;
 	RdbD* r = CRdb;
 	while (CRdb != nullptr) {
 		//CFile = CRdb->v_files->pChain;
@@ -1172,7 +1173,6 @@ void ResetCatalog()
 		}
 		CRdb = CRdb->ChainBack;
 	}
-	CFile = cf;
 	CRdb = r;
 }
 
@@ -1206,7 +1206,7 @@ void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 	//LockD* ld = &PD->WLD;
 	//while (ld != Ld1) {
 	for (LockD* ld : PD->WLD) {
-		CFile = ld->FD;
+		//CFile = ld->FD;
 		if (ld->FD->FF->IsShared()) {
 			if (Op == PInstrCode::_withlocked) {
 				ld->FD->Unlock(ld->N);
@@ -1563,12 +1563,12 @@ void RunInstr(const std::vector<Instr*>& instructions)
 #endif 
 		case PInstrCode::_closefds: {
 			// zavre soubor
-			CFile = ((Instr_closefds*)instr)->clFD;
-			if (CFile == nullptr) {
+			FileD* f = ((Instr_closefds*)instr)->clFD;
+			if (f == nullptr) {
 				ForAllFDs(ForAllFilesOperation::close_passive_fd);
 			}
-			else if (!CFile->FF->IsShared() || (CFile->FF->LMode == NullMode)) {
-				CFile->CloseFile();
+			else if (!f->FF->IsShared() || (f->FF->LMode == NullMode)) {
+				f->CloseFile();
 			}
 			break;
 		}
@@ -1761,9 +1761,10 @@ void CallProcedure(Instr_proc* PD)
 		++it0;
 	}
 	it1 = it0;
+	FileD* fd = nullptr;
 	while (it0 != PD->loc_var_block.variables.end()) {
 		if ((*it0)->f_typ == 'r') {
-			FileD* fd = (*it0)->FD;
+			fd = (*it0)->FD;
 			Record* rec = new Record(fd); //->GetRecSpace();
 			// TODO: !!! fd->SetTWorkFlag(rec->GetRecord());
 			fd->ZeroAllFlds(rec->GetRecord(), false);
@@ -1790,7 +1791,7 @@ void CallProcedure(Instr_proc* PD)
 				hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
 			}
 			XWKey* tmp = (XWKey*)(*it0)->record;
-			tmp->Open(CFile, hX->KFlds, true, false);
+			tmp->Open(fd, hX->KFlds, true, false);
 		}
 		++it0;
 	}

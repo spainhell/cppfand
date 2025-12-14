@@ -1063,7 +1063,7 @@ void DisplayLastLineHelp(RdbD* R, std::string Name, bool R24)
 
 	if ((R == nullptr) || (R->help_file != HelpFD) && (R->help_file == nullptr)) return;
 
-	FileD* cf = CFile;
+	//FileD* cf = CFile;
 	if (!Name.empty()) {
 		iRec = 0;
 		std::string sHelp = GetHlpText(R, Name, true, iRec);
@@ -1089,7 +1089,7 @@ void DisplayLastLineHelp(RdbD* R, std::string Name, bool R24)
 	if (R24) y--;
 	screen.ScrWrStr(1, y + 1, MsgLine, screen.colors.nNorm);
 	screen.ScrClr(MsgLine.length() + 1, y + 1, TxtCols - MsgLine.length(), 1, ' ', screen.colors.nNorm);
-	CFile = cf;
+	//CFile = cf;
 }
 
 void TMenu::InitTMenu()

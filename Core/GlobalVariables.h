@@ -15,8 +15,8 @@ class MergeReportBase;
 //extern std::vector<FileD*> FileDRoot; // { only current RDB }
 extern std::deque<LinkD*> LinkDRoot;  // { for all RDBs     }
 extern std::deque<FuncD*> FuncDRoot;
-extern FileD* CFile;
-extern uint8_t* CRecPtr;
+//extern FileD* CFile;
+//extern uint8_t* CRecPtr;
 extern XKey* CViewKey;
 extern std::string TopRdbDir, TopDataDir;
 extern std::string CatFDName;

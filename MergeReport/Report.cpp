@@ -314,22 +314,23 @@ void Report::Run(RprtOpt* RO)
 	BlkD* BD = nullptr;
 	std::vector<BlkD*> RFb;
 	LockMode md;
+	FileD* file = nullptr;
 	if (SelQuest) {
-		CFile = IDA[1]->Scan->FD;
+		file = IDA[1]->Scan->FD;
 		if (!ww.PromptFilter("", &IDA[1]->Bool, s)) {
 			PrintView = false;
 			return;
 		}
 	}
 	if (PgeLimitZ != nullptr) {
-		PgeLimit = RunInt(CFile, PgeLimitZ, nullptr);
+		PgeLimit = RunInt(file, PgeLimitZ, nullptr);
 	}
 	else {
 		PgeLimit = spec.AutoRprtLimit;
 	}
 
 	if (PgeSizeZ != nullptr) {
-		PgeSize = RunInt(CFile, PgeSizeZ, nullptr);
+		PgeSize = RunInt(file, PgeSizeZ, nullptr);
 	}
 	else {
 		PgeSize = spec.AutoRprtLimit + spec.CpLines;
@@ -1877,10 +1878,12 @@ void Report::OpenInp()
 {
 	NRecsAll = 0;
 	for (short i = 1; i <= MaxIi; i++) {
-		CFile = IDA[i]->Scan->FD;
-		if (IDA[i]->Scan->Kind == ScanMode::LocalVariable) IDA[i]->Scan->SeekRec(0);
+		FileD* file = IDA[i]->Scan->FD;
+		if (IDA[i]->Scan->Kind == ScanMode::LocalVariable) {
+			IDA[i]->Scan->SeekRec(0);
+		}
 		else {
-			IDA[i]->Md = CFile->NewLockMode(RdMode);
+			IDA[i]->Md = file->NewLockMode(RdMode);
 			// TODO: next line has CRecPtr->nullptr
 			IDA[i]->Scan->ResetSort(IDA[i]->SK, IDA[i]->Bool, IDA[i]->Md, IDA[i]->SQLFilter, nullptr);
 		}
@@ -1894,7 +1897,7 @@ void Report::CloseInp()
 		if (IDA[i]->Scan->Kind != ScanMode::LocalVariable) {
 			IDA[i]->Scan->Close();
 			// TODO: is there anything in TWork?: CFile->ClearRecSpace(IDA[i]->ForwRecPtr);
-			CFile->OldLockMode(IDA[i]->Md);
+			IDA[i]->Scan->FD->OldLockMode(IDA[i]->Md);
 		}
 	}
 }

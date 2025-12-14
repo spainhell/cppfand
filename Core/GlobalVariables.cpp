@@ -4,11 +4,11 @@ class FileD;
 
 WORD randIndex = 0;
 
-FileD* CFile;
+//FileD* CFile;
 //std::vector<FileD*> FileDRoot;	// only current RDB
 std::deque<LinkD*> LinkDRoot;	// for all RDBs
 std::deque<FuncD*> FuncDRoot;
-uint8_t* CRecPtr;
+//uint8_t* CRecPtr;
 XKey* CViewKey;
 std::string TopRdbDir, TopDataDir;
 std::string CatFDName;

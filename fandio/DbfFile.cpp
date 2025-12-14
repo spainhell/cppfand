@@ -466,7 +466,7 @@ int DbfFile::MakeDbfDcl(std::string& name)
 		result += ";\x0D\x0A"; // ^M + ^J
 	}
 
-	_parent->saveS(ChptTxt, result, CRecPtr);
+	_parent->saveS(ChptTxt, result, nullptr);
 	CloseH(&h);
 	return 0;
 }

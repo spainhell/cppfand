@@ -763,7 +763,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 
 	bool Del = true;
 	gc->ResetCompilePars();
-	cf = CFile;
+	//cf = CFile;
 
 	while (true) {
 		try {
@@ -773,7 +773,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 			if (Event.Pressed.KeyCombination() == __ESC) {
 				return false;
 			}
-			if (Txt.length() == 0) {
+			if (Txt.empty()) {
 				return true;
 			}
 			gc->SetInpStr(Txt);
@@ -791,7 +791,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 			WrLLF10Msg(110);
 			IsCompileErr = false;
 			ReleaseStore(&p);
-			CFile = cf;
+			//CFile = cf;
 			Del = false;
 		}
 	}

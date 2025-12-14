@@ -34,20 +34,20 @@ void ConvWinCp(unsigned char* buffer, const std::string& code_table, size_t leng
 	}
 }
 
-void VarFixImp(ThFile* F1, CpOption Opt)
+void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 {
 	pstring s;
 	int pos;
 	double r; WORD err;
 
 	F1->IsEOL = false;
-	for (FieldDescr* F : CFile->FldD) {
+	for (FieldDescr* F : file_d->FldD) {
 		if ((F->Flg & f_Stored) != 0) {
 			if (F1->IsEOL) {
 				switch (F->frml_type) {
-				case 'R': CFile->saveR(F, 0, CRecPtr); break;
-				case 'B': CFile->saveB(F, false, CRecPtr); break;
-				case 'S': CFile->saveS(F, "", CRecPtr); break;
+				case 'R': file_d->saveR(F, 0, record->GetRecord()); break;
+				case 'B': file_d->saveB(F, false, record->GetRecord()); break;
+				case 'S': file_d->saveS(F, "", record->GetRecord()); break;
 				default: ;
 				}
 			}
@@ -63,13 +63,13 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					val(LeadChar(' ', s), r, err);
 					if ((F->Flg & f_Comma) != 0) {
 						r = r * Power10[F->M];
-						CFile->saveR(F, r, CRecPtr);
+						file_d->saveR(F, r, record->GetRecord());
 					}
 					break;
 				}
 				case FieldType::ALFANUM: {
 					if (Opt == CpOption::cpFix) {
-						CFile->saveS(F, F1->RdFix(F->L), CRecPtr);
+						file_d->saveS(F, F1->RdFix(F->L), record->GetRecord());
 					}
 					else {
 						char c = (char)gc->ForwChar;
@@ -81,16 +81,16 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						else {
 							s = F1->RdDelim(',');
 						}
-						CFile->saveS(F, s, CRecPtr);
+						file_d->saveS(F, s, record->GetRecord());
 					}
 					break;
 				}
 				case FieldType::NUMERIC: {
 					if (Opt == CpOption::cpFix) {
-						CFile->saveS(F, F1->RdFix(F->L), CRecPtr);
+						file_d->saveS(F, F1->RdFix(F->L), record->GetRecord());
 					}
 					else {
-						CFile->saveS(F, F1->RdDelim(','), CRecPtr);
+						file_d->saveS(F, F1->RdDelim(','), record->GetRecord());
 					}
 					break;
 				}
@@ -106,20 +106,20 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						}
 					}
 					if (s == "") {
-						CFile->saveR(F, 0.0, CRecPtr);
+						file_d->saveR(F, 0.0, record->GetRecord());
 					}
 					else if (F->field_type == FieldType::REAL) {
 						val(s, r, err);
-						CFile->saveR(F, r, CRecPtr);
+						file_d->saveR(F, r, record->GetRecord());
 					}
 					else {
-						CFile->saveR(F, ValDate(s, F->Mask), CRecPtr);
+						file_d->saveR(F, ValDate(s, F->Mask), record->GetRecord());
 					}
 					break;
 				}
 				case FieldType::BOOL: {
 					s = F1->RdFix(1);
-					CFile->saveB(F, s[1] = 'A', CRecPtr);
+					file_d->saveB(F, s[1] = 'A', record->GetRecord());
 					if (Opt == CpOption::cpVar) {
 						F1->RdDelim(',');
 					}
@@ -129,10 +129,10 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					if (Opt == CpOption::cpVar) {
 						std::string x = F1->RdLongStr();
 						s = F1->RdDelim(',');
-						CFile->saveS(F, x, CRecPtr);
+						file_d->saveS(F, x, record->GetRecord());
 					}
 					else {
-						CFile->saveT(F, 0, CRecPtr);
+						file_d->saveT(F, 0, record->GetRecord());
 					}
 					break;
 				}
@@ -265,7 +265,7 @@ void ImportTxt(CopyD* CD)
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
 			f->ZeroAllFlds(rec->GetRecord(), false);
 			f->ClearDeletedFlag(rec->GetRecord());
-			VarFixImp(F1, CD->Opt1);
+			VarFixImp(f, rec, F1, CD->Opt1);
 			F1->ForwChar(); //{set IsEOF at End}
 #ifdef FandSQL
 			if (f->IsSQLFile) q->PutRec();
@@ -316,8 +316,8 @@ void ExportTxt(CopyD* CD)
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
 		if (CD->HdFD != nullptr) {
 			int n = 0;
-			Record* rec = CD->HdFD->LinkLastRec(n);
-			pstring s = CFile->loadS(CD->HdF, rec);
+			rec = CD->HdFD->LinkLastRec(n);
+			pstring s = CD->HdFD->loadS(CD->HdF, rec);
 			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);
@@ -375,7 +375,7 @@ void Cpy(HANDLE h, int sz, ThFile* F2)
 		else n = sz - i;
 		i += n;
 		ReadH(h, n, F2->buffer1);
-		CFile->TestCFileError();
+		F2->FD->TestCFileError();
 		F2->lBuf = n;
 		F2->WriteBuf(false);
 		RunMsgN(i);
@@ -390,28 +390,27 @@ void ExportFD(CopyD* CD)
 	LockMode md = NullMode;
 
 	try {
-		CFile = CD->FD1;
 		SaveFiles();
-		md = CFile->NewLockMode(RdMode);
+		md = CD->FD1->NewLockMode(RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
-		int n = CFile->FF->XNRecs(CD->FD1->Keys);
+		int n = CD->FD1->FF->XNRecs(CD->FD1->Keys);
 
 		if (n == 0) {
 			delete F2;
 			F2 = nullptr;
 		}
 		else {
-			Cpy(CFile->FF->Handle, CFile->UsedFileSize(), F2);
+			Cpy(CD->FD1->FF->Handle, CD->FD1->UsedFileSize(), F2);
 		}
 
-		if (CFile->FF->TF != nullptr) {
+		if (CD->FD1->FF->TF != nullptr) {
 			F2->RewriteT();
 			if (n == 0) {
 				delete F2;
 				F2 = nullptr;
 			}
 			else {
-				Cpy(CFile->FF->TF->Handle, CFile->FF->TF->UsedFileSize(), F2);
+				Cpy(CD->FD1->FF->TF->Handle, CD->FD1->FF->TF->UsedFileSize(), F2);
 			}
 		}
 
@@ -422,7 +421,7 @@ void ExportFD(CopyD* CD)
 				F2 = nullptr;
 			}
 			else {
-				Cpy(CFile->FF->XF->Handle, CFile->FF->XF->UsedFileSize(), F2);
+				Cpy(CD->FD1->FF->XF->Handle, CD->FD1->FF->XF->UsedFileSize(), F2);
 			}
 		}
 
@@ -436,7 +435,7 @@ void ExportFD(CopyD* CD)
 	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
 		if (LastExitCode != 0) F2->ClearBuf();
 		delete F2; F2 = nullptr;
-		CFile->OldLockMode(md);
+		CD->FD1->OldLockMode(md);
 	}
 }
 

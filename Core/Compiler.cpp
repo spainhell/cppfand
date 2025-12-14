@@ -1186,8 +1186,8 @@ RprtOpt* Compiler::GetRprtOpt()
 void Compiler::CFileLikeFD(FileD* FD, WORD MsgNr)
 {
 	FileD* FD1;
-	if (!CFile->IsJournal && ((CFile == FD) || (CFile->OrigFD == FD))) return;
-	SetMsgPar(CFile->Name, FD->Name);
+	if (!processing_F->IsJournal && ((processing_F == FD) || (processing_F->OrigFD == FD))) return;
+	SetMsgPar(processing_F->Name, FD->Name);
 	RunError(MsgNr);
 }
 

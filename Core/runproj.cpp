@@ -84,7 +84,7 @@ void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
-	CFile = Chpt;
+	//CFile = Chpt;
 
 	//if (edit != nullptr) {
 	//	CRecPtr = edit->NewRec->GetRecord();
@@ -446,14 +446,14 @@ label2:
 	return result;
 }
 
-bool PromptHelpName(WORD& N)
+bool PromptHelpName(FileD* file_d, WORD& N)
 {
 	wwmix ww;
 	std::string txt;
 	auto result = false;
 	ww.PromptLL(153, txt, 1, true, false, false);
 	if ((txt.length() == 0) || (Event.Pressed.KeyCombination() == __ESC)) return result;
-	N = FindHelpRecNr(CFile, txt);
+	N = FindHelpRecNr(file_d, txt);
 	if (N != 0) result = true;
 	return result;
 }
@@ -473,7 +473,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 	if (cc == __ALT_F2) {
 		FD = CRdb->help_file;
 		if (kind == 1) {
-			FD = CFile->ChptPos.rdb->help_file;
+			FD = Chpt->ChptPos.rdb->help_file;
 		}
 		if (FD == nullptr) return;
 		if (kind == 0) {
@@ -537,7 +537,7 @@ void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 			text = Coding::XEncode(text);
 		}
 		else {
-			text = Coding::CodingString(CFile, text);
+			text = Coding::CodingString(Chpt, text);
 		}
 	}
 	// this Del has been changed - is it right?
@@ -553,10 +553,10 @@ void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 	const int pos = ChptTF->Store(text);
 
 	if (LicNr == 0) {
-		CFile->saveT(F, pos, CRecPtr);
+		Chpt->saveT(F, pos, Chpt->FF->RecPtr->GetRecord());
 	}
 	else {
-		CFile->saveT(F, pos + LicNr, CRecPtr);
+		Chpt->saveT(F, pos + LicNr, Chpt->FF->RecPtr->GetRecord());
 	}
 
 	ReleaseStore(&p);
@@ -868,7 +868,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 					std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>(FD);
 					std::unique_ptr<EditOpt> edit_opt = std::make_unique<EditOpt>();
 					edit_opt->UserSelFlds = true;
-					CFile = FD;
+					//CFile = FD;
 					edit_opt->Flds = gc->AllFldsList(FD, false);
 					if (data_editor->SelFldsForEO(edit_opt.get(), nullptr)) {
 						data_editor->EditDataFile(FD, edit_opt.get());
@@ -1786,7 +1786,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 		EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
 
 		EditReader* reader = new EditReader();
-		Record* temp_rec = new Record(Chpt, CRecPtr);
+		Record* temp_rec = new Record(Chpt);
 		reader->NewEditD(Chpt, EO, temp_rec);
 		delete temp_rec; temp_rec = nullptr;
 		EditD* edit = reader->GetEditD();

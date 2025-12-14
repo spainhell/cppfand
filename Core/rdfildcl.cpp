@@ -283,10 +283,10 @@ void RdChkDsFromPos(FileD* FD, std::vector<LogicControl*>& C)
 	}
 	if (gc->Lexem == 0x1A) return;
 	gc->RdLex();
-	FileD* cf = CFile;
-	CFile = FD;
+	//FileD* cf = CFile;
+	//CFile = FD;
 	RdChkDChain(C);
-	CFile = cf;
+	//CFile = cf;
 }
 
 void RdBegViewDcl(EditOpt* EO)

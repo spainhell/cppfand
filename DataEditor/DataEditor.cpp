@@ -5637,7 +5637,7 @@ label81:
 							// najdi vetu podle klic. udaje
 							if (!params_->EdRecVar)
 								if (file_d_ == CRdb->help_file) {
-									if (PromptHelpName(i)) {
+									if (PromptHelpName(file_d_, i)) {
 										GotoRecFld(i, CFld);
 										goto label1;
 									}

@@ -214,8 +214,7 @@ void CallInstallRdb()
 	std::string n;
 	if ((!p.empty()) && SetTopDir(p, n)) {
 		InstallRdb(n);
-		CFile = catalog->GetCatalogFile();
-		CFile->CloseFile();
+		catalog->GetCatalogFile()->CloseFile();
 	}
 }
 

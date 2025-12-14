@@ -1281,7 +1281,7 @@ void Fand0File::IndexFileProc(bool Compress)
 
 void Fand0File::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 {
-	CFile = file_d;
+	//CFile = file_d;
 
 	WORD i = 0;
 	bool isLongTxt = false;
@@ -1335,7 +1335,7 @@ label3:
 	WriteH(h, l, &X[i]);
 label4:
 	if (!tf->IsWork) TFD02->OldLockMode(md2);
-	CFile = file_d;
+	//CFile = file_d;
 }
 
 std::string Fand0File::SetTempCExt(char typ, bool isNet) const

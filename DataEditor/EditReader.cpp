@@ -898,7 +898,7 @@ void EditReader::RdImpl(FileD* file_d)
 
 void EditReader::RdUDLI(FileD* file_d)
 {
-	CFile = file_d; // to be sure
+	// CFile = file_d; // to be sure
 	gc->processing_F = file_d;
 
 	gc->RdLex();
