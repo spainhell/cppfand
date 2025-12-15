@@ -29,6 +29,8 @@ public:
 	Fand0File(const Fand0File& orig, FileD* parent);
 	~Fand0File() override;
 
+	uint8_t* GetRecSpace() const;
+
 	unsigned short RecLen = 0;
 	Record* RecPtr = nullptr;
 	int32_t NRecs = 0;
@@ -51,6 +53,7 @@ public:
 	size_t WriteRec(size_t rec_nr, Record* record);
 	void CreateRec(int n, Record* record);
 	void DeleteRec(int n, Record* record);
+	void PutRec(Record* record, int& i_rec);
 
 	void CompileRecLen();
 	int UsedFileSize() const;
@@ -59,22 +62,6 @@ public:
 
 	void IncNRecs(int n);
 	void DecNRecs(int n);
-	void PutRec(void* record, int& i_rec);
-
-	bool loadB(FieldDescr* field_d, uint8_t* record);
-	double loadR(FieldDescr* field_d, uint8_t* record);
-	std::string loadS(FieldDescr* field_d, uint8_t* record);
-	int loadT(FieldDescr* F, uint8_t* record);
-
-	void saveB(FieldDescr* field_d, bool b, uint8_t* record);
-	void saveR(FieldDescr* field_d, double r, uint8_t* record);
-	void saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t* record);
-	int saveT(FieldDescr* field_d, int pos, uint8_t* record);
-
-	void DelTFld(FieldDescr* field_d, uint8_t* record);
-	void DelTFlds(uint8_t* record);
-	void DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record);
-	void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
 
 	uint16_t RdPrefix();
 	int RdPrefixes();
@@ -89,16 +76,9 @@ public:
 	void CloseFile();
 	void Close();
 
-	//void SetTWorkFlag(uint8_t* record) const;
-	//bool HasTWorkFlag(uint8_t* record) const;
-
-	void SetRecordUpdateFlag(uint8_t* record);
-	void ClearRecordUpdateFlag(uint8_t* record);
-	bool HasRecordUpdateFlag(const uint8_t* record);
-
-	bool DeletedFlag(uint8_t* record);
-	void ClearDeletedFlag(uint8_t* record);
-	void SetDeletedFlag(uint8_t* record);
+	//bool DeletedFlag(Record* record);
+	//void ClearDeletedFlag(Record* record);
+	//void SetDeletedFlag(Record* record);
 
 	void ClearXFUpdLock();
 	int XFNotValid();
@@ -131,11 +111,30 @@ public:
 
 private:
 	FileD* _parent;
+	uint8_t* _buffer; // record buffer
 	bool is_null_value(FieldDescr* field_d, uint8_t* record);
+
+	bool loadB(FieldDescr* field_d, uint8_t* record);
+	double loadR(FieldDescr* field_d, uint8_t* record);
+	std::string loadS(FieldDescr* field_d, uint8_t* record);
+	int loadT(FieldDescr* F, uint8_t* record);
+
+	void saveB(FieldDescr* field_d, bool b, uint8_t* record);
+	void saveR(FieldDescr* field_d, double r, uint8_t* record);
+	void saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t* record);
+	int saveT(FieldDescr* field_d, int pos, uint8_t* record);
+
+	void DelTFld(FieldDescr* field_d, uint8_t* record);
+	void DelTFlds(uint8_t* record);
+	void DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record);
+	void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
 
 	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);
 
 	void TestDelErr(std::string& P);
+
+	void _getValuesFromRecord(Record* record);
+	void _setRecordFromValues(Record* record);
 };
 

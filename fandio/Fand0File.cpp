@@ -25,6 +25,7 @@ const double FirstDate = 6.97248E+5;
 Fand0File::Fand0File(FileD* parent)
 {
 	_parent = parent;
+	_buffer = GetRecSpace();
 }
 
 Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
@@ -35,6 +36,7 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 	Drive = orig.Drive;
 
 	_parent = parent;
+	_buffer = GetRecSpace();
 
 	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
 	if (orig.XF != nullptr) XF = new FandXFile(*orig.XF, this);
@@ -42,6 +44,8 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 
 Fand0File::~Fand0File()
 {
+	delete[] _buffer;
+
 	if (Handle != nullptr) {
 		CloseH(&Handle);
 	}
@@ -53,6 +57,19 @@ Fand0File::~Fand0File()
 	}
 }
 
+uint8_t* Fand0File::GetRecSpace() const
+{
+	// 0. uint8_t in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
+	// 1. uint8_t in the end -> Work Flag
+	// 2. uint8_t in the end -> Update Flag
+
+	size_t length = RecLen + 2;
+
+	uint8_t* result = new uint8_t[length];
+	memset(result, '\0', length);
+	return result;
+}
+
 /// <summary>
 /// Vycte zaznam z datoveho souboru (.000)
 /// </summary>
@@ -62,7 +79,9 @@ size_t Fand0File::ReadRec(size_t rec_nr, Record* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	return ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record->GetRecord());
+	size_t result = ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, _buffer);
+	this->_getValuesFromRecord(record);
+	return result;
 }
 
 size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
@@ -70,7 +89,9 @@ size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
 	WasWrRec = true;
-	return WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record->GetRecord());
+	this->_setRecordFromValues(record);
+	size_t result = WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, _buffer);
+	return result;
 }
 
 void Fand0File::CreateRec(int n, Record* record)
@@ -87,7 +108,11 @@ void Fand0File::CreateRec(int n, Record* record)
 
 void Fand0File::DeleteRec(int n, Record* record)
 {
-	DelAllDifTFlds(record->GetRecord(), nullptr);
+	uint8_t* buffer = new uint8_t[RecLen];
+	// TODO: transform Record to buffer
+	throw("Fand0File::DeleteRec() - not implemented yet");
+
+	DelAllDifTFlds(buffer, nullptr);
 	for (int i = n; i <= NRecs - 1; i++) {
 		ReadRec(i + 1, record);
 		WriteRec(i, record);
@@ -175,7 +200,7 @@ void Fand0File::DecNRecs(int n)
 	WasWrRec = true;
 }
 
-void Fand0File::PutRec(void* record, int& i_rec)
+void Fand0File::PutRec(Record* record, int& i_rec)
 {
 	NRecs++;
 	WriteData(i_rec * RecLen + FirstRecPos, RecLen, record);
@@ -293,9 +318,9 @@ std::string Fand0File::loadS(FieldDescr* field_d, uint8_t* record)
 		//	S = TWork.Read(loadT(field_d, record));
 		//}
 		//else {
-			md = _parent->NewLockMode(RdMode);
-			S = TF->Read(loadT(field_d, record));
-			_parent->OldLockMode(md);
+		md = _parent->NewLockMode(RdMode);
+		S = TF->Read(loadT(field_d, record));
+		_parent->OldLockMode(md);
 		//}
 		if (field_d->isEncrypted()) {
 			S = Coding::Code(S);
@@ -420,9 +445,9 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t
 				//	TWork.Delete(previous);
 				//}
 				//else {
-					LockMode md = parent->NewLockMode(WrMode);
-					TF->Delete(previous);
-					parent->OldLockMode(md);
+				LockMode md = parent->NewLockMode(WrMode);
+				TF->Delete(previous);
+				parent->OldLockMode(md);
 				//}
 			}
 
@@ -438,10 +463,10 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t
 				//	saveT(field_d, pos, record);
 				//}
 				//else {
-					LockMode md = parent->NewLockMode(WrMode);
-					int pos = TF->Store(s);
-					saveT(field_d, pos, record);
-					parent->OldLockMode(md);
+				LockMode md = parent->NewLockMode(WrMode);
+				int pos = TF->Store(s);
+				saveT(field_d, pos, record);
+				parent->OldLockMode(md);
 				//}
 			}
 			break;
@@ -476,9 +501,9 @@ void Fand0File::DelTFld(FieldDescr* field_d, uint8_t* record)
 	//	TWork.Delete(pos);
 	//}
 	//else {
-		LockMode md = _parent->NewLockMode(WrMode);
-		TF->Delete(pos);
-		_parent->OldLockMode(md);
+	LockMode md = _parent->NewLockMode(WrMode);
+	TF->Delete(pos);
+	_parent->OldLockMode(md);
 	//}
 
 	saveT(field_d, 0, record);
@@ -749,55 +774,29 @@ void Fand0File::Close()
 	}
 }
 
-//void Fand0File::SetTWorkFlag(uint8_t* record) const
+//bool Fand0File::DeletedFlag(Record* record)
 //{
-//	record[RecLen] = 1;
+//	if (file_type == FandFileType::INDEX) {
+//		if (record[0] == 0) return false;
+//		else return true;
+//	}
+//
+//	return false;
 //}
 //
-//bool Fand0File::HasTWorkFlag(uint8_t* record) const
+//void Fand0File::ClearDeletedFlag(Record* record)
 //{
-//	const bool workFlag = record[RecLen] == 1;
-//	return workFlag;
+//	if (file_type == FandFileType::INDEX) {
+//		record[0] = 0;
+//	}
 //}
-
-void Fand0File::SetRecordUpdateFlag(uint8_t* record)
-{
-	record[RecLen + 1] = 1;
-}
-
-void Fand0File::ClearRecordUpdateFlag(uint8_t* record)
-{
-	record[RecLen + 1] = 0;
-}
-
-bool Fand0File::HasRecordUpdateFlag(const uint8_t* record)
-{
-	return record[RecLen + 1] == 1;
-}
-
-bool Fand0File::DeletedFlag(uint8_t* record)
-{
-	if (file_type == FandFileType::INDEX) {
-		if (record[0] == 0) return false;
-		else return true;
-	}
-
-	return false;
-}
-
-void Fand0File::ClearDeletedFlag(uint8_t* record)
-{
-	if (file_type == FandFileType::INDEX) {
-		record[0] = 0;
-	}
-}
-
-void Fand0File::SetDeletedFlag(uint8_t* record)
-{
-	if (file_type == FandFileType::INDEX) {
-		record[0] = 1;
-	}
-}
+//
+//void Fand0File::SetDeletedFlag(Record* record)
+//{
+//	if (file_type == FandFileType::INDEX) {
+//		record[0] = 1;
+//	}
+//}
 
 void Fand0File::ClearXFUpdLock()
 {
@@ -996,9 +995,12 @@ void Fand0File::DeleteXRec(int RecNr, bool DelT, Record* record)
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
 	DeleteAllIndexes(RecNr, record);
+	
 	if (DelT) {
-		_parent->DelAllDifTFlds(record, nullptr);
+		// TODO:
+		// DelAllDifTFlds(record, nullptr);
 	}
+
 	record->SetDeleted(); //SetDeletedFlag(record);
 	WriteRec(RecNr, record);
 	XF->NRecs--;
@@ -1275,7 +1277,7 @@ void Fand0File::IndexFileProc(bool Compress)
 	XF->NoCreate = false;
 	TestXFExist();
 	_parent->OldLockMode(md);
-	
+
 	delete record; record = nullptr;
 }
 
@@ -1430,5 +1432,108 @@ void Fand0File::TestDelErr(std::string& P)
 	if (HandleError != 0) {
 		SetMsgPar(P);
 		RunError(827);
+	}
+}
+
+void Fand0File::_getValuesFromRecord(Record* record)
+{
+	record->Clear();
+
+	if (_buffer != nullptr) {
+		for (FieldDescr* field : _parent->FldD) {
+			BRS_Value val;
+
+			if (field->isStored()) {
+				switch (field->field_type) {
+				case FieldType::BOOL:
+					val.B = loadB(field, _buffer);
+					break;
+				case FieldType::DATE:
+				case FieldType::FIXED:
+				case FieldType::REAL:
+					val.R = loadR(field, _buffer);
+					break;
+				case FieldType::ALFANUM:
+				case FieldType::NUMERIC:
+				case FieldType::TEXT:
+					val.S = loadS(field, _buffer);
+					break;
+				default:
+					// unknown field type
+					break;
+				}
+			}
+			else {
+				// TODO: calculated T fields? is it stored in TWork by default?
+
+				// calculated field
+				//switch (field->field_type) {
+				//case FieldType::BOOL:
+				//	val.B = RunBool(_file_d, field->Frml, _buffer);
+				//	break;
+				//case FieldType::DATE:
+				//case FieldType::FIXED:
+				//case FieldType::REAL:
+				//	val.R = RunReal(_file_d, field->Frml, _buffer);
+				//	break;
+				//case FieldType::ALFANUM:
+				//case FieldType::NUMERIC:
+				//case FieldType::TEXT:
+				//	val.S = RunString(_file_d, field->Frml, _buffer);
+				//	break;
+				//default:
+				//	// unknown field type
+				//	break;
+				//}
+			}
+			record->_values.push_back(val);
+		}
+	}
+	else
+	{
+		// buffer is null -> return empty values
+	}
+
+	if (file_type == FandFileType::INDEX && _buffer[0] == 0) {
+		record->SetDeleted();
+	}
+
+}
+
+void Fand0File::_setRecordFromValues(Record* record)
+{
+	memset(_buffer, 0, RecLen);
+
+	if (_parent->HasIndexFile() && record->IsDeleted()) {
+		_buffer[0] = 1;
+	}
+
+	for (size_t i = 0; i < _parent->FldD.size(); i++) {
+		FieldDescr* field = _parent->FldD[i];
+
+		if (field->isStored()) {
+			BRS_Value& val = record->_values[i];
+			switch (field->field_type) {
+			case FieldType::BOOL:
+				saveB(field, val.B, _buffer);
+				break;
+			case FieldType::DATE:
+			case FieldType::FIXED:
+			case FieldType::REAL:
+				saveR(field, val.R, _buffer);
+				break;
+			case FieldType::ALFANUM:
+			case FieldType::NUMERIC:
+			case FieldType::TEXT:
+				saveS(_parent, field, val.S, _buffer);
+				break;
+			default:
+				// unknown field type
+				break;
+			}
+		}
+		else {
+			// calculated field -> do nothing
+		}
 	}
 }

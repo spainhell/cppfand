@@ -19,33 +19,48 @@ DbfFile::~DbfFile()
 {
 }
 
-size_t DbfFile::ReadRec(size_t rec_nr, uint8_t* record)
+uint8_t* DbfFile::GetRecSpace() const
 {
+	// 0. uint8_t in the end -> Work Flag
+	// 1. uint8_t in the end -> Update Flag
+
+	size_t length = RecLen + 2;
+
+	uint8_t* result = new uint8_t[length];
+	memset(result, '\0', length);
+	return result;
+}
+
+size_t DbfFile::ReadRec(size_t rec_nr, Record* record)
+{
+	// TODO: prepare data to read from Record object
 	return ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
-size_t DbfFile::WriteRec(size_t rec_nr, uint8_t* record)
+size_t DbfFile::WriteRec(size_t rec_nr, Record* record)
 {
+	// TODO: prepare data to write from Record object
 	WasWrRec = true;
 	return WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
 }
 
-void DbfFile::CreateRec(int n, uint8_t* record)
+void DbfFile::CreateRec(int n, Record* record)
 {
 	IncNRecs(1);
-	uint8_t* tmp = _parent->GetRecSpace();
 	for (int i = NRecs - 1; i >= n; i--) {
-		ReadRec(i, tmp);
-		WriteRec(i + 1, tmp);
+		ReadRec(i, record);
+		WriteRec(i + 1, record);
 	}
-	delete[] tmp;
-	tmp = nullptr;
 	WriteRec(n, record);
 }
 
-void DbfFile::DeleteRec(int n, uint8_t* record)
+void DbfFile::DeleteRec(int n, Record* record)
 {
-	DelAllDifTFlds(record, nullptr);
+	uint8_t* buffer = new uint8_t[RecLen];
+	// TODO: transform Record to buffer
+	throw("DbfFile::DeleteRec() - not implemented yet");
+
+	DelAllDifTFlds(buffer, nullptr);
 	for (int i = n; i <= NRecs - 1; i++) {
 		ReadRec(i + 1, record);
 		WriteRec(i, record);
@@ -75,7 +90,7 @@ void DbfFile::DecNRecs(int n)
 	WasWrRec = true;
 }
 
-void DbfFile::PutRec(uint8_t* record, int& i_rec)
+void DbfFile::PutRec(Record* record, int& i_rec)
 {
 	NRecs++;
 	WriteData(i_rec * RecLen + FirstRecPos, RecLen, record);
@@ -91,8 +106,7 @@ bool DbfFile::loadB(FieldDescr* field_d, uint8_t* record)
 
 double DbfFile::loadR(FieldDescr* field_d, uint8_t* record)
 {
-	uint8_t* source = static_cast<uint8_t*>(record) + field_d->Displ;
-	return DBF_RforD(field_d, source);
+	return DBF_RforD(field_d, record);
 }
 
 std::string DbfFile::loadS(FieldDescr* field_d, uint8_t* record)
@@ -178,7 +192,7 @@ void DbfFile::saveR(FieldDescr* field_d, double r, uint8_t* record)
 	}
 }
 
-void DbfFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t* record)
+void DbfFile::saveS(FieldDescr* field_d, std::string s, uint8_t* record)
 {
 	const uint8_t LeftJust = 1;
 	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
@@ -466,7 +480,7 @@ int DbfFile::MakeDbfDcl(std::string& name)
 		result += ";\x0D\x0A"; // ^M + ^J
 	}
 
-	_parent->saveS(ChptTxt, result, nullptr);
+	saveS(ChptTxt, result, nullptr);
 	CloseH(&h);
 	return 0;
 }
@@ -572,50 +586,19 @@ void DbfFile::Close()
 	}
 }
 
-void DbfFile::SetTWorkFlag(uint8_t* record) const
-{
-	uint8_t* p = (uint8_t*)record;
-	p[RecLen] = 1;
-}
-
-bool DbfFile::HasTWorkFlag(uint8_t* record) const
-{
-	uint8_t* p = (uint8_t*)record;
-	const bool workFlag = p[RecLen] == 1;
-	return workFlag;
-}
-
-void DbfFile::SetRecordUpdateFlag(uint8_t* record) const
-{
-	uint8_t* p = (uint8_t*)record;
-	p[RecLen + 1] = 1;
-}
-
-void DbfFile::ClearRecordUpdateFlag(uint8_t* record) const
-{
-	uint8_t* p = (uint8_t*)record;
-	p[RecLen + 1] = 0;
-}
-
-bool DbfFile::HasRecordUpdateFlag(uint8_t* record) const
-{
-	uint8_t* p = (uint8_t*)record;
-	return p[RecLen + 1] == 1;
-}
-
-bool DbfFile::DeletedFlag(uint8_t* record)
+bool DbfFile::DeletedFlag(Record* record)
 {
 	if (((uint8_t*)record)[0] != '*') return false;
 	else return true;
 }
 
-void DbfFile::ClearDeletedFlag(uint8_t* record)
+void DbfFile::ClearDeletedFlag(Record* record)
 {
 	uint8_t* ptr = (uint8_t*)record;
 	ptr[0] = ' ';
 }
 
-void DbfFile::SetDeletedFlag(uint8_t* record)
+void DbfFile::SetDeletedFlag(Record* record)
 {
 	uint8_t* ptr = (uint8_t*)record;
 	ptr[0] = '*';
@@ -624,11 +607,6 @@ void DbfFile::SetDeletedFlag(uint8_t* record)
 FileD* DbfFile::GetFileD()
 {
 	return _parent;
-}
-
-void DbfFile::ClearUpdateFlag()
-{
-	DataFileBase::ClearUpdateFlag();
 }
 
 std::string DbfFile::SetTempCExt(char typ, bool isNet) const

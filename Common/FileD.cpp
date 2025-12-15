@@ -238,7 +238,7 @@ size_t FileD::ReadRec(size_t rec_nr, Record* record) const
 		break;
 	}
 	case DataFileType::DBF: {
-		result = DbfF->ReadRec(rec_nr, record->GetRecord());
+		result = DbfF->ReadRec(rec_nr, record);
 		break;
 	}
 	default: {
@@ -246,8 +246,6 @@ size_t FileD::ReadRec(size_t rec_nr, Record* record) const
 		break;
 	}
 	}
-
-	record->Expand();
 
 	return result;
 }
@@ -262,7 +260,7 @@ size_t FileD::WriteRec(size_t rec_nr, Record* record) const
 		break;
 	}
 	case DataFileType::DBF: {
-		result = DbfF->WriteRec(rec_nr, record->GetRecord());
+		result = DbfF->WriteRec(rec_nr, record);
 		break;
 	}
 	default: {
@@ -453,53 +451,53 @@ void FileD::CheckX(int file_size)
 	}
 }
 
-uint8_t* FileD::GetRecSpace() const
-{
-	size_t length;
-	// 0. uint8_t in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
-	// 1. uint8_t in the end -> Work Flag
-	// 2. uint8_t in the end -> Update Flag
+//uint8_t* FileD::GetRecSpace() const
+//{
+//	size_t length;
+//	// 0. uint8_t in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
+//	// 1. uint8_t in the end -> Work Flag
+//	// 2. uint8_t in the end -> Update Flag
+//
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		length = FF->RecLen + 2;
+//		break;
+//	case DataFileType::DBF:
+//		length = DbfF->RecLen + 2;
+//		break;
+//	default:
+//		length = 0;
+//		break;
+//	}
+//
+//	uint8_t* result = new uint8_t[length];
+//	memset(result, '\0', length);
+//	return result;
+//}
 
-	switch (FileType) {
-	case DataFileType::FandFile:
-		length = FF->RecLen + 2;
-		break;
-	case DataFileType::DBF:
-		length = DbfF->RecLen + 2;
-		break;
-	default:
-		length = 0;
-		break;
-	}
-
-	uint8_t* result = new uint8_t[length];
-	memset(result, '\0', length);
-	return result;
-}
-
-std::unique_ptr<uint8_t[]> FileD::GetRecSpaceUnique() const
-{
-	size_t length;
-	// 0. uint8_t in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
-	// 1. uint8_t in the end -> Work Flag
-	// 2. uint8_t in the end -> Update Flag
-
-	switch (FileType) {
-	case DataFileType::FandFile:
-		length = FF->RecLen + 2;
-		break;
-	case DataFileType::DBF:
-		length = DbfF->RecLen + 2;
-		break;
-	default:
-		length = 0;
-		break;
-	}
-
-	std::unique_ptr<uint8_t[]> result(new uint8_t[length]);
-	memset(result.get(), '\0', length);
-	return result;
-}
+//std::unique_ptr<uint8_t[]> FileD::GetRecSpaceUnique() const
+//{
+//	size_t length;
+//	// 0. uint8_t in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
+//	// 1. uint8_t in the end -> Work Flag
+//	// 2. uint8_t in the end -> Update Flag
+//
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		length = FF->RecLen + 2;
+//		break;
+//	case DataFileType::DBF:
+//		length = DbfF->RecLen + 2;
+//		break;
+//	default:
+//		length = 0;
+//		break;
+//	}
+//
+//	std::unique_ptr<uint8_t[]> result(new uint8_t[length]);
+//	memset(result.get(), '\0', length);
+//	return result;
+//}
 
 ///// <summary>
 ///// Deletes all text fields in the record from the TWork file
@@ -594,7 +592,7 @@ void FileD::CreateRec(int n, Record* record) const
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->CreateRec(n, record->GetRecord());
+		DbfF->CreateRec(n, record);
 		break;
 	}
 	default: break;
@@ -609,7 +607,7 @@ void FileD::PutRec(Record* record)
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->PutRec(record->GetRecord(), IRec);
+		DbfF->PutRec(record, IRec);
 		break;
 	}
 	default: break;
@@ -624,7 +622,7 @@ void FileD::DeleteRec(int n, Record* record) const
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->DeleteRec(n, record->GetRecord());
+		DbfF->DeleteRec(n, record);
 		break;
 	}
 	default: break;
@@ -639,7 +637,7 @@ void FileD::RecallRec(int recNr, Record* record)
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->ClearDeletedFlag(record->GetRecord());
+		DbfF->ClearDeletedFlag(record);
 		WriteRec(recNr, record);
 		break;
 	}
@@ -698,7 +696,6 @@ void FileD::AssignNRecs(bool Add, int N)
 	Record* record = new Record(this);
 	// ZeroAllFlds(record, false);
 	record->SetDeleted();
-	SetDeletedFlag(record->GetRecord());
 	IncNRecs(N - OldNRecs);
 
 	for (int i = OldNRecs + 1; i <= N; i++) {
@@ -724,157 +721,157 @@ void FileD::IndexesMaintenance(bool remove_deleted)
 	}
 }
 
-bool FileD::loadB(FieldDescr* field_d, Record* record)
-{
-	bool result;
-
-	if (field_d->isStored()) {
-		switch (FileType) {
-		case DataFileType::FandFile:
-			result = FF->loadB(field_d, record->GetRecord());
-			break;
-		case DataFileType::DBF:
-			result = DbfF->loadB(field_d, record->GetRecord());
-			break;
-		default:
-			result = false;
-			break;
-		}
-	}
-	else {
-		result = RunBool(this, field_d->Frml, record);
-	}
-
-	return result;
-}
-
-double FileD::loadR(FieldDescr* field_d, Record* record)
-{
-	double result;
-
-	if (field_d->isStored()) {
-		switch (FileType) {
-		case DataFileType::FandFile:
-			result = FF->loadR(field_d, record->GetRecord());
-			break;
-		case DataFileType::DBF:
-			result = DbfF->loadR(field_d, record->GetRecord());
-			break;
-		default:
-			result = 0.0;
-			break;
-		}
-	}
-	else {
-		result = RunReal(this, field_d->Frml, record);
-	}
-
-	return result;
-}
-
-std::string FileD::loadS(FieldDescr* field_d, Record* record)
-{
-	std::string result;
-
-	if (field_d->isStored()) {
-		switch (FileType) {
-		case DataFileType::FandFile:
-			result = FF->loadS(field_d, record->GetRecord());
-			break;
-		case DataFileType::DBF:
-			result = DbfF->loadS(field_d, record->GetRecord());
-			break;
-		default:
-			result = "";
-			break;
-		}
-	}
-	else {
-		result = RunString(this, field_d->Frml, record);
-	}
-
-	return result;
-}
-
-int FileD::loadT(FieldDescr* field_d, Record* record)
-{
-	int result;
-
-	switch (FileType) {
-	case DataFileType::FandFile:
-		result = FF->loadT(field_d, record->GetRecord());
-		break;
-	case DataFileType::DBF:
-		result = DbfF->loadT(field_d, record->GetRecord());
-		break;
-	default:
-		result = 0;
-		break;
-	}
-
-	return result;
-}
-
-void FileD::saveB(FieldDescr* field_d, bool b, Record* record)
-{
-	switch (FileType) {
-	case DataFileType::FandFile:
-		FF->saveB(field_d, b, record->GetRecord());
-		break;
-	case DataFileType::DBF:
-		DbfF->saveB(field_d, b, record->GetRecord());
-		break;
-	default:
-		break;
-	}
-}
-
-void FileD::saveR(FieldDescr* field_d, double r, Record* record)
-{
-	switch (FileType) {
-	case DataFileType::FandFile:
-		FF->saveR(field_d, r, record->GetRecord());
-		break;
-	case DataFileType::DBF:
-		DbfF->saveR(field_d, r, record->GetRecord());
-		break;
-	default:
-		break;
-	}
-}
-
-void FileD::saveS(FieldDescr* field_d, const std::string& s, Record* record)
-{
-	switch (FileType) {
-	case DataFileType::FandFile:
-		FF->saveS(this, field_d, s, record->GetRecord());
-		break;
-	case DataFileType::DBF:
-		DbfF->saveS(this, field_d, s, record->GetRecord());
-		break;
-	default:
-		break;
-	}
-}
-
-int FileD::saveT(FieldDescr* field_d, int pos, Record* record) const
-{
-	int result;
-
-	switch (FileType) {
-	case DataFileType::FandFile:
-		result = FF->saveT(field_d, pos, record->GetRecord());
-		break;
-	case DataFileType::DBF:
-		result = DbfF->saveT(field_d, pos, record->GetRecord());
-		break;
-	default:
-		result = 0;
-		break;
-	}
-
-	return result;
-}
+//bool FileD::loadB(FieldDescr* field_d, Record* record)
+//{
+//	bool result;
+//
+//	if (field_d->isStored()) {
+//		switch (FileType) {
+//		case DataFileType::FandFile:
+//			result = FF->loadB(field_d);
+//			break;
+//		case DataFileType::DBF:
+//			result = DbfF->loadB(field_d);
+//			break;
+//		default:
+//			result = false;
+//			break;
+//		}
+//	}
+//	else {
+//		result = RunBool(this, field_d->Frml, record);
+//	}
+//
+//	return result;
+//}
+//
+//double FileD::loadR(FieldDescr* field_d, Record* record)
+//{
+//	double result;
+//
+//	if (field_d->isStored()) {
+//		switch (FileType) {
+//		case DataFileType::FandFile:
+//			result = FF->loadR(field_d, record);
+//			break;
+//		case DataFileType::DBF:
+//			result = DbfF->loadR(field_d, record);
+//			break;
+//		default:
+//			result = 0.0;
+//			break;
+//		}
+//	}
+//	else {
+//		result = RunReal(this, field_d->Frml, record);
+//	}
+//
+//	return result;
+//}
+//
+//std::string FileD::loadS(FieldDescr* field_d, Record* record)
+//{
+//	std::string result;
+//
+//	if (field_d->isStored()) {
+//		switch (FileType) {
+//		case DataFileType::FandFile:
+//			result = FF->loadS(field_d, record->GetRecord());
+//			break;
+//		case DataFileType::DBF:
+//			result = DbfF->loadS(field_d, record->GetRecord());
+//			break;
+//		default:
+//			result = "";
+//			break;
+//		}
+//	}
+//	else {
+//		result = RunString(this, field_d->Frml, record);
+//	}
+//
+//	return result;
+//}
+//
+//int FileD::loadT(FieldDescr* field_d, Record* record)
+//{
+//	int result;
+//
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		result = FF->loadT(field_d, record->GetRecord());
+//		break;
+//	case DataFileType::DBF:
+//		result = DbfF->loadT(field_d, record->GetRecord());
+//		break;
+//	default:
+//		result = 0;
+//		break;
+//	}
+//
+//	return result;
+//}
+//
+//void FileD::saveB(FieldDescr* field_d, bool b, Record* record)
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		FF->saveB(field_d, b, record->GetRecord());
+//		break;
+//	case DataFileType::DBF:
+//		DbfF->saveB(field_d, b, record->GetRecord());
+//		break;
+//	default:
+//		break;
+//	}
+//}
+//
+//void FileD::saveR(FieldDescr* field_d, double r, Record* record)
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		FF->saveR(field_d, r, record->GetRecord());
+//		break;
+//	case DataFileType::DBF:
+//		DbfF->saveR(field_d, r, record->GetRecord());
+//		break;
+//	default:
+//		break;
+//	}
+//}
+//
+//void FileD::saveS(FieldDescr* field_d, const std::string& s, Record* record)
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		FF->saveS(this, field_d, s, record->GetRecord());
+//		break;
+//	case DataFileType::DBF:
+//		DbfF->saveS(this, field_d, s, record->GetRecord());
+//		break;
+//	default:
+//		break;
+//	}
+//}
+//
+//int FileD::saveT(FieldDescr* field_d, int pos, Record* record) const
+//{
+//	int result;
+//
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		result = FF->saveT(field_d, pos, record->GetRecord());
+//		break;
+//	case DataFileType::DBF:
+//		result = DbfF->saveT(field_d, pos, record->GetRecord());
+//		break;
+//	default:
+//		result = 0;
+//		break;
+//	}
+//
+//	return result;
+//}
 
 void FileD::SetDrive(uint8_t drive) const
 {
@@ -1181,99 +1178,99 @@ void FileD::RunErrorM(LockMode mode)
 //	return result;
 //}
 
-void FileD::SetRecordUpdateFlag(uint8_t* record)
-{
-	switch (FileType) {
-	case DataFileType::FandFile:
-		FF->SetRecordUpdateFlag(record);
-		break;
-	case DataFileType::DBF:
-		DbfF->SetRecordUpdateFlag(record);
-		break;
-	default:
-		break;
-	}
-}
-
-void FileD::ClearRecordUpdateFlag(uint8_t* record)
-{
-	switch (FileType) {
-	case DataFileType::FandFile:
-		FF->ClearRecordUpdateFlag(record);
-		break;
-	case DataFileType::DBF:
-		DbfF->ClearRecordUpdateFlag(record);
-		break;
-	default:
-		break;
-	}
-}
-
-bool FileD::HasRecordUpdateFlag(uint8_t* record)
-{
-	bool result;
-
-	switch (FileType) {
-	case DataFileType::FandFile:
-		result = FF->HasRecordUpdateFlag(record);
-		break;
-	case DataFileType::DBF:
-		result = DbfF->HasRecordUpdateFlag(record);
-		break;
-	default:
-		result = false;
-		break;
-	}
-
-	return result;
-}
-
-bool FileD::DeletedFlag(uint8_t* record)
-{
-	bool result;
-
-	switch (FileType) {
-	case DataFileType::FandFile:
-		result = FF->DeletedFlag(record);
-		break;
-	case DataFileType::DBF:
-		result = DbfF->DeletedFlag(record);
-		break;
-	default:
-		result = false;
-		break;
-	}
-
-	return result;
-}
-
-void FileD::ClearDeletedFlag(uint8_t* record) const
-{
-	switch (FileType) {
-	case DataFileType::FandFile:
-		FF->ClearDeletedFlag(record);
-		break;
-	case DataFileType::DBF:
-		DbfF->ClearDeletedFlag(record);
-		break;
-	default:
-		break;
-	}
-}
-
-void FileD::SetDeletedFlag(uint8_t* record) const
-{
-	switch (FileType) {
-	case DataFileType::FandFile:
-		FF->SetDeletedFlag(record);
-		break;
-	case DataFileType::DBF:
-		DbfF->SetDeletedFlag(record);
-		break;
-	default:
-		break;
-	}
-}
+//void FileD::SetRecordUpdateFlag(uint8_t* record)
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		FF->SetRecordUpdateFlag(record);
+//		break;
+//	case DataFileType::DBF:
+//		DbfF->SetRecordUpdateFlag(record);
+//		break;
+//	default:
+//		break;
+//	}
+//}
+//
+//void FileD::ClearRecordUpdateFlag(uint8_t* record)
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		FF->ClearRecordUpdateFlag(record);
+//		break;
+//	case DataFileType::DBF:
+//		DbfF->ClearRecordUpdateFlag(record);
+//		break;
+//	default:
+//		break;
+//	}
+//}
+//
+//bool FileD::HasRecordUpdateFlag(uint8_t* record)
+//{
+//	bool result;
+//
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		result = FF->HasRecordUpdateFlag(record);
+//		break;
+//	case DataFileType::DBF:
+//		result = DbfF->HasRecordUpdateFlag(record);
+//		break;
+//	default:
+//		result = false;
+//		break;
+//	}
+//
+//	return result;
+//}
+//
+//bool FileD::DeletedFlag(uint8_t* record)
+//{
+//	bool result;
+//
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		result = FF->DeletedFlag(record);
+//		break;
+//	case DataFileType::DBF:
+//		result = DbfF->DeletedFlag(record);
+//		break;
+//	default:
+//		result = false;
+//		break;
+//	}
+//
+//	return result;
+//}
+//
+//void FileD::ClearDeletedFlag(uint8_t* record) const
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		FF->ClearDeletedFlag(record);
+//		break;
+//	case DataFileType::DBF:
+//		DbfF->ClearDeletedFlag(record);
+//		break;
+//	default:
+//		break;
+//	}
+//}
+//
+//void FileD::SetDeletedFlag(uint8_t* record) const
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile:
+//		FF->SetDeletedFlag(record);
+//		break;
+//	case DataFileType::DBF:
+//		DbfF->SetDeletedFlag(record);
+//		break;
+//	default:
+//		break;
+//	}
+//}
 
 uint16_t FileD::RdPrefix() const
 {
@@ -1424,48 +1421,48 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 	MyDeleteFile(CPath);
 }
 
-void FileD::ZeroAllFlds(Record* record, bool delTFields)
-{
-	switch (FileType) {
-	case DataFileType::FandFile: {
-		if (delTFields) {
-			this->FF->DelTFlds(record->GetRecord());
-		}
-		memset(record->GetRecord(), 0, FF->RecLen);
-		break;
-	}
-	case DataFileType::DBF: {
-		if (delTFields) {
-			this->DbfF->DelTFlds(record->GetRecord());
-		}
-		memset(record->GetRecord(), 0, DbfF->RecLen);
-		break;
-	}
-	default:;
-	}
+//void FileD::ZeroAllFlds(Record* record, bool delTFields)
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile: {
+//		if (delTFields) {
+//			this->FF->DelTFlds(record->GetRecord());
+//		}
+//		memset(record->GetRecord(), 0, FF->RecLen);
+//		break;
+//	}
+//	case DataFileType::DBF: {
+//		if (delTFields) {
+//			this->DbfF->DelTFlds(record->GetRecord());
+//		}
+//		memset(record->GetRecord(), 0, DbfF->RecLen);
+//		break;
+//	}
+//	default:;
+//	}
+//
+//	for (FieldDescr* F : FldD) {
+//		if (F->isStored() && (F->field_type == FieldType::ALFANUM)) {
+//			saveS(F, "", record);
+//		}
+//	}
+//}
 
-	for (FieldDescr* F : FldD) {
-		if (F->isStored() && (F->field_type == FieldType::ALFANUM)) {
-			saveS(F, "", record);
-		}
-	}
-}
-
-void FileD::DelAllDifTFlds(Record* record, Record* comp_record)
-{
-	switch (FileType) {
-	case DataFileType::FandFile: {
-		FF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
-		break;
-	}
-	case DataFileType::DBF: {
-		DbfF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
-		break;
-	}
-	default:
-		break;
-	}
-}
+//void FileD::DelAllDifTFlds(Record* record, Record* comp_record)
+//{
+//	switch (FileType) {
+//	case DataFileType::FandFile: {
+//		FF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
+//		break;
+//	}
+//	case DataFileType::DBF: {
+//		DbfF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
+//		break;
+//	}
+//	default:
+//		break;
+//	}
+//}
 
 std::string FileD::CExtToT(const std::string& dir, const std::string& name, std::string ext)
 {

@@ -799,17 +799,17 @@ void Merge::SetOldMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 		F = M[i]->FldD;
 		switch (F->frml_type) {
 		case 'S': {
-			C->S = file_d->loadS(F, record);
+			C->S = record->LoadS(F->Name); //file_d->loadS(F, record);
 			OldMXStr.StoreStr(C->S, M[i]);
 			break;
 		}
 		case 'R': {
-			C->R = file_d->loadR(F, record);
+			C->R = record->LoadR(F->Name); //file_d->loadR(F, record);
 			OldMXStr.StoreReal(C->R, M[i]);
 			break;
 		}
 		default: {
-			C->B = file_d->loadB(F, record);
+			C->B = record->LoadB(F->Name); //file_d->loadB(F, record);
 			OldMXStr.StoreBool(C->B, M[i]);
 			break;
 		}
@@ -1002,7 +1002,8 @@ void Merge::MoveForwToRecM(InpD* ID)
 {
 	FileD* f = ID->Scan->FD;
 	Record* rec = f->FF->RecPtr;
-	memcpy(rec->GetRecord(), ID->ForwRecPtr->GetRecord(), f->FF->RecLen + 1);
+	//memcpy(rec->GetRecord(), ID->ForwRecPtr->GetRecord(), f->FF->RecLen + 1);
+	ID->ForwRecPtr->CopyTo(rec);
 	ID->Count = ID->Count + 1;
 
 	if (!ID->Chk.empty()) {
@@ -1071,7 +1072,7 @@ void Merge::MergeProc(FileD* file_d, Record* record)
 		else {
 			//CFile = ID->Scan->FD;
 			//CRecPtr = CFile->FF->RecPtr;
-			ID->Scan->FD->ZeroAllFlds(file_d->FF->RecPtr, false);
+			file_d->FF->RecPtr->Reset(); //ID->Scan->FD->ZeroAllFlds(file_d->FF->RecPtr, false);
 			SetMFlds(file_d, file_d->FF->RecPtr, ID->MFld);
 		}
 	}
@@ -1109,7 +1110,7 @@ void Merge::JoinProc(FileD* file_d, Record* record, WORD Ii, bool& EmptyGroup)
 		}
 		else {
 			EmptyGroup = true;
-			ID->Scan->FD->ZeroAllFlds(ID->Scan->FD->FF->RecPtr, false);
+			ID->Scan->FD->FF->RecPtr->Reset(); //ID->Scan->FD->ZeroAllFlds(ID->Scan->FD->FF->RecPtr, false);
 			SetMFlds(ID->Scan->FD, ID->Scan->FD->FF->RecPtr, ID->MFld);
 			JoinProc(file_d, record, Ii + 1, EmptyGroup);
 		}

@@ -92,7 +92,7 @@ int32_t GetIndex(Instr_getindex* PD)
 		if ((nr > 0) && (nr <= lvFD->FF->NRecs)) {
 			lvFD->ReadRec(nr, record);
 			if (PD->mode == '+') {
-				if (!lvFD->DeletedFlag(record->GetRecord())) {
+				if (!record->IsDeleted()) {
 					x.PackKF(lvFD, k->KFlds, record);
 					if (!k->RecNrToPath(lvFD, x, nr, record)) {
 						k->InsertOnPath(lvFD, x, nr);

@@ -111,7 +111,7 @@ private:
     void DisplRecTxt();
     
     void UpdMemberRef(Record* POld, Record* PNew);
-    void WrJournal(char Upd, uint8_t* RP, double Time);
+    void WrJournal(char Upd, Record* RP, double Time);
     bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md);
     bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd);
     void UnLockWithDep(LockMode OldMd);

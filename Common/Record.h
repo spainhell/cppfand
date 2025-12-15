@@ -20,14 +20,14 @@ class Record
 public:
 	Record();
 	Record(FileD* file_d);
-	Record(FileD* file_d, uint8_t* record, bool record_owner = false);
 	~Record();
 	void CopyTo(Record* dst_record) const;
-	uint8_t* GetRecord();	// prepares record buffer from values and returns it
+	//uint8_t* GetRecord();	// prepares record buffer from values and returns it
 	FileD* GetFileD() const;
 	Record* Clone() const;
-	void Reset();
-	void Expand();
+	
+	void Clear(); // delete the vector of values
+	void Reset(); // all values to default
 
 	bool LoadB(const std::string& field_name) const;
 	double LoadR(const std::string& field_name) const;
@@ -45,17 +45,15 @@ public:
 	void ClearDeleted();
 	bool IsDeleted() const;
 
-private:
-	FileD* _file_d;
-	uint8_t* _buffer;
 	std::vector<BRS_Value> _values;
 
-	bool _delete_record_on_destroy = true;
+	static uint8_t Compare(Record* rec1, Record* rec2);
+
+private:
+	FileD* _file_d;
+	
 	bool _updated = false;
 	bool _deleted = false;
-
-	void _getValuesFromRecord();
-	void _setRecordFromValues();
 
 	FieldDescr* _getFieldDescrByName(const std::string& field_name) const;
 	size_t _getFieldDescrIndexByName(const std::string& field_name) const;

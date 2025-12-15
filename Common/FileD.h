@@ -75,8 +75,8 @@ public:
 	void CheckT(int file_size);
 	void CheckX(int file_size);
 
-	uint8_t* GetRecSpace() const;
-	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
+	//uint8_t* GetRecSpace() const;
+	//std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
 
 	//void ClearRecSpace(Record* record); // delete 'T' from TWork
 	void CompileRecLen() const;
@@ -93,15 +93,15 @@ public:
 	void SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const;
 	void IndexesMaintenance(bool remove_deleted);
 
-	bool loadB(FieldDescr* field_d, Record* record);
-	double loadR(FieldDescr* field_d, Record* record);
-	std::string loadS(FieldDescr* field_d, Record* record);
-	int loadT(FieldDescr* field_d, Record* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
+	//bool loadB(FieldDescr* field_d, Record* record);
+	//double loadR(FieldDescr* field_d, Record* record);
+	//std::string loadS(FieldDescr* field_d, Record* record);
+	//int loadT(FieldDescr* field_d, Record* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
 
-	void saveB(FieldDescr* field_d, bool b, Record* record);
-	void saveR(FieldDescr* field_d, double r, Record* record);
-	void saveS(FieldDescr* field_d, const std::string& s, Record* record);
-	int saveT(FieldDescr* field_d, int pos, Record* record) const;
+	//void saveB(FieldDescr* field_d, bool b, Record* record);
+	//void saveR(FieldDescr* field_d, double r, Record* record);
+	//void saveS(FieldDescr* field_d, const std::string& s, Record* record);
+	//int saveT(FieldDescr* field_d, int pos, Record* record) const;
 
 	void SetDrive(uint8_t drive) const;
 	void SetUpdateFlag() const;
@@ -132,13 +132,13 @@ public:
 	//void SetTWorkFlag(uint8_t* record);
 	//bool HasTWorkFlag(uint8_t* record);
 
-	void SetRecordUpdateFlag(uint8_t* record);
-	void ClearRecordUpdateFlag(uint8_t* record);
-	bool HasRecordUpdateFlag(uint8_t* record);
+	//void SetRecordUpdateFlag(uint8_t* record);
+	//void ClearRecordUpdateFlag(uint8_t* record);
+	//bool HasRecordUpdateFlag(uint8_t* record);
 
-	bool DeletedFlag(uint8_t* record);
-	void ClearDeletedFlag(uint8_t* record) const;
-	void SetDeletedFlag(uint8_t* record) const;
+	//bool DeletedFlag(uint8_t* record);
+	//void ClearDeletedFlag(uint8_t* record) const;
+	//void SetDeletedFlag(uint8_t* record) const;
 
 	uint16_t RdPrefix() const;
 	void WrPrefix() const;
@@ -152,8 +152,8 @@ public:
 
 	FileD* OpenDuplicateF(bool createTextFile);
 	void DeleteDuplicateF(FileD* TempFD);
-	void ZeroAllFlds(Record* record, bool delTFields);
-	void DelAllDifTFlds(Record* record, Record* comp_record);
+	//void ZeroAllFlds(Record* record, bool delTFields);
+	//void DelAllDifTFlds(Record* record, Record* comp_record);
 
 	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
 	std::string SetTempCExt(char typ, bool isNet);
