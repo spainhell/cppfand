@@ -50,6 +50,7 @@ public:
 	LockMode TaLMode = NullMode;
 
 	size_t ReadRec(size_t rec_nr, Record* record);
+	size_t ReadRec(size_t rec_nr, uint8_t* buffer);
 	size_t WriteRec(size_t rec_nr, Record* record);
 	void CreateRec(int n, Record* record);
 	void DeleteRec(int n, Record* record);
@@ -91,7 +92,7 @@ public:
 	int XNRecs(std::vector<XKey*>& K);
 	void TryInsertAllIndexes(int RecNr, Record* record);
 	void DeleteAllIndexes(int RecNr, Record* record);
-	void DeleteXRec(int RecNr, bool DelT, Record* record);
+	void DeleteXRec(int RecNr, Record* record);
 	void OverWrXRec(int RecNr, Record* P2, Record* P, Record* record);
 	void RecallRec(int recNr, Record* record);
 
@@ -125,16 +126,16 @@ private:
 	int saveT(FieldDescr* field_d, int pos, uint8_t* record);
 
 	void DelTFld(FieldDescr* field_d, uint8_t* record);
-	void DelTFlds(uint8_t* record);
-	void DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record);
-	void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
+	void DelTFlds(int32_t rec_nr);
+	//void DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record);
+	//void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
 
 	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);
 
 	void TestDelErr(std::string& P);
 
-	void _getValuesFromRecord(Record* record);
+	void _getValuesFromRecord(Record* dst_record);
 	void _setRecordFromValues(Record* record);
 };
 

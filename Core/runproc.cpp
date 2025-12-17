@@ -561,7 +561,7 @@ void DeleteRecProc(Instr_recs* PD)
 		LastExitCode = (!RunAddUpdate(f, '-', nullptr, nullptr, rec));
 	}
 	if (f->FF->file_type == FandFileType::INDEX) {
-		if (!rec->IsDeleted()) f->FF->DeleteXRec(n, true, rec);
+		if (!rec->IsDeleted()) f->FF->DeleteXRec(n, rec);
 	}
 	else {
 		f->DeleteRec(n, rec);

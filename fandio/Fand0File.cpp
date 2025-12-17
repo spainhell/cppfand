@@ -79,8 +79,16 @@ size_t Fand0File::ReadRec(size_t rec_nr, Record* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	size_t result = ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, _buffer);
+	size_t result = ReadRec(rec_nr, _buffer);
 	this->_getValuesFromRecord(record);
+	return result;
+}
+
+size_t Fand0File::ReadRec(size_t rec_nr, uint8_t* buffer)
+{
+	Logging* log = Logging::getInstance();
+	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
+	size_t result = ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer);
 	return result;
 }
 
@@ -108,15 +116,13 @@ void Fand0File::CreateRec(int n, Record* record)
 
 void Fand0File::DeleteRec(int n, Record* record)
 {
-	uint8_t* buffer = new uint8_t[RecLen];
-	// TODO: transform Record to buffer
-	throw("Fand0File::DeleteRec() - not implemented yet");
-
-	DelAllDifTFlds(buffer, nullptr);
+	DelTFlds(n);
+	
 	for (int i = n; i <= NRecs - 1; i++) {
 		ReadRec(i + 1, record);
 		WriteRec(i, record);
 	}
+	
 	DecNRecs(1);
 }
 
@@ -509,38 +515,43 @@ void Fand0File::DelTFld(FieldDescr* field_d, uint8_t* record)
 	saveT(field_d, 0, record);
 }
 
-void Fand0File::DelTFlds(uint8_t* record)
+void Fand0File::DelTFlds(int32_t rec_nr)
 {
+	uint8_t* buf = GetRecSpace();
+	ReadRec(rec_nr, buf);
+
 	for (FieldDescr* field : _parent->FldD) {
 		if (field->field_type == FieldType::TEXT && field->isStored()) {
-			DelTFld(field, record);
+			DelTFld(field, buf);
 		}
 	}
+
+	delete[] buf; buf = nullptr;
 }
 
-/**
- * \brief Pokud zaznamy odkazuji na ruzne texty, je text z 'record' smazan
- * \param field_d popis pole
- * \param record 1. zaznam (ktery je pripadne smazan)
- * \param comp_record 2. zaznam
- */
-void Fand0File::DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record)
-{
-	const int n1 = loadT(field_d, comp_record);
-	const int n2 = loadT(field_d, record);
-	if (n1 != n2) {
-		DelTFld(field_d, record);
-	}
-}
-
-void Fand0File::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
-{
-	for (auto& F : _parent->FldD) {
-		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
-			DelDifTFld(F, record, comp_record);
-		}
-	}
-}
+///**
+// * \brief Pokud zaznamy odkazuji na ruzne texty, je text z 'record' smazan
+// * \param field_d popis pole
+// * \param record 1. zaznam (ktery je pripadne smazan)
+// * \param comp_record 2. zaznam
+// */
+//void Fand0File::DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record)
+//{
+//	const int n1 = loadT(field_d, comp_record);
+//	const int n2 = loadT(field_d, record);
+//	if (n1 != n2) {
+//		DelTFld(field_d, record);
+//	}
+//}
+//
+//void Fand0File::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
+//{
+//	for (auto& F : _parent->FldD) {
+//		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
+//			DelDifTFld(F, record, comp_record);
+//		}
+//	}
+//}
 
 uint16_t Fand0File::RdPrefix()
 {
@@ -989,17 +1000,14 @@ void Fand0File::DeleteAllIndexes(int RecNr, Record* record)
 	}
 }
 
-void Fand0File::DeleteXRec(int RecNr, bool DelT, Record* record)
+void Fand0File::DeleteXRec(int RecNr, Record* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
 	DeleteAllIndexes(RecNr, record);
 	
-	if (DelT) {
-		// TODO:
-		// DelAllDifTFlds(record, nullptr);
-	}
+	DelTFlds(RecNr);
 
 	record->SetDeleted(); //SetDeletedFlag(record);
 	WriteRec(RecNr, record);
@@ -1435,9 +1443,9 @@ void Fand0File::TestDelErr(std::string& P)
 	}
 }
 
-void Fand0File::_getValuesFromRecord(Record* record)
+void Fand0File::_getValuesFromRecord(Record* dst_record)
 {
-	record->Clear();
+	dst_record->Clear();
 
 	if (_buffer != nullptr) {
 		for (FieldDescr* field : _parent->FldD) {
@@ -1486,7 +1494,7 @@ void Fand0File::_getValuesFromRecord(Record* record)
 				//	break;
 				//}
 			}
-			record->_values.push_back(val);
+			dst_record->_values.push_back(val);
 		}
 	}
 	else
@@ -1495,7 +1503,7 @@ void Fand0File::_getValuesFromRecord(Record* record)
 	}
 
 	if (file_type == FandFileType::INDEX && _buffer[0] == 0) {
-		record->SetDeleted();
+		dst_record->SetDeleted();
 	}
 
 }

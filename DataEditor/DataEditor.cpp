@@ -1924,7 +1924,7 @@ void DataEditor::UpdMemberRef(Record* POld, Record* PNew)
 					RunAddUpdate(link_descr->FromFD, '-', nullptr, false, nullptr, link_descr, src_rec1);
 					UpdMemberRef(src_rec1, nullptr);
 					// TODO: FandSQL condition removed
-					link_descr->FromFD->FF->DeleteXRec(Scan->RecNr, true, src_rec1);
+					link_descr->FromFD->FF->DeleteXRec(Scan->RecNr, src_rec1);
 				}
 				else {
 					//memcpy(src_rec2->GetRecord(), src_rec1->GetRecord(), link_descr->FromFD->FF->RecLen);
@@ -2171,7 +2171,7 @@ bool DataEditor::DelIndRec(int I, int N)
 {
 	bool result = false;
 	if (CleanUp()) {
-		file_d_->FF->DeleteXRec(N, true, current_rec_);
+		file_d_->FF->DeleteXRec(N, current_rec_);
 		//SetUpdHandle(file_d_->FF->Handle); // navic
 		file_d_->FF->SetUpdateFlag(); // -''- navic
 		//SetUpdHandle(file_d_->FF->XF->Handle); // navic
