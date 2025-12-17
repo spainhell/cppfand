@@ -184,7 +184,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 		to_FD->FF->ReadRec(N, up_rec);
 	}
 	else {
-		to_FD->ZeroAllFlds(up_rec, false);
+		up_rec->Reset(); //to_FD->ZeroAllFlds(up_rec, false);
 		for (size_t i = 0; i < LD->Args.size(); i++) {
 			FieldDescr* F = LD->Args[i]->FldD;
 			FieldDescr* F2 = K->KFlds[i]->FldD;

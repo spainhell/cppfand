@@ -6,7 +6,6 @@
 class DataEditor;
 bool IsCurrChpt(FileD* file_d);
 void ReleaseFilesAndLinksAfterChapter(EditD* edit);
-bool RdFDSegment(WORD FromI, int Pos);
 bool ChptDel(FileD* file_d, DataEditor* data_editor);
 WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit); /* 0-O.K., 1-fail, 2-fail && undo*/
 bool PromptHelpName(FileD* file_d, WORD& N);

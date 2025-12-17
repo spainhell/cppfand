@@ -113,20 +113,20 @@ extern "C" int FAND_API LoadRecord(int32_t recNr)
 
 extern "C" void FAND_API GetChapterType(char* chapterType)
 {
-	std::string chapter_type = rdbFile->loadS(rdbFile->FldD[3], data);
+	std::string chapter_type = data->LoadS(rdbFile->FldD[3]->Name);
 	memcpy(chapterType, chapter_type.c_str(), chapter_type.length());
 }
 
 extern "C" void FAND_API GetChapterName(char* chapterName)
 {
-	std::string chapter_name = rdbFile->loadS(rdbFile->FldD[4], data);
+	std::string chapter_name = data->LoadS(rdbFile->FldD[4]->Name);
 	chapter_name = ConvertCP852toUnicode(chapter_name);
 	memcpy(chapterName, chapter_name.c_str(), chapter_name.length());
 }
 
 extern "C" int FAND_API GetChapterCodeLength()
 {
-	code = rdbFile->loadS(rdbFile->FldD[5], data);
+	code = data->LoadS(rdbFile->FldD[5]->Name);
 	code = ConvertCP852toUnicode(code);
 	return static_cast<int>(code.length());
 }
@@ -152,13 +152,13 @@ extern "C" int FAND_API SaveChapter(char* chapterType, char* chapterName, char* 
 	//rdbFile->ClearRecSpace(data);
 
 	std::string chapter_type = ConvertUnicodetoCP852(chapterType);
-	rdbFile->saveS(rdbFile->FldD[3], chapter_type, data);
+	data->SaveS(rdbFile->FldD[3]->Name, chapter_type);
 
 	std::string chapter_name = ConvertUnicodetoCP852(chapterName);
-	rdbFile->saveS(rdbFile->FldD[4], chapter_name, data);
+	data->SaveS(rdbFile->FldD[4]->Name, chapter_name);
 
 	std::string chapter_code = ConvertUnicodetoCP852(chapterCode);
-	rdbFile->saveS(rdbFile->FldD[5], chapter_code, data);
+	data->SaveS(rdbFile->FldD[5]->Name, chapter_code);
 
 	rdbFile->CreateRec(rdbFile->FF->NRecs + 1, data);
 
@@ -170,15 +170,15 @@ extern "C" int FAND_API UpdateChapter(int32_t recNr, char* chapterType, char* ch
 	//rdbFile->ClearRecSpace(data);
 
 	std::string chapter_type = ConvertUnicodetoCP852(chapterType);
-	rdbFile->saveS(rdbFile->FldD[3], chapter_type, data);
+	data->SaveS(rdbFile->FldD[3]->Name, chapter_type);
 
 	std::string chapter_name = ConvertUnicodetoCP852(chapterName);
-	rdbFile->saveS(rdbFile->FldD[4], chapter_name, data);
+	data->SaveS(rdbFile->FldD[4]->Name, chapter_name);
 
 	std::string chapter_code = ConvertUnicodetoCP852(chapterCode);
-	rdbFile->saveS(rdbFile->FldD[5], chapter_code, data);
+	data->SaveS(rdbFile->FldD[5]->Name, chapter_code);
 
-	rdbFile->FF->WriteRec(recNr, data);
+	rdbFile->WriteRec(recNr, data);
 
 	return rdbFile->FF->NRecs;
 }

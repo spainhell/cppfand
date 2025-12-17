@@ -2052,13 +2052,14 @@ void Report::MoveForwToRec(InpD* ID)
 {
 	FileD* f = ID->Scan->FD;
 	Record* rec = f->FF->RecPtr;
-	memcpy(rec->GetRecord(), ID->ForwRecPtr->GetRecord(), f->FF->RecLen + 1);
+	ID->ForwRecPtr->CopyTo(rec); //memcpy(rec->GetRecord(), ID->ForwRecPtr->GetRecord(), f->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
 
 	if (!ID->Chk.empty()) {
 		ID->Error = false;
 		ID->Warning = false;
 		ID->ErrTxtFrml->S = "";
+
 		for (LogicControl* C : ID->Chk) {
 			if (!RunBool(f, C->Bool, rec)) {
 				ID->Warning = true;
@@ -2068,7 +2069,6 @@ void Report::MoveForwToRec(InpD* ID)
 					return;
 				}
 			}
-			//C = (LogicControl*)C->pChain;
 		}
 	}
 }
@@ -2082,7 +2082,7 @@ void Report::MoveFrstRecs()
 		else {
 			FileD* f = IDA[i]->Scan->FD;
 			Record* rec = f->FF->RecPtr;
-			f->ZeroAllFlds(rec, false);
+			rec->Reset(); //f->ZeroAllFlds(rec, false);
 			PutMFlds(f, rec, IDA[i]->MFld);
 		}
 	}

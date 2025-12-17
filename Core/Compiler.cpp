@@ -116,9 +116,14 @@ std::string Compiler::Error(short N)
 	return ErrMsg;
 }
 
-void Compiler::SetInpStr(std::string& s)
+void Compiler::SetInpStr(std::string& s, int32_t license_nr, bool decode)
 {
-	input_string = s;
+	if (decode) {
+		input_string = Coding::CodingString(license_nr, s);
+	}
+	else {
+		input_string = s;
+	}
 
 	if (input_string.empty()) ForwChar = 0x1A;
 	else ForwChar = input_string[0];
@@ -145,7 +150,7 @@ void Compiler::SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 	std::string raw_data = file_d->FF->TF->Read(Pos);
 
 	if (Decode) {
-		input_string = Coding::CodingString(file_d, raw_data);
+		input_string = Coding::CodingString(file_d->FF->TF->LicenseNr, raw_data);
 	}
 	else {
 		input_string = raw_data;
@@ -170,14 +175,14 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	Record* rec = new Record(rdb->v_files[0]);
 
 	rdb->v_files[0]->ReadRec(rdb_pos->i_rec, rec);
-	int pos;
+	std::string src;
 	if (FromTxt) {
-		pos = rdb->v_files[0]->loadT(ChptTxt, rec);
+		src = rec->LoadS(ChptTxt->Name);
 	}
 	else {
-		pos = rdb->v_files[0]->loadT(ChptOldTxt, rec);
+		src = rec->LoadS(ChptOldTxt->Name);
 	}
-	SetInpTTPos(rdb->v_files[0], pos, rdb->Encrypted);
+	SetInpStr(src, ChptTF->LicenseNr, rdb->Encrypted);
 
 	delete rec; rec = nullptr;
 }

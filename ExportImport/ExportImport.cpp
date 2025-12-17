@@ -141,7 +141,8 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 						record->SaveS(F->Name, x);
 					}
 					else {
-						file_d->saveT(F, 0, record);
+						//file_d->saveT(F, 0, record);
+						record->SaveS(F->Name, "");
 					}
 					break;
 				}
@@ -168,7 +169,8 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 
 			switch (F->field_type) {
 			case FieldType::FIXED: {
-				r = file_d->loadR(F, record);
+				//r = file_d->loadR(F, record);
+				r = record->LoadR(F->Name);
 				if ((F->Flg & f_Comma) != 0) r = r / Power10[F->M];
 				str(r, F->L, F->M, s);
 				if (s.length() > F->L) {
@@ -187,7 +189,8 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::ALFANUM: {
-				s = file_d->loadS(F, record);
+				//s = file_d->loadS(F, record);
+				s = record->LoadS(F->Name);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, ' ');
 					else s = LeadChar(' ', s);
@@ -201,7 +204,8 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::NUMERIC: {
-				s = file_d->loadS(F, record);
+				//s = file_d->loadS(F, record);
+				s = record->LoadS(F->Name);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, '0');
 					else s = LeadChar('0', s);
@@ -210,7 +214,8 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 			}
 			case FieldType::DATE:
 			case FieldType::REAL: {
-				r = file_d->loadR(F, record);
+				//r = file_d->loadR(F, record);
+				r = record->LoadR(F->Name);
 				if ((r == 0.0) && (Opt == CpOption::cpVar)) s = "";
 				else if (F->field_type == FieldType::REAL) str(r, F->L, s);
 				else {
@@ -220,13 +225,13 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::BOOL: {
-				if (file_d->loadB(F, record)) s = 'A';
+				if (record->LoadB(F->Name)) s = 'A';
 				else s = 'N';
 				break;
 			}
 			case FieldType::TEXT: {
 				if (Opt == CpOption::cpVar) {
-					std::string xs = file_d->loadS(F, record);
+					std::string xs = record->LoadS(F->Name); //file_d->loadS(F, record);
 					F2->WrString(xs, true);
 					// delete x;
 				}
@@ -272,8 +277,8 @@ void ImportTxt(CopyD* CD)
 			md = f->FF->RewriteFile(CD->Append);
 
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
-			f->ZeroAllFlds(rec, false);
-			f->ClearDeletedFlag(rec->GetRecord());
+			rec->Reset(); //f->ZeroAllFlds(rec, false);
+			rec->ClearDeleted(); //f->ClearDeletedFlag(rec->GetRecord());
 			VarFixImp(f, rec, F1, CD->Opt1);
 			F1->ForwChar(); //{set IsEOF at End}
 #ifdef FandSQL
@@ -326,7 +331,7 @@ void ExportTxt(CopyD* CD)
 		if (CD->HdFD != nullptr) {
 			int n = 0;
 			rec = CD->HdFD->LinkLastRec(n);
-			pstring s = CD->HdFD->loadS(CD->HdF, rec);
+			pstring s = rec->LoadS(CD->HdF->Name); //CD->HdFD->loadS(CD->HdF, rec);
 			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);

@@ -12,7 +12,7 @@ public:
 	void SetInput(std::string& input);
 	void SetInput(std::string& s, bool ShowErr);
 	void SetInput(RdbPos* rdb_pos, bool FromTxt);
-	void SetInput(FileD* file_d, int Pos, bool Decode);
+	void SetInput(std::string& s, int32_t license_nr, bool decode);
 
 protected:
 	MergeReportBase();

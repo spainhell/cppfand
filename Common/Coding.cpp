@@ -20,9 +20,9 @@ void Coding::Code(void* data, size_t length)
 	}
 }
 
-std::string Coding::CodingString(FileD* file_d, const std::string& S)
+std::string Coding::CodingString(int32_t license_number, const std::string& S)
 {
-	if (file_d->FF->TF->LicenseNr == 0) {
+	if (license_number /*file_d->FF->TF->LicenseNr*/ == 0) {
 		return Code(S);
 	}
 	else {

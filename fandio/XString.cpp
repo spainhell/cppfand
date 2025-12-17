@@ -8,6 +8,7 @@
 #include "../Core/runfrml.h"
 #include "../Common/realDouble.h"
 #include "../Common/CommonVariables.h"
+#include "../Common/Record.h"
 
 void XString::Clear()
 {
@@ -87,15 +88,15 @@ void XString::StoreKF(FileD* file_d, KeyFldD* KF, Record* record)
 	FieldDescr* F = KF->FldD;
 	switch (F->frml_type) {
 	case 'S': {
-		StoreStr(file_d->loadS(F, record), KF);
+		StoreStr(record->LoadS(F->Name), KF);
 		break;
 	}
 	case 'R': {
-		StoreReal(file_d->loadR(F, record), KF);
+		StoreReal(record->LoadR(F->Name), KF);
 		break;
 	}
 	case 'B': {
-		StoreBool(file_d->loadB(F, record), KF);
+		StoreBool(record->LoadB(F->Name), KF);
 		break;
 	}
 	}

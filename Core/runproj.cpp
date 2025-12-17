@@ -43,7 +43,8 @@ struct RdbRecVars
 	char Typ = 0;
 	std::string Name;
 	std::string Ext;
-	int Txt = 0; int OldTxt = 0;
+	std::string Txt; 
+	std::string OldTxt;
 	FandFileType FTyp = FandFileType::UNKNOWN;
 	int CatIRec = 0;
 	bool isSQL = false;
@@ -114,7 +115,7 @@ bool NetFileTest(RdbRecVars* X)
 
 void GetSplitChapterName(FileD* file_d, Record* record, std::string& name, std::string& ext)
 {
-	std::string chapter_name = file_d->loadS(ChptName, record);
+	std::string chapter_name = record->LoadS(ChptName->Name);
 	name = TrailChar(chapter_name, ' ');
 	const size_t i = name.find('.');
 	if (i == std::string::npos) {
@@ -128,44 +129,36 @@ void GetSplitChapterName(FileD* file_d, Record* record, std::string& name, std::
 
 void GetRdbRecVars(const EditD* edit, Record* record, RdbRecVars* X)
 {
-	uint8_t* p = nullptr;
-	uint8_t* p2 = nullptr;
-	//void* cr = nullptr;
-
-	//cr = CRecPtr;
-	//CRecPtr = record;
 	FileD* file_d = edit->FD;
-	std::string s1 = file_d->loadS(ChptTyp, record);
+	std::string s1 = record->LoadS(ChptTyp->Name);
 	X->Typ = s1[0];
 	GetSplitChapterName(file_d, record, X->Name, X->Ext);
-	X->Txt = file_d->loadT(ChptTxt, record);
-	X->OldTxt = file_d->loadT(ChptOldTxt, record);
+	X->Txt = record->LoadS(ChptTxt->Name);
+	X->OldTxt = record->LoadS(ChptOldTxt->Name);
+	
 	if (X->Typ == 'F') {
 		X->FTyp = ExtToTyp(X->Ext);
 		X->CatIRec = catalog->GetCatalogIRec(X->Name, false);
 		X->isSQL = false;
-		if (X->OldTxt != 0) {
-			MarkBoth(p, p2);
-			if (RdFDSegment(0, X->OldTxt)) {
-				X->FTyp = file_d->FF->file_type;
-				if (file_d->IsSQLFile) {
-					X->Ext = ".SQL";
-				}
-				else if (file_d->FileType == DataFileType::DBF) {
-					X->Ext = ".DBF";
-				}
-				else {
-					switch (X->FTyp) {
-					case FandFileType::RDB: X->Ext = ".RDB"; break;
-					case FandFileType::FAND8: X->Ext = ".DTA"; break;
-					default: X->Ext = ".000"; break;
-					}
-				}
-			}
-			//CFile = Chpt;
-			ReleaseStore(&p);
-			ReleaseStore(&p2);
-		}
+		// !!! RdFDSegment returns always FALSE:
+		//if (!X->OldTxt.empty()) {
+		//	if (RdFDSegment(0, X->OldTxt)) {
+		//		X->FTyp = file_d->FF->file_type;
+		//		if (file_d->IsSQLFile) {
+		//			X->Ext = ".SQL";
+		//		}
+		//		else if (file_d->FileType == DataFileType::DBF) {
+		//			X->Ext = ".DBF";
+		//		}
+		//		else {
+		//			switch (X->FTyp) {
+		//			case FandFileType::RDB: X->Ext = ".RDB"; break;
+		//			case FandFileType::FAND8: X->Ext = ".DTA"; break;
+		//			default: X->Ext = ".000"; break;
+		//			}
+		//		}
+		//	}
+		//}
 #ifdef FandSQL
 		if (X->Ext == ".SQL") X->isSQL = true;
 #endif
@@ -189,7 +182,7 @@ bool ChptDelFor(EditD* edit, RdbRecVars* X)
 		break;
 	}
 	case 'F': {
-		if (X->OldTxt == 0) {
+		if (X->OldTxt.empty()) {
 			result = true;
 			break; /*don't delete if the record is new*/
 		}
@@ -307,7 +300,8 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		return result;
 	}
 	if (!data_editor->TestIsNewRec()) {
-		eq = CompArea(&(data_editor->GetRecord()->GetRecord())[2], &(data_editor->GetOriginalRecord()->GetRecord())[2], edit->FD->FF->RecLen - 2);
+		//eq = CompArea(&(data_editor->GetRecord()->GetRecord())[2], &(data_editor->GetOriginalRecord()->GetRecord())[2], edit->FD->FF->RecLen - 2);
+		eq = Record::Compare(data_editor->GetRecord(), data_editor->GetOriginalRecord());
 		if (eq == _equ) {
 			return result;
 		}
@@ -327,7 +321,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		}
 	}
 	else if (New.Typ != ' ')
-		if (!gc->IsIdentifStr(New.Name) || (New.Typ != 'F') && (New.Ext != "")) {
+		if (!gc->IsIdentifStr(New.Name) || (New.Typ != 'F') && (!New.Ext.empty())) {
 			WrLLF10Msg(138);
 			return result;
 		}
@@ -344,7 +338,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 			WrLLF10Msg(1068);
 			return result;
 		}
-		if ((New.FTyp == FandFileType::RDB) && (New.Txt != 0)) {
+		if ((New.FTyp == FandFileType::RDB) && (!New.Txt.empty())) {
 			WrLLF10Msg(1083);
 			return result;
 		}
@@ -367,7 +361,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(edit, &Old)) return result;
-		edit->FD->saveT(ChptOldTxt, 0, data_editor->GetRecord());
+		data_editor->GetRecord()->SaveS(ChptOldTxt->Name, ""); // edit->FD->saveT(ChptOldTxt, 0, data_editor->GetRecord());
 		if (New.Typ == 'F') {
 			ReleaseFilesAndLinksAfterChapter(edit);
 		}
@@ -384,14 +378,14 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 				ChptTF->CompileProc = true;
 			}
 		}
-		if ((New.Typ == 'R') && (New.Txt == 0)) {
+		if ((New.Typ == 'R') && (New.Txt.empty())) {
 			ReleaseFilesAndLinksAfterChapter(edit);
 		}
 		goto label2;
 	}
 	ReleaseFilesAndLinksAfterChapter(edit);
 	SetCompileAll();
-	if ((New.OldTxt != 0) && (New.Name != Old.Name)) {
+	if ((!New.OldTxt.empty()) && (New.Name != Old.Name)) {
 		if (Old.CatIRec != 0) {
 			catalog->SetFileName(Old.CatIRec, New.Name);
 		}
@@ -402,15 +396,10 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		}
 	}
 label2:
-	edit->FD->saveB(ChptVerif, true, data_editor->GetRecord());
+	data_editor->GetRecord()->SaveB(ChptVerif->Name, true);
 	result = 0;
 	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 	return result;
-}
-
-bool RdFDSegment(WORD FromI, int Pos)
-{
-	return false;
 }
 
 WORD FindHelpRecNr(FileD* FD, std::string& txt)
@@ -431,7 +420,7 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 		std::string nm = TrailChar(NmFtext, ' ');
 		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
-			while ((i < FD->FF->NRecs) && (FD->loadT(TxtF, record) == 0)) {
+			while ((i < FD->FF->NRecs) && (record->LoadS(TxtF->Name).empty())) {
 				i++;
 				FD->FF->ReadRec(i, record);
 			}
@@ -527,36 +516,35 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 {
 	uint8_t* p = nullptr;
-	WORD LicNr = ChptTF->LicenseNr;
-	int oldpos = Chpt->loadT(F, Chpt->FF->RecPtr);
+	std::string oldpos = Chpt->FF->RecPtr->LoadS(F->Name);
 	MarkStore(p);
 
 	if (CRdb->Encrypted) {
-		if (LicNr != 0) {
+		if (ChptTF->LicenseNr != 0) {
 			//Coding::XEncode(S, s2);
 			text = Coding::XEncode(text);
 		}
 		else {
-			text = Coding::CodingString(Chpt, text);
+			text = Coding::CodingString(ChptTF->LicenseNr, text);
 		}
 	}
 	// this Del has been changed - is it right?
 	if (Del) {
-		if (LicNr == 0) {
+		if (ChptTF->LicenseNr == 0) {
 			ChptTF->Delete(oldpos);
 		}
 		else if (oldpos != 0) {
-			ChptTF->Delete(oldpos - LicNr);
+			ChptTF->Delete(oldpos - ChptTF->LicenseNr);
 		}
 	}
 
 	const int pos = ChptTF->Store(text);
 
-	if (LicNr == 0) {
+	if (ChptTF->LicenseNr == 0) {
 		Chpt->saveT(F, pos, Chpt->FF->RecPtr);
 	}
 	else {
-		Chpt->saveT(F, pos + LicNr, Chpt->FF->RecPtr);
+		Chpt->saveT(F, pos + ChptTF->LicenseNr, Chpt->FF->RecPtr);
 	}
 
 	ReleaseStore(&p);
@@ -781,7 +769,7 @@ FileD* FindFD(Record* record)
 	std::string d;
 	std::string name;
 	std::string ext;
-	std::string FName = OldTrailChar(' ', Chpt->loadS(ChptName, record));
+	std::string FName = OldTrailChar(' ', record->LoadS(ChptName->Name));
 	FSplit(FName, d, name, ext);
 
 	//FileD* FD = FileDRoot;
@@ -841,7 +829,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 		uw = false;
 		mv = MausVisible;
 		Record* rdb_record = rdb_editor->GetRecord();
-		const char STyp = rdb_editor->GetFileD()->loadS(ChptTyp, rdb_record)[0];
+		const char STyp = rdb_record->LoadS(ChptTyp->Name)[0];
 		RP.rdb = CRdb;
 		RP.i_rec = rdb_editor->CRec();
 #ifdef FandSQL
@@ -1010,8 +998,10 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 		if (WasError) {
 			return result;
 		}
-		rdb_editor->GetFileD()->saveB(ChptVerif, false, rdb_editor->GetRecord());
-		rdb_editor->GetFileD()->WriteRec(rdb_editor->CRec(), rdb_editor->GetRecord());
+		FileD* file_d = rdb_editor->GetFileD();
+		Record* rec = rdb_editor->GetRecord();
+		rec->SaveB(ChptVerif->Name, false);
+		file_d->WriteRec(rdb_editor->CRec(), rec);
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
 		}
@@ -1140,8 +1130,10 @@ FileD* RdF(FileD* file_d, std::string FileName)
 		gc->SetInpStr(s);
 	}
 	else {
-		int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
-		gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
+		//int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
+		//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
+		std::string source = file_d->FF->RecPtr->LoadS(ChptTxt->Name);
+		gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted);
 	}
 
 	if (EquUpCase(ext, ".DBF")) {
@@ -1158,8 +1150,11 @@ FileD* RdOldF(FileD* file_d, const std::string& file_name)
 	FSplit(file_name, d, name, ext);
 	FandFileType FDTyp = ExtToTyp(ext);
 
-	int pos = file_d->loadT(ChptOldTxt, file_d->FF->RecPtr);
-	gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
+	//int pos = file_d->loadT(ChptOldTxt, file_d->FF->RecPtr);
+	//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
+
+	std::string source = file_d->FF->RecPtr->LoadS(ChptOldTxt->Name);
+	gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted);
 
 	if (EquUpCase(ext, ".DBF")) {
 		return RdFileD(name, DataFileType::DBF, FDTyp, ext);
@@ -1341,7 +1336,8 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	log->log(loglevel::DEBUG, "starting CompileRdb()");
 	CHAR_INFO Buf[40];
 	int w = 0;
-	int I = 0, J = 0, OldTxt = 0, Txt = 0;
+	int I = 0, J = 0, OldTxt = 0;
+	std::string Txt;
 	//int OldCRec = 0;
 	std::string STyp;
 	char Typ = '\0';
@@ -1385,11 +1381,13 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 		for (I = 1; I <= rdb_file->FF->NRecs; I++) {
 			rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
 			RP.i_rec = I;
-			Verif = rdb_file->loadB(ChptVerif, rdb_file->FF->RecPtr);
-			STyp = rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr);
+			//Verif = rdb_file->loadB(ChptVerif, rdb_file->FF->RecPtr);
+			Verif = rdb_file->FF->RecPtr->LoadB(ChptVerif->Name);
+			//STyp = rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr);
+			STyp = rdb_file->FF->RecPtr->LoadS(ChptTyp->Name);
 			Typ = STyp[0];
-			Name = OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr));
-			Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
+			Name = OldTrailChar(' ', rdb_file->FF->RecPtr->LoadS(ChptName->Name));
+			Txt = rdb_file->FF->RecPtr->LoadS(ChptTxt->Name);
 			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) {
 				// verify mode and encrypted or read only RDB
 				gc->GoCompileErr(I, 647);
@@ -1406,13 +1404,14 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				if (IsTestRun) {
 					ClrScr(TextAttr);
 					screen.ScrFormatWrText(3 + lmsg, 2, "%*i", 4, I);
-					screen.ScrFormatWrText(3 + lmsg, 3, "%*s%*s", 4, STyp.c_str(), 14, rdb_file->loadS(ChptName, rdb_file->FF->RecPtr).c_str());
+					std::string chptNameTxt = rdb_file->FF->RecPtr->LoadS(ChptName->Name);
+					screen.ScrFormatWrText(3 + lmsg, 3, "%*s%*s", 4, STyp.c_str(), 14, chptNameTxt.c_str());
 
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 						for (J = 1; J <= I - 1; J++) {
 							rdb_file->ReadRec(J, rdb_file->FF->RecPtr);
-							if ((STyp == rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr))
-								&& EquUpCase(Name, OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr)))) {
+							if ((STyp == rdb_file->FF->RecPtr->LoadS(ChptTyp->Name))
+								&& EquUpCase(Name, OldTrailChar(' ', rdb_file->FF->RecPtr->LoadS(ChptName->Name)))) {
 								gc->GoCompileErr(I, 649);
 							}
 						}
@@ -1425,17 +1424,17 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					std::deque<LinkD*> ld = LinkDRoot;
 					MarkStore(p1);
 					FSplit(Name, dir, nm, ext);
-					if ((Txt == 0) && IsTestRun) {
+					if ((Txt.empty()) && IsTestRun) {
 						SetMsgPar(Name);
 						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
-							rdb_file->saveT(ChptOldTxt, 0, rdb_file->FF->RecPtr);
+							rdb_file->FF->RecPtr->SaveS(ChptOldTxt->Name, "");
 							OldTxt = 0;
 
 							std::unique_ptr<DbfFile> dbf_file = std::make_unique<DbfFile>(nullptr);
 							dbf_file->MakeDbfDcl(nm);
 
-							Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
-							rdb_file->FF->WriteRec(I, rdb_file->FF->RecPtr);
+							Txt = rdb_file->FF->RecPtr->LoadS(ChptTxt->Name);
+							rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 						}
 					}
 #ifndef FandSQL
@@ -1444,7 +1443,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					}
 #endif
 					// get position of old chapter code
-					int old_txt_pos = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
+					std::string old_txt = rdb_file->FF->RecPtr->LoadS(ChptOldTxt->Name);
 
 					p1 = RdF(rdb_file, Name);
 					CRdb->v_files.push_back(p1);
@@ -1452,16 +1451,16 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						CRdb->help_file = p1;
 					}
 
-					if (Verif || ChptTF->CompileAll || old_txt_pos == 0) {
+					if (Verif || ChptTF->CompileAll || old_txt.empty()) {
 						if (!Encryp) {
 							// get last successfully compiled code
-							std::string old_chapter_code = rdb_file->loadS(ChptOldTxt, rdb_file->FF->RecPtr);
+							std::string old_chapter_code = rdb_file->FF->RecPtr->LoadS(ChptOldTxt->Name);
 							// get current chapter code
-							std::string chapter_code = rdb_file->loadS(ChptTxt, rdb_file->FF->RecPtr);
+							std::string chapter_code = rdb_file->FF->RecPtr->LoadS(ChptTxt->Name);
 
 							// compare old and new chapter code
 							if (old_chapter_code != chapter_code) {
-								if (!ChptTF->CompileAll && old_txt_pos != 0) {
+								if (!ChptTF->CompileAll && !old_txt.empty()) {
 									FileD* previous_decl = RdOldF(rdb_file, Name);
 									// TODO: should this file be added into CRdb->v_files?
 
@@ -1472,7 +1471,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 									if (merged) {
 										// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
-										rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
+										rdb_file->FF->RecPtr->SaveS(ChptOldTxt->Name, chapter_code);
 										rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 									}
 									else {
@@ -1481,7 +1480,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 								}
 								else {
 									// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
-									rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
+									rdb_file->FF->RecPtr->SaveS(ChptOldTxt->Name, chapter_code);
 									rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 								}
 							}
@@ -1509,24 +1508,24 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				}
 				case 'M': {
 					const std::unique_ptr merge = std::make_unique<Merge>();
-					merge->SetInput(rdb_file, Txt, Encryp);
+					merge->SetInput(Txt, ChptTF->LicenseNr, Encryp);
 					merge->Read();
 					break;
 				}
 				case 'R': {
-					if (Txt == 0 && IsTestRun) {
+					if (Txt.empty() && IsTestRun) {
 						const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
 						RprtTxt = auto_report->SelGenRprt(Name);
 						//CFile = Chpt;
 						if (RprtTxt.empty()) {
 							gc->GoCompileErr(I, 1145);
 						}
-						rdb_file->saveS(ChptTxt, RprtTxt, rdb_file->FF->RecPtr);
+						rdb_file->FF->RecPtr->SaveS(ChptTxt->Name, RprtTxt);
 						rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 					}
 					else {
 						const std::unique_ptr report = std::make_unique<Report>();
-						report->SetInput(rdb_file, Txt, Encryp);
+						report->SetInput(Txt, ChptTF->LicenseNr, Encryp);
 						report->Read(nullptr);
 					}
 					break;
@@ -1545,7 +1544,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						lstFDindex = CRdb->v_files.size() - 1;
 					}
 					std::deque<LinkD*> ld = LinkDRoot;
-					gc->SetInpTTPos(rdb_file, Txt, Encryp);
+					gc->SetInpStr(Txt, rdb_file->FF->TF->LicenseNr, Encryp);
 					ReadProcHead(gc, Name);
 					ReadProcBody(gc);
 					//lstFD->pChain = nullptr;
@@ -1569,9 +1568,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					if (!rdb_top || (I > 1)) {
 						gc->GoCompileErr(I, 623);
 					}
-					if (Txt != 0) {
+					if (!Txt.empty()) {
 						gc->ResetCompilePars();
-						gc->SetInpTTPos(rdb_file, Txt, Encryp);
+						gc->SetInpStr(Txt, ChptTF->LicenseNr, Encryp);
 						RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0));
 						MarkStore(p1);
 					}
@@ -1579,7 +1578,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				}
 				case 'D': {
 					gc->ResetCompilePars();
-					gc->SetInpTTPos(rdb_file, Txt, Encryp);
+					gc->SetInpStr(Txt, ChptTF->LicenseNr, Encryp);
 					ReadDeclChpt(gc);
 					MarkStore(p1);
 					break;
@@ -1600,7 +1599,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			//CRecPtr = v_files->FF->RecPtr;
 			if (Verif) {
 				rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
-				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr);
+				rdb_file->FF->RecPtr->SaveB(ChptVerif->Name, false);
 				rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 			}
 		}
@@ -1671,7 +1670,7 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 	}
 	data_editor->CFld = data_editor->GetEditD()->GetEFldIter(data_editor->GetEditD()->LastFld);
 	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
-	data_editor->GetFileD()->saveR(ChptTxtPos, gc->input_pos, data_editor->GetRecord());
+	data_editor->GetRecord()->SaveR(ChptTxtPos->Name, gc->input_pos);
 	data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
 	data_editor->EditFreeTxt(ChptTxt, s, true, Brk);
 }
@@ -1967,18 +1966,17 @@ void UpdateUTxt()
 		return;
 	}
 	Chpt->FF->ReadRec(1, Chpt->FF->RecPtr);
-	if (Chpt->loadS(ChptTyp, Chpt->FF->RecPtr) != "U") {
+	if (Chpt->FF->RecPtr->LoadS(ChptTyp->Name) != "U") {
 		WrLLF10Msg(9);
 		return;
 	}
 	int w = PushW(1, 1, TxtCols, TxtRows - 1);
 	size_t TxtPos = 1;
 	TextAttr = screen.colors.tNorm;
-	int OldPos = Chpt->loadT(ChptTxt, Chpt->FF->RecPtr);
-	std::string s = Chpt->loadS(ChptTxt, Chpt->FF->RecPtr);
+	std::string s = Chpt->FF->RecPtr->LoadS(ChptTxt->Name);
 
 	if (CRdb->Encrypted) {
-		s = Coding::CodingString(Chpt, s);
+		s = Coding::CodingString(ChptTF->LicenseNr, s);
 	}
 
 	gc->SetInpStdStr(s, false);

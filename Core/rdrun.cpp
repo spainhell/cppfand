@@ -95,7 +95,7 @@ Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record
 	else {
 		// cond. for FandSQL removed
 		Record* r = add_d->File2->LinkLastRec(n);
-		
+
 		if (r == nullptr) {
 			r = new Record(add_d->File2);
 			file_d->IncNRecs(1);
@@ -192,12 +192,7 @@ bool Assign(FileD* file_d, Additive* add_d, Record* record)
 		break;
 	}
 	case 'S': {
-		if (f->field_type == FieldType::TEXT) {
-			s = RunString(file_d, z, record);
-		}
-		else {
-			s = RunString(file_d, z, record);
-		}
+		s = RunString(file_d, z, record);
 		break;
 	}
 	default: {
@@ -215,26 +210,24 @@ bool Assign(FileD* file_d, Additive* add_d, Record* record)
 	else {
 		switch (f->frml_type) {
 		case 'R': {
-			add_d->File2->saveR(f, r, linked);
+			//add_d->File2->saveR(f->Name, r, linked);
+			linked->SaveR(f->Name, r);
 			break;
 		}
 		case 'S': {
-			if (f->field_type == FieldType::TEXT) {
-				add_d->File2->saveS(f, s, linked);
-			}
-			else {
-				add_d->File2->saveS(f, s, linked);
-			}
+			//add_d->File2->saveS(f->Name, s, linked);
+			linked->SaveS(f->Name, s);
 			break;
 		}
 		default: {
-			add_d->File2->saveB(f, b, linked);
+			//add_d->File2->saveB(f->Name, b, linked);
+			linked->SaveB(f->Name, b);
 			break;
 		}
 		}
-		
+
 		add_d->File2->WriteRec(n2, linked);
-		
+
 		delete linked; linked = nullptr;
 		return true;
 	}

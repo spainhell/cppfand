@@ -198,9 +198,9 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 		case MInstrCode::_zero: {
 			FieldDescr* F = a->outputFldD;
 			switch (F->frml_type) {
-			case 'S': { FD1->saveS(F, "", RP1); break; }
-			case 'R': { FD1->saveR(F, 0.0, RP1); break; }
-			default: { FD1->saveB(F, false, RP1); break; }
+			case 'S': { RP1->SaveS(F->Name, ""); break; }
+			case 'R': { RP1->SaveR(F->Name, 0.0); break; }
+			case 'B': { RP1->SaveB(F->Name, false); break; }
 			}
 			break;
 		}
@@ -212,7 +212,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 		}
 	}
 
-	FD1->SetRecordUpdateFlag(RP1->GetRecord());
+	RP1->SetUpdated(); //FD1->SetRecordUpdateFlag(RP1->GetRecord());
 }
 
 void AssignRecFld(Instr_assign* PD)
@@ -343,9 +343,10 @@ void DisplayProc(RdbD* R, WORD IRec)
 	else {
 		FileD* f = R->v_files[0];
 		Record* rec = Chpt->FF->RecPtr;
-		f->FF->ReadRec(IRec, rec);
-		int pos = f->loadT(ChptTxt, rec);
-		str = f->FF->TF->Read(pos);
+		f->ReadRec(IRec, rec);
+		//int pos = f->loadT(ChptTxt, rec);
+		//str = f->FF->TF->Read(pos);
+		str = rec->LoadS(ChptTxt->Name);
 		if (R->Encrypted) {
 			str = Coding::CodingString(f, str);
 		}
@@ -573,7 +574,7 @@ void AppendRecProc(FileD* file_d)
 {
 	LockMode md = file_d->NewLockMode(CrMode);
 	Record* record = new Record(file_d);
-	file_d->ZeroAllFlds(record, false);
+	record->Reset(); //file_d->ZeroAllFlds(record, false);
 	record->SetDeleted();
 	file_d->CreateRec(file_d->FF->NRecs + 1, record);
 	delete record; record = nullptr;
@@ -583,7 +584,7 @@ void AppendRecProc(FileD* file_d)
 void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data)
 {
 	Record* old_data = new Record(file_d);
-	file_d->FF->ReadRec(rec_nr, old_data);
+	file_d->ReadRec(rec_nr, old_data);
 
 	const bool deleted = old_data->IsDeleted();
 
@@ -596,16 +597,16 @@ void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data)
 		}
 	}
 
-	if (file_d->FF->file_type == FandFileType::INDEX) {
+	if (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::INDEX) {
 		file_d->FF->OverWrXRec(rec_nr, old_data, new_data, new_data);
 	}
 	else {
-		file_d->FF->WriteRec(rec_nr, new_data);
+		file_d->WriteRec(rec_nr, new_data);
 	}
 
-	if (!deleted) {
-		file_d->DelAllDifTFlds(old_data, nullptr);
-	}
+	//if (!deleted) {
+	//	file_d->DelAllDifTFlds(old_data, nullptr);
+	//}
 
 	delete old_data; old_data = nullptr;
 }
@@ -660,7 +661,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				if (IsRead) {
 				label0:
 					//CFile->DelTFlds(CRecPtr);
-					lv->FD->ZeroAllFlds(lv->record, true);
+					// TODO: how to delete T records?:
+					lv->record->Reset(); //lv->FD->ZeroAllFlds(lv->record, true);
 					delete record1; record1 = nullptr;
 					lv->FD->OldLockMode(md);
 					return;
@@ -680,7 +682,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		else if (!lv->FD->SearchXKey(k, x, N)) {
 			if (IsRead) {
 				//CFile->DelTFlds(CRecPtr);
-				lv->FD->ZeroAllFlds(lv->record, true);
+				// TODO: how to delete T records?:
+				lv->record->Reset(); // lv->FD->ZeroAllFlds(lv->record, true);
 				lv->record->SetDeleted();
 				delete record1; record1 = nullptr;
 				lv->FD->OldLockMode(md);
@@ -882,7 +885,7 @@ label1:
 #endif
 		{
 			FD->OpenCreateF(CPath, Shared);
-			if ((LVr != nullptr) && (LVi == nullptr) && FD->HasRecordUpdateFlag(lr->GetRecord())) {
+			if ((LVr != nullptr) && (LVi == nullptr) && lr->IsUpdated()) {
 				md1 = FD->NewLockMode(WrMode);
 				//FD->CopyRec(lr->GetRecord(), cr->GetRecord(), false);
 				lr->CopyTo(cr);
@@ -1767,8 +1770,8 @@ void CallProcedure(Instr_proc* PD)
 			fd = (*it0)->FD;
 			Record* rec = new Record(fd); //->GetRecSpace();
 			// TODO: !!! fd->SetTWorkFlag(rec->GetRecord());
-			fd->ZeroAllFlds(rec, false);
-			fd->ClearDeletedFlag(rec->GetRecord());
+			rec->Reset(); //fd->ZeroAllFlds(rec, false);
+			rec->ClearDeleted(); //fd->ClearDeletedFlag(rec->GetRecord());
 			(*it0)->record = rec;
 		}
 		else if ((*it0)->f_typ == 'f') {

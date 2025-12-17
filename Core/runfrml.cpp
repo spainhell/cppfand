@@ -1123,7 +1123,7 @@ label1:
 		FrmlElem14* iX = (FrmlElem14*)X;
 		Record* rec = new Record(iX->RecFD);
 		AccRecNoProc(iX, 640, rec);
-		result = iX->RecFD->loadR(iX->RecFldD, rec);
+		result = rec->LoadR(iX->RecFldD->Name);
 		delete rec; rec = nullptr;
 		break;
 	}
@@ -1268,7 +1268,8 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 		//if (file_d->HasTWorkFlag(record)) {
 		//	*TF02 = &TWork; // TODO: is there anything in TWork?: 
 		//}
-		TF02Pos = file_d->loadT(f1, record);
+		// TODO: replace this: 
+		// TF02Pos = file_d->loadT(f1, record);
 		break;
 	}
 	case _getlocvar: {
@@ -1329,8 +1330,9 @@ bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, F
 
 	if (Z->Op == _gettxt) {
 		std::string text = GetTxt(dst_file, (FrmlElem16*)Z, record);
-		dst_file->saveS(F, text, record);
-		pos = dst_file->FF->loadT(F, record->GetRecord());
+		record->SaveS(F->Name, text);
+		// TODO: replace this:
+		//pos = dst_file->FF->loadT(F, record->GetRecord());
 		result = true;
 	}
 	else if (CanCopyT(dst_file, F, Z, &src_T_file, &src_file, src_T_pos, record)) {
@@ -1375,7 +1377,8 @@ void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add)
 				//if (deleteT && !work) {
 				//	file_d->FF->DelTFld(field_d, record);
 				//}
-				file_d->saveT(field_d, pos, record);
+				// TODO: replace this:
+				// file_d->saveT(field_d, pos, record);
 			}
 			else {
 				std::string s = RunString(file_d, X, record);
@@ -1392,30 +1395,30 @@ void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add)
 					default: break;
 					}
 				}*/
-				file_d->saveS(field_d, s, record);
+				record->SaveS(field_d->Name, s);
 			}
 		}
 		else {
 			std::string s = RunString(file_d, X, record);
-			file_d->saveS(field_d, s, record);
+			record->SaveS(field_d->Name, s);
 		}
 		break;
 	}
 	case 'R': {
 		if (add) {
-			double r1 = file_d->loadR(field_d, record);
+			double r1 = record->LoadR(field_d->Name);
 			double r2 = RunReal(file_d, X, record);
-			file_d->saveR(field_d, r1 + r2, record);
+			record->SaveR(field_d->Name, r1 + r2);
 		}
 		else {
 			double r = RunReal(file_d, X, record);
-			file_d->saveR(field_d, r, record);
+			record->SaveR(field_d->Name, r);
 		}
 		break;
 	}
 	case 'B': {
 		bool b = RunBool(file_d, X, record);
-		file_d->saveB(field_d, b, record);
+		record->SaveB(field_d->Name, b);
 		break;
 	}
 	default:;
@@ -1517,13 +1520,13 @@ std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, Record* record)
 	bool b = false;
 	switch (F->frml_type) {
 	case 'R': {
-		r = file_d->loadR(F, record);
+		r = record->LoadR(F->Name);
 		break;
 	}
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
 			std::string txt;
-			if (F->isStored() && (file_d->loadR(F, record) == 0.0)) {
+			if (F->isStored() && (record->LoadR(F->Name) == 0.0)) {
 				txt = ".";
 			}
 			else {
@@ -1532,12 +1535,12 @@ std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, Record* record)
 			return txt;
 		}
 		else {
-			s = file_d->loadS(F, record);
+			s = record->LoadS(F->Name);
 		}
 		break;
 	}
 	default: {
-		b = file_d->loadB(F, record);
+		b = record->LoadB(F->Name);
 		break;
 	}
 	}
@@ -1786,7 +1789,7 @@ label1:
 		FrmlElem14* iX = (FrmlElem14*)X;
 		Record* rec = new Record(iX->RecFD);
 		AccRecNoProc(iX, 640, rec);
-		result = iX->RecFD->loadS(iX->RecFldD, rec);
+		result = rec->LoadS(iX->RecFldD->Name); //iX->RecFD->loadS(iX->RecFldD, rec);
 		delete rec; rec = nullptr;
 		break;
 	}

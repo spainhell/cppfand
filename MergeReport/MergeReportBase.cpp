@@ -22,9 +22,9 @@ void MergeReportBase::SetInput(RdbPos* rdb_pos, bool FromTxt)
 	base_compiler->SetInpTT(rdb_pos, FromTxt);
 }
 
-void MergeReportBase::SetInput(FileD* file_d, int Pos, bool Decode)
+void MergeReportBase::SetInput(std::string& s, int32_t license_nr, bool decode)
 {
-	base_compiler->SetInpTTPos(file_d, Pos, Decode);
+	base_compiler->SetInpStr(s, license_nr, decode);
 }
 
 MergeReportBase::MergeReportBase()

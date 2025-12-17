@@ -9,7 +9,7 @@ public:
 
 	void static Code(void* data, size_t length);
 
-	[[nodiscard]] std::string static CodingString(FileD* file_d, const std::string& S);
+	[[nodiscard]] std::string static CodingString(int32_t license_number, const std::string& S);
 
 	/// <summary>
 	/// Set password in FandTFile (set field PwCode or Pw2Code)
