@@ -348,7 +348,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 		//str = f->FF->TF->Read(pos);
 		str = rec->LoadS(ChptTxt->Name);
 		if (R->Encrypted) {
-			str = Coding::CodingString(f, str);
+			str = Coding::CodingString(Chpt->FF->TF->LicenseNr, str);
 		}
 	}
 	screen.WriteStyledStringToWindow(str, ProcAttr);

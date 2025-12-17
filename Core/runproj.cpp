@@ -528,24 +528,24 @@ void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 			text = Coding::CodingString(ChptTF->LicenseNr, text);
 		}
 	}
-	// this Del has been changed - is it right?
-	if (Del) {
-		if (ChptTF->LicenseNr == 0) {
-			ChptTF->Delete(oldpos);
-		}
-		else if (oldpos != 0) {
-			ChptTF->Delete(oldpos - ChptTF->LicenseNr);
-		}
-	}
+
+	//if (Del) {
+	//	if (ChptTF->LicenseNr == 0) {
+	//		ChptTF->Delete(oldpos);
+	//	}
+	//	else if (oldpos != 0) {
+	//		ChptTF->Delete(oldpos - ChptTF->LicenseNr);
+	//	}
+	//}
 
 	const int pos = ChptTF->Store(text);
 
-	if (ChptTF->LicenseNr == 0) {
-		Chpt->saveT(F, pos, Chpt->FF->RecPtr);
-	}
-	else {
-		Chpt->saveT(F, pos + ChptTF->LicenseNr, Chpt->FF->RecPtr);
-	}
+	//if (ChptTF->LicenseNr == 0) {
+	//	Chpt->saveT(F, pos, Chpt->FF->RecPtr);
+	//}
+	//else {
+	//	Chpt->saveT(F, pos + ChptTF->LicenseNr, Chpt->FF->RecPtr);
+	//}
 
 	ReleaseStore(&p);
 }

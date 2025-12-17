@@ -721,9 +721,10 @@ void CodingCRdb(EditD* edit, bool rotate)
 
 void AddLicNr(FileD* file_d, FieldDescr* field_d, Record* record)
 {
-	if (file_d->loadT(field_d, record) != 0) {
-		file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record);
-	}
+	//if (file_d->loadT(field_d, record) != 0) {
+	//	file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record);
+	//}
+	throw("Not implemented AddLicNr");
 }
 
 void CopyH(HANDLE H, pstring Nm)
