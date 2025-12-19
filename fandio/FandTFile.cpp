@@ -1,16 +1,14 @@
 #include "FandTFile.h"
 
 #include <memory>
-
 #include "FandTFilePrefix.h"
 #include "../Common/Coding.h"
 #include "../Common/FileD.h"
-#include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
 #include "../Common/random.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
-
+#include "../Core/GlobalVariables.h"
+#include "../Core/obaseww.h"
 
 FandTFile::FandTFile(Fand0File* parent)
 {
@@ -810,4 +808,3 @@ void WrDBaseHd()
 {
 
 }
-

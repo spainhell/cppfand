@@ -13,9 +13,9 @@
 #include "../Common/Record.h"
 
 
-XString OldMXStr;                  /* Merge */
+XString OldMXStr;					/* Merge */
 bool Join;
-bool PrintView;                  /* Report */
+bool PrintView;						/* Report */
 TextFile Rprt;		// puvodne text - souvisi s text. souborem
 
 std::vector<FrmlElemSum*> PFZeroLst;
@@ -136,18 +136,8 @@ bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, Record* RP, Record* new_re
 		return RunAddUpdate(file_d, '+', nullptr, Back, nullptr, nullptr, new_record);
 	}
 	Record* rec = new Record(file_d);
-#ifdef FandSQL
-	// TODO: cele pripadne predelat, po refactoringu uz to nesedi
-	if (CFile->IsSQLFile) {
-		ld = AD->LD; if (ld == nullptr) Strm1->SelectXRec(nullptr, nullptr, _equ, false)
-		else {
-			CFile = v_files; CRecPtr = RP; x.PackKF(ld->Args);
-			CFile = ld->ToFD; CRecPtr = CRold; Strm1->SelectXRec(ld->ToKey, @x, _equ, false)
-		}
-	}
-	else
-#endif
-		file_d->ReadRec(N, rec);
+	// TODO: FandSQL condition removed
+	file_d->ReadRec(N, rec);
 
 	bool result = RunAddUpdate(file_d, 'd', rec, Back, nullptr, nullptr, new_record);
 
@@ -159,17 +149,8 @@ void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, Record* rp, Record* new
 {
 	//XString x;
 	//LinkD* ld;
-#ifdef FandSQL
-	if (CFile->IsSQLFile) {
-		ld = add_d->LD; if (ld = nullptr) Strm1->UpdateXFld(nullptr, nullptr, add_d->Field)
-		else {
-			CFile = fd; CRecPtr = rp; x.PackKF(ld->Args);
-			CFile = ld->ToFD; CRecPtr = new_record; Strm1->UpdateXFld(ld->ToKey, @x, add_d->Field)
-		}
-	}
-	else
-#endif
-		file_d->FF->WriteRec(n, new_record);
+	// TODO: FandSQL condition removed
+	file_d->WriteRec(n, new_record);
 }
 
 bool Assign(FileD* file_d, Additive* add_d, Record* record)

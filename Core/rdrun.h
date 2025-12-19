@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 
 #include "access.h"
 #include "Dependency.h"
@@ -71,7 +70,6 @@ struct EdExitD
 
 struct EFldD
 {
-	//EFldD* ChainBack = nullptr;
 	FieldDescr* FldD = nullptr;
 	std::vector<LogicControl*> Checks;
 	FrmlElem* Impl = nullptr;
@@ -151,10 +149,10 @@ struct TypAndFrml
 };
 
 
-extern XString OldMXStr;                  /* Merge */
+extern XString OldMXStr;	/* Merge */
 
 extern bool Join;
-extern bool PrintView;                  /* Report */
+extern bool PrintView;		/* Report */
 extern TextFile Rprt;		// puvodne text - souvisi s text. souborem
 
 extern std::vector<FrmlElemSum*> PFZeroLst;

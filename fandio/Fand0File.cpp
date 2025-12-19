@@ -96,6 +96,7 @@ size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
+	DelTFlds(rec_nr); // delete all 'T' fields from orig. record first
 	WasWrRec = true;
 	this->_setRecordFromValues(record);
 	size_t result = WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, _buffer);
@@ -216,8 +217,8 @@ void Fand0File::PutRec(Record* record, int& i_rec)
 
 bool Fand0File::loadB(FieldDescr* field_d, uint8_t* record)
 {
-	bool result = false;
-	uint8_t* CP = (uint8_t*)record + field_d->Displ;
+	bool result;
+	uint8_t* CP = record + field_d->Displ;
 
 	if ((*CP == '\0') || (*CP == 0xFF)) { //x0FF is NULL value
 		result = false;
