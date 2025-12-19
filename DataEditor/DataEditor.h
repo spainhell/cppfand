@@ -10,7 +10,7 @@
 
 enum class FieldType;
 class FieldDescr;
-struct EditableField;
+class EditableField;
 
 
 class DataEditor {

@@ -1,6 +1,7 @@
 #include "EditReader.h"
 
 #include <algorithm>
+#include "EditableField.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Core/LogicControl.h"

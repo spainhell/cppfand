@@ -8,7 +8,7 @@
 #include "../Core/base.h"
 
 class Implicit;
-struct EditableField;
+class EditableField;
 struct ERecTxtD;
 struct EdExitD;
 class LinkD;

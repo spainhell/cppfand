@@ -2,9 +2,10 @@
 #include <memory>
 #include <regex>
 
+#include "EditReader.h"
+#include "EditableField.h"
 #include "../TextEditor/TextEditor.h"
 #include "../TextEditor/EditorHelp.h"
-#include "EditReader.h"
 #include "../Core/LogicControl.h"
 #include "../Core/Compiler.h"
 #include "../Core/EditOpt.h"

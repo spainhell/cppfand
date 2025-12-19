@@ -30,11 +30,6 @@ LocVarBlock LVBD;
 std::string CalcTxt;
 MergOpSt MergOpGroup = { _const, 0.0 };
 
-bool EditableField::Ed(bool IsNewRec)
-{
-	return ((FldD->Flg & f_Stored) != 0) && (EdU || IsNewRec && EdN);
-}
-
 void ResetLVBD()
 {
 	//LVBD.pChain = nullptr;

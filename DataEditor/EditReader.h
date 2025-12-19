@@ -4,7 +4,7 @@
 #include "../fandio/FieldDescr.h"
 #include "../Core/rdrun.h"
 
-struct EditableField;
+class EditableField;
 class EditD;
 
 //extern std::vector<EditD*> v_edits;
