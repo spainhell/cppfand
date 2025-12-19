@@ -651,7 +651,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			if (lv->FD->GetNRecs() == 0) {
 				if (IsRead) {
 				label0:
-					//CFile->DelTFlds(CRecPtr);
+					//CFile->DelAllTFlds(CRecPtr);
 					// TODO: how to delete T records?:
 					lv->record->Reset(); //lv->FD->ZeroAllFlds(lv->record, true);
 					delete record1; record1 = nullptr;
@@ -672,7 +672,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		}
 		else if (!lv->FD->SearchXKey(k, x, N)) {
 			if (IsRead) {
-				//CFile->DelTFlds(CRecPtr);
+				//CFile->DelAllTFlds(CRecPtr);
 				// TODO: how to delete T records?:
 				lv->record->Reset(); // lv->FD->ZeroAllFlds(lv->record, true);
 				lv->record->SetDeleted();
@@ -843,7 +843,7 @@ void ForAllProc(Instr_forall* PD)
 				//CRecPtr = lr;
 				//FD->ClearRecordUpdateFlag(lr->GetRecord());
 				lr->ClearUpdated();
-				//CFile->DelTFlds(lr);
+				//CFile->DelAllTFlds(lr);
 				//FD->CopyRec(cr->GetRecord(), lr->GetRecord(), true);
 				cr->CopyTo(lr);
 

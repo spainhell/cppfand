@@ -25,8 +25,7 @@ bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD
 // bool TryCopyT(FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z);
 void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add);
 void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, Record* record);
-std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B);
-std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, Record* record);
+
 void RunWFrml(FileD* file_d, WRectFrml& X, uint8_t WFlags, WRect& W, Record* record);
 WORD RunWordImpl(FileD* file_d, FrmlElem* Z, WORD Impl, Record* record);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);

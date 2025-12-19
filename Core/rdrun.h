@@ -68,7 +68,7 @@ struct EdExitD
 	/*"Q" quit   #0 dummy*/
 };
 
-struct EFldD
+struct EditableField
 {
 	FieldDescr* FldD = nullptr;
 	std::vector<LogicControl*> Checks;

@@ -4,7 +4,7 @@
 #include "../fandio/FieldDescr.h"
 #include "../Core/rdrun.h"
 
-struct EFldD;
+struct EditableField;
 class EditD;
 
 //extern std::vector<EditD*> v_edits;
@@ -26,11 +26,11 @@ private:
 
 	void StoreRT(WORD Ln, std::vector<std::string>& SL, WORD NFlds);
 	void RdEForm(EditD* edit, RdbPos FormPos);
-	EFldD* FindScanNr(WORD N);
+	EditableField* FindScanNr(WORD N);
 	void AutoDesign(std::vector<FieldDescr*>& FL);
-	EFldD* FindEFld_E(FieldDescr* F);
+	EditableField* FindEFld_E(FieldDescr* F);
 	void ZeroUsed();
-	EFldD* LstUsedFld();
+	EditableField* LstUsedFld();
 	void SetFlag(FieldDescr* F);
 	void SetFrmlFlags(FrmlElem* Z);
 	void ReadDependencies(FileD* file_d);

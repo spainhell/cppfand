@@ -22,10 +22,10 @@ EditD::~EditD()
 	delete DownRecord; DownRecord = nullptr;
 }
 
-std::vector<EFldD*>::iterator EditD::GetEFldIter(EFldD* e_fld)
+std::vector<EditableField*>::iterator EditD::GetEFldIter(EditableField* e_fld)
 {
 	// find e_fld in FirstFld and return it as iterator
-	for (std::vector<EFldD*>::iterator it = FirstFld.begin(); it != FirstFld.end(); ++it) {
+	for (std::vector<EditableField*>::iterator it = FirstFld.begin(); it != FirstFld.end(); ++it) {
 		if (*it == e_fld) {
 			return it;
 		}

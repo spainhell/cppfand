@@ -545,9 +545,9 @@ label2:
 	del = true;
 	iPos = 1;
 	r = 0;
-	if ((Txt.length() == 0) && (Impl != nullptr)) {
+	if ((Txt.empty()) && (Impl != nullptr)) {
 		AssignFld(F, Impl);
-		Txt = DecodeField(file_d_, F, L, current_rec_);
+		Txt = decodeField(F, L, current_rec_);
 	}
 	switch (F->field_type) {
 	case FieldType::FIXED:
@@ -597,7 +597,9 @@ label2:
 		else {
 			while (Txt.length() < L) { Txt = cc + Txt; }
 		}
-		if ((!Msk.empty()) && !TestMask(Txt, Msk)) goto label4;
+		if ((!Msk.empty()) && !TestMask(Txt, Msk)) {
+			goto label4;
+		}
 		break;
 	}
 	case FieldType::DATE: {
@@ -623,31 +625,36 @@ label2:
 }
 
 // can be moved from DataEditor
-void DataEditor::WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R)
+void DataEditor::WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* field, std::string& Txt, double& R)
 {
-	WORD x = 0, y = 0, d = 0, LWw = 0;
-	std::string SS;
+	WORD LWw = 0;
+	std::string s;
 	std::string T;
-	double RR = 0.0;
-	bool BB = false;
+	double r = 0.0;
+	bool b = false;
 	screen.WriteStyledStringToWindow(S, ProcAttr);
-	x = screen.WhereX();
-	y = screen.WhereY();
-	d = WindMax.X - WindMin.X + 1;
-	if (x + F->L - 1 > d) LWw = d - x;
-	else LWw = F->L;
+	int16_t x = screen.WhereX();
+	int16_t y = screen.WhereY();
+	int16_t d = WindMax.X - WindMin.X + 1;
+	
+	if (x + field->L - 1 > d) LWw = d - x;
+	else LWw = field->L;
+	
 	TextAttr = screen.colors.dHili;
+	
 	if (Impl != nullptr) {
-		switch (F->frml_type) {
-		case 'R': RR = RunReal(file_d_, Impl, current_rec_); break;
-		case 'S': SS = RunString(file_d_, Impl, current_rec_); break;
-		default: BB = RunBool(file_d_, Impl, current_rec_); break;
+		switch (field->frml_type) {
+		case 'R': r = RunReal(file_d_, Impl, current_rec_); break;
+		case 'S': s = RunString(file_d_, Impl, current_rec_); break;
+		default: b = RunBool(file_d_, Impl, current_rec_); break;
 		}
-		T = DecodeFieldRSB(F, F->L, RR, SS, BB);
+		T = decodeFieldRSB(field, field->L, r, s, b);
 	}
+	
 	screen.GotoXY(x, y);
-	FieldEdit(F, nullptr, LWw, 1, T, R, true, true, false, 0);
+	FieldEdit(field, nullptr, LWw, 1, T, R, true, true, false, 0);
 	TextAttr = ProcAttr;
+	
 	if (Event.Pressed.KeyCombination() == __ESC) {
 		EscPrompt = true;
 		screen.GotoXY(1, y + 1);
@@ -800,13 +807,6 @@ bool DataEditor::IsSelectedRec(WORD I, Record* record)
 	if ((edit_->SelKey == nullptr) || (I == IRec) && IsNewRec) return result;
 	int n = AbsRecNr(BaseRec + I - 1);
 
-	/*void* cr = record_;
-	if ((I == i_rec) && params_->WasUpdated) {
-		record_ = edit_->OldRecPtr;
-	}
-	result = edit_->SelKey->RecNrToPath(file_d_, x, n, record_);
-	record_ = cr;*/
-
 	if ((I == IRec) && params_->WasUpdated) {
 		result = edit_->SelKey->RecNrToPath(file_d_, x, n, original_rec_);
 	}
@@ -934,7 +934,7 @@ WORD DataEditor::RecAttr(WORD I, Record* record)
 	}
 }
 
-WORD DataEditor::FldRow(EFldD* D, WORD I)
+WORD DataEditor::FldRow(EditableField* D, WORD I)
 {
 	return edit_->FrstRow + edit_->NHdTxt + (I - 1) * RT->N + D->Ln - 1;
 }
@@ -944,7 +944,7 @@ bool DataEditor::HasTTWw(FieldDescr* F)
 	return (F->field_type == FieldType::TEXT) && (F->L > 1) && !edit_->IsUserForm;
 }
 
-void DataEditor::DisplEmptyFld(EFldD* D, WORD I)
+void DataEditor::DisplEmptyFld(EditableField* D, WORD I)
 {
 	char c = '\0';
 
@@ -983,28 +983,28 @@ void DataEditor::Wr1Line(const FieldDescr* field, const Record* record) const
 	}
 }
 
-void DataEditor::DisplFld(EFldD* D, WORD I, uint8_t Color, Record* record)
+void DataEditor::DisplFld(EditableField* D, uint16_t I, uint8_t Color, Record* record)
 {
 	WORD r = FldRow(D, I);
-	FieldDescr* F = D->FldD;
+	FieldDescr* field = D->FldD;
 	screen.GotoXY(D->Col, r);
-	std::string Txt = DecodeField(file_d_, F, D->L, record);
+	std::string Txt = decodeField(field, D->L, record);
 	for (size_t j = 0; j < Txt.length(); j++) {
 		if ((uint8_t)Txt[j] < ' ') {
 			Txt[j] = Txt[j] + 0x40;
 		}
 	}
 	screen.WriteStyledStringToWindow(Txt, Color);
-	if (HasTTWw(F)) {
+	if (HasTTWw(field)) {
 		screen.GotoXY(D->Col + 2, r);
-		Wr1Line(F, record);
+		Wr1Line(field, record);
 	}
 }
 
 // Display a form record
 void DataEditor::DisplayRecord(uint16_t screen_data_row_nr)
 {
-	//EFldD* D = nullptr;
+	//EditableField* D = nullptr;
 	bool NewFlds = false;
 	uint8_t a = edit_->dNorm;
 	int N = BaseRec + screen_data_row_nr - 1;
@@ -1031,7 +1031,7 @@ void DataEditor::DisplayRecord(uint16_t screen_data_row_nr)
 		}
 	}
 
-	for (EFldD* D : edit_->FirstFld) {
+	for (EditableField* D : edit_->FirstFld) {
 		if (is_curr_new_rec && D == *FirstEmptyFld && D->Impl == nullptr) {
 			NewFlds = true;
 		}
@@ -1211,7 +1211,7 @@ bool DataEditor::IsFirstEmptyFld()
 	return IsNewRec && (CFld == FirstEmptyFld);
 }
 
-void DataEditor::SetFldAttr(EFldD* D, WORD I, WORD Attr)
+void DataEditor::SetFldAttr(EditableField* D, WORD I, WORD Attr)
 {
 	screen.ScrColor(D->Col - 1, FldRow(D, I) - 1, D->L, Attr);
 }
@@ -1230,7 +1230,7 @@ void DataEditor::SetRecAttr(WORD I)
 {
 	WORD TA = RecAttr(I, current_rec_);
 
-	for (EFldD* D : edit_->FirstFld) {
+	for (EditableField* D : edit_->FirstFld) {
 		if (D->Page == CPage) {
 			SetFldAttr(D, I, TA);
 		}
@@ -1241,7 +1241,7 @@ void DataEditor::DisplTabDupl()
 {
 	TextAttr = edit_->dTab;
 
-	for (EFldD* D : edit_->FirstFld) {
+	for (EditableField* D : edit_->FirstFld) {
 		if (D->Page == CPage) {
 			const short Col = D->Col + D->L;
 			const short Row = FldRow(D, 1);
@@ -1355,9 +1355,9 @@ void DataEditor::SetNewWwRecAttr()
 void DataEditor::MoveDispl(WORD From, WORD Where, WORD Number)
 {
 	for (WORD i = 1; i <= Number; i++) {
-		//std::vector<EFldD*>::iterator D = edit_->FirstFld;
+		//std::vector<EditableField*>::iterator D = edit_->FirstFld;
 		//while (D != nullptr) {
-		for (EFldD* D : edit_->FirstFld) {
+		for (EditableField* D : edit_->FirstFld) {
 			WORD r1 = FldRow(D, From) - 1;
 			WORD r2 = FldRow(D, Where) - 1;
 			screen.ScrMove(D->Col - 1, r1, D->Col - 1, r2, D->L);
@@ -1795,19 +1795,19 @@ void DataEditor::RefreshSubset()
 	file_d_->OldLockMode(md);
 }
 
-void DataEditor::GotoPrevRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld)
+void DataEditor::GotoPrevRecFld(int NewRec, std::vector<EditableField*>::iterator NewFld)
 {
 	--NewFld;
 	GotoRecFld(NewRec, NewFld);
 }
 
-void DataEditor::GotoNextRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld)
+void DataEditor::GotoNextRecFld(int NewRec, std::vector<EditableField*>::iterator NewFld)
 {
 	++NewFld;
 	GotoRecFld(NewRec, NewFld);
 }
 
-void DataEditor::GotoRecFld(int NewRec, const std::vector<EFldD*>::iterator& NewFld)
+void DataEditor::GotoRecFld(int NewRec, const std::vector<EditableField*>::iterator& NewFld)
 {
 	int NewIRec = 0, NewBase = 0, D = 0, Delta = 0;
 	WORD i = 0, Max = 0; LockMode md;
@@ -2124,7 +2124,7 @@ void DataEditor::UndoRecord()
 		//		file_d_->DelAllDifTFlds(current_rec_, original_rec_);
 		//	}
 		//}
-				
+
 		original_rec_->CopyTo(current_rec_); //memcpy(current_rec_->GetRecord(), original_rec_->GetRecord(), file_d_->FF->RecLen);
 		params_->WasUpdated = false; params_->NoDelTFlds = false;
 		UnLockRec(edit_);
@@ -2305,7 +2305,7 @@ bool DataEditor::DeleteRecProc()
 	return result;
 }
 
-LogicControl* DataEditor::CompChk(EFldD* D, char Typ)
+LogicControl* DataEditor::CompChk(EditableField* D, char Typ)
 {
 	bool w = params_->WarnSwitch && (Typ == 'W' || Typ == '?');
 	bool f = (Typ == 'F' || Typ == '?');
@@ -2811,7 +2811,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 	}
 
 	if (params_->MustCheck) {   /* repeat field checking */
-		std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+		std::vector<EditableField*>::iterator D = edit_->FirstFld.begin();
 		while (D != edit_->FirstFld.end()) {
 			LogicControl* C = CompChk(*D, 'F');
 			if (C != nullptr) {
@@ -2859,7 +2859,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 
 	if (params_->EdRecVar) {
 		// it's a record variable edit - just unlock and exit
-	} 
+	}
 	else {
 		// TODO: FandSQL condition removed
 		if (HasIndex) {   /* test duplicate keys */
@@ -3091,9 +3091,9 @@ bool DataEditor::GotoXRec(XString* PX, int& N)
 	return result;
 }
 
-std::vector<EFldD*>::iterator DataEditor::FindEFld(FieldDescr* F)
+std::vector<EditableField*>::iterator DataEditor::FindEFld(FieldDescr* F)
 {
-	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+	std::vector<EditableField*>::iterator D = edit_->FirstFld.begin();
 	while (D != edit_->FirstFld.end()) {
 		if ((*D)->FldD == F) {
 			break;
@@ -3193,7 +3193,7 @@ bool DataEditor::PromptSearch(bool create)
 	while (KF != K->KFlds.end()) {
 		F = (*KF)->FldD;
 		if (li) {
-			std::vector<EFldD*>::iterator D = FindEFld(F);
+			std::vector<EditableField*>::iterator D = FindEFld(F);
 			if (D != edit_->FirstFld.end()) {
 				GotoRecFld(CRec(), D);
 			}
@@ -3304,7 +3304,7 @@ void DataEditor::PromptGotoRecNr()
 
 void DataEditor::CheckFromHere()
 {
-	std::vector<EFldD*>::iterator D = CFld;
+	std::vector<EditableField*>::iterator D = CFld;
 	int N = CRec();
 	LockMode md = file_d_->NewLockMode(RdMode);
 
@@ -3498,7 +3498,7 @@ bool DataEditor::FldInModeF3Key(FieldDescr* F)
 	return result;
 }
 
-bool DataEditor::IsSkipFld(EFldD* D)
+bool DataEditor::IsSkipFld(EditableField* D)
 {
 	return !D->Tab &&
 		(edit_->NTabsSet > 0 || (D->FldD->Flg & f_Stored) == 0 || params_->OnlySearch && FldInModeF3Key(D->FldD));
@@ -3509,7 +3509,7 @@ bool DataEditor::ExNotSkipFld()
 	bool result = false;
 	if (edit_->NFlds == 1) return result;
 
-	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+	std::vector<EditableField*>::iterator D = edit_->FirstFld.begin();
 	while (D != edit_->FirstFld.end()) {
 		if ((D != CFld) && !IsSkipFld(*D)) {
 			result = true;
@@ -3536,7 +3536,7 @@ bool DataEditor::ProcessEnter(uint16_t mode)
 	char Typ = '\0';
 
 	int OldCRec = CRec();
-	std::vector<EFldD*>::iterator OldCFld = CFld;
+	std::vector<EditableField*>::iterator OldCFld = CFld;
 
 	bool result = true;
 	if (mode == 0 /*only bypass unrelevant fields*/) {
@@ -4086,7 +4086,7 @@ bool DataEditor::EditItemProc(bool del, bool ed, WORD& brk)
 	double r = 0;
 	bool b = false;
 
-	EFldD* current_field = *CFld;
+	EditableField* current_field = *CFld;
 	FieldDescr* field = current_field->FldD;
 
 	if (field->field_type == FieldType::TEXT) {
@@ -4096,7 +4096,7 @@ bool DataEditor::EditItemProc(bool del, bool ed, WORD& brk)
 	}
 	else {
 		TextAttr = edit_->dHiLi;
-		std::string text = DecodeField(file_d_, field, field->L, current_rec_);
+		std::string text = decodeField(field, field->L, current_rec_);
 		screen.GotoXY(current_field->Col, FldRow(current_field, IRec));
 		unsigned int wd = 0;
 
@@ -4719,9 +4719,9 @@ void DataEditor::DelNewRec()
 	DisplWwRecsOrPage(CPage, &RT);
 }
 
-std::vector<EFldD*>::iterator DataEditor::FrstFldOnPage(WORD Page)
+std::vector<EditableField*>::iterator DataEditor::FrstFldOnPage(WORD Page)
 {
-	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+	std::vector<EditableField*>::iterator D = edit_->FirstFld.begin();
 	while ((*D)->Page < Page) {
 		++D; //D = D->pChain;
 	}
@@ -5092,7 +5092,7 @@ void DataEditor::MouseProc()
 	for (WORD i = 1; i <= edit_->NRecs; i++) {
 		int n = BaseRec + i - 1;
 		if (n > CNRecs()) goto label1;
-		std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
+		std::vector<EditableField*>::iterator D = edit_->FirstFld.begin();
 		while (D != edit_->FirstFld.end()) {
 			if (IsNewRec && (i == IRec) && (D == FirstEmptyFld)) goto label1;
 			if (((*D)->Page == CPage) && MouseInRect((*D)->Col - 1, FldRow(*D, i) - 1, (*D)->L, 1)) {
@@ -5147,9 +5147,9 @@ void DataEditor::ToggleSelectAll()
 	DisplAllWwRecs();
 }
 
-void DataEditor::GoStartFld(EFldD* SFld)
+void DataEditor::GoStartFld(EditableField* SFld)
 {
-	std::vector<EFldD*>::iterator nextCFld = CFld;
+	std::vector<EditableField*>::iterator nextCFld = CFld;
 	++nextCFld;
 
 	while ((*CFld != SFld) && (nextCFld != edit_->FirstFld.end())) {
@@ -5164,6 +5164,106 @@ void DataEditor::GoStartFld(EFldD* SFld)
 		nextCFld = CFld;
 		++nextCFld;
 	}
+}
+
+std::string DataEditor::decodeField(FieldDescr* F, WORD LWw, Record* record)
+{
+	double r = 0;
+	std::string s;
+	bool b = false;
+	switch (F->frml_type) {
+	case 'R': {
+		r = record->LoadR(F->Name);
+		break;
+	}
+	case 'S': {
+		if (F->field_type == FieldType::TEXT) {
+			std::string txt;
+			if (F->isStored() && record->LoadS(F->Name).empty()) {
+				txt = ".";
+			}
+			else {
+				txt = "*";
+			}
+			return txt;
+		}
+		else {
+			s = record->LoadS(F->Name);
+		}
+		break;
+	}
+	default: {
+		b = record->LoadB(F->Name);
+		break;
+	}
+	}
+	return decodeFieldRSB(F, LWw, r, s, b);
+}
+
+std::string DataEditor::decodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B)
+{
+	WORD L = 0, M = 0;
+	char C = 0;
+	L = F->L; M = F->M;
+	switch (F->field_type) {
+	case FieldType::DATE: {
+		T = StrDate(R, F->Mask);
+		break;
+	}
+	case FieldType::NUMERIC: {
+		C = '0';
+		justifyString(T, L, M, C);
+		break;
+	}
+	case FieldType::ALFANUM: {
+		C = ' ';
+		justifyString(T, L, M, C);
+		break;
+	}
+	case FieldType::BOOL: {
+		if (B) T = AbbrYes;
+		else T = AbbrNo;
+		break;
+	}
+	case FieldType::REAL: {
+		str(R, L, T);
+		break;
+	}
+	default: /*"F"*/ {
+		if ((F->Flg & f_Comma) != 0) R = R / Power10[M];
+		str(RoundReal(R, M), L, M, T);
+		break;
+	}
+	}
+	if (T.length() > L) {
+		T = T.substr(0, L);
+		T[L - 1] = '>';
+	}
+	if (T.length() > LWw) {
+		if (M == LeftJust) {
+			T = T.substr(0, LWw);
+		}
+		else {
+			// T = copy(T, T.length() - LWw + 1, LWw);
+			T = T.substr(T.length() - LWw + 1, LWw);
+		}
+	}
+	return T;
+}
+
+void DataEditor::justifyString(std::string& T, WORD L, WORD M, char C)
+{
+	if (M == LeftJust)
+		while (T.length() < L) T += C;
+	else {
+		if (T.length() < L) {
+			char buf[256]{ 0 };
+			sprintf_s(buf, 256, "%*s", L, T.c_str());
+			std::string s(buf, L);
+			T = s;
+		}
+	}
+
 }
 
 void DataEditor::RunEdit(XString* PX, WORD& Brk)

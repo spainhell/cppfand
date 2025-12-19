@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include <memory>
 
 #include "FandTFile.h"
@@ -128,16 +129,18 @@ private:
 	int saveT(FieldDescr* field_d, int pos, uint8_t* record);
 
 	void DelTFld(FieldDescr* field_d, uint8_t* record);
-	void DelTFlds(int32_t rec_nr);
+	void DelAllTFlds(int32_t rec_nr);
+	[[nodiscard]] std::map<FieldDescr*, int32_t> DelChangedTFields(uint8_t* orig_raw_data, Record* new_record);
 	//void DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record);
 	//void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
+	bool has_T_fields();
 
 	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);
 
 	void TestDelErr(std::string& P);
 
-	void _getValuesFromRecord(uint8_t* buffer, Record* record);
-	std::unique_ptr<uint8_t[]> _setRecordFromValues(Record* record);
+	void _getValuesFromRawData(uint8_t* buffer, Record* record);
+	std::unique_ptr<uint8_t[]> _getRowDataFromRecord(Record* record, const std::map<FieldDescr*, int32_t>& unchanged_T_fields);
 };
 

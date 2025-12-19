@@ -8,7 +8,7 @@
 #include "../Core/base.h"
 
 class Implicit;
-struct EFldD;
+struct EditableField;
 struct ERecTxtD;
 struct EdExitD;
 class LinkD;
@@ -23,7 +23,7 @@ public:
 	// EditD* PrevE; - toto bude pChain ...
 	EditD(uint8_t cols, uint8_t rows);
 	~EditD();
-	std::vector<EFldD*>::iterator GetEFldIter(EFldD* e_fld);
+	std::vector<EditableField*>::iterator GetEFldIter(EditableField* e_fld);
 	FileD* FD = nullptr;
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;
@@ -57,11 +57,11 @@ public:
 	//std::vector<std::string> RecTxt;
 	std::vector<ERecTxtD*> RecTxt;
 	uint8_t NRecs = 0;     /*display*/
-	std::vector<EFldD*> FirstFld;
-	std::vector<EFldD*>::iterator CFld;
-	EFldD* LastFld = nullptr;
-	EFldD* StartFld = nullptr;
-	EFldD* FirstEmptyFld = nullptr;					/* copied */
+	std::vector<EditableField*> FirstFld;
+	std::vector<EditableField*>::iterator CFld;
+	EditableField* LastFld = nullptr;
+	EditableField* StartFld = nullptr;
+	EditableField* FirstEmptyFld = nullptr;					/* copied */
 	XKey* VK = nullptr;								/*   "    */		
 	XWKey* WK = nullptr;							/*   "    */
 	int BaseRec = 0;								/*   "    */

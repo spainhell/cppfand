@@ -41,7 +41,7 @@ public:
 	void ClearUpdated();
 	bool IsUpdated() const;
 
-	void SetDeleted();
+	void SetDeleted(bool set_updated = true);
 	void ClearDeleted();
 	bool IsDeleted() const;
 

@@ -135,10 +135,12 @@ bool Record::IsUpdated() const
 	return _updated;
 }
 
-void Record::SetDeleted()
+void Record::SetDeleted(bool set_updated)
 {
 	_deleted = true;
-	SetUpdated();
+	if (set_updated) {
+		SetUpdated();
+	}
 }
 
 void Record::ClearDeleted()

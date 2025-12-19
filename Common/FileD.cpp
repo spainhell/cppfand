@@ -1426,14 +1426,14 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 //	switch (FileType) {
 //	case DataFileType::FandFile: {
 //		if (delTFields) {
-//			this->FF->DelTFlds(record->GetRecord());
+//			this->FF->DelAllTFlds(record->GetRecord());
 //		}
 //		memset(record->GetRecord(), 0, FF->RecLen);
 //		break;
 //	}
 //	case DataFileType::DBF: {
 //		if (delTFields) {
-//			this->DbfF->DelTFlds(record->GetRecord());
+//			this->DbfF->DelAllTFlds(record->GetRecord());
 //		}
 //		memset(record->GetRecord(), 0, DbfF->RecLen);
 //		break;
