@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "FandTFile.h"
 #include "FandXFile.h"
 #include "../Core/switches.h"
@@ -29,7 +31,7 @@ public:
 	Fand0File(const Fand0File& orig, FileD* parent);
 	~Fand0File() override;
 
-	uint8_t* GetRecSpace() const;
+	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
 
 	unsigned short RecLen = 0;
 	Record* RecPtr = nullptr;
@@ -112,7 +114,7 @@ public:
 
 private:
 	FileD* _parent;
-	uint8_t* _buffer; // record buffer
+	//uint8_t* _buffer; // record buffer
 	bool is_null_value(FieldDescr* field_d, uint8_t* record);
 
 	bool loadB(FieldDescr* field_d, uint8_t* record);
@@ -135,7 +137,7 @@ private:
 
 	void TestDelErr(std::string& P);
 
-	void _getValuesFromRecord(Record* dst_record);
-	void _setRecordFromValues(Record* record);
+	void _getValuesFromRecord(uint8_t* buffer, Record* record);
+	std::unique_ptr<uint8_t[]> _setRecordFromValues(Record* record);
 };
 

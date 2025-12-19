@@ -25,7 +25,7 @@ const double FirstDate = 6.97248E+5;
 Fand0File::Fand0File(FileD* parent)
 {
 	_parent = parent;
-	_buffer = GetRecSpace();
+	//_buffer = GetRecSpace();
 }
 
 Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
@@ -36,7 +36,7 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 	Drive = orig.Drive;
 
 	_parent = parent;
-	_buffer = GetRecSpace();
+	//_buffer = GetRecSpace();
 
 	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
 	if (orig.XF != nullptr) XF = new FandXFile(*orig.XF, this);
@@ -44,7 +44,7 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 
 Fand0File::~Fand0File()
 {
-	delete[] _buffer;
+	//delete[] _buffer;
 
 	if (Handle != nullptr) {
 		CloseH(&Handle);
@@ -57,7 +57,7 @@ Fand0File::~Fand0File()
 	}
 }
 
-uint8_t* Fand0File::GetRecSpace() const
+std::unique_ptr<uint8_t[]> Fand0File::GetRecSpaceUnique() const
 {
 	// 0. uint8_t in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
 	// 1. uint8_t in the end -> Work Flag
@@ -65,8 +65,8 @@ uint8_t* Fand0File::GetRecSpace() const
 
 	size_t length = RecLen + 2;
 
-	uint8_t* result = new uint8_t[length];
-	memset(result, '\0', length);
+	std::unique_ptr<uint8_t[]> result(new uint8_t[length]);
+	memset(result.get(), '\0', length);
 	return result;
 }
 
@@ -79,8 +79,9 @@ size_t Fand0File::ReadRec(size_t rec_nr, Record* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	size_t result = ReadRec(rec_nr, _buffer);
-	this->_getValuesFromRecord(record);
+	std::unique_ptr buffer = GetRecSpaceUnique();
+	size_t result = ReadRec(rec_nr, buffer.get());
+	this->_getValuesFromRecord(buffer.get(), record);
 	return result;
 }
 
@@ -98,8 +99,8 @@ size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
 	DelTFlds(rec_nr); // delete all 'T' fields from orig. record first
 	WasWrRec = true;
-	this->_setRecordFromValues(record);
-	size_t result = WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, _buffer);
+	std::unique_ptr buffer = this->_setRecordFromValues(record);
+	size_t result = WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer.get());
 	return result;
 }
 
@@ -518,16 +519,14 @@ void Fand0File::DelTFld(FieldDescr* field_d, uint8_t* record)
 
 void Fand0File::DelTFlds(int32_t rec_nr)
 {
-	uint8_t* buf = GetRecSpace();
-	ReadRec(rec_nr, buf);
+	std::unique_ptr buffer = GetRecSpaceUnique();
+	ReadRec(rec_nr, buffer.get());
 
 	for (FieldDescr* field : _parent->FldD) {
 		if (field->field_type == FieldType::TEXT && field->isStored()) {
-			DelTFld(field, buf);
+			DelTFld(field, buffer.get());
 		}
 	}
-
-	delete[] buf; buf = nullptr;
 }
 
 ///**
@@ -1444,28 +1443,28 @@ void Fand0File::TestDelErr(std::string& P)
 	}
 }
 
-void Fand0File::_getValuesFromRecord(Record* dst_record)
+void Fand0File::_getValuesFromRecord(uint8_t* buffer, Record* record)
 {
-	dst_record->Clear();
+	record->Clear();
 
-	if (_buffer != nullptr) {
+	if (buffer != nullptr) {
 		for (FieldDescr* field : _parent->FldD) {
 			BRS_Value val;
 
 			if (field->isStored()) {
 				switch (field->field_type) {
 				case FieldType::BOOL:
-					val.B = loadB(field, _buffer);
+					val.B = loadB(field, buffer);
 					break;
 				case FieldType::DATE:
 				case FieldType::FIXED:
 				case FieldType::REAL:
-					val.R = loadR(field, _buffer);
+					val.R = loadR(field, buffer);
 					break;
 				case FieldType::ALFANUM:
 				case FieldType::NUMERIC:
 				case FieldType::TEXT:
-					val.S = loadS(field, _buffer);
+					val.S = loadS(field, buffer);
 					break;
 				default:
 					// unknown field type
@@ -1495,7 +1494,7 @@ void Fand0File::_getValuesFromRecord(Record* dst_record)
 				//	break;
 				//}
 			}
-			dst_record->_values.push_back(val);
+			record->_values.push_back(val);
 		}
 	}
 	else
@@ -1503,18 +1502,19 @@ void Fand0File::_getValuesFromRecord(Record* dst_record)
 		// buffer is null -> return empty values
 	}
 
-	if (file_type == FandFileType::INDEX && _buffer[0] == 0) {
-		dst_record->SetDeleted();
+	if (file_type == FandFileType::INDEX && buffer[0] == 0) {
+		record->SetDeleted();
 	}
 
 }
 
-void Fand0File::_setRecordFromValues(Record* record)
+std::unique_ptr<uint8_t[]> Fand0File::_setRecordFromValues(Record* record)
 {
-	memset(_buffer, 0, RecLen);
+
+	std::unique_ptr buffer = GetRecSpaceUnique();
 
 	if (_parent->HasIndexFile() && record->IsDeleted()) {
-		_buffer[0] = 1;
+		buffer.get()[0] = 1;
 	}
 
 	for (size_t i = 0; i < _parent->FldD.size(); i++) {
@@ -1524,17 +1524,17 @@ void Fand0File::_setRecordFromValues(Record* record)
 			BRS_Value& val = record->_values[i];
 			switch (field->field_type) {
 			case FieldType::BOOL:
-				saveB(field, val.B, _buffer);
+				saveB(field, val.B, buffer.get());
 				break;
 			case FieldType::DATE:
 			case FieldType::FIXED:
 			case FieldType::REAL:
-				saveR(field, val.R, _buffer);
+				saveR(field, val.R, buffer.get());
 				break;
 			case FieldType::ALFANUM:
 			case FieldType::NUMERIC:
 			case FieldType::TEXT:
-				saveS(_parent, field, val.S, _buffer);
+				saveS(_parent, field, val.S, buffer.get());
 				break;
 			default:
 				// unknown field type
@@ -1545,4 +1545,6 @@ void Fand0File::_setRecordFromValues(Record* record)
 			// calculated field -> do nothing
 		}
 	}
+
+	return buffer;
 }
