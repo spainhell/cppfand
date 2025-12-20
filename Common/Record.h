@@ -29,13 +29,13 @@ public:
 	void Clear(); // delete the vector of values
 	void Reset(); // all values to default
 
-	bool LoadB(const std::string& field_name) const;
-	double LoadR(const std::string& field_name) const;
-	std::string LoadS(const std::string& field_name) const;
+	bool LoadB(FieldDescr* field) const;
+	double LoadR(FieldDescr* field) const;
+	std::string LoadS(FieldDescr* field) const;
 
-	void SaveB(const std::string& field_name, bool value);
-	void SaveR(const std::string& field_name, double value);
-	void SaveS(const std::string& field_name, const std::string& value);
+	void SaveB(FieldDescr* field, bool value);
+	void SaveR(FieldDescr* field, double value);
+	void SaveS(FieldDescr* field, const std::string& value);
 
 	void SetUpdated();
 	void ClearUpdated();

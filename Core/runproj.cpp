@@ -115,7 +115,7 @@ bool NetFileTest(RdbRecVars* X)
 
 void GetSplitChapterName(FileD* file_d, Record* record, std::string& name, std::string& ext)
 {
-	std::string chapter_name = record->LoadS(ChptName->Name);
+	std::string chapter_name = record->LoadS(ChptName);
 	name = TrailChar(chapter_name, ' ');
 	const size_t i = name.find('.');
 	if (i == std::string::npos) {
@@ -130,11 +130,11 @@ void GetSplitChapterName(FileD* file_d, Record* record, std::string& name, std::
 void GetRdbRecVars(const EditD* edit, Record* record, RdbRecVars* X)
 {
 	FileD* file_d = edit->FD;
-	std::string s1 = record->LoadS(ChptTyp->Name);
+	std::string s1 = record->LoadS(ChptTyp);
 	X->Typ = s1[0];
 	GetSplitChapterName(file_d, record, X->Name, X->Ext);
-	X->Txt = record->LoadS(ChptTxt->Name);
-	X->OldTxt = record->LoadS(ChptOldTxt->Name);
+	X->Txt = record->LoadS(ChptTxt);
+	X->OldTxt = record->LoadS(ChptOldTxt);
 	
 	if (X->Typ == 'F') {
 		X->FTyp = ExtToTyp(X->Ext);
@@ -263,7 +263,7 @@ bool IsDuplFileName(DataEditor* data_editor, std::string name)
 			if (i != data_editor->CRec()) {
 				f->ReadRec(i, record);
 				//if (f->loadS(ChptTyp, record) == "F") {
-				if (record->LoadS(ChptTyp->Name) == "F") {
+				if (record->LoadS(ChptTyp) == "F") {
 					std::string n;
 					std::string e;
 					GetSplitChapterName(f, record, n, e);
@@ -361,7 +361,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(edit, &Old)) return result;
-		data_editor->GetRecord()->SaveS(ChptOldTxt->Name, ""); // edit->FD->saveT(ChptOldTxt, 0, data_editor->GetRecord());
+		data_editor->GetRecord()->SaveS(ChptOldTxt, ""); // edit->FD->saveT(ChptOldTxt, 0, data_editor->GetRecord());
 		if (New.Typ == 'F') {
 			ReleaseFilesAndLinksAfterChapter(edit);
 		}
@@ -396,7 +396,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		}
 	}
 label2:
-	data_editor->GetRecord()->SaveB(ChptVerif->Name, true);
+	data_editor->GetRecord()->SaveB(ChptVerif, true);
 	result = 0;
 	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
 	return result;
@@ -416,11 +416,11 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	TxtF = FD->FldD[1];
 	for (int32_t i = 1; i <= FD->FF->NRecs; i++) {
 		FD->FF->ReadRec(i, record);
-		std::string NmFtext = record->LoadS(NmF->Name); // FD->loadS(NmF, record);
+		std::string NmFtext = record->LoadS(NmF); // FD->loadS(NmF, record);
 		std::string nm = TrailChar(NmFtext, ' ');
 		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
-			while ((i < FD->FF->NRecs) && (record->LoadS(TxtF->Name).empty())) {
+			while ((i < FD->FF->NRecs) && (record->LoadS(TxtF).empty())) {
 				i++;
 				FD->FF->ReadRec(i, record);
 			}
@@ -516,7 +516,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 {
 	uint8_t* p = nullptr;
-	std::string oldpos = Chpt->FF->RecPtr->LoadS(F->Name);
+	std::string oldpos = Chpt->FF->RecPtr->LoadS(F);
 	MarkStore(p);
 
 	if (CRdb->Encrypted) {
@@ -769,7 +769,7 @@ FileD* FindFD(Record* record)
 	std::string d;
 	std::string name;
 	std::string ext;
-	std::string FName = OldTrailChar(' ', record->LoadS(ChptName->Name));
+	std::string FName = OldTrailChar(' ', record->LoadS(ChptName));
 	FSplit(FName, d, name, ext);
 
 	//FileD* FD = FileDRoot;
@@ -829,7 +829,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 		uw = false;
 		mv = MausVisible;
 		Record* rdb_record = rdb_editor->GetRecord();
-		const char STyp = rdb_record->LoadS(ChptTyp->Name)[0];
+		const char STyp = rdb_record->LoadS(ChptTyp)[0];
 		RP.rdb = CRdb;
 		RP.i_rec = rdb_editor->CRec();
 #ifdef FandSQL
@@ -1000,7 +1000,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 		}
 		FileD* file_d = rdb_editor->GetFileD();
 		Record* rec = rdb_editor->GetRecord();
-		rec->SaveB(ChptVerif->Name, false);
+		rec->SaveB(ChptVerif, false);
 		file_d->WriteRec(rdb_editor->CRec(), rec);
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
@@ -1132,7 +1132,7 @@ FileD* RdF(FileD* file_d, std::string FileName)
 	else {
 		//int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
 		//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
-		std::string source = file_d->FF->RecPtr->LoadS(ChptTxt->Name);
+		std::string source = file_d->FF->RecPtr->LoadS(ChptTxt);
 		gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted);
 	}
 
@@ -1153,7 +1153,7 @@ FileD* RdOldF(FileD* file_d, const std::string& file_name)
 	//int pos = file_d->loadT(ChptOldTxt, file_d->FF->RecPtr);
 	//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 
-	std::string source = file_d->FF->RecPtr->LoadS(ChptOldTxt->Name);
+	std::string source = file_d->FF->RecPtr->LoadS(ChptOldTxt);
 	gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted);
 
 	if (EquUpCase(ext, ".DBF")) {
@@ -1382,12 +1382,12 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
 			RP.i_rec = I;
 			//Verif = rdb_file->loadB(ChptVerif, rdb_file->FF->RecPtr);
-			Verif = rdb_file->FF->RecPtr->LoadB(ChptVerif->Name);
+			Verif = rdb_file->FF->RecPtr->LoadB(ChptVerif);
 			//STyp = rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr);
-			STyp = rdb_file->FF->RecPtr->LoadS(ChptTyp->Name);
+			STyp = rdb_file->FF->RecPtr->LoadS(ChptTyp);
 			Typ = STyp[0];
-			Name = OldTrailChar(' ', rdb_file->FF->RecPtr->LoadS(ChptName->Name));
-			Txt = rdb_file->FF->RecPtr->LoadS(ChptTxt->Name);
+			Name = OldTrailChar(' ', rdb_file->FF->RecPtr->LoadS(ChptName));
+			Txt = rdb_file->FF->RecPtr->LoadS(ChptTxt);
 			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) {
 				// verify mode and encrypted or read only RDB
 				gc->GoCompileErr(I, 647);
@@ -1404,14 +1404,14 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				if (IsTestRun) {
 					ClrScr(TextAttr);
 					screen.ScrFormatWrText(3 + lmsg, 2, "%*i", 4, I);
-					std::string chptNameTxt = rdb_file->FF->RecPtr->LoadS(ChptName->Name);
+					std::string chptNameTxt = rdb_file->FF->RecPtr->LoadS(ChptName);
 					screen.ScrFormatWrText(3 + lmsg, 3, "%*s%*s", 4, STyp.c_str(), 14, chptNameTxt.c_str());
 
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 						for (J = 1; J <= I - 1; J++) {
 							rdb_file->ReadRec(J, rdb_file->FF->RecPtr);
-							if ((STyp == rdb_file->FF->RecPtr->LoadS(ChptTyp->Name))
-								&& EquUpCase(Name, OldTrailChar(' ', rdb_file->FF->RecPtr->LoadS(ChptName->Name)))) {
+							if ((STyp == rdb_file->FF->RecPtr->LoadS(ChptTyp))
+								&& EquUpCase(Name, OldTrailChar(' ', rdb_file->FF->RecPtr->LoadS(ChptName)))) {
 								gc->GoCompileErr(I, 649);
 							}
 						}
@@ -1427,13 +1427,13 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					if ((Txt.empty()) && IsTestRun) {
 						SetMsgPar(Name);
 						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
-							rdb_file->FF->RecPtr->SaveS(ChptOldTxt->Name, "");
+							rdb_file->FF->RecPtr->SaveS(ChptOldTxt, "");
 							OldTxt = 0;
 
 							std::unique_ptr<DbfFile> dbf_file = std::make_unique<DbfFile>(nullptr);
 							dbf_file->MakeDbfDcl(nm);
 
-							Txt = rdb_file->FF->RecPtr->LoadS(ChptTxt->Name);
+							Txt = rdb_file->FF->RecPtr->LoadS(ChptTxt);
 							rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 						}
 					}
@@ -1443,7 +1443,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					}
 #endif
 					// get position of old chapter code
-					std::string old_txt = rdb_file->FF->RecPtr->LoadS(ChptOldTxt->Name);
+					std::string old_txt = rdb_file->FF->RecPtr->LoadS(ChptOldTxt);
 
 					p1 = RdF(rdb_file, Name);
 					CRdb->v_files.push_back(p1);
@@ -1454,9 +1454,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					if (Verif || ChptTF->CompileAll || old_txt.empty()) {
 						if (!Encryp) {
 							// get last successfully compiled code
-							std::string old_chapter_code = rdb_file->FF->RecPtr->LoadS(ChptOldTxt->Name);
+							std::string old_chapter_code = rdb_file->FF->RecPtr->LoadS(ChptOldTxt);
 							// get current chapter code
-							std::string chapter_code = rdb_file->FF->RecPtr->LoadS(ChptTxt->Name);
+							std::string chapter_code = rdb_file->FF->RecPtr->LoadS(ChptTxt);
 
 							// compare old and new chapter code
 							if (old_chapter_code != chapter_code) {
@@ -1471,7 +1471,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 									if (merged) {
 										// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
-										rdb_file->FF->RecPtr->SaveS(ChptOldTxt->Name, chapter_code);
+										rdb_file->FF->RecPtr->SaveS(ChptOldTxt, chapter_code);
 										rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 									}
 									else {
@@ -1480,7 +1480,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 								}
 								else {
 									// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
-									rdb_file->FF->RecPtr->SaveS(ChptOldTxt->Name, chapter_code);
+									rdb_file->FF->RecPtr->SaveS(ChptOldTxt, chapter_code);
 									rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 								}
 							}
@@ -1520,7 +1520,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						if (RprtTxt.empty()) {
 							gc->GoCompileErr(I, 1145);
 						}
-						rdb_file->FF->RecPtr->SaveS(ChptTxt->Name, RprtTxt);
+						rdb_file->FF->RecPtr->SaveS(ChptTxt, RprtTxt);
 						rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 					}
 					else {
@@ -1599,7 +1599,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			//CRecPtr = v_files->FF->RecPtr;
 			if (Verif) {
 				rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
-				rdb_file->FF->RecPtr->SaveB(ChptVerif->Name, false);
+				rdb_file->FF->RecPtr->SaveB(ChptVerif, false);
 				rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 			}
 		}
@@ -1670,7 +1670,7 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 	}
 	data_editor->CFld = data_editor->GetEditD()->GetEFldIter(data_editor->GetEditD()->LastFld);
 	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
-	data_editor->GetRecord()->SaveR(ChptTxtPos->Name, gc->input_pos);
+	data_editor->GetRecord()->SaveR(ChptTxtPos, gc->input_pos);
 	data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
 	data_editor->EditFreeTxt(ChptTxt, s, true, Brk);
 }
@@ -1966,14 +1966,14 @@ void UpdateUTxt()
 		return;
 	}
 	Chpt->FF->ReadRec(1, Chpt->FF->RecPtr);
-	if (Chpt->FF->RecPtr->LoadS(ChptTyp->Name) != "U") {
+	if (Chpt->FF->RecPtr->LoadS(ChptTyp) != "U") {
 		WrLLF10Msg(9);
 		return;
 	}
 	int w = PushW(1, 1, TxtCols, TxtRows - 1);
 	size_t TxtPos = 1;
 	TextAttr = screen.colors.tNorm;
-	std::string s = Chpt->FF->RecPtr->LoadS(ChptTxt->Name);
+	std::string s = Chpt->FF->RecPtr->LoadS(ChptTxt);
 
 	if (CRdb->Encrypted) {
 		s = Coding::CodingString(ChptTF->LicenseNr, s);

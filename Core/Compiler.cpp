@@ -177,10 +177,10 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	rdb->v_files[0]->ReadRec(rdb_pos->i_rec, rec);
 	std::string src;
 	if (FromTxt) {
-		src = rec->LoadS(ChptTxt->Name);
+		src = rec->LoadS(ChptTxt);
 	}
 	else {
-		src = rec->LoadS(ChptOldTxt->Name);
+		src = rec->LoadS(ChptOldTxt);
 	}
 	SetInpStr(src, ChptTF->LicenseNr, rdb->Encrypted);
 
@@ -1120,9 +1120,9 @@ bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 		for (int32_t i = 1; i <= f->FF->NRecs; i++) {
 			f->ReadRec(i, record);
 			//std::string chapterType = f->loadS(ChptTyp, record);
-			std::string chapterType = record->LoadS(ChptTyp->Name);
+			std::string chapterType = record->LoadS(ChptTyp);
 			//std::string chapterName = f->loadS(ChptName, record);
-			std::string chapterName = record->LoadS(ChptName->Name);
+			std::string chapterName = record->LoadS(ChptName);
 			chapterName = TrailChar(chapterName, ' ');
 
 			if (chapterType.length() == 1

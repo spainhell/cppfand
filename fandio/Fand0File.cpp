@@ -77,6 +77,10 @@ std::unique_ptr<uint8_t[]> Fand0File::GetRecSpaceUnique() const
 /// <param name="record">ukazatel na buffer</param>
 size_t Fand0File::ReadRec(size_t rec_nr, Record* record)
 {
+	//if (record->GetFileD()->Name == "PARAM1")
+	//{
+	//	printf("");
+	//}
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
 	std::unique_ptr buffer = GetRecSpaceUnique();
@@ -95,6 +99,10 @@ size_t Fand0File::ReadRec(size_t rec_nr, uint8_t* buffer)
 
 size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 {
+	//if (record->GetFileD()->Name == "PARAM1")
+	//{
+	//	printf("");
+	//}
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
 	//DelAllTFlds(rec_nr); // delete all 'T' fields from orig. record first
@@ -529,7 +537,7 @@ std::map<FieldDescr*, int32_t> Fand0File::DelChangedTFields(uint8_t* orig_raw_da
 		for (FieldDescr* field : _parent->FldD) {
 			if (field->field_type == FieldType::TEXT && field->isStored()) {
 				std::string orig_text = loadS(field, orig_raw_data);
-				std::string new_text = new_record->LoadS(field->Name);
+				std::string new_text = new_record->LoadS(field);
 				if (orig_text == new_text) {
 					int32_t pos = loadT(field, orig_raw_data);
 					result.insert(std::pair(field, pos));

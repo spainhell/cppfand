@@ -968,12 +968,12 @@ void DataEditor::DisplEmptyFld(EditableField* D, WORD I)
 /// </summary>
 /// <param name="field"></param>
 /// <param name="record"></param>
-void DataEditor::Wr1Line(const FieldDescr* field, const Record* record) const
+void DataEditor::Wr1Line(FieldDescr* field, const Record* record) const
 {
 	auto X = screen.WhereX();
 	auto Y = screen.WhereY();
 	//std::string ls = file_d_->loadS(field, record->GetRecord());
-	std::string ls = record->LoadS(field->Name);
+	std::string ls = record->LoadS(field);
 	ls = GetNthLine(ls, 1, 1);
 	WORD max = field->L - 2;
 	ls = GetStyledStringOfLength(ls, 0, max);
@@ -1190,18 +1190,18 @@ void DataEditor::DuplicateField(Record* src_record, FieldDescr* src_field, Recor
 {
 	switch (src_field->frml_type) {
 	case 'S': {
-		std::string s = src_record->LoadS(src_field->Name);
-		dst_record->SaveS(dst_field->Name, s);
+		std::string s = src_record->LoadS(src_field);
+		dst_record->SaveS(dst_field, s);
 		break;
 	}
 	case 'R': {
-		double r = src_record->LoadR(src_field->Name);
-		dst_record->SaveR(dst_field->Name, r);
+		double r = src_record->LoadR(src_field);
+		dst_record->SaveR(dst_field, r);
 		break;
 	}
 	case 'B': {
-		bool b = src_record->LoadB(src_field->Name);
-		dst_record->SaveB(dst_field->Name, b);
+		bool b = src_record->LoadB(src_field);
+		dst_record->SaveB(dst_field, b);
 		break;
 	}
 	}
@@ -1890,6 +1890,12 @@ label2:
 	}
 }
 
+/// <summary>
+/// Slouzi k aktualizaci (synchronizaci) referencnich zaznamu v navazanych (clenskych) souborech pri zmene klicovych hodnot v aktualnim zaznamu.
+/// Tedy slouzi k udrzeni referncni integrity.
+/// </summary>
+/// <param name="POld"></param>
+/// <param name="PNew"></param>
 void DataEditor::UpdMemberRef(Record* POld, Record* PNew)
 {
 	XString x, xnew, xold;
@@ -1971,28 +1977,28 @@ void DataEditor::WrJournal(char Upd, Record* RP, double Time)
 
 		std::vector<FieldDescr*>::iterator it = file_d_->FldD.begin();
 
-		newData.get()->SaveS((*it++)->Name, std::string(1, Upd));	// change type
-		newData.get()->SaveR((*it++)->Name, n);									// record number
-		newData.get()->SaveR((*it++)->Name, user->get_user_code());		// user code
-		newData.get()->SaveR((*it++)->Name, Time);								// timestamp
+		newData->SaveS((*it++), std::string(1, Upd));	// change type
+		newData->SaveR((*it++), n);									// record number
+		newData->SaveR((*it++), user->get_user_code());		// user code
+		newData->SaveR((*it++), Time);								// timestamp
 
 		Record* record = new Record(edit_->Journal);
 		for (size_t i = 0; i < RP->_values.size(); i++) {
 			FieldDescr* f = file_d_->FldD[i];
 			switch (f->frml_type) {
 			case 'S': {
-				std::string s = RP->LoadS(f->Name);
-				newData.get()->SaveS(f->Name, s);
+				std::string s = RP->LoadS(f);
+				newData->SaveS(f, s);
 				break;
 			}
 			case 'R': {
-				double r = RP->LoadR(f->Name);
-				newData.get()->SaveR(f->Name, r);
+				double r = RP->LoadR(f);
+				newData->SaveR(f, r);
 				break;
 			}
 			case 'B': {
-				bool b = RP->LoadB(f->Name);
-				newData.get()->SaveB(f->Name, b);
+				bool b = RP->LoadB(f);
+				newData->SaveB(f, b);
 				break;
 			}
 			}
@@ -2006,7 +2012,8 @@ void DataEditor::WrJournal(char Upd, Record* RP, double Time)
 		file_d_ = edit_->FD;
 		//record_ = edit_->NewRec->GetRecord();
 		delete record; record = nullptr;
-		delete current_rec_; current_rec_ = new Record(file_d_);
+		delete current_rec_; 
+		current_rec_ = new Record(file_d_);
 	}
 	UpdCount++;
 	if (UpdCount == edit_->SaveAfter) {
@@ -2177,8 +2184,12 @@ bool DataEditor::DelIndRec(int I, int N)
 		file_d_->FF->SetUpdateFlag(); // -''- navic
 		//SetUpdHandle(file_d_->FF->XF->Handle); // navic
 		file_d_->FF->XF->SetUpdateFlag(); // -''- navic
-		if ((edit_->SelKey != nullptr) && edit_->SelKey->Delete(file_d_, N, current_rec_)) edit_->SelKey->NR--;
-		if (params_->Subset) WK->DeleteAtNr(file_d_, I);
+		if ((edit_->SelKey != nullptr) && edit_->SelKey->Delete(file_d_, N, current_rec_)) {
+			edit_->SelKey->NR--;
+		}
+		if (params_->Subset) {
+			WK->DeleteAtNr(file_d_, I);
+		}
 		result = true;
 		edit_->EdUpdated = true;
 	}
@@ -2209,11 +2220,7 @@ bool DataEditor::DeleteRecProc()
 	RdRec(CRec(), current_rec_);
 	oIRec = IRec;
 	oBaseRec = BaseRec;    /* exit proc uses CRec for locking etc.*/
-	if (HasIndex
-#ifdef FandSQL
-		|| file_d_->IsSQLFile
-#endif
-		) {
+	if (HasIndex) {
 		//log->log(loglevel::DEBUG, "... from file with index ...");
 		file_d_->FF->TestXFExist();
 		if (Group) {
@@ -2797,6 +2804,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 	Displ = false;
 	bool result = false;
 
+	// check if record was changed
 	if (!params_->WasUpdated || (!IsNewRec && EquOldNewRec())) {
 		IsNewRec = false;
 		params_->WasUpdated = false;
@@ -2805,12 +2813,14 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		return result;
 	}
 
+	// assign implicit fields for new record
 	if (IsNewRec) {
 		for (Implicit* id : edit_->Impl) {
 			AssgnFrml(current_rec_, id->FldD, id->Frml, false);
 		}
 	}
 
+	// fields validation
 	if (params_->MustCheck) {   /* repeat field checking */
 		std::vector<EditableField*>::iterator D = edit_->FirstFld.begin();
 		while (D != edit_->FirstFld.end()) {
@@ -2825,6 +2835,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		}
 	}
 
+	// lock record and all other dependent files
 	if (IsNewRec) {
 		if (!LockWithDep(CrMode, NullMode, OldMd)) return result;
 	}
@@ -2954,9 +2965,9 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			}
 			case 2: {
 				// are old and new text positions same?
-				if ((original_rec_->LoadS(ChptTxt->Name) == original_rec_->LoadS(ChptTxt->Name)) && PromptYN(157)) {
+				if ((original_rec_->LoadS(ChptTxt) == original_rec_->LoadS(ChptTxt)) && PromptYN(157)) {
 					// TWork.Delete(ClpBdPos);
-					std::string data = current_rec_->LoadS(ChptTxt->Name);
+					std::string data = current_rec_->LoadS(ChptTxt);
 					// ClpBdPos = TWork.Store(data);
 				}
 				UndoRecord();
@@ -3161,21 +3172,21 @@ bool DataEditor::PromptSearch(bool create)
 			FieldDescr* F2 = (*KF2)->FldD;
 			switch (F->frml_type) {
 			case 'S': {
-				s = current_rec_->LoadS(F2->Name); // FD2->loadS(F2, current_rec_);
+				s = current_rec_->LoadS(F2); // FD2->loadS(F2, current_rec_);
 				x.StoreStr(s, *KF);
-				RP->SaveS(F->Name, s);
+				RP->SaveS(F, s);
 				break;
 			}
 			case 'R': {
-				r = current_rec_->LoadR(F2->Name); // FD2->loadR(F2, current_rec_);
+				r = current_rec_->LoadR(F2); // FD2->loadR(F2, current_rec_);
 				x.StoreReal(r, *KF);
-				RP->SaveR(F->Name, r);
+				RP->SaveR(F, r);
 				break;
 			}
 			case 'B': {
-				b = current_rec_->LoadB(F2->Name); // FD2->loadB(F2, current_rec_);
+				b = current_rec_->LoadB(F2); // FD2->loadB(F2, current_rec_);
 				x.StoreBool(b, *KF);
-				RP->SaveB(F->Name, b);
+				RP->SaveB(F, b);
 				break;
 			}
 			}
@@ -3225,18 +3236,18 @@ bool DataEditor::PromptSearch(bool create)
 			switch (F->frml_type) {
 			case 'S': {
 				x.StoreStr(s, *KF);
-				RP->SaveS(F->Name, s);
+				RP->SaveS(F, s);
 				break;
 			}
 			case 'R': {
 				x.StoreReal(r, *KF);
-				RP->SaveR(F->Name, r);
+				RP->SaveR(F, r);
 				break;
 			}
 			case 'B': {
 				b = s[0] = AbbrYes;
 				x.StoreBool(b, *KF);
-				RP->SaveB(F->Name, b);
+				RP->SaveB(F, b);
 				break;
 			}
 			}
@@ -3244,7 +3255,7 @@ bool DataEditor::PromptSearch(bool create)
 				found = GotoXRec(&x, n);
 				if ((pos == 0) && (F->frml_type == 'S')) {
 					x = x_old;
-					x.StoreStr(current_rec_->LoadS(F->Name), *KF);
+					x.StoreStr(current_rec_->LoadS(F), *KF);
 				}
 				if (pos != 0) {
 					x = x_old;
@@ -3775,7 +3786,7 @@ bool DataEditor::GetChpt(pstring Heslo, int& NN)
 	for (int j = 1; j <= file_d_->FF->NRecs; j++) {
 		file_d_->ReadRec(j, current_rec_);
 		if (IsCurrChpt(file_d_)) {
-			s = OldTrailChar(' ', current_rec_->LoadS(ChptName->Name));
+			s = OldTrailChar(' ', current_rec_->LoadS(ChptName));
 			short i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
 			if (EquUpCase(Heslo, s)) {
@@ -3784,7 +3795,7 @@ bool DataEditor::GetChpt(pstring Heslo, int& NN)
 			}
 		}
 		else {
-			s = OldTrailChar(' ', current_rec_->LoadS(file_d_->FldD.front()->Name));
+			s = OldTrailChar(' ', current_rec_->LoadS(file_d_->FldD.front()));
 			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
 			if (EqualsMask(&Heslo[1], Heslo.length(), s)) {
 				NN = j;
@@ -3812,7 +3823,7 @@ void DataEditor::UpdateTextField(std::string& text)
 	//	md = file_d_->NewLockMode(WrMode);
 	//}
 	SetWasUpdated();
-	current_rec_->SaveS((*CFld)->FldD->Name, text);
+	current_rec_->SaveS((*CFld)->FldD, text);
 	//file_d_->FF->DelDifTFld((*CFld)->FldD, current_rec_->GetRecord(), original_rec_->GetRecord());
 	//file_d_->saveS((*CFld)->FldD, S, current_rec_->GetRecord());
 	/*if (!params_->EdRecVar) { // nezapisujeme do souboru
@@ -3826,7 +3837,7 @@ void DataEditor::UpdateTxtPos(WORD TxtPos)
 	if (IsCurrChpt(file_d_)) {
 		md = file_d_->NewLockMode(WrMode);
 		SetWasUpdated();
-		current_rec_->SaveR(ChptTxtPos->Name, (short)TxtPos);
+		current_rec_->SaveR(ChptTxtPos, (short)TxtPos);
 		file_d_->OldLockMode(md);
 	}
 }
@@ -3896,8 +3907,8 @@ label1:
 		HdTxt[3] = 0x19; // ^Y
 	}
 	if (IsCurrChpt(file_d_)) {
-		HdTxt = current_rec_->LoadS(ChptTyp->Name) + ':' + current_rec_->LoadS(ChptName->Name) + HdTxt;
-		TxtPos = trunc(current_rec_->LoadR(ChptTxtPos->Name));
+		HdTxt = current_rec_->LoadS(ChptTyp) + ':' + current_rec_->LoadS(ChptName) + HdTxt;
+		TxtPos = trunc(current_rec_->LoadR(ChptTxtPos));
 		Breaks = BreakKeys2;
 		CtrlMsgNr = 131;
 	}
@@ -3918,7 +3929,7 @@ label1:
 	OldTxtPos = TxtPos;
 	if (Ed) LockRec(false);
 	if ((F->Flg & f_Stored) != 0) {
-		edit_text = current_rec_->LoadS(F->Name);
+		edit_text = current_rec_->LoadS(F);
 		if (Ed) kind = EditorMode::Text;
 	}
 	else {
@@ -4035,7 +4046,7 @@ label2:
 		break;
 	}
 	case __ALT_F1: {
-		heslo = current_rec_->LoadS(ChptTyp->Name);
+		heslo = current_rec_->LoadS(ChptTyp);
 	label3:
 		Help(CRdb, heslo, false);
 		goto label4;
@@ -4118,17 +4129,17 @@ bool DataEditor::EditItemProc(bool del, bool ed, WORD& brk)
 		switch (field->frml_type) {
 		case 'B': {
 			//file_d_->saveB(F, toupper(text[0]) == AbbrYes, current_rec_->GetRecord());
-			current_rec_->SaveB(field->Name, toupper(text[0]) == AbbrYes);
+			current_rec_->SaveB(field, toupper(text[0]) == AbbrYes);
 			break;
 		}
 		case 'S': {
 			//file_d_->saveS(F, text, current_rec_->GetRecord());
-			current_rec_->SaveS(field->Name, text);
+			current_rec_->SaveS(field, text);
 			break;
 		}
 		case 'R': {
 			//file_d_->saveR(F, r, current_rec_->GetRecord());
-			current_rec_->SaveR(field->Name, r);
+			current_rec_->SaveR(field, r);
 			break;
 		}
 		}
@@ -4649,7 +4660,7 @@ void DataEditor::Calculate2()
 						else if ((Z->Op == _unminus) && (iZ02->Op == _const)) R = -iZ02->R;
 						else goto label5;
 						SetWasUpdated();
-						current_rec_->SaveR(F->Name, R * Power10[F->M]);
+						current_rec_->SaveR(F, R * Power10[F->M]);
 					}
 					else
 						label5:
@@ -5174,13 +5185,13 @@ std::string DataEditor::decodeField(FieldDescr* F, WORD LWw, Record* record)
 	bool b = false;
 	switch (F->frml_type) {
 	case 'R': {
-		r = record->LoadR(F->Name);
+		r = record->LoadR(F);
 		break;
 	}
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
 			std::string txt;
-			if (F->isStored() && record->LoadS(F->Name).empty()) {
+			if (F->isStored() && record->LoadS(F).empty()) {
 				txt = ".";
 			}
 			else {
@@ -5189,12 +5200,12 @@ std::string DataEditor::decodeField(FieldDescr* F, WORD LWw, Record* record)
 			return txt;
 		}
 		else {
-			s = record->LoadS(F->Name);
+			s = record->LoadS(F);
 		}
 		break;
 	}
 	default: {
-		b = record->LoadB(F->Name);
+		b = record->LoadB(F);
 		break;
 	}
 	}
@@ -5357,7 +5368,7 @@ label81:
 
 		if (Event.Pressed.isChar()) {
 			// jedna se o tisknutelny znak
-			if ((*CFld)->Ed(IsNewRec) && (((*CFld)->FldD->field_type != FieldType::TEXT) || current_rec_->LoadS((*CFld)->FldD->Name).empty())
+			if ((*CFld)->Ed(IsNewRec) && (((*CFld)->FldD->field_type != FieldType::TEXT) || current_rec_->LoadS((*CFld)->FldD).empty())
 				&& LockRec(true)) {
 				//keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
 				const bool res = !EditItemProc(true, true, Brk);

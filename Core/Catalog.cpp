@@ -189,10 +189,10 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 
 void Catalog::GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std::string& volume) const
 {
-	if (file_d->Name == "PARAM3")
-	{
-		printf("");
-	}
+	//if (file_d->Name == "PARAM3")
+	//{
+	//	printf("");
+	//}
 
 	bool isRdb;
 
@@ -289,7 +289,7 @@ std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)
 {
 	cat_file_->ReadRec(rec_nr, record_);
 	//std::string value = cat_file_->loadS(field, record_);
-	std::string value = record_->LoadS(field->Name);
+	std::string value = record_->LoadS(field);
 	std::string result = TrailChar(value, ' ');
 	return result;
 }
@@ -298,6 +298,6 @@ void Catalog::setValue(size_t rec_nr, FieldDescr* field, const std::string& valu
 {
 	cat_file_->ReadRec(rec_nr, record_);
 	//cat_file_->saveS(field, value, record_);
-	record_->SaveS(field->Name, value);
+	record_->SaveS(field, value);
 	cat_file_->WriteRec(rec_nr, record_);
 }

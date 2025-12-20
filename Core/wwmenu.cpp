@@ -1020,13 +1020,13 @@ label1:
 	}
 	for (i = 1; i <= R->help_file->FF->NRecs; i++) {
 		R->help_file->FF->ReadRec(i, record);
-		Nm = OldTrailChar(' ', record->LoadS(NmF->Name));
+		Nm = OldTrailChar(' ', record->LoadS(NmF));
 		if (R->help_file == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
 		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
 		if (EqualsMask(S, Nm)) {
 		label2:
-			result = record->LoadS(TxtF->Name); //R->help_file->loadS(TxtF, record);
+			result = record->LoadS(TxtF); //R->help_file->loadS(TxtF, record);
 			if (!ByName || (!result.empty()) || (i == R->help_file->FF->NRecs)) {
 				if (R->help_file == HelpFD) {
 					ConvKamenToCurr(result, !fonts.NoDiakrSupported);

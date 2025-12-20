@@ -26,8 +26,8 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 		Chpt->ReadRec(i, record);
 		RunMsgN(i);
 		//s = Chpt->loadS(ChptTyp, cr);
-		s = record->LoadS(ChptTyp->Name);
-		std::string chapter_name = record->LoadS(ChptName->Name); //Chpt->loadS(ChptName, record);
+		s = record->LoadS(ChptTyp);
+		std::string chapter_name = record->LoadS(ChptName); //Chpt->loadS(ChptName, record);
 		SetMsgPar(chapter_name);
 		if (Rotate && (s[0] == ' ' || s[0] == 'I')) {}
 		else {
@@ -41,7 +41,7 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 		while (i <= Chpt->FF->NRecs) {
 			Chpt->ReadRec(i, record);
 			//s = Chpt->loadS(ChptTyp, cr);
-			s = record->LoadS(ChptTyp->Name);
+			s = record->LoadS(ChptTyp);
 			if (s[0] == ' ' || s[0] == 'I') {
 				Chpt->DeleteRec(i, record);
 			}
@@ -202,7 +202,7 @@ void CodingRdb::CodeF(FileD* file_d, Record* record, bool rotate, WORD IRec, Fie
 	//if (pos == 0) return;
 	//MarkBoth(p, p2);
 	//std::string ss = ChptTF->Read(pos);
-	std::string ss = record->LoadS(F->Name);
+	std::string ss = record->LoadS(F);
 	if (ss.empty()) return;
 
 	LongStr* s = new LongStr(ss.length());
@@ -210,7 +210,7 @@ void CodingRdb::CodeF(FileD* file_d, Record* record, bool rotate, WORD IRec, Fie
 	memcpy(s->A, ss.c_str(), s->LL);
 
 	WORD l = s->LL;
-	record->SaveS(F->Name, ""); //ChptTF->Delete(pos);
+	record->SaveS(F, ""); //ChptTF->Delete(pos);
 	if (l == 0) goto label2;
 	if (rotate) {
 		if (F == ChptOldTxt) {
@@ -256,7 +256,7 @@ void CodingRdb::CodeF(FileD* file_d, Record* record, bool rotate, WORD IRec, Fie
 	}
 label2:
 	const std::string str(s->A, s->LL);
-	record->SaveS(F->Name, str);
+	record->SaveS(F, str);
 }
 
 void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)

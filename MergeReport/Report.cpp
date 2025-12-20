@@ -1958,18 +1958,18 @@ void Report::PutMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 
 		switch (f->frml_type) {
 		case 'S': {
-			std::string s = cr1->LoadS(f1->Name);
-			record->SaveS(f->Name, s);
+			std::string s = cr1->LoadS(f1);
+			record->SaveS(f, s);
 			break;
 		}
 		case 'R': {
-			double r = cr1->LoadR(f1->Name);
-			record->SaveR(f->Name, r);
+			double r = cr1->LoadR(f1);
+			record->SaveR(f, r);
 			break;
 		}
 		default: {
-			bool b = cr1->LoadB(f1->Name);
-			record->SaveB(f->Name, b);
+			bool b = cr1->LoadB(f1);
+			record->SaveB(f, b);
 			break;
 		}
 		}

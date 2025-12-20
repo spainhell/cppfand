@@ -45,9 +45,9 @@ bool Add(FileD* file_d, Additive* add_d, Record* record, double value, bool back
 	if (back) value = -value;
 
 	//const double new_value = file_d->loadR(add_d->Field, record) + value;
-	const double new_value = record->LoadR(add_d->Field->Name) + value;
+	const double new_value = record->LoadR(add_d->Field) + value;
 	//file_d->saveR(add_d->Field, new_value, record);
-	record->SaveR(add_d->Field->Name, new_value);
+	record->SaveR(add_d->Field, new_value);
 
 	if (add_d->Chk == nullptr) return result;
 
@@ -187,17 +187,17 @@ bool Assign(FileD* file_d, Additive* add_d, Record* record)
 		switch (f->frml_type) {
 		case 'R': {
 			//add_d->File2->saveR(f->Name, r, linked);
-			linked->SaveR(f->Name, r);
+			linked->SaveR(f, r);
 			break;
 		}
 		case 'S': {
 			//add_d->File2->saveS(f->Name, s, linked);
-			linked->SaveS(f->Name, s);
+			linked->SaveS(f, s);
 			break;
 		}
 		default: {
 			//add_d->File2->saveB(f->Name, b, linked);
-			linked->SaveB(f->Name, b);
+			linked->SaveB(f, b);
 			break;
 		}
 		}

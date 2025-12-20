@@ -799,17 +799,17 @@ void Merge::SetOldMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 		F = M[i]->FldD;
 		switch (F->frml_type) {
 		case 'S': {
-			C->S = record->LoadS(F->Name); //file_d->loadS(F, record);
+			C->S = record->LoadS(F); //file_d->loadS(F, record);
 			OldMXStr.StoreStr(C->S, M[i]);
 			break;
 		}
 		case 'R': {
-			C->R = record->LoadR(F->Name); //file_d->loadR(F, record);
+			C->R = record->LoadR(F); //file_d->loadR(F, record);
 			OldMXStr.StoreReal(C->R, M[i]);
 			break;
 		}
 		default: {
-			C->B = record->LoadB(F->Name); //file_d->loadB(F, record);
+			C->B = record->LoadB(F); //file_d->loadB(F, record);
 			OldMXStr.StoreBool(C->B, M[i]);
 			break;
 		}
@@ -849,17 +849,17 @@ void Merge::RunAssign(FileD* file_d, Record* record, std::vector<AssignD*> Assig
 			switch (A->outputFldD->frml_type) {
 			case 'S': {
 				//file_d->saveS(A->outputFldD, "", record); 
-				record->SaveS(A->outputFldD->Name, "");
+				record->SaveS(A->outputFldD, "");
 				break;
 			}
 			case 'R': {
 				//file_d->saveR(A->outputFldD, 0, record); 
-				record->SaveR(A->outputFldD->Name, 0);
+				record->SaveR(A->outputFldD, 0);
 				break;
 			}
 			case 'B': {
 				//file_d->saveB(A->outputFldD, false, record); 
-				record->SaveB(A->outputFldD->Name, false);
+				record->SaveB(A->outputFldD, false);
 				break;
 			}
 			}
@@ -1033,17 +1033,17 @@ void Merge::SetMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 		switch (F->frml_type) {
 		case 'S': {
 				//file_d->saveS(F, it0->S, record->GetRecord());
-				record->SaveS(F->Name, it0->S);
+				record->SaveS(F, it0->S);
 				break;
 			}
 		case 'R': {
 				//file_d->saveR(F, it0->R, record->GetRecord());
-				record->SaveR(F->Name, it0->R);
+				record->SaveR(F, it0->R);
 				break;
 			}
 		default: {
 				//file_d->saveB(F, it0->B, record->GetRecord()); 
-				record->SaveB(F->Name, it0->B);
+				record->SaveB(F, it0->B);
 				break;
 			}
 		}

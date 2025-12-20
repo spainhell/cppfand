@@ -198,9 +198,9 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 		case MInstrCode::_zero: {
 			FieldDescr* F = a->outputFldD;
 			switch (F->frml_type) {
-			case 'S': { RP1->SaveS(F->Name, ""); break; }
-			case 'R': { RP1->SaveR(F->Name, 0.0); break; }
-			case 'B': { RP1->SaveB(F->Name, false); break; }
+			case 'S': { RP1->SaveS(F, ""); break; }
+			case 'R': { RP1->SaveR(F, 0.0); break; }
+			case 'B': { RP1->SaveB(F, false); break; }
 			}
 			break;
 		}
@@ -346,7 +346,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 		f->ReadRec(IRec, rec);
 		//int pos = f->loadT(ChptTxt, rec);
 		//str = f->FF->TF->Read(pos);
-		str = rec->LoadS(ChptTxt->Name);
+		str = rec->LoadS(ChptTxt);
 		if (R->Encrypted) {
 			str = Coding::CodingString(Chpt->FF->TF->LicenseNr, str);
 		}
@@ -874,8 +874,8 @@ void ForAllProc(Instr_forall* PD)
 				}
 				continue;
 			}
-			break;
 		}
+		break;
 	} // while true
 
 	if (lk) {
@@ -1053,9 +1053,9 @@ void PutTxt(Instr_puttxt* PD)
 
 	FileD* file_d = nullptr;
 
-	if (file_d->FileType != DataFileType::FandFile) {
-		throw std::exception("runproc.cpp PutTxt() not implemented for non-FandFile");
-	}
+	//if (file_d->FileType != DataFileType::FandFile) {
+	//	throw std::exception("runproc.cpp PutTxt() not implemented for non-FandFile");
+	//}
 
 	const bool canCopyT = CanCopyT(file_d, nullptr, z, &TF02, &TFD02, TF02Pos, nullptr);
 
@@ -1659,7 +1659,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = gc->input_string;
-	if (srcCode.find("pgm:='(VetaD:record of DENIK)'+ 'begin '+ 'edit(VetaD,'+cond(") != std::string::npos) {
+	if (srcCode.find(" proc(Tip,('U105')); PARAM3.WinVer='7': proc(Tip,('U107')); PARAM3.WinVer='8':") != std::string::npos) {
 		printf("");
 	}
 #endif

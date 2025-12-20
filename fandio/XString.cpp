@@ -88,15 +88,15 @@ void XString::StoreKF(FileD* file_d, KeyFldD* KF, Record* record)
 	FieldDescr* F = KF->FldD;
 	switch (F->frml_type) {
 	case 'S': {
-		StoreStr(record->LoadS(F->Name), KF);
+		StoreStr(record->LoadS(F), KF);
 		break;
 	}
 	case 'R': {
-		StoreReal(record->LoadR(F->Name), KF);
+		StoreReal(record->LoadR(F), KF);
 		break;
 	}
 	case 'B': {
-		StoreBool(record->LoadB(F->Name), KF);
+		StoreBool(record->LoadB(F), KF);
 		break;
 	}
 	}

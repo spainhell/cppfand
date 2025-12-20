@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <utility>
+#include "../Core/runfrml.h"
 
 Record::Record()
 {
@@ -60,63 +61,84 @@ void Record::Reset()
 	}
 }
 
-bool Record::LoadB(const std::string& field_name) const
+bool Record::LoadB(FieldDescr* field) const
 {
-	size_t index = _getFieldDescrIndexByName(field_name);
-	if (std::cmp_not_equal(index, -1)) {
-		return _values[index].B;
-	} 
-	else {
-		return false;
-	}
-}
-
-double Record::LoadR(const std::string& field_name) const
-{
-	size_t index = _getFieldDescrIndexByName(field_name);
-	if (std::cmp_not_equal(index, -1)) {
-		return _values[index].R;
+	if (field->isStored()) {
+		size_t index = _getFieldDescrIndexByName(field->Name);
+		if (std::cmp_not_equal(index, -1)) {
+			return _values[index].B;
+		}
+		else {
+			return false;
+		}
 	}
 	else {
-		return 0.0;
+		return RunBool(this->_file_d, field->Frml, const_cast<Record*>(this));
 	}
 }
 
-std::string Record::LoadS(const std::string& field_name) const
+double Record::LoadR(FieldDescr* field) const
 {
-	size_t index = _getFieldDescrIndexByName(field_name);
-	if (std::cmp_not_equal(index, -1)) {
-		return _values[index].S;
+	if (field->isStored()) {
+		size_t index = _getFieldDescrIndexByName(field->Name);
+		if (std::cmp_not_equal(index, -1)) {
+			return _values[index].R;
+		}
+		else {
+			return 0.0;
+		}
 	}
 	else {
-		return "";
+		return RunReal(this->_file_d, field->Frml, const_cast<Record*>(this));
 	}
 }
 
-void Record::SaveB(const std::string& field_name, bool value)
+std::string Record::LoadS(FieldDescr* field) const
 {
-	size_t index = _getFieldDescrIndexByName(field_name);
-	if (std::cmp_not_equal(index, -1)) {
-		_values[index].B = value;
-		SetUpdated();
+	if (field->isStored()) {
+		size_t index = _getFieldDescrIndexByName(field->Name);
+		if (std::cmp_not_equal(index, -1)) {
+			return _values[index].S;
+		}
+		else {
+			return "";
+		}
+	}
+	else {
+		return RunString(this->_file_d, field->Frml, const_cast<Record*>(this));
 	}
 }
 
-void Record::SaveR(const std::string& field_name, double value)
+void Record::SaveB(FieldDescr* field, bool value)
 {
-	size_t index = _getFieldDescrIndexByName(field_name);
-	if (std::cmp_not_equal(index, -1)) {
-		_values[index].R = value;
-		SetUpdated();
+	if (field->isStored()) {
+		size_t index = _getFieldDescrIndexByName(field->Name);
+		if (std::cmp_not_equal(index, -1)) {
+			_values[index].B = value;
+			SetUpdated();
+		}
 	}
 }
 
-void Record::SaveS(const std::string& field_name, const std::string& value)
+void Record::SaveR(FieldDescr* field, double value)
 {
-	size_t index = _getFieldDescrIndexByName(field_name);
-	if (std::cmp_not_equal(index, -1)) {
-		_values[index].S = value;
-		SetUpdated();
+	if (field->isStored()) {
+		size_t index = _getFieldDescrIndexByName(field->Name);
+		if (std::cmp_not_equal(index, -1)) {
+			_values[index].R = value;
+			SetUpdated();
+		}
+	}
+}
+
+void Record::SaveS(FieldDescr* field, const std::string& value)
+{
+	if (field->isStored()) {
+		size_t index = _getFieldDescrIndexByName(field->Name);
+		if (std::cmp_not_equal(index, -1)) {
+			_values[index].S = value;
+			SetUpdated();
+		}
 	}
 }
 

@@ -46,15 +46,15 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 			if (F1->IsEOL) {
 				switch (F->frml_type) {
 				case 'R': {
-					record->SaveR(F->Name, 0);
+					record->SaveR(F, 0);
 					break;
 				}
 				case 'B': {
-					record->SaveB(F->Name, false);
+					record->SaveB(F, false);
 					break;
 				}
 				case 'S': {
-					record->SaveS(F->Name, "");
+					record->SaveS(F, "");
 					break;
 				}
 				default: ;
@@ -72,13 +72,13 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 					val(LeadChar(' ', s), r, err);
 					if ((F->Flg & f_Comma) != 0) {
 						r = r * Power10[F->M];
-						record->SaveR(F->Name, r);
+						record->SaveR(F, r);
 					}
 					break;
 				}
 				case FieldType::ALFANUM: {
 					if (Opt == CpOption::cpFix) {
-						record->SaveS(F->Name, F1->RdFix(F->L));
+						record->SaveS(F, F1->RdFix(F->L));
 					}
 					else {
 						char c = (char)gc->ForwChar;
@@ -90,16 +90,16 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 						else {
 							s = F1->RdDelim(',');
 						}
-						record->SaveS(F->Name, s);
+						record->SaveS(F, s);
 					}
 					break;
 				}
 				case FieldType::NUMERIC: {
 					if (Opt == CpOption::cpFix) {
-						record->SaveS(F->Name, F1->RdFix(F->L));
+						record->SaveS(F, F1->RdFix(F->L));
 					}
 					else {
-						record->SaveS(F->Name, F1->RdDelim(','));
+						record->SaveS(F, F1->RdDelim(','));
 					}
 					break;
 				}
@@ -115,20 +115,20 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 						}
 					}
 					if (s == "") {
-						record->SaveR(F->Name, 0.0);
+						record->SaveR(F, 0.0);
 					}
 					else if (F->field_type == FieldType::REAL) {
 						val(s, r, err);
-						record->SaveR(F->Name, r);
+						record->SaveR(F, r);
 					}
 					else {
-						record->SaveR(F->Name, ValDate(s, F->Mask));
+						record->SaveR(F, ValDate(s, F->Mask));
 					}
 					break;
 				}
 				case FieldType::BOOL: {
 					s = F1->RdFix(1);
-					record->SaveB(F->Name, s[1] == 'A');
+					record->SaveB(F, s[1] == 'A');
 					if (Opt == CpOption::cpVar) {
 						F1->RdDelim(',');
 					}
@@ -138,11 +138,11 @@ void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 					if (Opt == CpOption::cpVar) {
 						std::string x = F1->RdLongStr();
 						s = F1->RdDelim(',');
-						record->SaveS(F->Name, x);
+						record->SaveS(F, x);
 					}
 					else {
 						//file_d->saveT(F, 0, record);
-						record->SaveS(F->Name, "");
+						record->SaveS(F, "");
 					}
 					break;
 				}
@@ -170,7 +170,7 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 			switch (F->field_type) {
 			case FieldType::FIXED: {
 				//r = file_d->loadR(F, record);
-				r = record->LoadR(F->Name);
+				r = record->LoadR(F);
 				if ((F->Flg & f_Comma) != 0) r = r / Power10[F->M];
 				str(r, F->L, F->M, s);
 				if (s.length() > F->L) {
@@ -190,7 +190,7 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 			}
 			case FieldType::ALFANUM: {
 				//s = file_d->loadS(F, record);
-				s = record->LoadS(F->Name);
+				s = record->LoadS(F);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, ' ');
 					else s = LeadChar(' ', s);
@@ -205,7 +205,7 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 			}
 			case FieldType::NUMERIC: {
 				//s = file_d->loadS(F, record);
-				s = record->LoadS(F->Name);
+				s = record->LoadS(F);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, '0');
 					else s = LeadChar('0', s);
@@ -215,7 +215,7 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 			case FieldType::DATE:
 			case FieldType::REAL: {
 				//r = file_d->loadR(F, record);
-				r = record->LoadR(F->Name);
+				r = record->LoadR(F);
 				if ((r == 0.0) && (Opt == CpOption::cpVar)) s = "";
 				else if (F->field_type == FieldType::REAL) str(r, F->L, s);
 				else {
@@ -225,13 +225,13 @@ void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::BOOL: {
-				if (record->LoadB(F->Name)) s = 'A';
+				if (record->LoadB(F)) s = 'A';
 				else s = 'N';
 				break;
 			}
 			case FieldType::TEXT: {
 				if (Opt == CpOption::cpVar) {
-					std::string xs = record->LoadS(F->Name); //file_d->loadS(F, record);
+					std::string xs = record->LoadS(F); //file_d->loadS(F, record);
 					F2->WrString(xs, true);
 					// delete x;
 				}
@@ -331,7 +331,10 @@ void ExportTxt(CopyD* CD)
 		if (CD->HdFD != nullptr) {
 			int n = 0;
 			rec = CD->HdFD->LinkLastRec(n);
-			pstring s = rec->LoadS(CD->HdF->Name); //CD->HdFD->loadS(CD->HdF, rec);
+			if (rec == nullptr) {
+				rec = new Record(CD->HdFD);
+			}
+			pstring s = rec->LoadS(CD->HdF); //CD->HdFD->loadS(CD->HdF, rec);
 			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);

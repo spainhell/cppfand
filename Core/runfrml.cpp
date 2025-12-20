@@ -714,7 +714,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, Record* record)
 	}
 	case _field: {
 		FrmlElemRecVarField* x7 = (FrmlElemRecVarField*)X;
-		result = record->LoadB(x7->Field->Name); //file_d->loadB(x7->Field, record);
+		result = record->LoadB(x7->Field); //file_d->loadB(x7->Field, record);
 		break;
 	}
 	case _access: {
@@ -735,12 +735,13 @@ bool RunBool(FileD* file_d, FrmlElem* X, Record* record)
 		}
 		else {
 			Record* r = iX->File->LinkLastRec(RecNo);
-			if (iX->Frml == nullptr)
-			{
+			if (iX->Frml == nullptr) {
 				result = (r != nullptr);
 			}
-			else
-			{
+			else {
+				if (r == nullptr) {
+					r = new Record(iX->File);
+				}
 				result = RunBool(iX->File, iX->Frml, r);
 			}
 			delete r; r = nullptr;
@@ -780,7 +781,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, Record* record)
 		FrmlElem14* iX = (FrmlElem14*)X;
 		Record* rec = new Record(iX->RecFD);
 		AccRecNoProc(iX, 640, rec);
-		result = rec->LoadB(iX->RecFldD->Name); //iX->RecFD->loadB(iX->RecFldD, rec);
+		result = rec->LoadB(iX->RecFldD); //iX->RecFD->loadB(iX->RecFldD, rec);
 		delete rec; rec = nullptr;
 		break;
 	}
@@ -930,7 +931,7 @@ label1:
 	switch (X->Op) {
 	case _field: {
 		FrmlElemRecVarField* iX = (FrmlElemRecVarField*)X;
-		result = record->LoadR(iX->Field->Name); //file_d->loadR(iX->Field, record);
+		result = record->LoadR(iX->Field); //file_d->loadR(iX->Field, record);
 		break;
 	}
 	case _getlocvar: {
@@ -967,6 +968,9 @@ label1:
 		}
 		else {
 			Record* r = iX->File->LinkLastRec(RecNo);
+			if (r == nullptr) {
+				r = new Record(iX->File);
+			}
 			result = RunReal(iX->File, iX->Frml, r);
 			delete r; r = nullptr;
 		}
@@ -1123,7 +1127,7 @@ label1:
 		FrmlElem14* iX = (FrmlElem14*)X;
 		Record* rec = new Record(iX->RecFD);
 		AccRecNoProc(iX, 640, rec);
-		result = rec->LoadR(iX->RecFldD->Name);
+		result = rec->LoadR(iX->RecFldD);
 		delete rec; rec = nullptr;
 		break;
 	}
@@ -1330,7 +1334,7 @@ bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, F
 
 	if (Z->Op == _gettxt) {
 		std::string text = GetTxt(dst_file, (FrmlElem16*)Z, record);
-		record->SaveS(F->Name, text);
+		record->SaveS(F, text);
 		// TODO: replace this:
 		//pos = dst_file->FF->loadT(F, record->GetRecord());
 		result = true;
@@ -1395,30 +1399,30 @@ void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add)
 					default: break;
 					}
 				}*/
-				record->SaveS(field_d->Name, s);
+				record->SaveS(field_d, s);
 			}
 		}
 		else {
 			std::string s = RunString(file_d, X, record);
-			record->SaveS(field_d->Name, s);
+			record->SaveS(field_d, s);
 		}
 		break;
 	}
 	case 'R': {
 		if (add) {
-			double r1 = record->LoadR(field_d->Name);
+			double r1 = record->LoadR(field_d);
 			double r2 = RunReal(file_d, X, record);
-			record->SaveR(field_d->Name, r1 + r2);
+			record->SaveR(field_d, r1 + r2);
 		}
 		else {
 			double r = RunReal(file_d, X, record);
-			record->SaveR(field_d->Name, r);
+			record->SaveR(field_d, r);
 		}
 		break;
 	}
 	case 'B': {
 		bool b = RunBool(file_d, X, record);
-		record->SaveB(field_d->Name, b);
+		record->SaveB(field_d, b);
 		break;
 	}
 	default:;
@@ -1553,7 +1557,7 @@ label1:
 	case _field: {
 		FrmlElemRecVarField* iX7 = (FrmlElemRecVarField*)X;
 		//result = file_d->loadS(iX7->Field, record);
-		result = record->LoadS(iX7->Field->Name);
+		result = record->LoadS(iX7->Field);
 		break;
 	}
 	case _getlocvar: {
@@ -1566,19 +1570,15 @@ label1:
 		if (iX7->Link != nullptr) {
 			Record* newRecord = LinkUpw(iX7->Link, RecNo, true, record);
 			result = RunString(iX7->Link->ToFD, iX7->Frml, newRecord);
-			// TODO: is there anything in TWork?: iX7->File->ClearRecSpace(newRecord);
 			delete newRecord; newRecord = nullptr;
 		}
 		else {
 			Record* r = iX7->File->LinkLastRec(RecNo);
 			if (r == nullptr) {
-				result = "";
+				r = new Record(iX7->File);
 			}
-			else {
-				result = RunString(iX7->File, iX7->Frml, r);
-				// TODO: is there anything in TWork?: iX7->File->ClearRecSpace(r->GetRecord());
-				delete r; r = nullptr;
-			}
+			result = RunString(iX7->File, iX7->Frml, r);
+			delete r; r = nullptr;
 		}
 
 		iX7->File->OldLockMode(lm);  /*possibly reading .T*/
@@ -1690,7 +1690,7 @@ label1:
 		FrmlElem14* iX = (FrmlElem14*)X;
 		Record* rec = new Record(iX->RecFD);
 		AccRecNoProc(iX, 640, rec);
-		result = rec->LoadS(iX->RecFldD->Name); //iX->RecFD->loadS(iX->RecFldD, rec);
+		result = rec->LoadS(iX->RecFldD); //iX->RecFD->loadS(iX->RecFldD, rec);
 		delete rec; rec = nullptr;
 		break;
 	}

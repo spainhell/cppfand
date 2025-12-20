@@ -81,7 +81,7 @@ private:
     uint16_t FldRow(EditableField* D, uint16_t I);
     bool HasTTWw(FieldDescr* F);
     void DisplEmptyFld(EditableField* D, uint16_t I);
-    void Wr1Line(const FieldDescr* field, const Record* record) const;
+    void Wr1Line(FieldDescr* field, const Record* record) const;
     void DisplFld(EditableField* D, uint16_t I, uint8_t Color, Record* record);
     void DisplayRecord(uint16_t screen_data_row_nr);
     bool LockRec(bool Displ);

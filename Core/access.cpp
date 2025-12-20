@@ -191,18 +191,18 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 			if (F2->isStored()) {
 				switch (F->frml_type) {
 				case 'S': {
-					const std::string s = record->LoadS(F->Name);
-					up_rec->SaveS(F2->Name, s);
+					const std::string s = record->LoadS(F);
+					up_rec->SaveS(F2, s);
 					break;
 				}
 				case 'R': {
-					const double r = record->LoadR(F->Name);
-					up_rec->SaveR(F2->Name, r);
+					const double r = record->LoadR(F);
+					up_rec->SaveR(F2, r);
 					break;
 				}
 				case 'B': {
-					const bool b = record->LoadB(F->Name);
-					up_rec->SaveB(F2->Name, b);
+					const bool b = record->LoadB(F);
+					up_rec->SaveB(F2, b);
 					break;
 				}
 				}
