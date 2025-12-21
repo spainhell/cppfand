@@ -1639,6 +1639,10 @@ void RunProcedure(std::vector<Instr*>& PDRoot)
 
 void CallProcedure(Instr_proc* PD)
 {
+	if (PD->ProcName == "KontrCfg") {
+		printf("");
+	}
+
 	uint8_t* p1 = nullptr;
 	uint8_t* p2 = nullptr;
 

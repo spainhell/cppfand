@@ -1860,9 +1860,11 @@ void Report::Headings(LvDescr* L, LvDescr* L2, std::string& text)
 void Report::ReadInpFile(InpD* ID)
 {
 	//CRecPtr = ID->ForwRecPtr;
-	Record* rec = new Record(ID->Scan->FD/*, ID->ForwRecPtr->GetRecord()*/);
+	//Record* rec = new Record(ID->Scan->FD/*, ID->ForwRecPtr->GetRecord()*/);
+	//delete ID->ForwRecPtr; ID->ForwRecPtr = nullptr;
+	//ID->ForwRecPtr = new Record(ID->Scan->FD);
 label1:
-	ID->Scan->GetRec(rec);
+	ID->Scan->GetRec(ID->ForwRecPtr);
 	if (ID->Scan->eof) return;
 	if (ESCPressed() && PromptYN(24)) {
 		WasLPTCancel = true;
@@ -1870,8 +1872,8 @@ label1:
 	}
 	RecCount++;
 	RunMsgN(RecCount);
-	if (!RunBool(ID->Scan->FD, ID->Bool, rec)) goto label1;
-	delete rec; rec = nullptr;
+	if (!RunBool(ID->Scan->FD, ID->Bool, ID->ForwRecPtr)) goto label1;
+	//delete rec; rec = nullptr;
 }
 
 void Report::OpenInp()
