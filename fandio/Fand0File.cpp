@@ -77,10 +77,10 @@ std::unique_ptr<uint8_t[]> Fand0File::GetRecSpaceUnique() const
 /// <param name="record">ukazatel na buffer</param>
 size_t Fand0File::ReadRec(size_t rec_nr, Record* record)
 {
-	//if (record->GetFileD()->Name == "PARAM1")
-	//{
-	//	printf("");
-	//}
+	if (record->GetFileD()->Name == "PARAM3")
+	{
+		printf("");
+	}
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
 	std::unique_ptr buffer = GetRecSpaceUnique();
@@ -99,10 +99,10 @@ size_t Fand0File::ReadRec(size_t rec_nr, uint8_t* buffer)
 
 size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 {
-	//if (record->GetFileD()->Name == "PARAM1")
-	//{
-	//	printf("");
-	//}
+	if (record->GetFileD()->Name == "PARAM3")
+	{
+		printf("");
+	}
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
 	//DelAllTFlds(rec_nr); // delete all 'T' fields from orig. record first

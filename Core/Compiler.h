@@ -40,7 +40,7 @@ public:
 	Compiler(FileD* file_d, std::string& input);
 	~Compiler();
 	std::string Error(short N);
-	void SetInpStr(std::string& s, int32_t license_nr = 0, bool decode = false);
+	void SetInpStr(std::string& s, int32_t license_nr = 0, bool decode = false, bool rdb_pos_clr = true);
 	void SetInpStdStr(std::string& s, bool ShowErr);
 	void SetInpTTPos(FileD* file_d, int Pos, bool Decode);
 	void SetInpTT(RdbPos* rdb_pos, bool FromTxt);

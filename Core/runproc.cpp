@@ -1659,7 +1659,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = gc->input_string;
-	if (srcCode.find(" proc(Tip,('U105')); PARAM3.WinVer='7': proc(Tip,('U107')); PARAM3.WinVer='8':") != std::string::npos) {
+	if (srcCode.find("last='',ww=(0,0,2,1)); end; PARAM1.nrecs>1: PARAM1.nrecs:=1; end; close(PARAM1);") != std::string::npos) {
 		printf("");
 	}
 #endif

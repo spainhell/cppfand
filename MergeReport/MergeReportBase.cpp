@@ -24,7 +24,7 @@ void MergeReportBase::SetInput(RdbPos* rdb_pos, bool FromTxt)
 
 void MergeReportBase::SetInput(std::string& s, int32_t license_nr, bool decode)
 {
-	base_compiler->SetInpStr(s, license_nr, decode);
+	base_compiler->SetInpStr(s, license_nr, decode, false);
 }
 
 MergeReportBase::MergeReportBase()

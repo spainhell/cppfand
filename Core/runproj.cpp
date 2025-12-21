@@ -1133,7 +1133,7 @@ FileD* RdF(FileD* file_d, std::string FileName)
 		//int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
 		//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 		std::string source = file_d->FF->RecPtr->LoadS(ChptTxt);
-		gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted);
+		gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted, false);
 	}
 
 	if (EquUpCase(ext, ".DBF")) {
@@ -1154,7 +1154,7 @@ FileD* RdOldF(FileD* file_d, const std::string& file_name)
 	//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 
 	std::string source = file_d->FF->RecPtr->LoadS(ChptOldTxt);
-	gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted);
+	gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted, false);
 
 	if (EquUpCase(ext, ".DBF")) {
 		return RdFileD(name, DataFileType::DBF, FDTyp, ext);
@@ -1544,7 +1544,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						lstFDindex = CRdb->v_files.size() - 1;
 					}
 					std::deque<LinkD*> ld = LinkDRoot;
-					gc->SetInpStr(Txt, rdb_file->FF->TF->LicenseNr, Encryp);
+					gc->SetInpStr(Txt, rdb_file->FF->TF->LicenseNr, Encryp, false);
 					ReadProcHead(gc, Name);
 					ReadProcBody(gc);
 					//lstFD->pChain = nullptr;
@@ -1570,7 +1570,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					}
 					if (!Txt.empty()) {
 						gc->ResetCompilePars();
-						gc->SetInpStr(Txt, ChptTF->LicenseNr, Encryp);
+						gc->SetInpStr(Txt, ChptTF->LicenseNr, Encryp, false);
 						RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0));
 						MarkStore(p1);
 					}

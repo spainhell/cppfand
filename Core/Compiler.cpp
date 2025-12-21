@@ -116,7 +116,7 @@ std::string Compiler::Error(short N)
 	return ErrMsg;
 }
 
-void Compiler::SetInpStr(std::string& s, int32_t license_nr, bool decode)
+void Compiler::SetInpStr(std::string& s, int32_t license_nr, bool decode, bool rdb_pos_clr)
 {
 	if (decode) {
 		input_string = Coding::CodingString(license_nr, s);
@@ -129,7 +129,10 @@ void Compiler::SetInpStr(std::string& s, int32_t license_nr, bool decode)
 	else ForwChar = input_string[0];
 
 	input_pos = 0;
-	FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
+
+	if (rdb_pos_clr) {
+		FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
+	}
 }
 
 void Compiler::SetInpStdStr(std::string& s, bool ShowErr)
@@ -182,7 +185,7 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	else {
 		src = rec->LoadS(ChptOldTxt);
 	}
-	SetInpStr(src, ChptTF->LicenseNr, rdb->Encrypted);
+	SetInpStr(src, ChptTF->LicenseNr, rdb->Encrypted, false);
 
 	delete rec; rec = nullptr;
 }
