@@ -2101,7 +2101,7 @@ void Report::MergeProc(std::string& text)
 		InpD* ID = IDA[i];
 		if (ID->Exist) {
 			f = ID->Scan->FD;
-			rec = f->FF->RecPtr;
+			rec = ID->ForwRecPtr;
 			LvDescr* L = ID->LstLvS;
 		label1:
 			ZeroSumFlds(L);
