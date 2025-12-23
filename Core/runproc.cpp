@@ -405,7 +405,8 @@ void CallRdbProc(Instr_call* PD)
 	wwmix ww;
 	MarkStore(p);
 	// TODO: tady se ma ulozit stav (MyBP - ProcStkD)
-	b = EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall, &ww);
+	std::unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
+	b = runner->EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall, &ww);
 	// TODO: tady se ma obnovit stav (MyBP - ProcStkD)
 	ReleaseStore(&p);
 	if (!b) {

@@ -193,7 +193,8 @@ void RunRdb(std::string& p)
 {
 	if (std::string n; !p.empty() && SetTopDir(p, n)) {
 		wwmix ww;
-		EditExecRdb(n, "main", nullptr, &ww);
+		unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
+		runner->EditExecRdb(n, "main", nullptr, &ww);
 		// CFile = catalog->GetCatalogFile();
 		// CFile->CloseFile();
 		catalog->Close();
@@ -213,7 +214,8 @@ void CallInstallRdb()
 	std::string p = ww.SelectDiskFile(".RDB", 35, true);
 	std::string n;
 	if ((!p.empty()) && SetTopDir(p, n)) {
-		InstallRdb(n);
+		unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
+		runner->InstallRdb(n);
 		catalog->GetCatalogFile()->CloseFile();
 	}
 }

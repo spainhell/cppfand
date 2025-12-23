@@ -2,6 +2,18 @@
 
 #include <memory>
 
+#include "GlobalVariables.h"
+#include "legacy.h"
+#include "oaccess.h"
+#include "obaseww.h"
+#include "RunMessage.h"
+#include "rdfildcl.h"
+#include "rdproc.h"
+#include "rdrun.h"
+#include "runproc.h"
+#include "wwmenu.h"
+#include "Compiler.h"
+#include "access.h"
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../TextEditor/EditorHelp.h"
@@ -18,25 +30,11 @@
 #include "../MergeReport/Report.h"
 #include "../Prolog/RunProlog.h"
 #include "../Drivers/constants.h"
-#include "access.h"
 #include "../Common/Coding.h"
 #include "../Common/Record.h"
-#include "Compiler.h"
 #include "../fandio/FieldDescr.h"
 #include "../Common/FileD.h"
-#include "GlobalVariables.h"
 #include "../fandio/KeyFldD.h"
-#include "legacy.h"
-#include "oaccess.h"
-#include "obaseww.h"
-#include "RunMessage.h"
-#include "rdfildcl.h"
-#include "rdproc.h"
-#include "rdrun.h"
-#include "runproc.h"
-#include "wwmenu.h"
-
-int UserW = 0;
 
 struct RdbRecVars
 {
@@ -50,14 +48,12 @@ struct RdbRecVars
 	bool isSQL = false;
 };
 
-int sz = 0; WORD nTb = 0; void* Tb = nullptr;
-
-bool IsCurrChpt(FileD* file_d)
+bool ProjectRunner::IsCurrChpt(FileD* file_d)
 {
 	return CRdb->v_files[0] == file_d;
 }
 
-FandFileType ExtToTyp(const std::string& ext)
+FandFileType ProjectRunner::ExtToTyp(const std::string& ext)
 {
 	if ((ext.empty()) || EquUpCase(ext, ".HLP")
 #ifdef FandSQL
@@ -72,7 +68,7 @@ FandFileType ExtToTyp(const std::string& ext)
 	else return FandFileType::UNKNOWN;
 }
 
-void ReleaseFilesAndLinksAfterChapter(EditD* edit)
+void ProjectRunner::ReleaseFilesAndLinksAfterChapter(EditD* edit)
 {
 	//if (Chpt->pChain != nullptr) {
 	//	CloseFilesAfter(Chpt->pChain);
@@ -100,7 +96,7 @@ void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 	CompileFD = true;
 }
 
-bool NetFileTest(RdbRecVars* X)
+bool ProjectRunner::NetFileTest(RdbRecVars* X)
 {
 	if ((X->Typ != 'F') || (X->CatIRec == 0) || X->isSQL) {
 		return false;
@@ -113,7 +109,7 @@ bool NetFileTest(RdbRecVars* X)
 	return false;
 }
 
-void GetSplitChapterName(FileD* file_d, Record* record, std::string& name, std::string& ext)
+void ProjectRunner::GetSplitChapterName(FileD* file_d, Record* record, std::string& name, std::string& ext)
 {
 	std::string chapter_name = record->LoadS(ChptName);
 	name = TrailChar(chapter_name, ' ');
@@ -127,7 +123,7 @@ void GetSplitChapterName(FileD* file_d, Record* record, std::string& name, std::
 	}
 }
 
-void GetRdbRecVars(const EditD* edit, Record* record, RdbRecVars* X)
+void ProjectRunner::GetRdbRecVars(const EditD* edit, Record* record, RdbRecVars* X)
 {
 	FileD* file_d = edit->FD;
 	std::string s1 = record->LoadS(ChptTyp);
@@ -166,7 +162,7 @@ void GetRdbRecVars(const EditD* edit, Record* record, RdbRecVars* X)
 	//CRecPtr = cr;
 }
 
-bool ChptDelFor(EditD* edit, RdbRecVars* X)
+bool ProjectRunner::ChptDelFor(EditD* edit, RdbRecVars* X)
 {
 	bool result = true;
 	ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
@@ -237,7 +233,7 @@ bool ChptDelFor(EditD* edit, RdbRecVars* X)
 	return result;
 }
 
-bool ChptDel(FileD* file_d, DataEditor* data_editor)
+bool ProjectRunner::ChptDel(FileD* file_d, DataEditor* data_editor)
 {
 	RdbRecVars New;
 	if (!IsCurrChpt(file_d)) {
@@ -247,7 +243,7 @@ bool ChptDel(FileD* file_d, DataEditor* data_editor)
 	return ChptDelFor(data_editor->GetEditD(), &New);
 }
 
-bool IsDuplFileName(DataEditor* data_editor, std::string name)
+bool ProjectRunner::IsDuplFileName(DataEditor* data_editor, std::string name)
 {
 	bool result;
 
@@ -281,7 +277,7 @@ bool IsDuplFileName(DataEditor* data_editor, std::string name)
 	return result;
 }
 
-void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
+void ProjectRunner::RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 {
 	CExt = Old.Ext;
 	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
@@ -291,7 +287,7 @@ void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 	if (Old.FTyp == FandFileType::INDEX) RenameFile56(Old.Name + CExt, New.Name + CExt, false);
 }
 
-WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
+WORD ProjectRunner::ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 {
 	RdbRecVars New, Old;
 	short eq;
@@ -402,7 +398,7 @@ label2:
 	return result;
 }
 
-WORD FindHelpRecNr(FileD* FD, std::string& txt)
+WORD ProjectRunner::FindHelpRecNr(FileD* FD, std::string& txt)
 {
 	LockMode md = LockMode::NullMode;
 	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr;
@@ -435,7 +431,7 @@ label2:
 	return result;
 }
 
-bool PromptHelpName(FileD* file_d, WORD& N)
+bool ProjectRunner::PromptHelpName(FileD* file_d, WORD& N)
 {
 	wwmix ww;
 	std::string txt;
@@ -447,7 +443,7 @@ bool PromptHelpName(FileD* file_d, WORD& N)
 	return result;
 }
 
-void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
+void ProjectRunner::EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 {
 	FileD* FD;
 	WORD i, n;
@@ -513,7 +509,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 	}
 }
 
-void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
+void ProjectRunner::StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 {
 	uint8_t* p = nullptr;
 	//std::string oldpos = Chpt->FF->RecPtr->LoadS(F);
@@ -550,7 +546,7 @@ void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 	ReleaseStore(&p);
 }
 
-void SetChptFldD()
+void ProjectRunner::SetChptFldD()
 {
 	if (Chpt == nullptr) /*ChptTF = nullptr;*/ {
 		throw std::exception("SetChptFldDPtr: Chpt is NULL.");
@@ -566,7 +562,7 @@ void SetChptFldD()
 	}
 }
 
-void SetRdbDir(FileD* file_d, char Typ, std::string* Nm)
+void ProjectRunner::SetRdbDir(FileD* file_d, char Typ, std::string* Nm)
 {
 	RdbD* r = nullptr; RdbD* rb = nullptr;
 	std::string d;
@@ -617,7 +613,7 @@ void SetRdbDir(FileD* file_d, char Typ, std::string* Nm)
 }
 
 // Reopen RDB file in Exclusive mode
-void ResetRdOnly()
+void ProjectRunner::ResetRdOnly()
 {
 	if (Chpt->FF->UMode == RdOnly) {
 		Chpt->CloseFile();
@@ -627,7 +623,7 @@ void ResetRdOnly()
 	}
 }
 
-RdbD* PrepareRdb(const std::string& name, std::string& name1)
+RdbD* ProjectRunner::PrepareRdb(const std::string& name, std::string& name1)
 {
 	short i = 0, n = 0;
 	RdbD* rdb_d = new RdbD();
@@ -657,7 +653,7 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 	return rdb_d;
 }
 
-void CreateOpenChpt(std::string Nm, bool create)
+void ProjectRunner::CreateOpenChpt(std::string Nm, bool create)
 {
 	std::string p;
 	std::string s;
@@ -731,7 +727,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 	CRdb->Encrypted = !Coding::HasPassword(Chpt, 1, "");
 }
 
-void CloseChpt()
+void ProjectRunner::CloseChpt()
 {
 	if (CRdb == nullptr) return;
 	ClearHelpStkForCRdb();
@@ -765,7 +761,7 @@ void CloseChpt()
 	}
 }
 
-FileD* FindFD(Record* record)
+FileD* ProjectRunner::FindFD(Record* record)
 {
 	FileD* result = nullptr;
 	std::string d;
@@ -790,7 +786,7 @@ FileD* FindFD(Record* record)
 	return result;
 }
 
-void Diagnostics(void* MaxHp, int Free, FileD* FD)
+void ProjectRunner::Diagnostics(void* MaxHp, int Free, FileD* FD)
 {
 	std::string s1 = "---";
 	std::string s2 = "---";
@@ -806,7 +802,7 @@ void Diagnostics(void* MaxHp, int Free, FileD* FD)
 	WrLLF10Msg(136);
 }
 
-bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
+bool ProjectRunner::CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 {
 	uint8_t* p = nullptr; uint8_t* p2 = nullptr; uint8_t* MaxHp = nullptr;
 	//EditD* OldE = nullptr;
@@ -1011,7 +1007,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 	return result;
 }
 
-void RdUserId(bool check)
+void ProjectRunner::RdUserId(bool check)
 {
 	std::string pw;
 	std::set<uint16_t> acc;
@@ -1078,7 +1074,7 @@ void RdUserId(bool check)
 	}
 }
 
-WORD CompileMsgOn(CHAR_INFO* Buf, int& w)
+WORD ProjectRunner::CompileMsgOn(CHAR_INFO* Buf, int& w)
 {
 	pstring s;
 	WORD result;
@@ -1104,7 +1100,7 @@ WORD CompileMsgOn(CHAR_INFO* Buf, int& w)
 	return result;
 }
 
-void CompileMsgOff(CHAR_INFO* Buf, int& w)
+void ProjectRunner::CompileMsgOff(CHAR_INFO* Buf, int& w)
 {
 	if (w != 0) {
 		PopW(w);
@@ -1115,7 +1111,7 @@ void CompileMsgOff(CHAR_INFO* Buf, int& w)
 }
 
 
-FileD* RdF(FileD* file_d, std::string FileName, Record* record)
+FileD* ProjectRunner::RdF(FileD* file_d, std::string FileName, Record* record)
 {
 	std::string d, name, ext;
 	FSplit(FileName, d, name, ext);
@@ -1146,7 +1142,7 @@ FileD* RdF(FileD* file_d, std::string FileName, Record* record)
 	
 }
 
-FileD* RdOldF(FileD* file_d, const std::string& file_name, Record* record)
+FileD* ProjectRunner::RdOldF(FileD* file_d, const std::string& file_name, Record* record)
 {
 	std::string d, name, ext;
 	FSplit(file_name, d, name, ext);
@@ -1166,7 +1162,7 @@ FileD* RdOldF(FileD* file_d, const std::string& file_name, Record* record)
 	}
 }
 
-bool EquStoredF(std::vector<FieldDescr*>& fields1, std::vector<FieldDescr*>& fields2)
+bool ProjectRunner::EquStoredF(std::vector<FieldDescr*>& fields1, std::vector<FieldDescr*>& fields2)
 {
 	std::vector<FieldDescr*>::iterator it1 = fields1.begin();
 	std::vector<FieldDescr*>::iterator it2 = fields2.begin();
@@ -1200,7 +1196,7 @@ bool EquStoredF(std::vector<FieldDescr*>& fields1, std::vector<FieldDescr*>& fie
 	}
 }
 
-bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
+bool ProjectRunner::MergeAndReplace(FileD* fd_old, FileD* fd_new)
 {
 	bool result;
 
@@ -1249,7 +1245,7 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 	return result;
 }
 
-bool EquKeys(std::vector<XKey*>& K1, std::vector<XKey*>& K2)
+bool ProjectRunner::EquKeys(std::vector<XKey*>& K1, std::vector<XKey*>& K2)
 {
 	//auto result = false;
 	//while (K1 != nullptr) {
@@ -1296,7 +1292,7 @@ bool EquKeys(std::vector<XKey*>& K1, std::vector<XKey*>& K2)
 	return true;
 }
 
-bool MergeOldNew(FileD* new_file, FileD* old_file)
+bool ProjectRunner::MergeOldNew(FileD* new_file, FileD* old_file)
 {
 	//std::deque<LinkD*> ld = LinkDRoot;
 	bool result = false;
@@ -1332,7 +1328,7 @@ label1:
 	return result;
 }
 
-bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
+bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "starting CompileRdb()");
@@ -1643,7 +1639,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	return result;
 }
 
-void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
+void ProjectRunner::GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 {
 	IsCompileErr = false;
 	std::string s = MsgLine;
@@ -1676,7 +1672,7 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 	data_editor->EditFreeTxt(ChptTxt, s, true, Brk);
 }
 
-void WrErrMsg630(std::string Nm)
+void ProjectRunner::WrErrMsg630(std::string Nm)
 {
 	IsCompileErr = false;
 	SetMsgPar(MsgLine);
@@ -1685,7 +1681,7 @@ void WrErrMsg630(std::string Nm)
 	WrLLF10Msg(630);
 }
 
-void Finish_EditExecRdb(bool wasGraph, int w)
+void ProjectRunner::Finish_EditExecRdb(bool wasGraph, int w)
 {
 	if (!wasGraph && IsGraphMode) {
 		// ScrTextMode(false, false);
@@ -1702,7 +1698,7 @@ void Finish_EditExecRdb(bool wasGraph, int w)
 #endif
 }
 
-bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_proc* proc_call, wwmix* ww)
+bool ProjectRunner::EditExecRdb(const std::string& name, const std::string& proc_name, Instr_proc* proc_call, wwmix* ww)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "starting EditExecRdb()");
@@ -1935,7 +1931,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 	return result;
 }
 
-void UpdateCat()
+void ProjectRunner::UpdateCat()
 {
 	FileD* cat = catalog->GetCatalogFile();
 	if (cat->FF->Handle == nullptr) {
@@ -1952,7 +1948,7 @@ void UpdateCat()
 	delete EO; EO = nullptr;
 }
 
-void UpdateUTxt()
+void ProjectRunner::UpdateUTxt()
 {
 	bool Upd;
 	int Pos = 0;
@@ -2025,7 +2021,7 @@ void UpdateUTxt()
 	ReleaseStore(&p1);
 }
 
-void InstallRdb(std::string n)
+void ProjectRunner::InstallRdb(std::string n)
 {
 	wwmix ww;
 

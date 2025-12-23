@@ -85,7 +85,8 @@ extern "C" int FAND_API OpenRDB(char* rdbName)
 	IsTestRun = true; // debug mode - open files in rdb/W mode
 	CompileHelpCatDcl();
 	SetTopDir(p, n);
-	CreateOpenChpt(n, true);
+	std::unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
+	runner->CreateOpenChpt(n, true);
 
 	rdb = CRdb;
 	rdbFile = rdb->v_files[0];

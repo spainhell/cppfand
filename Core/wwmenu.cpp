@@ -249,7 +249,8 @@ void TMenu::HandleEvent()
 				case __ALT_F2: {
 					if (IsTestRun && !IsBoxS) {
 						ClrEvent();
-						EditHelpOrCat(__ALT_F2, 2, hlp);
+						std::unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
+						runner->EditHelpOrCat(__ALT_F2, 2, hlp);
 						//KbdChar = 0;
 					}
 					break;

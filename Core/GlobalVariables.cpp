@@ -26,12 +26,14 @@ FandXFile XWork(nullptr);
 int ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
+
 FileD* Chpt = nullptr; // absolute FileDRoot;
 FandTFile* ChptTF;
 FieldDescr* ChptTxtPos;
 FieldDescr* ChptVerif; // { updated record }
 FieldDescr* ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
 FieldDescr* ChptTyp, *ChptName, *ChptTxt;
+
 bool EscPrompt = false;
 //pstring UserName = pstring(20);
 //pstring UserPassWORD = pstring(20);

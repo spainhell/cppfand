@@ -8,6 +8,7 @@
 #include "../Core/rdrun.h"
 #include "../MergeReport/RprtOpt.h"
 
+class ProjectRunner;
 enum class FieldType;
 class FieldDescr;
 class EditableField;
@@ -64,6 +65,7 @@ private:
     Record* original_rec_ = nullptr;
     bool current_rec_is_ref = false;    // current record is owned by another object (will not be deleted in destructor)
 	std::unique_ptr<DataEditorParams> params_;
+    std::unique_ptr<ProjectRunner> runner_;
     EditD* edit_ = nullptr;
 
     std::vector<EditableField*>::iterator FirstEmptyFld;
