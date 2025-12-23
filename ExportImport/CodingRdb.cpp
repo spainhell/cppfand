@@ -263,7 +263,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 {
 	uint8_t* p = nullptr;
 	MarkStore(p);
-	Record* cr = Chpt->FF->RecPtr;
+	//Record* cr = Chpt->FF->RecPtr;
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
 	SpecFDNameAllowed = true;
 
@@ -275,7 +275,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 
 	SaveFiles();
 	ReleaseStore(&p);
-	Chpt->FF->RecPtr = cr;
+	//Chpt->FF->RecPtr = cr;
 	//CFile = Chpt;
 	//CRecPtr = edit->NewRec->GetRecord();
 	//CFile->ReadRec(data_editor->CRec(), CRecPtr);

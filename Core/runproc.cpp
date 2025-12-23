@@ -342,8 +342,8 @@ void DisplayProc(RdbD* R, WORD IRec)
 	}
 	else {
 		FileD* f = R->v_files[0];
-		Record* rec = Chpt->FF->RecPtr;
-		f->ReadRec(IRec, rec);
+		std::unique_ptr<Record> rec = std::make_unique<Record>(Chpt);
+		f->ReadRec(IRec, rec.get());
 		//int pos = f->loadT(ChptTxt, rec);
 		//str = f->FF->TF->Read(pos);
 		str = rec->LoadS(ChptTxt);
@@ -1769,11 +1769,11 @@ void CallProcedure(Instr_proc* PD)
 	it0 = it1;
 	while (it0 != PD->loc_var_block.variables.end()) {
 		if ((*it0)->f_typ == 'i') {
-			XWKey* hX = (XWKey*)(*it0)->record;
+			XWKey* hX = (*it0)->key;
 			if (hX->KFlds.empty()) {
 				hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
 			}
-			XWKey* tmp = (XWKey*)(*it0)->record;
+			XWKey* tmp = (*it0)->key;
 			tmp->Open(fd, hX->KFlds, true, false);
 		}
 		++it0;
@@ -1823,7 +1823,7 @@ void CallProcedure(Instr_proc* PD)
 			}
 			case 'i': {
 				FileD* f = (*it0)->FD;
-				((XWKey*)(*it0)->record)->Close(f);
+				(*it0)->key->Close(f);
 				break;
 			}
 			}

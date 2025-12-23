@@ -186,7 +186,7 @@ bool Fand0File::IsShared()
 void Fand0File::Reset()
 {
 	RecLen = 0;
-	RecPtr = nullptr;
+	delete RecPtr; RecPtr = nullptr;
 	NRecs = 0;
 	FirstRecPos = 0;
 	WasWrRec = false; WasRdOnly = false; Eof = false;

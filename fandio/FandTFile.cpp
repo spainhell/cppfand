@@ -27,6 +27,14 @@ FandTFile::~FandTFile()
 	}
 }
 
+{
+	if (_parent->GetFileD()->Name == "UCTO2023"){
+		printf("");
+	}
+
+	DataFileBase::SetUpdateFlag();
+}
+
 void FandTFile::Err(unsigned short n, bool ex) const
 {
 	if (IsWork) {

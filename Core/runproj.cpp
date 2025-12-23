@@ -516,7 +516,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 {
 	uint8_t* p = nullptr;
-	std::string oldpos = Chpt->FF->RecPtr->LoadS(F);
+	//std::string oldpos = Chpt->FF->RecPtr->LoadS(F);
 	MarkStore(p);
 
 	if (CRdb->Encrypted) {
@@ -538,7 +538,7 @@ void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 	//	}
 	//}
 
-	const int pos = ChptTF->Store(text);
+	//const int pos = ChptTF->Store(text);
 
 	//if (ChptTF->LicenseNr == 0) {
 	//	Chpt->saveT(F, pos, Chpt->FF->RecPtr);
@@ -674,7 +674,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 	RdbD* R = PrepareRdb(Nm, Nm1);
 	CRdb = R;
 	Chpt = CRdb->v_files[0];
-	Chpt->FF->RecPtr = new Record(Chpt);
+	//Chpt->FF->RecPtr = new Record(Chpt);
 
 	SetRdbDir(Chpt, Nm[0], &Nm1);
 	p = CDir + Nm1 + ".RDB";
@@ -1113,7 +1113,7 @@ void CompileMsgOff(CHAR_INFO* Buf, int& w)
 }
 
 
-FileD* RdF(FileD* file_d, std::string FileName)
+FileD* RdF(FileD* file_d, std::string FileName, Record* record)
 {
 	std::string d, name, ext;
 	FSplit(FileName, d, name, ext);
@@ -1132,7 +1132,7 @@ FileD* RdF(FileD* file_d, std::string FileName)
 	else {
 		//int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
 		//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
-		std::string source = file_d->FF->RecPtr->LoadS(ChptTxt);
+		std::string source = record->LoadS(ChptTxt);
 		gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted, false);
 	}
 
@@ -1144,7 +1144,7 @@ FileD* RdF(FileD* file_d, std::string FileName)
 	
 }
 
-FileD* RdOldF(FileD* file_d, const std::string& file_name)
+FileD* RdOldF(FileD* file_d, const std::string& file_name, Record* record)
 {
 	std::string d, name, ext;
 	FSplit(file_name, d, name, ext);
@@ -1153,7 +1153,7 @@ FileD* RdOldF(FileD* file_d, const std::string& file_name)
 	//int pos = file_d->loadT(ChptOldTxt, file_d->FF->RecPtr);
 	//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 
-	std::string source = file_d->FF->RecPtr->LoadS(ChptOldTxt);
+	std::string source = record->LoadS(ChptOldTxt);
 	gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted, false);
 
 	if (EquUpCase(ext, ".DBF")) {
@@ -1359,6 +1359,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	MarkBoth(p, p2);
 	//p1 = p;
 
+	// TODO: remove !!!
+	ChptTF->CompileAll = true;
+
 	try {
 		IsCompileErr = false; FDCompiled = false;
 		//OldCRec = data_editor->CRec();
@@ -1375,47 +1378,46 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				Switches[0] = 0;
 			}
 		}
+
 		lmsg = CompileMsgOn(Buf, w);
 		//CRecPtr = v_files->FF->RecPtr;
 		Encryp = CRdb->Encrypted;
 		for (I = 1; I <= rdb_file->FF->NRecs; I++) {
-			rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
+			Record* record = new Record(rdb_file);
+			rdb_file->ReadRec(I, record);
 			RP.i_rec = I;
-			//Verif = rdb_file->loadB(ChptVerif, rdb_file->FF->RecPtr);
-			Verif = rdb_file->FF->RecPtr->LoadB(ChptVerif);
-			//STyp = rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr);
-			STyp = rdb_file->FF->RecPtr->LoadS(ChptTyp);
+			Verif = record->LoadB(ChptVerif);
+			STyp = record->LoadS(ChptTyp);
 			Typ = STyp[0];
-			Name = OldTrailChar(' ', rdb_file->FF->RecPtr->LoadS(ChptName));
-			Txt = rdb_file->FF->RecPtr->LoadS(ChptTxt);
+			Name = OldTrailChar(' ', record->LoadS(ChptName));
+			Txt = record->LoadS(ChptTxt);
 			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) {
 				// verify mode and encrypted or read only RDB
 				gc->GoCompileErr(I, 647);
 				throw std::exception("Not all chapters all compiled (encrypted or RdOnly).");
 			}
-			if (Verif														// verify mode
-				|| ChptTF->CompileAll											// compile all flag
-				|| from_CtrlF10													// Ctrl F10 - 'finish rdb'
-				|| (Typ == 'U')													// User rights chapter
-				|| (Typ == 'F' || Typ == 'D') && CompileFD						// chapter F or D and compile FD flag
-				|| (Typ == 'P') && ChptTF->CompileProc) {						// chapter P and compile proc flag	
-				//OldTxt = v_files->loadT(ChptOldTxt, v_files->FF->RecPtr);
+			if (Verif												// verify mode
+				|| ChptTF->CompileAll								// compile all flag
+				|| from_CtrlF10										// Ctrl F10 - 'finish rdb'
+				|| (Typ == 'U')										// User rights chapter
+				|| (Typ == 'F' || Typ == 'D') && CompileFD			// chapter F or D and compile FD flag
+				|| (Typ == 'P') && ChptTF->CompileProc) {			// chapter P and compile proc flag	
 				InpRdbPos = RP;
 				if (IsTestRun) {
 					ClrScr(TextAttr);
 					screen.ScrFormatWrText(3 + lmsg, 2, "%*i", 4, I);
-					std::string chptNameTxt = rdb_file->FF->RecPtr->LoadS(ChptName);
+					std::string chptNameTxt = record->LoadS(ChptName);
 					screen.ScrFormatWrText(3 + lmsg, 3, "%*s%*s", 4, STyp.c_str(), 14, chptNameTxt.c_str());
 
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 						for (J = 1; J <= I - 1; J++) {
-							rdb_file->ReadRec(J, rdb_file->FF->RecPtr);
-							if ((STyp == rdb_file->FF->RecPtr->LoadS(ChptTyp))
-								&& EquUpCase(Name, OldTrailChar(' ', rdb_file->FF->RecPtr->LoadS(ChptName)))) {
+							rdb_file->ReadRec(J, record);
+							if ((STyp == record->LoadS(ChptTyp))
+								&& EquUpCase(Name, OldTrailChar(' ', record->LoadS(ChptName)))) {
 								gc->GoCompileErr(I, 649);
 							}
 						}
-						rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
+						rdb_file->ReadRec(I, record);
 					}
 				}
 				switch (Typ) {
@@ -1427,14 +1429,14 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					if ((Txt.empty()) && IsTestRun) {
 						SetMsgPar(Name);
 						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
-							rdb_file->FF->RecPtr->SaveS(ChptOldTxt, "");
+							record->SaveS(ChptOldTxt, "");
 							OldTxt = 0;
 
 							std::unique_ptr<DbfFile> dbf_file = std::make_unique<DbfFile>(nullptr);
 							dbf_file->MakeDbfDcl(nm);
 
-							Txt = rdb_file->FF->RecPtr->LoadS(ChptTxt);
-							rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+							Txt = record->LoadS(ChptTxt);
+							rdb_file->WriteRec(I, record);
 						}
 					}
 #ifndef FandSQL
@@ -1443,9 +1445,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					}
 #endif
 					// get position of old chapter code
-					std::string old_txt = rdb_file->FF->RecPtr->LoadS(ChptOldTxt);
+					std::string old_txt = record->LoadS(ChptOldTxt);
 
-					p1 = RdF(rdb_file, Name);
+					p1 = RdF(rdb_file, Name, record);
 					CRdb->v_files.push_back(p1);
 					if (p1->IsHlpFile) {
 						CRdb->help_file = p1;
@@ -1454,14 +1456,14 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					if (Verif || ChptTF->CompileAll || old_txt.empty()) {
 						if (!Encryp) {
 							// get last successfully compiled code
-							std::string old_chapter_code = rdb_file->FF->RecPtr->LoadS(ChptOldTxt);
+							std::string old_chapter_code = record->LoadS(ChptOldTxt);
 							// get current chapter code
-							std::string chapter_code = rdb_file->FF->RecPtr->LoadS(ChptTxt);
+							std::string chapter_code = record->LoadS(ChptTxt);
 
 							// compare old and new chapter code
 							if (old_chapter_code != chapter_code) {
 								if (!ChptTF->CompileAll && !old_txt.empty()) {
-									FileD* previous_decl = RdOldF(rdb_file, Name);
+									FileD* previous_decl = RdOldF(rdb_file, Name, record);
 									// TODO: should this file be added into CRdb->v_files?
 
 									// transform the file
@@ -1471,8 +1473,8 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 									if (merged) {
 										// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
-										rdb_file->FF->RecPtr->SaveS(ChptOldTxt, chapter_code);
-										rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+										record->SaveS(ChptOldTxt, chapter_code);
+										rdb_file->WriteRec(I, record);
 									}
 									else {
 										throw std::exception("Merge of an old and a new file declaration unsuccessful.");
@@ -1480,8 +1482,8 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 								}
 								else {
 									// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
-									rdb_file->FF->RecPtr->SaveS(ChptOldTxt, chapter_code);
-									rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+									record->SaveS(ChptOldTxt, chapter_code);
+									rdb_file->WriteRec(I, record);
 								}
 							}
 						}
@@ -1520,8 +1522,8 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						if (RprtTxt.empty()) {
 							gc->GoCompileErr(I, 1145);
 						}
-						rdb_file->FF->RecPtr->SaveS(ChptTxt, RprtTxt);
-						rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+						record->SaveS(ChptTxt, RprtTxt);
+						rdb_file->WriteRec(I, record);
 					}
 					else {
 						const std::unique_ptr report = std::make_unique<Report>();
@@ -1598,9 +1600,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			//CFile = Chpt;
 			//CRecPtr = v_files->FF->RecPtr;
 			if (Verif) {
-				rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
-				rdb_file->FF->RecPtr->SaveB(ChptVerif, false);
-				rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+				rdb_file->ReadRec(I, record);
+				record->SaveB(ChptVerif, false);
+				rdb_file->WriteRec(I, record);
 			}
 		}
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
@@ -1965,15 +1967,20 @@ void UpdateUTxt()
 		WrLLF10Msg(9);
 		return;
 	}
-	Chpt->FF->ReadRec(1, Chpt->FF->RecPtr);
-	if (Chpt->FF->RecPtr->LoadS(ChptTyp) != "U") {
+
+	std::unique_ptr<Record> record = std::make_unique<Record>(Chpt);
+
+	Chpt->FF->ReadRec(1, record.get());
+	
+	if (record->LoadS(ChptTyp) != "U") {
 		WrLLF10Msg(9);
 		return;
 	}
+	
 	int w = PushW(1, 1, TxtCols, TxtRows - 1);
 	size_t TxtPos = 1;
 	TextAttr = screen.colors.tNorm;
-	std::string s = Chpt->FF->RecPtr->LoadS(ChptTxt);
+	std::string s = record->LoadS(ChptTxt);
 
 	if (CRdb->Encrypted) {
 		s = Coding::CodingString(ChptTF->LicenseNr, s);
@@ -1996,7 +2003,7 @@ void UpdateUTxt()
 			b = false;
 			if (Upd) {
 				StoreChptTxt(ChptTxt, s, true);
-				Chpt->WriteRec(1, Chpt->FF->RecPtr);
+				Chpt->WriteRec(1, record.get());
 			}
 			break;
 		}

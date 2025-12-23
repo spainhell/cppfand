@@ -152,11 +152,10 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 		}
 		else {
 			if (lv->f_typ == 'i') {
-				std::vector<KeyFldD*>* kf = &((XWKey*)lv->record)->KFlds;
 				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) {
 					compiler->OldError(155);
 				}
-				if (!kf->empty() && !KeyFldD::EquKFlds(*kf, ld->ToKey->KFlds)) {
+				if (!lv->key->KFlds.empty() && !KeyFldD::EquKFlds(lv->key->KFlds, ld->ToKey->KFlds)) {
 					compiler->OldError(181);
 				}
 			}
@@ -180,9 +179,8 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 				compiler->Accept(')');
 				if (lv->FD != fd) compiler->OldError(149);
 				if (lv->f_typ == 'i') {
-					std::vector<KeyFldD*>* kf = &((XWKey*)lv->record)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) compiler->OldError(155);
-					if (!kf->empty() && !KeyFldD::EquKFlds(*kf, ld->ToKey->KFlds)) compiler->OldError(181);
+					if (!lv->key->KFlds.empty() && !KeyFldD::EquKFlds(lv->key->KFlds, ld->ToKey->KFlds)) compiler->OldError(181);
 				}
 				*LLV = lv;
 				*LLD = ld;
@@ -583,8 +581,12 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 		iZ->P1 = compiler->RdRealFrml(nullptr); compiler->Accept(',');
 		iZ->P2 = compiler->RdRealFrml(nullptr); compiler->Accept(',');
 		Typ = 'r';
-		if (IsRecVar(compiler, &LV)) iZ->P3 = (FrmlElem*)LV->record;
-		else iZ->P3 = compiler->RdFrml(Typ, nullptr);
+		if (IsRecVar(compiler, &LV)) {
+			iZ->P3 = LV->frml;
+		}
+		else {
+			iZ->P3 = compiler->RdFrml(Typ, nullptr);
+		}
 		iZ->N31 = Typ;
 		FTyp = 'R';
 	}
@@ -1738,7 +1740,7 @@ void RdEditOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 	}
 	else if (compiler->IsOpt("SEL")) {
 		LocVar* lv = RdIdxVar(compiler);
-		EO->SelKey = (XWKey*)lv->record;
+		EO->SelKey = lv->key;
 		if ((EO->ViewKey == nullptr)) {
 			compiler->OldError(108);
 		}
@@ -2371,7 +2373,7 @@ Instr* RdGetIndex(Compiler* compiler)
 	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		if (compiler->IsOpt("SORT")) {
-			if (!((XWKey*)lv->record)->KFlds.empty()) {
+			if (!lv->key->KFlds.empty()) {
 				compiler->OldError(175);
 			}
 			compiler->Accept('(');
@@ -2760,7 +2762,7 @@ Instr_assign* RdAssign(Compiler* compiler)
 				if ((compiler->Lexem != _number) || (compiler->LexWord != "0")) compiler->Error(183);
 				compiler->RdLex();
 				PD = new Instr_assign(PInstrCode::_asgnxnrecs); // GetPInstr(_asgnxnrecs, 4);
-				PD->xnrIdx = (XWKey*)LV->record;
+				PD->xnrIdx = LV->key;
 			}
 			else {
 				PD = new Instr_assign(PInstrCode::_asgnrecfld); // GetPInstr(_asgnrecfld, 13);

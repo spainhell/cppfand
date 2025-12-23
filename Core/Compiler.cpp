@@ -1380,7 +1380,7 @@ XKey* Compiler::RdViewKey(FileD* file_d)
 
 	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->f_typ == 'i')) {
 		if (lv->FD != file_d) Error(164);
-		lastK = (XKey*)(lv->record);
+		lastK = lv->key;
 		goto label1;
 	}
 	Error(109);

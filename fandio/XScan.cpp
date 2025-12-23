@@ -203,7 +203,7 @@ int32_t XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 	Bool = aBool;
 	OwnerLV = LV;
 	Kind = ScanMode::Interval;
-	if (!KeyFldD::EquKFlds(((XWKey*)LV->record)->KFlds, LD->ToKey->KFlds)) {
+	if (!KeyFldD::EquKFlds(LV->key->KFlds, LD->ToKey->KFlds)) {
 		// RunError(1181);
 		return 1181;
 	}
@@ -314,7 +314,7 @@ void XScan::NextIntvl()
 	int n = 0, nBeg = 0;
 
 	if (OwnerLV != nullptr) {
-		XWKey* k = (XWKey*)OwnerLV->record; // TODO: bude toto fungovat?
+		XWKey* k = OwnerLV->key;
 		while (iOKey < k->NRecs()) {
 			iOKey++;
 			xx.S = k->NrToStr(OwnerLV->FD, iOKey);

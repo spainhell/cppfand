@@ -13,7 +13,7 @@ int32_t GetIndex(Instr_getindex* PD)
 {
 	XString x;
 	FileD* lvFD = PD->loc_var1->FD;
-	XWKey* k = (XWKey*)PD->loc_var1->record;
+	XWKey* k = PD->loc_var1->key;
 
 	Record* record = new Record(lvFD);
 
