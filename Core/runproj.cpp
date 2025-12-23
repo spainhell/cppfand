@@ -711,7 +711,9 @@ void CreateOpenChpt(std::string Nm, bool create)
 	else um = RdOnly;
 
 	if (Chpt->OpenF(CPath, um)) {
-		if (ChptTF->CompileAll) ResetRdOnly();
+		if (ChptTF->CompileAll) {
+			ResetRdOnly();
+		}
 		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
 			// TODO: oldChptTF != nullptr je v podmince navic, protoze dalsi podminka vzdy vyhorela 
 			ResetRdOnly();
@@ -1358,9 +1360,6 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	EditD* edit = nullptr;
 	MarkBoth(p, p2);
 	//p1 = p;
-
-	// TODO: remove !!!
-	ChptTF->CompileAll = true;
 
 	try {
 		IsCompileErr = false; FDCompiled = false;
