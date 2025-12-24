@@ -450,9 +450,10 @@ FrmlElem* Merge::RdOutpFldName(char& FTyp)
 		base_compiler->Error(85);
 	}
 	else {
-		FieldDescr* rdFldName = base_compiler->RdFldName(RD->OD->FD);
+		FileD* file = RD->OD->FD;
+		FieldDescr* rdFldName = base_compiler->RdFldName(file);
 		FrmlElem* makeFldFrml = base_compiler->MakeFldFrml(rdFldName, FTyp);
-		result = base_compiler->FrmlContxt(makeFldFrml, RD->OD->FD, RD->OD->RecPtr);
+		result = base_compiler->FrmlContxt(makeFldFrml, file, RD->OD->RecPtr);
 	}
 	return result;
 }

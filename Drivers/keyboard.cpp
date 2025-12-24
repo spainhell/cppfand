@@ -336,7 +336,13 @@ PressedKey::PressedKey(KEY_EVENT_RECORD& key)
 		_key.uChar.UnicodeChar = '.';
 	}
 	// transformed character (for use with Alt, Ctrl or Shift)
-	Char = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
+	if (key.uChar.AsciiChar >= 32)
+	{
+		Char = key.uChar.AsciiChar;
+	}
+	else {
+		Char = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
+	}
 }
 
 KEY_EVENT_RECORD* PressedKey::Key()

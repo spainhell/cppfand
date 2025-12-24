@@ -87,7 +87,7 @@ public:
 	FrmlElem* RdFldNameFrmlF(char& FTyp, MergeReportBase* caller);
 	FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller);
 	FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, Record* RP);
-	FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp);
+	FrmlElemRecVarField* MakeFldFrml(FieldDescr* field, char& FTyp);
 	void TestString(char FTyp);
 	void TestReal(char FTyp);
 	FrmlElem* RdFrml(char& FTyp, MergeReportBase* caller);

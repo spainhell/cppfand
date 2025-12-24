@@ -1650,7 +1650,7 @@ bool DataEditor::OpenEditWw()
 
 	// open journal file, if exists
 	if (edit_->Journal != nullptr) {
-		edit_->Journal->OpenCreateF(CPath, Shared);
+		edit_->Journal->OpenCreateF(CPath, Shared, false);
 	}
 
 	ReadParamsFromE(edit_);
@@ -1665,7 +1665,7 @@ bool DataEditor::OpenEditWw()
 #ifdef FandSQL
 	if (!file_d_->IsSQLFile)
 #endif
-		file_d_->OpenCreateF(CPath, Shared);
+		file_d_->OpenCreateF(CPath, Shared, false);
 	edit_->OldMd = edit_->FD->GetLMode();
 	UpdCount = 0;
 #ifdef FandSQL
@@ -4833,7 +4833,8 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 
 	//EditD* EE = WriteParamsToE();                            /*t = currtime;*/
 
-	CallProcedure(ExitProc);
+	std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+	runner->CallProcedure(ExitProc);
 
 	//ReadParamsFromE(EE);
 
@@ -4893,7 +4894,10 @@ void DataEditor::StartRprt(RprtOpt* RO)
 
 	RO->FDL[0]->FD = file_d_;
 	RO->FDL[0]->ViewKey = k;
-	ReportProc(RO, false);
+
+	std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+	runner->ReportProc(RO, false);
+	
 	file_d_ = edit_->FD;
 
 	//record_ = edit_->NewRec->GetRecord();

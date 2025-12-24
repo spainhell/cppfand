@@ -500,7 +500,8 @@ void ProjectRunner::EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		iHelp = EdIRec;
 	}
 	else {
-		ResetCatalog();
+		std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+		runner->ResetCatalog();
 		nCat = EdRecNo;
 		iCat = EdIRec;
 	}
@@ -618,7 +619,7 @@ void ProjectRunner::ResetRdOnly()
 	if (Chpt->FF->UMode == RdOnly) {
 		Chpt->CloseFile();
 		IsInstallRun = true;
-		Chpt->OpenF(CPath, Exclusive);
+		Chpt->OpenF(CPath, Exclusive, true);
 		IsInstallRun = false;
 	}
 }
@@ -706,7 +707,7 @@ void ProjectRunner::CreateOpenChpt(std::string Nm, bool create)
 	if (IsTestRun || !create) um = Exclusive;
 	else um = RdOnly;
 
-	if (Chpt->OpenF(CPath, um)) {
+	if (Chpt->OpenF(CPath, um, true)) {
 		if (ChptTF->CompileAll) {
 			ResetRdOnly();
 		}
@@ -720,7 +721,7 @@ void ProjectRunner::CreateOpenChpt(std::string Nm, bool create)
 		if (!create || (top && !IsTestRun)) {
 			RunError(631);
 		}
-		Chpt->OpenCreateF(CPath, Exclusive);
+		Chpt->OpenCreateF(CPath, Exclusive, true);
 		SetCompileAll();
 	}
 
@@ -839,7 +840,8 @@ bool ProjectRunner::CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor
 					PopW(UserW);
 					uw = true;
 				}
-				RunMainProc(RP, CRdb->ChainBack = nullptr);
+				std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+				runner->RunMainProc(RP, CRdb->ChainBack = nullptr);
 				WasError = false;
 			}
 			else {
@@ -906,7 +908,8 @@ bool ProjectRunner::CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor
 						PopW(UserW);
 						uw = true;
 					}
-					RunMainProc(RP, CRdb->ChainBack == nullptr);
+					std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+					runner->RunMainProc(RP, CRdb->ChainBack == nullptr);
 				}
 				else {
 					lstFDindex = CRdb->v_files.size() - 1;
@@ -1732,12 +1735,13 @@ bool ProjectRunner::EditExecRdb(const std::string& name, const std::string& proc
 				if (procedureFound) {
 					try {
 						IsCompileErr = false;
+						std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
 						if (proc_call != nullptr) {
 							proc_call->PPos = RP;
-							CallProcedure(proc_call);
+							runner->CallProcedure(proc_call);
 						}
 						else {
-							RunMainProc(RP, top);
+							runner->RunMainProc(RP, top);
 						}
 						result = true;
 						Finish_EditExecRdb(wasGraph, w);
@@ -1935,7 +1939,7 @@ void ProjectRunner::UpdateCat()
 {
 	FileD* cat = catalog->GetCatalogFile();
 	if (cat->FF->Handle == nullptr) {
-		cat->OpenCreateF(CPath, Exclusive);
+		cat->OpenCreateF(CPath, Exclusive, false);
 	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true;

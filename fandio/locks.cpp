@@ -192,7 +192,7 @@ bool TryLMode(FileD* fileD, std::string& path, LockMode Mode, LockMode& OldMode,
 #endif
 	{
 		if (fileD->FF->Handle == nullptr) {
-			fileD->OpenCreateF(path, Shared);
+			fileD->OpenCreateF(path, Shared, false);
 		}
 		OldMode = fileD->FF->LMode;
 		if (Mode > fileD->FF->LMode) {

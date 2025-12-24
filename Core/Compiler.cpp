@@ -556,6 +556,11 @@ void Compiler::RdLex()
 		default: break;
 		}
 	}
+
+	if (LexWord == "DD")
+	{
+		printf("DD");
+	}
 }
 
 bool Compiler::IsForwPoint()
@@ -2574,6 +2579,9 @@ FrmlElem* Compiler::RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 
 FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, Record* RP)
 {
+	if (RP != nullptr && FD->Name != RP->GetFileD()->Name) {
+		printf("Chyba v Compiler::FrmlContxt \n");
+	}
 	FrmlElemNewFile* Z1 = new FrmlElemNewFile(_newfile, 8);
 	Z1->Frml = Z;
 	Z1->NewFile = FD;
@@ -2581,12 +2589,15 @@ FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, Record* RP)
 	return Z1;
 }
 
-FrmlElem* Compiler::MakeFldFrml(FieldDescr* F, char& FTyp)
+FrmlElemRecVarField* Compiler::MakeFldFrml(FieldDescr* field, char& FTyp)
 {
-	FrmlElemRecVarField* Z = new FrmlElemRecVarField(_field, 4);
-	Z->Field = F;
-	FTyp = F->frml_type;
-	return Z;
+	FTyp = field->frml_type;
+
+	FrmlElemRecVarField* rec_var = new FrmlElemRecVarField(_field, 4);
+	rec_var->Field = field;
+	//rec_var->File = file_d;
+	
+	return rec_var;
 }
 
 LinkD* Compiler::FindOwnLD(FileD* FD, std::string RoleName)
@@ -2669,7 +2680,9 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 		}
 		else {
 			RdLex();
-			result = MakeFldFrml(f, FTyp);
+			FrmlElemRecVarField* frml = MakeFldFrml(f, FTyp);
+			frml->File = FD;
+			result = frml;
 		}
 	}
 	return result;

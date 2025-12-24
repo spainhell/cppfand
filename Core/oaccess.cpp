@@ -85,18 +85,18 @@ void OpenFANDFiles()
 
 	OpenXWorkH();
 	OpenTWorkH();
-	HelpFD->OpenF(CPath, RdOnly);
+	HelpFD->OpenF(CPath, RdOnly, false);
 	if (CRdb == nullptr) return;
 
-	catalog->GetCatalogFile()->OpenF(CPath, Exclusive);
+	catalog->GetCatalogFile()->OpenF(CPath, Exclusive, false);
 	RD = CRdb;
 
 	while (RD != nullptr) {
 		if (IsTestRun) {
-			RD->v_files[0]->OpenF(CPath, Exclusive);
+			RD->v_files[0]->OpenF(CPath, Exclusive, true);
 		}
 		else {
-			RD->v_files[0]->OpenF(CPath, RdOnly);
+			RD->v_files[0]->OpenF(CPath, RdOnly, true);
 		}
 
 		auto it0 = RD->v_files.begin();
@@ -104,7 +104,7 @@ void OpenFANDFiles()
 
 		while (it0 != RD->v_files.end()) {
 			if ((*it0)->FF->ExLMode != NullMode) {
-				(*it0)->OpenF(CPath, Shared);
+				(*it0)->OpenF(CPath, Shared, false);
 				md = (*it0)->NewLockMode((*it0)->FF->ExLMode);
 			}
 			++it0;

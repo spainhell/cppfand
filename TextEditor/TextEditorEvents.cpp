@@ -452,7 +452,8 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, EditorMode& mode, std::v
 				data_editor->StartExit(X, false);
 			}
 			else {
-				CallProcedure(X->Proc);
+				std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+				runner->CallProcedure(X->Proc);
 			}
 			//NewExit(Ovr(), er);
 			//goto Opet;

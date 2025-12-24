@@ -576,7 +576,8 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElemUserFunc* X, Record* record)
 	LocVarBlock oldLVBD = LVBD;
 	LVBD = X->FC->LVB;
 
-	RunProcedure(X->FC->v_instr);
+	std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+	runner->Run(X->FC->v_instr);
 
 	LVBD = oldLVBD;
 
@@ -978,7 +979,7 @@ label1:
 		break;
 	}
 	case _recvarfld: {
-		auto iX = (FrmlElemRecVarField*)X;
+		FrmlElemRecVarField* iX = (FrmlElemRecVarField*)X;
 		result = RunReal(iX->File, iX->Frml, iX->record);
 		break;
 	}
@@ -1856,9 +1857,9 @@ label1:
 		break;
 	}
 	case _keybuf: {
-		while (KeyPressed()) {
-			AddToKbdBuf(ReadKey());
-		}
+		//while (KeyPressed()) {
+		//	AddToKbdBuf(ReadKey());
+		//}
 		result = keyboard.GetKeyBufAsString(); // KbdBuffer;
 		break;
 	}

@@ -1621,16 +1621,16 @@ bool FileD::Cached()
 	return !NotCached();
 }
 
-bool FileD::OpenF(const std::string& path, FileUseMode UM)
+bool FileD::OpenF(const std::string& path, FileUseMode UM, bool is_project_file)
 {
 	bool result = true;
 	if (IsOpen()) return result;
-	if (OpenF1(path, UM)) {
+	if (OpenF1(path, UM, is_project_file)) {
 		if (IsShared()) {
 			ChangeLockMode(RdMode, 0, false);
 			SetLMode(RdMode);
 		}
-		result = OpenF2(path);
+		result = OpenF2(path, is_project_file);
 		OldLockMode(NullMode);
 	}
 	else {
@@ -1639,13 +1639,13 @@ bool FileD::OpenF(const std::string& path, FileUseMode UM)
 	return result;
 }
 
-bool FileD::OpenF1(const std::string& path, FileUseMode UM)
+bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file)
 {
 	WORD n;
 	bool result = true;
 	SetLMode(NullMode);
-	SetPathMountVolumeSetNet(UM);
-	const bool b = (this == Chpt) || (this == catalog->GetCatalogFile());
+	SetPathMountVolumeSetNet(UM, is_project_file);
+	const bool b = is_project_file || (this == catalog->GetCatalogFile());
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
 		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110);
 		if (HandleError == 5) HandleError = 79;
@@ -1747,7 +1747,7 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM)
 	return result;
 }
 
-bool FileD::OpenF2(const std::string& path)
+bool FileD::OpenF2(const std::string& path, bool is_project_file)
 {
 	int file_size = GetFileSize();
 	SetNRecs(0);
@@ -1812,9 +1812,9 @@ bool FileD::OpenF2(const std::string& path)
 	return true;
 }
 
-void FileD::CreateF()
+void FileD::CreateF(bool is_project_file)
 {
-	std::string path = SetPathMountVolumeSetNet(Exclusive);
+	std::string path = SetPathMountVolumeSetNet(Exclusive, is_project_file);
 	HANDLE h = OpenH(path, _isOverwriteFile, Exclusive);
 	SetHandle(h);
 	TestCFileError();
@@ -1836,10 +1836,10 @@ void FileD::CreateF()
 	SetUpdateFlag();
 }
 
-bool FileD::OpenCreateF(const std::string& path, FileUseMode UM)
+bool FileD::OpenCreateF(const std::string& path, FileUseMode UM, bool is_project_file)
 {
-	if (!OpenF(path, UM)) {
-		CreateF();
+	if (!OpenF(path, UM, is_project_file)) {
+		CreateF(is_project_file);
 		if ((UM == Shared) || (UM == RdShared)) {
 			WrPrefixes();
 
@@ -1870,7 +1870,7 @@ bool FileD::OpenCreateF(const std::string& path, FileUseMode UM)
 			// TODO: here is probably an issue with file caching
 			// wait 100 ms before re-open
 			//std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			OpenF(path, UM);
+			OpenF(path, UM, is_project_file);
 		}
 	}
 	return true;
@@ -1898,12 +1898,12 @@ void FileD::TestCFileError()
 	}
 }
 
-std::string FileD::SetPathMountVolumeSetNet(FileUseMode UM)
+std::string FileD::SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file)
 {
 	std::string path = SetPathAndVolume();
 	SetUMode(UM);
 	SetDrive((uint8_t)TestMountVol(path[0]));
-	if (!IsNetCVol() || (this == Chpt))
+	if (!IsNetCVol() || is_project_file)
 		switch (UM) {
 		case RdShared: SetUMode(RdOnly); break;
 		case Shared: SetUMode(Exclusive); break;

@@ -39,7 +39,7 @@
 #include "../Common/Record.h"
 
 
-void UserHeadLine(std::string UserHeader)
+void RunProcedure::UserHeadLine(std::string UserHeader)
 {
 	WParam* p = PushWParam(1, 1, TxtCols, 1, true);
 	TextAttr = screen.colors.fNorm;
@@ -65,7 +65,7 @@ void UserHeadLine(std::string UserHeader)
 	delete p;
 }
 
-void ReportProc(RprtOpt* RO, bool save)
+void RunProcedure::ReportProc(RprtOpt* RO, bool save)
 {
 	//void* p = nullptr;
 	//void* p2 = nullptr;
@@ -126,7 +126,7 @@ void ReportProc(RprtOpt* RO, bool save)
 		//ReleaseBoth(p, p2);
 }
 
-void PromptAutoRprt(RprtOpt* RO)
+void RunProcedure::PromptAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
 
@@ -155,7 +155,7 @@ void PromptAutoRprt(RprtOpt* RO)
 	}
 }
 
-void AssignField(Instr_assign* PD)
+void RunProcedure::AssignField(Instr_assign* PD)
 {
 	WORD msg = 0;
 	LockMode md = PD->FD->NewLockMode(WrMode);
@@ -185,7 +185,7 @@ void AssignField(Instr_assign* PD)
 	}
 }
 
-void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
+void RunProcedure::AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 {
 	FileD* FD1 = LV1->FD;  // destination record
 	FileD* FD2 = LV2->FD;  // source record
@@ -205,7 +205,8 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 			break;
 		}
 		case MInstrCode::_output: {
-			((FrmlElemNewFile*)a->Frml)->NewRP = RP2;
+			auto newFileFrml = (FrmlElemNewFile*)a->Frml;
+			newFileFrml->NewRP = RP2;
 			AssgnFrml(RP1, a->OFldD, a->Frml, /*false,*/ false);
 			break;
 		}
@@ -215,7 +216,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 	RP1->SetUpdated(); //FD1->SetRecordUpdateFlag(RP1->GetRecord());
 }
 
-void AssignRecFld(Instr_assign* PD)
+void RunProcedure::AssignRecFld(Instr_assign* PD)
 {
 	FieldDescr* field_d = PD->RecFldD;
 	FileD* file_d = PD->AssLV->FD;
@@ -225,7 +226,7 @@ void AssignRecFld(Instr_assign* PD)
 	AssgnFrml(record, field_d, PD->Frml, /*file_d->HasTWorkFlag(rec),*/ PD->Add);
 }
 
-void SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
+void RunProcedure::SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
 {
 	LockMode md = FD->NewLockMode(ExclMode);
 	FD->SortByKey(SK, RunMsgOn, RunMsgN, RunMsgOff);
@@ -233,7 +234,7 @@ void SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
 	SaveFiles();
 }
 
-void MergeProc(Instr_merge_display* PD)
+void RunProcedure::MergeProc(Instr_merge_display* PD)
 {
 	uint8_t* p = nullptr; uint8_t* p2 = nullptr;
 	MarkBoth(p, p2);
@@ -249,7 +250,7 @@ void MergeProc(Instr_merge_display* PD)
 	ReleaseStore(&p2);
 }
 
-void WritelnProc(Instr_writeln* PD)
+void RunProcedure::WritelnProc(Instr_writeln* PD)
 {
 	std::string t;
 	std::string x;
@@ -331,7 +332,7 @@ void WritelnProc(Instr_writeln* PD)
 	}
 }
 
-void DisplayProc(RdbD* R, WORD IRec)
+void RunProcedure::DisplayProc(RdbD* R, WORD IRec)
 {
 	std::string str;
 
@@ -354,7 +355,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 	screen.WriteStyledStringToWindow(str, ProcAttr);
 }
 
-void ClrWwProc(Instr_clrww* PD)
+void RunProcedure::ClrWwProc(Instr_clrww* PD)
 {
 	WRect v;
 	RunWFrml(nullptr, PD->W2, 0, v, nullptr);
@@ -369,7 +370,7 @@ void ClrWwProc(Instr_clrww* PD)
 	screen.ScrClr(v.C1, v.R1, v.C2 - v.C1 + 1, v.R2 - v.R1 + 1, c, a);
 }
 
-void ExecPgm(Instr_exec* PD)
+void RunProcedure::ExecPgm(Instr_exec* PD)
 {
 	const Wind wmin = WindMin;
 	const Wind wmax = WindMax;
@@ -398,7 +399,7 @@ void ExecPgm(Instr_exec* PD)
 	}
 }
 
-void CallRdbProc(Instr_call* PD)
+void RunProcedure::CallRdbProc(Instr_call* PD)
 {
 	bool b = false;
 	uint8_t* p = nullptr;
@@ -414,7 +415,7 @@ void CallRdbProc(Instr_call* PD)
 	}
 }
 
-void MountProc(WORD CatIRec, bool NoCancel)
+void RunProcedure::MountProc(WORD CatIRec, bool NoCancel)
 {
 	try {
 		SaveFiles();
@@ -430,7 +431,7 @@ void MountProc(WORD CatIRec, bool NoCancel)
 	}
 }
 
-void EditProc(Instr_edit* PD)
+void RunProcedure::EditProc(Instr_edit* PD)
 {
 	EdUpdated = false;
 	SaveFiles();
@@ -448,7 +449,7 @@ void EditProc(Instr_edit* PD)
 	// TODO: and here delete copy?
 }
 
-std::string GetStr(FrmlElem* Z)
+std::string RunProcedure::GetStr(FrmlElem* Z)
 {
 	std::string result;
 	if (Z == nullptr) {
@@ -461,7 +462,7 @@ std::string GetStr(FrmlElem* Z)
 	return result;
 }
 
-void EditTxtProc(Instr_edittxt* PD)
+void RunProcedure::EditTxtProc(Instr_edittxt* PD)
 {
 	int i = 0;
 	WRect v;
@@ -513,7 +514,7 @@ void EditTxtProc(Instr_edittxt* PD)
 	ReleaseStore(&p);
 }
 
-void PrintTxtProc(Instr_edittxt* PD)
+void RunProcedure::PrintTxtProc(Instr_edittxt* PD)
 {
 	LongStr* s = nullptr;
 	/* !!! with PD^ do!!! */
@@ -528,7 +529,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 	}
 }
 
-void DeleteRecProc(Instr_recs* PD)
+void RunProcedure::DeleteRecProc(Instr_recs* PD)
 {
 	int n;
 	XString x;
@@ -569,7 +570,7 @@ void DeleteRecProc(Instr_recs* PD)
 	delete rec; rec = nullptr;
 }
 
-void AppendRecProc(FileD* file_d)
+void RunProcedure::AppendRecProc(FileD* file_d)
 {
 	LockMode md = file_d->NewLockMode(CrMode);
 	Record* record = new Record(file_d);
@@ -580,7 +581,7 @@ void AppendRecProc(FileD* file_d)
 	file_d->OldLockMode(md);
 }
 
-void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data)
+void RunProcedure::UpdRec(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data)
 {
 	Record* old_data = new Record(file_d);
 	file_d->ReadRec(rec_nr, old_data);
@@ -610,7 +611,7 @@ void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data)
 	delete old_data; old_data = nullptr;
 }
 
-void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
+void RunProcedure::ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 {
 	// PD->LV is a local variable (record of)
 	LocVar* lv = PD->LV;
@@ -725,7 +726,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	lv->FD->OldLockMode(md);
 }
 
-void LinkRecProc(Instr_assign* assign_instr)
+void RunProcedure::LinkRecProc(Instr_assign* assign_instr)
 {
 	int n = 0;
 	LinkD* ld = assign_instr->LinkLD;
@@ -748,7 +749,7 @@ void LinkRecProc(Instr_assign* assign_instr)
 	delete rec; rec = nullptr;
 }
 
-void ForAllProc(Instr_forall* PD)
+void RunProcedure::ForAllProc(Instr_forall* PD)
 {
 	FileD* FD = nullptr; XKey* Key = nullptr; XKey* k = nullptr; FrmlElem* Bool = nullptr;
 	LinkD* LD = nullptr;
@@ -858,7 +859,7 @@ void ForAllProc(Instr_forall* PD)
 			//CRecPtr = lr;
 			// TODO: FandSQL condition removed
 
-			FD->OpenCreateF(CPath, Shared);
+			FD->OpenCreateF(CPath, Shared, false);
 			if ((LVr != nullptr) && (LVi == nullptr) && lr->IsUpdated()) {
 				md1 = FD->NewLockMode(WrMode);
 				//FD->CopyRec(lr->GetRecord(), cr->GetRecord(), false);
@@ -894,19 +895,19 @@ void ForAllProc(Instr_forall* PD)
 	BreakP = false;
 }
 
-void HeadLineProc(FrmlElem* Z)
+void RunProcedure::HeadLineProc(FrmlElem* Z)
 {
 	UserHeadLine(RunString(nullptr, Z, nullptr));
 }
 
-void SetKeyBufProc(FrmlElem* Z)
+void RunProcedure::SetKeyBufProc(FrmlElem* Z)
 {
 	//KbdBuffer = RunShortStr(Z);
 	std::string keyBuf = RunString(nullptr, Z, nullptr);
 	keyboard.SetKeyBuf(keyBuf);
 }
 
-void SetWwViewPort()
+void RunProcedure::SetWwViewPort()
 {
 	WORD x1, x2, y1, y2;
 #ifdef FandGraph
@@ -917,7 +918,7 @@ void SetWwViewPort()
 #endif
 }
 
-void WithWindowProc(Instr_window* PD)
+void RunProcedure::WithWindowProc(Instr_window* PD)
 {
 	uint8_t PAttr = ProcAttr;
 	int w1 = 0;
@@ -937,7 +938,7 @@ void WithWindowProc(Instr_window* PD)
 	ProcAttr = PAttr;
 }
 
-void WithLockedProc(Instr_withshared* PD)
+void RunProcedure::WithLockedProc(Instr_withshared* PD)
 {
 	WORD msg;
 	pstring ntxt(10);
@@ -954,9 +955,9 @@ void WithLockedProc(Instr_withshared* PD)
 	while (it != PD->WLD.end()) {
 		FileD* f = (*it)->FD;
 		if (f->FF->Handle == nullptr) {
-			if (f->OpenF1(CPath, Shared)) {
+			if (f->OpenF1(CPath, Shared, false)) {
 				if (f->TryLockMode(RdMode, md, 2)) {
-					f->OpenF2(CPath);
+					f->OpenF2(CPath, false);
 					f->OldLockMode(NullMode);
 				}
 				else {
@@ -965,7 +966,7 @@ void WithLockedProc(Instr_withshared* PD)
 				}
 			}
 			else {
-				f->OpenCreateF(CPath, Shared);
+				f->OpenCreateF(CPath, Shared, false);
 			}
 		}
 		if (f->FF->IsShared()) {
@@ -1021,12 +1022,12 @@ void WithLockedProc(Instr_withshared* PD)
 	UnLck(PD, nullptr, op);
 }
 
-void HelpProc(Instr_help* PD)
+void RunProcedure::HelpProc(Instr_help* PD)
 {
 	Help(PD->HelpRdb0, RunString(nullptr, PD->Frml0, nullptr), true);
 }
 
-HANDLE OpenHForPutTxt(Instr_puttxt* PD)
+HANDLE RunProcedure::OpenHForPutTxt(Instr_puttxt* PD)
 {
 	SetTxtPathVol(PD->TxtPath1, PD->TxtCatIRec1);
 	TestMountVol(CPath[1]);
@@ -1042,7 +1043,7 @@ HANDLE OpenHForPutTxt(Instr_puttxt* PD)
 	return h;
 }
 
-void PutTxt(Instr_puttxt* PD)
+void RunProcedure::PutTxt(Instr_puttxt* PD)
 {
 	HANDLE h = nullptr;
 	std::string path;
@@ -1079,7 +1080,7 @@ void PutTxt(Instr_puttxt* PD)
 }
 
 // ulozi do katalogu hodnotu promenne
-void AssgnCatFld(Instr_assign* PD, Record* record)
+void RunProcedure::AssgnCatFld(Instr_assign* PD, Record* record)
 {
 	if (PD->FD3 != nullptr) {
 		PD->FD3->CloseFile();
@@ -1088,17 +1089,17 @@ void AssgnCatFld(Instr_assign* PD, Record* record)
 	catalog->SetField(PD->CatIRec, PD->CatFld, data);
 }
 
-void AssgnAccRight(Instr_assign* PD)
+void RunProcedure::AssgnAccRight(Instr_assign* PD)
 {
 	user->set_acc_rights(RunString(nullptr, PD->Frml, nullptr));
 }
 
-void AssgnUserName(Instr_assign* PD)
+void RunProcedure::AssgnUserName(Instr_assign* PD)
 {
 	user->set_user_name(RunString(nullptr, PD->Frml, nullptr));
 }
 
-void ReleaseDriveProc(FrmlElem* Z)
+void RunProcedure::ReleaseDriveProc(FrmlElem* Z)
 {
 	SaveFiles();
 	std::string s = RunString(nullptr, Z, nullptr);
@@ -1117,7 +1118,7 @@ void ReleaseDriveProc(FrmlElem* Z)
 	}
 }
 
-void WithGraphicsProc(std::vector<Instr*>& PD)
+void RunProcedure::WithGraphicsProc(std::vector<Instr*>& PD)
 {
 	throw std::exception("WithGraphicsProc() not implemented!");
 	//if (IsGraphMode) RunInstr(PD);
@@ -1130,13 +1131,13 @@ void WithGraphicsProc(std::vector<Instr*>& PD)
 }
 
 #ifdef FandGraph
-void DrawProc(Instr_graph* PD)
+void RunProcedure::DrawProc(Instr_graph* PD)
 {
 }
 #endif
 
 
-void ResetCatalog()
+void RunProcedure::ResetCatalog()
 {
 	RdbD* r = CRdb;
 	while (CRdb != nullptr) {
@@ -1156,11 +1157,11 @@ void ResetCatalog()
 	CRdb = r;
 }
 
-void PortOut(bool IsWord, WORD Port, WORD What)
+void RunProcedure::PortOut(bool IsWord, WORD Port, WORD What)
 {
 }
 
-void RecallRecProc(Instr_recs* PD)
+void RunProcedure::RecallRecProc(Instr_recs* PD)
 {
 	FileD* f = PD->RecFD;
 	Record* rec = new Record(f);
@@ -1181,7 +1182,7 @@ void RecallRecProc(Instr_recs* PD)
 	delete rec; rec = nullptr;
 }
 
-void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
+void RunProcedure::UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 {
 	//LockD* ld = &PD->WLD;
 	//while (ld != Ld1) {
@@ -1197,7 +1198,7 @@ void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 	}
 }
 
-void WaitProc() // r. 604
+void RunProcedure::WaitProc() // r. 604
 {
 	WORD w;
 	do {
@@ -1207,11 +1208,11 @@ void WaitProc() // r. 604
 	} while (w != evKeyDown && w != evMouseDown);
 }
 
-void MemDiagProc()
+void RunProcedure::MemDiagProc()
 {
 }
 
-void RunInstr(const std::vector<Instr*>& instructions)
+void RunProcedure::RunInstr(const std::vector<Instr*>& instructions)
 {
 	for (size_t i = 0; i < instructions.size(); i++) {
 		Instr* instr = instructions[i];
@@ -1623,7 +1624,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 	}
 }
 
-void RunProcedure(std::vector<Instr*>& PDRoot)
+void RunProcedure::Run(std::vector<Instr*>& PDRoot)
 {
 	bool ExP = ExitP;
 	bool BrkP = BreakP;
@@ -1638,7 +1639,7 @@ void RunProcedure(std::vector<Instr*>& PDRoot)
 	BreakP = BrkP;
 }
 
-void CallProcedure(Instr_proc* PD)
+void RunProcedure::CallProcedure(Instr_proc* PD)
 {
 	if (PD->ProcName == "KontrCfg") {
 		printf("");
@@ -1782,7 +1783,7 @@ void CallProcedure(Instr_proc* PD)
 	ReleaseStore(&p2);
 
 	// ****** RUN PROCEDURE ****** //
-	RunProcedure(instructions);
+	Run(instructions);
 	// *************************** //
 
 	// delete instructions
@@ -1853,7 +1854,7 @@ void CallProcedure(Instr_proc* PD)
 	ReleaseStore(&p2);
 }
 
-void RunMainProc(RdbPos RP, bool NewWw)
+void RunProcedure::RunMainProc(RdbPos RP, bool NewWw)
 {
 	if (NewWw) {
 		ProcAttr = screen.colors.uNorm;

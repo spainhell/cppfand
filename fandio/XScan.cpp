@@ -379,7 +379,7 @@ void XScan::GetRec(Record* record)
 				else if (page_->GreaterPage > 0) {
 					SeekOnPage(page_->GreaterPage, 1);
 				}
-				FD->FF->ReadRec(RecNr, record);
+				FD->ReadRec(RecNr, record);
 				if (record->IsDeleted()) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;

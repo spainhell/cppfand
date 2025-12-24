@@ -153,8 +153,8 @@ void Report::Read(RprtOpt* RO)
 			ID->OpErr = _const;
 			ID->OpWarn = _const;
 			KI.clear();
-			ID->ForwRecPtr = new Record(base_compiler->processing_F);
-			FD->FF->RecPtr = new Record(base_compiler->processing_F);
+			ID->ForwRecPtr = new Record(FD);
+			FD->FF->RecPtr = new Record(FD);
 
 			if (base_compiler->Lexem == '(') {
 				base_compiler->RdLex();

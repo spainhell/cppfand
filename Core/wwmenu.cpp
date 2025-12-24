@@ -626,13 +626,14 @@ bool TMenuBoxP::ExecItem(WORD& I)
 	bool result = false;
 	if (!PD->PullDown) return result;
 
+	std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
 	if (I == 0) {
 		if ((Event.What == evMouseDown) || !PD->WasESCBranch) return result;
-		RunInstr(PD->ESCInstr);
+		runner->RunInstr(PD->ESCInstr);
 	}
 	else {
 		ChoiceD* choice = getChoice(I);
-		RunInstr(choice->v_instr);
+		runner->RunInstr(choice->v_instr);
 	}
 
 	if (ExitP) {
@@ -679,15 +680,16 @@ void TMenuBoxP::call()
 {
 	WORD i = 0;
 	uint8_t mx = 0, my = 0;
+	std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
 label1:
 	i = this->Exec(i);
 	if (!PD->PullDown) {
 		if (i == 0) {
 			if (!PD->WasESCBranch) return;
-			RunInstr(PD->ESCInstr);
+			runner->RunInstr(PD->ESCInstr);
 		}
 		else {
-			RunInstr(getChoice(i)->v_instr);
+			runner->RunInstr(getChoice(i)->v_instr);
 		}
 		if (BreakP || ExitP) {
 			if (PD->Loop) BreakP = false;
@@ -754,7 +756,12 @@ WORD TMenuBar::Exec()
 			break;
 		}
 		default: {
-			if (Event.Pressed.isChar() && !FindChar(Event.Pressed.Char)) continue;
+			if (!Event.Pressed.isChar()) {
+				continue;
+			}
+			if (!FindChar(Event.Pressed.Char)) {
+				continue;
+			}
 			enter = true;
 		label2:
 			WrText(iTxt);
@@ -897,12 +904,14 @@ bool TMenuBarP::ExecItem(WORD& I)
 {
 	TRect r;
 	auto result = false;
+	std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+
 	if (I == 0) {
 		if (!PD->WasESCBranch) return result;
-		RunInstr(PD->ESCInstr);
+		runner->RunInstr(PD->ESCInstr);
 	}
 	else {
-		RunInstr(getChoice(I)->v_instr);
+		runner->RunInstr(getChoice(I)->v_instr);
 	}
 	I = 0;
 	if (BreakP || ExitP) {

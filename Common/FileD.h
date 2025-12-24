@@ -167,17 +167,17 @@ public:
 	bool NotCached();
 	bool Cached();
 
-	bool OpenF(const std::string& path, FileUseMode UM);
+	bool OpenF(const std::string& path, FileUseMode UM, bool is_project_file);
 	// open file(s) from disk
-	bool OpenF1(const std::string& path, FileUseMode UM);
+	bool OpenF1(const std::string& path, FileUseMode UM, bool is_project_file);
 	// load prefix(es) from file
-	bool OpenF2(const std::string& path);
-	void CreateF();
-	bool OpenCreateF(const std::string& path, FileUseMode UM);
+	bool OpenF2(const std::string& path, bool is_project_file);
+	void CreateF(bool is_project_file);
+	bool OpenCreateF(const std::string& path, FileUseMode UM, bool is_project_file);
 	void DeleteF();
 
 	void TestCFileError();
-	std::string SetPathMountVolumeSetNet(FileUseMode UM);
+	std::string SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file);
 	std::string SetPathAndVolume(char pathDelim = '\\');
 	void CFileError(int N);
 

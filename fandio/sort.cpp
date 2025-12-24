@@ -110,5 +110,7 @@ int32_t GetIndex(Instr_getindex* PD)
 
 	delete record; record = nullptr;
 	lvFD->OldLockMode(md);
+
+	return 0;
 }
 

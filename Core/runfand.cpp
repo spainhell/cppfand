@@ -180,7 +180,7 @@ bool SetTopDir(std::string& p, std::string& n)
 			return result;
 		}
 		CatFDName = n;
-		catalog->GetCatalogFile()->OpenF(CPath, Exclusive);
+		catalog->GetCatalogFile()->OpenF(CPath, Exclusive, false);
 		result = true;
 	}
 	catch (std::exception& e) {
