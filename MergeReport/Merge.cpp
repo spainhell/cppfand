@@ -497,7 +497,7 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 {
 	char FTyp = 0;
 	FileD* outputFile = outputRD->OD->FD;
-	void* outputRecPointer = outputRD->OD->RecPtr;
+	Record* outputRecPointer = outputRD->OD->RecPtr;
 
 	AssignD* newAssign = new AssignD();
 	FieldDescr* inputField = FindIiandFldD(outputField->Name);
@@ -511,7 +511,7 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 	}
 	else {
 		FileD* inputFile = InpFD_M(Ii);
-		void* inputRecPointer = IDA[Ii]->RecPtr;
+		Record* inputRecPointer = IDA[Ii]->RecPtr;
 		if ((inputFile->FF->file_type == outputFile->FF->file_type) && base_compiler->FldTypIdentity(inputField, outputField) && (inputField->field_type != FieldType::TEXT)
 			&& (inputField->isStored()) && (outputField->Flg == inputField->Flg))
 		{
@@ -597,8 +597,8 @@ void Merge::MakeImplAssign()
 {
 	AssignD* AD = nullptr;
 	if (RD->OD == nullptr) return;
-	for (auto& FNew : RD->OD->FD->FldD) { /*implic.assign   name = name*/
-		if (((FNew->Flg & f_Stored) != 0) && !FindAssignToF(RD->Ass, FNew)) {
+	for (FieldDescr* FNew : RD->OD->FD->FldD) { /*implic.assign   name = name*/
+		if (FNew->isStored() && !FindAssignToF(RD->Ass, FNew)) {
 			ImplAssign(RD, FNew);
 		}
 	}

@@ -4,10 +4,22 @@
 
 #include "../Common/FileD.h"
 
+enum class ValueType : uint8_t {
+	UNKNOWN = 0,
+	F,  // Float
+	A,  // Alphanumeric
+	N,  // Numeric
+	D,  // Date
+	B,  // Boolean
+	T,  // Text
+	R   // Real
+};
 
 class BRS_Value
 {
 public:
+	ValueType value_type = ValueType::UNKNOWN;
+
 	bool B = false;
 	double R = 0.0;
 	std::string S;
@@ -45,7 +57,7 @@ public:
 	void ClearDeleted();
 	bool IsDeleted() const;
 
-	std::vector<BRS_Value> _values;
+	std::map<std::string, BRS_Value> _values;
 
 	static uint8_t Compare(Record* rec1, Record* rec2);
 
@@ -56,5 +68,4 @@ private:
 	bool _deleted = false;
 
 	FieldDescr* _getFieldDescrByName(const std::string& field_name) const;
-	size_t _getFieldDescrIndexByName(const std::string& field_name) const;
 };

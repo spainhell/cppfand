@@ -347,7 +347,7 @@ void RunProcedure::DisplayProc(RdbD* R, WORD IRec)
 		if (str.empty()) return;
 	}
 	else {
-		FileD* f = R->v_files[0];
+		FileD* f = R->project_file;
 		std::unique_ptr<Record> rec = std::make_unique<Record>(Chpt);
 		f->ReadRec(IRec, rec.get());
 		//int pos = f->loadT(ChptTxt, rec);
@@ -1148,8 +1148,8 @@ void RunProcedure::ResetCatalog()
 	while (CRdb != nullptr) {
 		//CFile = CRdb->v_files->pChain;
 		//while (CFile != nullptr) {
-		for (size_t i = 1; i < CRdb->v_files.size(); i++) {
-			FileD* f = CRdb->v_files[i];
+		for (size_t i = 0; i < CRdb->data_files.size(); i++) {
+			FileD* f = CRdb->data_files[i];
 			f->CloseFile();
 			f->CatIRec = catalog->GetCatalogIRec(f->Name, f->FF->file_type == FandFileType::RDB);
 #ifdef FandSQL
@@ -1665,7 +1665,7 @@ void RunProcedure::CallProcedure(Instr_proc* PD)
 	MarkBoth(p1, p2);
 
 	std::deque<LinkD*> ld = LinkDRoot;
-	size_t lstFDindex = CRdb->v_files.size() - 1; // index of last item in FileDRoot;
+	size_t lstFDindex = CRdb->data_files.size() - 1; // index of last item in FileDRoot;
 	gc->SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
@@ -1711,7 +1711,7 @@ void RunProcedure::CallProcedure(Instr_proc* PD)
 				std::string code = RunString(nullptr, PD->TArg[i].TxtFrml, nullptr);
 				gc->SetInpStdStr(code, true);
 				proc_file = RdFileD(PD->TArg[i].Name, DataFileType::FandFile, FandFileType::FAND16, "$");
-				CRdb->v_files.push_back(proc_file);
+				CRdb->data_files.push_back(proc_file);
 				gc->RestoreCompState(state);
 			}
 			else {
@@ -1853,7 +1853,7 @@ void RunProcedure::CallProcedure(Instr_proc* PD)
 	//}
 	//lstFD->pChain = nullptr;
 
-	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
+	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->data_files);
 
 	ReleaseStore(&p1);
 	ReleaseStore(&p2);

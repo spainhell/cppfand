@@ -89,7 +89,7 @@ extern "C" int FAND_API OpenRDB(char* rdbName)
 	runner->CreateOpenChpt(n, true);
 
 	rdb = CRdb;
-	rdbFile = rdb->v_files[0];
+	rdbFile = rdb->project_file;
 	data = new Record(rdbFile);
 
 	return rdbFile->FF->NRecs;

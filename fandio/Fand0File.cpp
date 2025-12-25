@@ -1528,7 +1528,7 @@ void Fand0File::_getValuesFromRawData(uint8_t* buffer, Record* record)
 				//	break;
 				//}
 			}
-			record->_values.push_back(val);
+			record->_values.insert(std::pair(field->Name, val));
 		}
 	}
 	else
@@ -1554,7 +1554,7 @@ std::unique_ptr<uint8_t[]> Fand0File::_getRowDataFromRecord(Record* record, cons
 		FieldDescr* field = _parent->FldD[i];
 
 		if (field->isStored()) {
-			BRS_Value& val = record->_values[i];
+			BRS_Value& val = record->_values.find(field->Name)->second;
 			switch (field->field_type) {
 			case FieldType::BOOL:
 				saveB(field, val.B, buffer.get());

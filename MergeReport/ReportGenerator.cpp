@@ -90,11 +90,9 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	std::string result;
 	RdbD* r = CRdb;
 	while (r != nullptr) {
-		//fd = r->v_files->pChain;
-		//while (fd != nullptr) {
-		for (size_t i = 1; i < r->v_files.size(); i++) {
-			s = r->v_files[i]->Name;
-			if (r != CRdb) s = r->v_files[0]->Name + '.' + s;
+		for (size_t i = 0; i < r->data_files.size(); i++) {
+			s = r->data_files[i]->Name;
+			if (r != CRdb) s = r->project_file->Name + '.' + s;
 			ww.PutSelect(s);
 			//fd = fd->pChain;
 		}
@@ -110,7 +108,7 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	if (index != std::string::npos) {
 		do {
 			r = r->ChainBack;
-		} while (r->v_files[0]->Name != s.substr(1, index - 1));
+		} while (r->project_file->Name != s.substr(1, index - 1));
 		s = s.substr(index + 1, 255);
 	}
 
@@ -119,9 +117,9 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 		fd = fd->pChain;
 	} while (fd->Name != s);*/
 	FileD* fd = nullptr;
-	for (size_t i = 1; i < r->v_files.size(); i++) {
-		if (r->v_files[i]->Name == s) {
-			fd = r->v_files[i];
+	for (size_t i = 0; i < r->data_files.size(); i++) {
+		if (r->data_files[i]->Name == s) {
+			fd = r->data_files[i];
 			break;
 		}
 	}

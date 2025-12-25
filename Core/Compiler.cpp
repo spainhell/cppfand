@@ -175,9 +175,9 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	InpRdbPos = *rdb_pos;
 
 	RdbD* rdb = rdb_pos->rdb;
-	Record* rec = new Record(rdb->v_files[0]);
+	Record* rec = new Record(rdb->project_file);
 
-	rdb->v_files[0]->ReadRec(rdb_pos->i_rec, rec);
+	rdb->project_file->ReadRec(rdb_pos->i_rec, rec);
 	std::string src;
 	if (FromTxt) {
 		src = rec->LoadS(ChptTxt);
@@ -1040,7 +1040,7 @@ void Compiler::RdLocDcl(LocVarBlock* LVB, bool IsParList, bool WithRecVar, char 
 					TestLex('[');
 					p = SaveCompState();
 					FileD* f = RdFileD(lv->name, data_file_type, fand_file_type, "$");
-					CRdb->v_files.push_back(f);
+					CRdb->data_files.push_back(f);
 					TestLex(']');
 					lv->FD = f; // here was lv->FD = CFile
 					n = input_pos;
@@ -1119,7 +1119,7 @@ bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	RdbD* R = CRdb;
 	bool result = false;
 	while (R != nullptr) {
-		FileD* f = R->v_files[0];
+		FileD* f = R->project_file;
 		for (int32_t i = 1; i <= f->FF->NRecs; i++) {
 			f->ReadRec(i, record);
 			//std::string chapterType = f->loadS(ChptTyp, record);
@@ -2482,7 +2482,7 @@ FileD* Compiler::FindFileD()
 
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		for (FileD* f : R->v_files) {
+		for (FileD* f : R->data_files) {
 			if (EquUpCase(f->Name, LexWord)) {
 				return f;
 			}
@@ -2506,7 +2506,7 @@ FileD* Compiler::RdFileName()
 	}
 	TestIdentif();
 	FD = FindFileD();
-	if ((FD == nullptr) || (FD == CRdb->v_files[0]) && !SpecFDNameAllowed) {
+	if ((FD == nullptr) || (FD == CRdb->project_file) && !SpecFDNameAllowed) {
 		Error(9);
 	}
 	RdLex();

@@ -11,8 +11,9 @@ class RdbD
 {
 public:
 	RdbD* ChainBack = nullptr;
-	std::vector<FileD*> v_files;
-	FileD* help_file = nullptr; // { v_files=FileDRoot and = Chpt for this RDB }
+	FileD* project_file = nullptr;	// RDB project file
+	FileD* help_file = nullptr;		// HLP files
+	std::vector<FileD*> data_files; // data files
 	std::deque<LinkD*> OldLDRoot;
 	std::deque<FuncD*> OldFCRoot;
 	bool Encrypted = false;

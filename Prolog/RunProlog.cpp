@@ -130,7 +130,7 @@ FileD* RunProlog::FindFile(std::string file_name)
 	RdbD* R = CRdb;
 
 	while (R != nullptr) {
-		for (FileD* f : R->v_files) {
+		for (FileD* f : R->data_files) {
 			if (EquUpCase(f->Name, file_name)) {
 				return f;
 			}
@@ -148,14 +148,14 @@ std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, F
 	RdbD* R = CRdb;
 
 	while (R != nullptr) {
-		if (!R->v_files.empty() && EquUpCase(R->v_files[0]->Name, module_name)) {
+		if (R->project_file != nullptr && EquUpCase(R->project_file->Name, module_name)) {
 			// skip the first file, which is the module itself
-			for (size_t i = 1; i < R->v_files.size(); i++) {
-				if (R->v_files[i]->FF->file_type == FandFileType::UNKNOWN) {
-					result.push_back(R->v_files[i]->Name);
+			for (size_t i = 0; i < R->data_files.size(); i++) {
+				if (R->data_files[i]->FF->file_type == FandFileType::UNKNOWN) {
+					result.push_back(R->data_files[i]->Name);
 				}
-				else if (R->v_files[i]->FF->file_type == file_type) {
-					result.push_back(R->v_files[i]->Name);
+				else if (R->data_files[i]->FF->file_type == file_type) {
+					result.push_back(R->data_files[i]->Name);
 				}
 				else {
 					continue;
@@ -178,17 +178,17 @@ std::vector<FileD*> RunProlog::GetFileDescsInModule(std::string& module_name, Fa
 	RdbD* R = CRdb;
 
 	while (R != nullptr) {
-		if (!R->v_files.empty() && EquUpCase(R->v_files[0]->Name, module_name)) {
+		if (R->project_file != nullptr && EquUpCase(R->project_file->Name, module_name)) {
 			// skip the first file, which is the module itself
-			for (size_t i = 1; i < R->v_files.size(); i++) {
-				if (R->v_files[i]->IsHlpFile) {
+			for (size_t i = 0; i < R->data_files.size(); i++) {
+				if (R->data_files[0]->IsHlpFile) {
 					continue;
 				}
 				else if (file_type == FandFileType::UNKNOWN) {
-					result.push_back(R->v_files[i]);
+					result.push_back(R->data_files[i]);
 				}
-				else if (R->v_files[i]->FF->file_type == file_type) {
-					result.push_back(R->v_files[i]);
+				else if (R->data_files[i]->FF->file_type == file_type) {
+					result.push_back(R->data_files[i]);
 				}
 				else {
 					continue;

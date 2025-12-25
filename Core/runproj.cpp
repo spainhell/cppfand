@@ -48,11 +48,6 @@ struct RdbRecVars
 	bool isSQL = false;
 };
 
-bool ProjectRunner::IsCurrChpt(FileD* file_d)
-{
-	return CRdb->v_files[0] == file_d;
-}
-
 FandFileType ProjectRunner::ExtToTyp(const std::string& ext)
 {
 	if ((ext.empty()) || EquUpCase(ext, ".HLP")
@@ -75,8 +70,8 @@ void ProjectRunner::ReleaseFilesAndLinksAfterChapter(EditD* edit)
 	//}
 	//Chpt->pChain = nullptr;
 
-	if (CRdb->v_files.size() > 1) {
-		FileD::CloseAndRemoveAllAfter(1, CRdb->v_files);
+	if (!CRdb->data_files.empty()) {
+		FileD::CloseAndRemoveAllAfter((size_t)0, CRdb->data_files);
 	}
 
 	LinkDRoot = CRdb->OldLDRoot;
@@ -236,7 +231,7 @@ bool ProjectRunner::ChptDelFor(EditD* edit, RdbRecVars* X)
 bool ProjectRunner::ChptDel(FileD* file_d, DataEditor* data_editor)
 {
 	RdbRecVars New;
-	if (!IsCurrChpt(file_d)) {
+	if (file_d == CRdb->project_file) {
 		return true;
 	}
 	GetRdbRecVars(data_editor->GetEditD(), data_editor->GetRecord(), &New);
@@ -292,7 +287,7 @@ WORD ProjectRunner::ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	RdbRecVars New, Old;
 	short eq;
 	WORD result = 0;
-	if (!IsCurrChpt(data_editor->GetFileD())) {
+	if (data_editor->GetFileD() != CRdb->project_file) {
 		return result;
 	}
 	if (!data_editor->TestIsNewRec()) {
@@ -594,7 +589,9 @@ void ProjectRunner::SetRdbDir(FileD* file_d, char Typ, std::string* Nm)
 		FSplit(CPath, CDir, CName, CExt);
 		DelBackSlash(CDir);
 	}
-	else if (rb == nullptr) CDir = TopRdbDir;
+	else if (rb == nullptr) {
+		CDir = TopRdbDir;
+	}
 	else {
 		CDir = rb->RdbDir;
 		AddBackSlash(CDir);
@@ -645,9 +642,9 @@ RdbD* ProjectRunner::PrepareRdb(const std::string& name, std::string& name1)
 	if ((name[0] == '\\')) name1 = name.substr(1, 8);
 	else name1 = name;
 
-	rdb_d->v_files.clear();
+	rdb_d->data_files.clear();
 	FileD* rdb_file = RdFileD(name1, DataFileType::FandFile, FandFileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
-	rdb_d->v_files.push_back(rdb_file);
+	rdb_d->project_file = rdb_file;
 
 	rdb_d->help_file = HelpFD; // Default help file is UFANDHLP or FANDHLP. It can be changed during compilation.
 
@@ -670,7 +667,7 @@ void ProjectRunner::CreateOpenChpt(std::string Nm, bool create)
 	FandTFile* oldChptTF = ChptTF;
 	RdbD* R = PrepareRdb(Nm, Nm1);
 	CRdb = R;
-	Chpt = CRdb->v_files[0];
+	Chpt = CRdb->project_file;
 	//Chpt->FF->RecPtr = new Record(Chpt);
 
 	SetRdbDir(Chpt, Nm[0], &Nm1);
@@ -735,7 +732,7 @@ void ProjectRunner::CloseChpt()
 	SaveFiles();
 	bool del = Chpt->FF->NRecs == 0;
 	std::string d = CRdb->RdbDir;
-	FileD::CloseAllAfter(CRdb->v_files[0], CRdb->v_files);
+	FileD::CloseAllAfter(nullptr, CRdb->data_files);
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	void* p = CRdb;
@@ -743,7 +740,7 @@ void ProjectRunner::CloseChpt()
 	CRdb = CRdb->ChainBack;
 	//ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
-		Chpt = CRdb->v_files[0];
+		Chpt = CRdb->project_file;
 		SetChptFldD();
 		ChDir(CRdb->RdbDir);
 		if (del) {
@@ -777,7 +774,7 @@ FileD* ProjectRunner::FindFD(Record* record)
 	//	FD = (FileD*)FD->pChain;
 	//}
 
-	for (FileD* file : CRdb->v_files) {
+	for (FileD* file : CRdb->data_files) {
 		if (EquUpCase(file->Name, name)) {
 			result = file;
 			break;
@@ -818,7 +815,7 @@ bool ProjectRunner::CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
 	//FileD* lstFD = (FileD*)LastInChain(FileDRoot);
-	int lstFDindex = CRdb->v_files.size() - 1;
+	int lstFDindex = CRdb->data_files.size() - 1;
 	std::deque<LinkD*> oldLd = LinkDRoot;
 
 	FileD* FD = nullptr;
@@ -912,12 +909,12 @@ bool ProjectRunner::CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor
 					runner->RunMainProc(RP, CRdb->ChainBack == nullptr);
 				}
 				else {
-					lstFDindex = CRdb->v_files.size() - 1;
+					lstFDindex = CRdb->data_files.size() - 1;
 					std::deque<LinkD*> ld = LinkDRoot;
 					gc->SetInpTT(&RP, true);
 					ReadProcHead(gc, "");
 					ReadProcBody(gc);
-					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
+					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->data_files);
 					//lstFD->pChain = nullptr;
 					LinkDRoot = ld;
 				}
@@ -979,7 +976,7 @@ bool ProjectRunner::CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor
 	//}
 	//lstFD->pChain = nullptr;
 
-	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
+	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->data_files);
 
 	LinkDRoot = oldLd;
 	ReleaseStore(&p);
@@ -1446,7 +1443,7 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 					std::string old_txt = record->LoadS(ChptOldTxt);
 
 					p1 = RdF(rdb_file, Name, record);
-					CRdb->v_files.push_back(p1);
+					CRdb->data_files.push_back(p1);
 					if (p1->IsHlpFile) {
 						CRdb->help_file = p1;
 					}
@@ -1537,18 +1534,18 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 					//else {
 					//	lstFD = (FileD*)LastInChain(FileDRoot);
 					//}
-					if (CRdb->v_files.empty()) {
+					if (CRdb->data_files.empty()) {
 						throw std::exception("FileDRoot is empty");
 					}
 					else {
-						lstFDindex = CRdb->v_files.size() - 1;
+						lstFDindex = CRdb->data_files.size() - 1;
 					}
 					std::deque<LinkD*> ld = LinkDRoot;
 					gc->SetInpStr(Txt, rdb_file->FF->TF->LicenseNr, Encryp, false);
 					ReadProcHead(gc, Name);
 					ReadProcBody(gc);
 					//lstFD->pChain = nullptr;
-					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
+					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->data_files);
 					LinkDRoot = ld;
 					break;
 				}
@@ -1654,7 +1651,7 @@ void ProjectRunner::GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_edit
 			SetMsgPar("");
 		}
 		else {
-			SetMsgPar(InpRdbPos.rdb->v_files[0]->Name);
+			SetMsgPar(InpRdbPos.rdb->project_file->Name);
 		}
 		WrLLF10Msg(622);
 		Brk = 0;
