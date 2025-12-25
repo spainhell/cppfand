@@ -29,9 +29,11 @@
     <ClInclude Include="LinkD.h" />
     <ClInclude Include="LocVar.h" />
     <ClInclude Include="LongStr.h" />
+    <ClInclude Include="OperationType.h" />
     <ClInclude Include="pstring.h" />
     <ClInclude Include="random.h" />
     <ClInclude Include="realDouble.h" />
+    <ClInclude Include="Record.h" />
     <ClInclude Include="textfunc.h" />
     <ClInclude Include="typeDef.h" />
   </ItemGroup>
@@ -47,6 +49,7 @@
     <ClCompile Include="pstring.cpp" />
     <ClCompile Include="random.cpp" />
     <ClCompile Include="realDouble.cpp" />
+    <ClCompile Include="Record.cpp" />
     <ClCompile Include="textfunc.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

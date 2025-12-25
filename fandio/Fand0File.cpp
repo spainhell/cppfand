@@ -16,6 +16,7 @@
 #include "../Common/DateTime.h"
 #include "../Common/realDouble.h"
 #include "../Common/textfunc.h"
+#include "../Common/Record.h"
 
 #include "../Drivers/files.h"
 
@@ -24,6 +25,7 @@ const double FirstDate = 6.97248E+5;
 Fand0File::Fand0File(FileD* parent)
 {
 	_parent = parent;
+	//_buffer = GetRecSpace();
 }
 
 Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
@@ -34,6 +36,7 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 	Drive = orig.Drive;
 
 	_parent = parent;
+	//_buffer = GetRecSpace();
 
 	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
 	if (orig.XF != nullptr) XF = new FandXFile(*orig.XF, this);
@@ -41,6 +44,8 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 
 Fand0File::~Fand0File()
 {
+	//delete[] _buffer;
+
 	if (Handle != nullptr) {
 		CloseH(&Handle);
 	}
@@ -52,46 +57,88 @@ Fand0File::~Fand0File()
 	}
 }
 
+std::unique_ptr<uint8_t[]> Fand0File::GetRecSpaceUnique() const
+{
+	// 0. uint8_t in front (.X00) -> Valid Record Flag (it's calculated in RecLen for index file)
+	// 1. uint8_t in the end -> Work Flag
+	// 2. uint8_t in the end -> Update Flag
+
+	size_t length = RecLen + 2;
+
+	std::unique_ptr<uint8_t[]> result(new uint8_t[length]);
+	memset(result.get(), '\0', length);
+	return result;
+}
+
 /// <summary>
 /// Vycte zaznam z datoveho souboru (.000)
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-size_t Fand0File::ReadRec(size_t rec_nr, uint8_t* record)
+size_t Fand0File::ReadRec(size_t rec_nr, Record* record)
+{
+	if (record->GetFileD()->Name == "PARAM3")
+	{
+		printf("");
+	}
+	Logging* log = Logging::getInstance();
+	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
+	std::unique_ptr buffer = GetRecSpaceUnique();
+	size_t result = ReadRec(rec_nr, buffer.get());
+	_getValuesFromRawData(buffer.get(), record);
+	return result;
+}
+
+size_t Fand0File::ReadRec(size_t rec_nr, uint8_t* buffer)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	return ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+	size_t result = ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer);
+	return result;
 }
 
-size_t Fand0File::WriteRec(size_t rec_nr, uint8_t* record)
+size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 {
+	if (record->GetFileD()->Name == "PARAM3")
+	{
+		printf("");
+	}
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
+	//DelAllTFlds(rec_nr); // delete all 'T' fields from orig. record first
 	WasWrRec = true;
-	return WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+
+	// get current record data in a file and create list of unchanged 'T' fields
+	std::unique_ptr orig_raw_data = GetRecSpaceUnique();
+	ReadRec(rec_nr, orig_raw_data.get());
+	std::map<FieldDescr*, int32_t> unchanged_fields = DelChangedTFields(orig_raw_data.get(), record);
+	
+	std::unique_ptr buffer = _getRowDataFromRecord(record, unchanged_fields);
+	size_t result = WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer.get());
+	return result;
 }
 
-void Fand0File::CreateRec(int n, uint8_t* record)
+void Fand0File::CreateRec(int n, Record* record)
 {
 	IncNRecs(1);
-	uint8_t* tmp = _parent->GetRecSpace();
-	for (int i = NRecs - 1; i >= n; i--) {
+	Record* tmp = new Record(_parent);
+	for (int32_t i = NRecs - 1; i >= n; i--) {
 		ReadRec(i, tmp);
 		WriteRec(i + 1, tmp);
 	}
-	delete[] tmp;
-	tmp = nullptr;
+	delete tmp; tmp = nullptr;
 	WriteRec(n, record);
 }
 
-void Fand0File::DeleteRec(int n, uint8_t* record)
+void Fand0File::DeleteRec(int n, Record* record)
 {
-	DelAllDifTFlds(record, nullptr);
+	DelAllTFlds(n);
+
 	for (int i = n; i <= NRecs - 1; i++) {
 		ReadRec(i + 1, record);
 		WriteRec(i, record);
 	}
+
 	DecNRecs(1);
 }
 
@@ -139,7 +186,7 @@ bool Fand0File::IsShared()
 void Fand0File::Reset()
 {
 	RecLen = 0;
-	RecPtr = nullptr;
+	//delete RecPtr; RecPtr = nullptr;
 	NRecs = 0;
 	FirstRecPos = 0;
 	WasWrRec = false; WasRdOnly = false; Eof = false;
@@ -175,7 +222,7 @@ void Fand0File::DecNRecs(int n)
 	WasWrRec = true;
 }
 
-void Fand0File::PutRec(void* record, int& i_rec)
+void Fand0File::PutRec(Record* record, int& i_rec)
 {
 	NRecs++;
 	WriteData(i_rec * RecLen + FirstRecPos, RecLen, record);
@@ -185,8 +232,8 @@ void Fand0File::PutRec(void* record, int& i_rec)
 
 bool Fand0File::loadB(FieldDescr* field_d, uint8_t* record)
 {
-	bool result = false;
-	uint8_t* CP = (uint8_t*)record + field_d->Displ;
+	bool result;
+	uint8_t* CP = record + field_d->Displ;
 
 	if ((*CP == '\0') || (*CP == 0xFF)) { //x0FF is NULL value
 		result = false;
@@ -289,15 +336,11 @@ std::string Fand0File::loadS(FieldDescr* field_d, uint8_t* record)
 		break;
 	}
 	case FieldType::TEXT: { // volny text max. 65k
-		if (HasTWorkFlag(record)) {
-			S = TWork.Read(loadT(field_d, record));
-		}
-		else {
-			md = _parent->NewLockMode(RdMode);
-			S = TF->Read(loadT(field_d, record));
-			_parent->OldLockMode(md);
-		}
-		if ((field_d->Flg & f_Encryp) != 0) {
+		md = _parent->NewLockMode(RdMode);
+		S = TF->Read(loadT(field_d, record));
+		_parent->OldLockMode(md);
+
+		if (field_d->isEncrypted()) {
 			S = Coding::Code(S);
 		}
 		break;
@@ -308,14 +351,14 @@ std::string Fand0File::loadS(FieldDescr* field_d, uint8_t* record)
 
 int Fand0File::loadT(FieldDescr* F, uint8_t* record)
 {
-	char* source = (char*)record + F->Displ;
+	uint8_t* source = record + F->Displ;
 	if (record == nullptr) return 0;
 	return *reinterpret_cast<int*>(source);
 }
 
 void Fand0File::saveB(FieldDescr* field_d, bool b, uint8_t* record)
 {
-	char* pB = (char*)record + field_d->Displ;
+	uint8_t* pB = record + field_d->Displ;
 	if ((field_d->field_type == FieldType::BOOL) && field_d->isStored()) {
 		*pB = b ? 1 : 0;
 	}
@@ -323,7 +366,7 @@ void Fand0File::saveB(FieldDescr* field_d, bool b, uint8_t* record)
 
 void Fand0File::saveR(FieldDescr* field_d, double r, uint8_t* record)
 {
-	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
+	uint8_t* pRec = record + field_d->Displ;
 	int l = 0;
 	if ((field_d->Flg & f_Stored) != 0) {
 		WORD m = field_d->M;
@@ -364,7 +407,7 @@ void Fand0File::saveR(FieldDescr* field_d, double r, uint8_t* record)
 void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t* record)
 {
 	const uint8_t LeftJust = 1;
-	uint8_t* pRec = (uint8_t*)record + field_d->Displ;
+	uint8_t* pRec = record + field_d->Displ;
 
 	if (field_d->isStored()) {
 		short L = field_d->L;
@@ -415,15 +458,9 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t
 		}
 		case FieldType::TEXT: {
 			if (int previous = loadT(field_d, record)) {
-				// there already exists a text -> delete it
-				if (HasTWorkFlag(record)) {
-					TWork.Delete(previous);
-				}
-				else {
-					LockMode md = parent->NewLockMode(WrMode);
-					TF->Delete(previous);
-					parent->OldLockMode(md);
-				}
+				LockMode md = parent->NewLockMode(WrMode);
+				TF->Delete(previous);
+				parent->OldLockMode(md);
 			}
 
 			if (s.empty()) {
@@ -433,16 +470,12 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t
 				if (field_d->isEncrypted() != 0) {
 					s = Coding::Code(s);
 				}
-				if (HasTWorkFlag(record)) {
-					int pos = TWork.Store(s);
-					saveT(field_d, pos, record);
-				}
-				else {
-					LockMode md = parent->NewLockMode(WrMode);
-					int pos = TF->Store(s);
-					saveT(field_d, pos, record);
-					parent->OldLockMode(md);
-				}
+
+				LockMode md = parent->NewLockMode(WrMode);
+				int pos = TF->Store(s);
+				saveT(field_d, pos, record);
+				parent->OldLockMode(md);
+				//}
 			}
 			break;
 		}
@@ -472,50 +505,89 @@ void Fand0File::DelTFld(FieldDescr* field_d, uint8_t* record)
 	int pos = loadT(field_d, record);
 	if (pos == 0) return;
 
-	if (HasTWorkFlag(record)) {
-		TWork.Delete(pos);
-	}
-	else {
-		LockMode md = _parent->NewLockMode(WrMode);
-		TF->Delete(pos);
-		_parent->OldLockMode(md);
-	}
+	LockMode md = _parent->NewLockMode(WrMode);
+	TF->Delete(pos);
+	_parent->OldLockMode(md);
 
 	saveT(field_d, 0, record);
 }
 
-void Fand0File::DelTFlds(uint8_t* record)
+void Fand0File::DelAllTFlds(int32_t rec_nr)
+{
+	if (has_T_fields()) {
+		std::unique_ptr buffer = GetRecSpaceUnique();
+		ReadRec(rec_nr, buffer.get());
+
+		for (FieldDescr* field : _parent->FldD) {
+			if (field->field_type == FieldType::TEXT && field->isStored()) {
+				DelTFld(field, buffer.get());
+			}
+		}
+	}
+	else {
+		// this file doesn't contain T fields -> nothing to delete
+	}
+}
+
+std::map<FieldDescr*, int32_t> Fand0File::DelChangedTFields(uint8_t* orig_raw_data, Record* new_record)
+{
+	std::map<FieldDescr*, int32_t> result;
+
+	if (has_T_fields()) {
+		for (FieldDescr* field : _parent->FldD) {
+			if (field->field_type == FieldType::TEXT && field->isStored()) {
+				std::string orig_text = loadS(field, orig_raw_data);
+				std::string new_text = new_record->LoadS(field);
+				if (orig_text == new_text) {
+					int32_t pos = loadT(field, orig_raw_data);
+					result.insert(std::pair(field, pos));
+				}
+				else {
+					DelTFld(field, orig_raw_data);
+				}
+			}
+		}
+	}
+	else {
+		// this file doesn't contain T fields -> nothing to delete
+	}
+
+	return result;
+}
+
+bool Fand0File::has_T_fields()
 {
 	for (FieldDescr* field : _parent->FldD) {
 		if (field->field_type == FieldType::TEXT && field->isStored()) {
-			DelTFld(field, record);
+			return true;
 		}
 	}
+	return false;
 }
 
-/**
- * \brief Pokud zaznamy odkazuji na ruzne texty, je text z 'record' smazan
- * \param field_d popis pole
- * \param record 1. zaznam (ktery je pripadne smazan)
- * \param comp_record 2. zaznam
- */
-void Fand0File::DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record)
-{
-	const int n1 = loadT(field_d, comp_record);
-	const int n2 = loadT(field_d, record);
-	if (n1 != n2) {
-		DelTFld(field_d, record);
-	}
-}
-
-void Fand0File::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
-{
-	for (auto& F : _parent->FldD) {
-		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
-			DelDifTFld(F, record, comp_record);
-		}
-	}
-}
+///**
+// * \brief Pokud zaznamy odkazuji na ruzne texty, je text z 'record' smazan
+// * \param field_d popis pole
+// * \param record 1. zaznam (ktery je pripadne smazan)
+// * \param comp_record 2. zaznam
+// */
+//void Fand0File::DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record)
+//{
+//	const int n1 = loadT(field_d, comp_record);
+//	const int n2 = loadT(field_d, record);
+//	if (n1 != n2) {
+//		DelTFld(field_d, record);
+//	}
+//}
+//
+//void Fand0File::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
+//{
+//	for (auto& F : _parent->FldD) {
+//		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
+//			DelDifTFld(F, record, comp_record);
+//		}
+//	}
+//}
 
 uint16_t Fand0File::RdPrefix()
 {
@@ -749,62 +821,29 @@ void Fand0File::Close()
 	}
 }
 
-void Fand0File::SetTWorkFlag(uint8_t* record) const
-{
-	uint8_t* p = (uint8_t*)record;
-	p[RecLen] = 1;
-}
-
-bool Fand0File::HasTWorkFlag(uint8_t* record) const
-{
-	uint8_t* p = (uint8_t*)record;
-	const bool workFlag = p[RecLen] == 1;
-	return workFlag;
-}
-
-void Fand0File::SetRecordUpdateFlag(uint8_t* record)
-{
-	uint8_t* p = (uint8_t*)record;
-	p[RecLen + 1] = 1;
-}
-
-void Fand0File::ClearRecordUpdateFlag(uint8_t* record)
-{
-	uint8_t* p = (uint8_t*)record;
-	p[RecLen + 1] = 0;
-}
-
-bool Fand0File::HasRecordUpdateFlag(uint8_t* record)
-{
-	uint8_t* p = (uint8_t*)record;
-	return p[RecLen + 1] == 1;
-}
-
-bool Fand0File::DeletedFlag(uint8_t* record)
-{
-	if (file_type == FandFileType::INDEX) {
-		if (((uint8_t*)record)[0] == 0) return false;
-		else return true;
-	}
-
-	return false;
-}
-
-void Fand0File::ClearDeletedFlag(uint8_t* record)
-{
-	uint8_t* ptr = (uint8_t*)record;
-	if (file_type == FandFileType::INDEX) {
-		ptr[0] = 0;
-	}
-}
-
-void Fand0File::SetDeletedFlag(uint8_t* record)
-{
-	uint8_t* ptr = (uint8_t*)record;
-	if (file_type == FandFileType::INDEX) {
-		ptr[0] = 1;
-	}
-}
+//bool Fand0File::DeletedFlag(Record* record)
+//{
+//	if (file_type == FandFileType::INDEX) {
+//		if (record[0] == 0) return false;
+//		else return true;
+//	}
+//
+//	return false;
+//}
+//
+//void Fand0File::ClearDeletedFlag(Record* record)
+//{
+//	if (file_type == FandFileType::INDEX) {
+//		record[0] = 0;
+//	}
+//}
+//
+//void Fand0File::SetDeletedFlag(Record* record)
+//{
+//	if (file_type == FandFileType::INDEX) {
+//		record[0] = 1;
+//	}
+//}
 
 void Fand0File::ClearXFUpdLock()
 {
@@ -846,13 +885,15 @@ int Fand0File::CreateIndexFile()
 			XF->SetEmpty(NRecs, _parent->GetNrKeys());
 			std::vector<KeyInD*> empty;
 			std::unique_ptr<XScan> scan = std::make_unique<XScan>(_parent, nullptr, empty, false);
-			std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
+			std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
 			scan->Reset(nullptr, false, record.get());
 			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys);
-			XW->Main('X', record.get());
+			XW->Main(OperationType::Index, record.get());
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
-			if (!SaveCache(0, Handle)) GoExit(MsgLine);
+			if (!SaveCache(0, Handle)) {
+				GoExit(MsgLine);
+			}
 			/*FlushHandles; */
 		}
 		fail = false;
@@ -893,7 +934,7 @@ FileD* Fand0File::GetFileD()
 	return _parent;
 }
 
-bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record)
+bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, Record* record)
 {
 	int R = 0;
 	XString x;
@@ -913,7 +954,7 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record)
 			L = N + 1;
 		}
 		N = (L + R) / 2;
-		_parent->ReadRec(N, record);
+		ReadRec(N, record);
 		x.PackKF(_parent, Key->KFlds, record);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
@@ -925,11 +966,11 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record)
 		if (Key->Duplic && (Result == _equ)) {
 			while (N > 1) {
 				N--;
-				_parent->ReadRec(N, record);
+				ReadRec(N, record);
 				x.PackKF(_parent, Key->KFlds, record);
 				if (CompStr(x.S, XX.S) != _equ) {
 					N++;
-					_parent->ReadRec(N, record);
+					ReadRec(N, record);
 					break;
 				}
 			}
@@ -955,7 +996,7 @@ int Fand0File::XNRecs(std::vector<XKey*>& K)
 	}
 }
 
-void Fand0File::TryInsertAllIndexes(int RecNr, uint8_t* record)
+void Fand0File::TryInsertAllIndexes(int RecNr, Record* record)
 {
 	TestXFExist();
 	XKey* lastK = nullptr;
@@ -975,8 +1016,8 @@ label1:
 		}
 		K1->Delete(_parent, RecNr, record);
 	}
-	_parent->SetDeletedFlag(record);
-	_parent->WriteRec(RecNr, record);
+	record->SetDeleted(); //_parent->SetDeletedFlag(record);
+	WriteRec(RecNr, record);
 
 	if (XF->FirstDupl) {
 		SetMsgPar(_parent->Name);
@@ -985,7 +1026,7 @@ label1:
 	}
 }
 
-void Fand0File::DeleteAllIndexes(int RecNr, uint8_t* record)
+void Fand0File::DeleteAllIndexes(int RecNr, Record* record)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
@@ -995,27 +1036,25 @@ void Fand0File::DeleteAllIndexes(int RecNr, uint8_t* record)
 	}
 }
 
-void Fand0File::DeleteXRec(int RecNr, bool DelT, uint8_t* record)
+void Fand0File::DeleteXRec(int RecNr, Record* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
 	DeleteAllIndexes(RecNr, record);
-	if (DelT) {
-		_parent->DelAllDifTFlds(record, nullptr);
-	}
-	SetDeletedFlag(record);
-	_parent->WriteRec(RecNr, record);
+	DelAllTFlds(RecNr);
+	record->SetDeleted(); //SetDeletedFlag(record);
+	WriteRec(RecNr, record);
 	XF->NRecs--;
 }
 
-void Fand0File::OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record)
+void Fand0File::OverWrXRec(int RecNr, Record* P2, Record* P, Record* record)
 {
 	XString x, x2;
 	record = P2;
-	if (_parent->DeletedFlag(record)) {
+	if (record->IsDeleted()) {
 		record = P;
-		_parent->RecallRec(RecNr, record);
+		RecallRec(RecNr, record);
 		return;
 	}
 	TestXFExist();
@@ -1033,10 +1072,21 @@ void Fand0File::OverWrXRec(int RecNr, uint8_t* P2, uint8_t* P, uint8_t* record)
 	}
 
 	record = P;
-	_parent->WriteRec(RecNr, record);
+	WriteRec(RecNr, record);
 }
 
-void Fand0File::GenerateNew000File(XScan* x, uint8_t* record, void (*msgFuncUpdate)(int32_t))
+void Fand0File::RecallRec(int recNr, Record* record)
+{
+	TestXFExist();
+	XF->NRecs++;
+	for (auto& K : _parent->Keys) {
+		K->Insert(_parent, recNr, false, record);
+	}
+	record->ClearDeleted(); //_parent->ClearDeletedFlag(record);
+	WriteRec(recNr, record);
+}
+
+void Fand0File::GenerateNew000File(XScan* x, Record* record, void (*msgFuncUpdate)(int32_t))
 {
 	// vytvorime si novy buffer pro data,
 	// ten pak zapiseme do souboru naprimo (bez cache)
@@ -1069,21 +1119,21 @@ void Fand0File::GenerateNew000File(XScan* x, uint8_t* record, void (*msgFuncUpda
 	delete[] buffer; buffer = nullptr;
 }
 
-void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
+void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type)
 {
 	std::vector<XKey*> xw_keys;
 	xw_keys.push_back(K);
-	std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
+	std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
 	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys);
-	XW->Main(Typ, record.get());
+	XW->Main(oper_type, record.get());
 }
 
-void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ)
+void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type)
 {
 	unsigned short n = 0;
 	XWKey* k2 = new XWKey(_parent);
 
-	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) {
+	if (Scan->FD->IsSQLFile && (Scan->Kind == ScanMode::WorkingIndex)) {
 		/* F6-autoreport & sort */
 		XKey* k = Scan->Key;
 		n = k->IndexLen;
@@ -1116,18 +1166,18 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ
 		k2->Open(_parent, SK, true, false);
 	}
 
-	CreateWIndex(Scan, k2, Typ);
+	CreateWIndex(Scan, k2, oper_type);
 	Scan->SubstWIndex(k2);
 }
 
 void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)())
 {
-	std::unique_ptr<uint8_t[]> record = _parent->GetRecSpaceUnique();
+	std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
 
 	std::vector<KeyInD*> empty;
 	XScan* Scan = new XScan(_parent, nullptr, empty, false);
 	Scan->Reset(nullptr, false, record.get());
-	ScanSubstWIndex(Scan, SK, 'S');
+	ScanSubstWIndex(Scan, SK, OperationType::Sort);
 	FileD* FD2 = _parent->OpenDuplicateF(false);
 
 	if (msgFuncOn) {
@@ -1151,17 +1201,17 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t
 
 void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
 {
-	uint8_t* record = _parent->GetRecSpace();
+	Record* record = new Record(_parent);
 
 	K->Release(_parent);
 	LockMode md = _parent->NewLockMode(RdMode);
 	std::vector<KeyInD*> empty;
 	XScan* Scan = new XScan(_parent, FromK, empty, false);
 	Scan->Reset(nullptr, false, record);
-	CreateWIndex(Scan, K, 'W');
+	CreateWIndex(Scan, K, OperationType::Work);
 	_parent->OldLockMode(md);
 
-	delete[] record; record = nullptr;
+	delete record; record = nullptr;
 }
 
 void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
@@ -1245,12 +1295,12 @@ void Fand0File::IndexFileProc(bool Compress)
 		RunError(result);
 	}
 
-	uint8_t* record = _parent->GetRecSpace();
+	Record* record = new Record(_parent);
 	if (Compress) {
 		FileD* FD2 = _parent->OpenDuplicateF(false);
 		for (int rec_nr = 1; rec_nr <= NRecs; rec_nr++) {
-			_parent->ReadRec(rec_nr, record);
-			if (!_parent->DeletedFlag(record)) {
+			ReadRec(rec_nr, record);
+			if (!record->IsDeleted()) {
 				FD2->PutRec(record);
 			}
 		}
@@ -1269,13 +1319,13 @@ void Fand0File::IndexFileProc(bool Compress)
 	XF->NoCreate = false;
 	TestXFExist();
 	_parent->OldLockMode(md);
-	
-	delete[] record; record = nullptr;
+
+	delete record; record = nullptr;
 }
 
 void Fand0File::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 {
-	CFile = file_d;
+	//CFile = file_d;
 
 	WORD i = 0;
 	bool isLongTxt = false;
@@ -1329,7 +1379,7 @@ label3:
 	WriteH(h, l, &X[i]);
 label4:
 	if (!tf->IsWork) TFD02->OldLockMode(md2);
-	CFile = file_d;
+	//CFile = file_d;
 }
 
 std::string Fand0File::SetTempCExt(char typ, bool isNet) const
@@ -1425,4 +1475,127 @@ void Fand0File::TestDelErr(std::string& P)
 		SetMsgPar(P);
 		RunError(827);
 	}
+}
+
+void Fand0File::_getValuesFromRawData(uint8_t* buffer, Record* record)
+{
+	record->Clear();
+
+	if (buffer != nullptr) {
+		for (FieldDescr* field : _parent->FldD) {
+			BRS_Value val;
+
+			if (field->isStored()) {
+				switch (field->field_type) {
+				case FieldType::BOOL:
+					val.B = loadB(field, buffer);
+					break;
+				case FieldType::DATE:
+				case FieldType::FIXED:
+				case FieldType::REAL:
+					val.R = loadR(field, buffer);
+					break;
+				case FieldType::ALFANUM:
+				case FieldType::NUMERIC:
+				case FieldType::TEXT:
+					val.S = loadS(field, buffer);
+					break;
+				default:
+					// unknown field type
+					break;
+				}
+			}
+			else {
+				// TODO: calculated T fields? is it stored in TWork by default?
+
+				// calculated field
+				//switch (field->field_type) {
+				//case FieldType::BOOL:
+				//	val.B = RunBool(_file_d, field->Frml, _buffer);
+				//	break;
+				//case FieldType::DATE:
+				//case FieldType::FIXED:
+				//case FieldType::REAL:
+				//	val.R = RunReal(_file_d, field->Frml, _buffer);
+				//	break;
+				//case FieldType::ALFANUM:
+				//case FieldType::NUMERIC:
+				//case FieldType::TEXT:
+				//	val.S = RunString(_file_d, field->Frml, _buffer);
+				//	break;
+				//default:
+				//	// unknown field type
+				//	break;
+				//}
+			}
+			record->_values.push_back(val);
+		}
+	}
+	else
+	{
+		// buffer is null -> return empty values
+	}
+
+	if (file_type == FandFileType::INDEX && buffer[0] != 0) {
+		record->SetDeleted(false);
+	}
+
+}
+
+std::unique_ptr<uint8_t[]> Fand0File::_getRowDataFromRecord(Record* record, const std::map<FieldDescr*, int32_t>& unchanged_T_fields)
+{
+	std::unique_ptr buffer = GetRecSpaceUnique();
+
+	if (_parent->HasIndexFile() && record->IsDeleted()) {
+		buffer.get()[0] = 1;
+	}
+
+	for (size_t i = 0; i < _parent->FldD.size(); i++) {
+		FieldDescr* field = _parent->FldD[i];
+
+		if (field->isStored()) {
+			BRS_Value& val = record->_values[i];
+			switch (field->field_type) {
+			case FieldType::BOOL:
+				saveB(field, val.B, buffer.get());
+				break;
+			case FieldType::DATE:
+			case FieldType::FIXED:
+			case FieldType::REAL:
+				saveR(field, val.R, buffer.get());
+				break;
+			case FieldType::ALFANUM:
+			case FieldType::NUMERIC: {
+				saveS(_parent, field, val.S, buffer.get());
+				break;
+				}
+			case FieldType::TEXT: {
+				// check if this T field is unchanged -> copy from original buffer
+				if (field->field_type == FieldType::TEXT) {
+					auto it = unchanged_T_fields.find(field);
+					if (it != unchanged_T_fields.end()) {
+						// unchanged field -> copy only the position
+						saveT(field, it->second, buffer.get());
+						break;
+					}
+					else
+					{
+						// changed field -> save new value
+						saveS(_parent, field, val.S, buffer.get());
+					}
+				}
+				
+				break;
+			}
+			default:
+				// unknown field type
+				break;
+			}
+		}
+		else {
+			// calculated field -> do nothing
+		}
+	}
+
+	return buffer;
 }

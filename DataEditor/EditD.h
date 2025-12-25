@@ -4,12 +4,11 @@
 #include <vector>
 
 #include "DataEditorParams.h"
-#include "Record.h"
 #include "../Common/FileD.h"
 #include "../Core/base.h"
 
 class Implicit;
-struct EFldD;
+class EditableField;
 struct ERecTxtD;
 struct EdExitD;
 class LinkD;
@@ -24,7 +23,7 @@ public:
 	// EditD* PrevE; - toto bude pChain ...
 	EditD(uint8_t cols, uint8_t rows);
 	~EditD();
-	std::vector<EFldD*>::iterator GetEFldIter(EFldD* e_fld);
+	std::vector<EditableField*>::iterator GetEFldIter(EditableField* e_fld);
 	FileD* FD = nullptr;
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;
@@ -45,7 +44,8 @@ public:
 	char OwnerTyp = '\0'; /* #0=CtrlF7 */        /*          "          */
 	LinkD* DownLD = nullptr;                     /*          "          */
 	LocVar* DownLV = nullptr;                    /*          "          */
-	uint8_t* DownRecPtr; void* LVRecPtr;         /*          "          */
+	Record* DownRecord;							 /*          "          */
+	Record* LvRec;								 /*          "          */
 	std::vector<KeyInD*> KIRoot;                 /*          "          */
 	bool SQLFilter = false;                      /*          "          */
 	XWKey* SelKey = nullptr;                     /*          "          */
@@ -57,11 +57,11 @@ public:
 	//std::vector<std::string> RecTxt;
 	std::vector<ERecTxtD*> RecTxt;
 	uint8_t NRecs = 0;     /*display*/
-	std::vector<EFldD*> FirstFld;
-	std::vector<EFldD*>::iterator CFld;
-	EFldD* LastFld = nullptr;
-	EFldD* StartFld = nullptr;
-	EFldD* FirstEmptyFld = nullptr;					/* copied */
+	std::vector<EditableField*> FirstFld;
+	std::vector<EditableField*>::iterator CFld;
+	EditableField* LastFld = nullptr;
+	EditableField* StartFld = nullptr;
+	EditableField* FirstEmptyFld = nullptr;					/* copied */
 	XKey* VK = nullptr;								/*   "    */		
 	XWKey* WK = nullptr;							/*   "    */
 	int BaseRec = 0;								/*   "    */

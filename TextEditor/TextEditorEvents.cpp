@@ -434,11 +434,11 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, EditorMode& mode, std::v
 				std::string data = txt;
 
 				if (editor->_text_type == TextType::Local) {
-					TWork.Delete(*LocalPPtr);
-					*LocalPPtr = TWork.Store(data);
+					//TWork.Delete(*LocalPPtr);
+					//*LocalPPtr = TWork.Store(data);
 				}
 				else if (UpdatT) {
-					data_editor->UpdateEdTFld(data);
+					data_editor->UpdateTextField(data);
 					UpdatT = false;
 				}
 
@@ -452,7 +452,8 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, EditorMode& mode, std::v
 				data_editor->StartExit(X, false);
 			}
 			else {
-				CallProcedure(X->Proc);
+				std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+				runner->CallProcedure(X->Proc);
 			}
 			//NewExit(Ovr(), er);
 			//goto Opet;
@@ -472,18 +473,18 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, EditorMode& mode, std::v
 			}
 			case TextType::Local:
 			case TextType::Memo: {
-				std::string d = TWork.Read(*LocalPPtr);
-				if (editor->_text_type == TextType::Local) {
-				}
-				else {
-					throw("Check implementation! EditDRoot is probably not set.");
-					//CRecPtr = EditDRoot->NewRec->GetRecord();
-					//sp = CFile->loadLongS((*data_editor->CFld)->FldD, CRecPtr);
-				}
-				//editor->_lenT = sp->LL;
-				//// _textT = (CharArr*)(sp)
-				//Move(&editor->_textT[3], &editor->_textT[1], editor->_lenT);
-				txt = d;
+				//std::string d = TWork.Read(*LocalPPtr);
+				//if (editor->_text_type == TextType::Local) {
+				//}
+				//else {
+				//	throw("Check implementation! EditDRoot is probably not set.");
+				//	//CRecPtr = EditDRoot->NewRec->GetRecord();
+				//	//sp = CFile->loadLongS((*data_editor->CFld)->FldD, CRecPtr);
+				//}
+				////editor->_lenT = sp->LL;
+				////// _textT = (CharArr*)(sp)
+				////Move(&editor->_textT[3], &editor->_textT[1], editor->_lenT);
+				//txt = d;
 				break;
 			}
 			}

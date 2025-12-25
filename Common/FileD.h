@@ -2,10 +2,12 @@
 #include <memory>
 
 #include "../Core/Rdb.h"
+// #include "../fandio/Record.h"
 #include "../fandio/Fand0File.h"
 #include "../fandio/DbfFile.h"
 #include "../fandio/locks.h" // to be visible in other parts of code
 
+class Record;
 class FieldDescr;
 class Additive;
 
@@ -62,8 +64,8 @@ public:
 	void Reset();
 	size_t GetRecordSize();
 
-	size_t ReadRec(size_t rec_nr, uint8_t* record) const;
-	size_t WriteRec(size_t rec_nr, uint8_t* record) const;
+	size_t ReadRec(size_t rec_nr, Record* record) const;
+	size_t WriteRec(size_t rec_nr, Record* record) const;
 	int UsedFileSize() const;
 
 	bool GetWasRdOnly() const;
@@ -73,34 +75,33 @@ public:
 	void CheckT(int file_size);
 	void CheckX(int file_size);
 
-	uint8_t* GetRecSpace() const;
-	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
+	//uint8_t* GetRecSpace() const;
+	//std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
 
-	// delete 'T' from working file if exists
-	void ClearRecSpace(uint8_t* record);
+	//void ClearRecSpace(Record* record); // delete 'T' from TWork
 	void CompileRecLen() const;
 
 	void IncNRecs(int n);
 	void DecNRecs(int n);
 	void SeekRec(int n);
-	void CreateRec(int n, uint8_t* record) const;
-	void PutRec(uint8_t* record);
-	void DeleteRec(int n, uint8_t* record) const;
-	void RecallRec(int recNr, uint8_t* record);
+	void CreateRec(int n, Record* record) const;
+	void PutRec(Record* record);
+	void DeleteRec(int n, Record* record) const;
+	void RecallRec(int recNr, Record* record);
 	void AssignNRecs(bool Add, int N);
 
 	void SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const;
 	void IndexesMaintenance(bool remove_deleted);
 
-	bool loadB(FieldDescr* field_d, uint8_t* record);
-	double loadR(FieldDescr* field_d, uint8_t* record);
-	std::string loadS(FieldDescr* field_d, uint8_t* record);
-	int loadT(FieldDescr* field_d, uint8_t* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
+	//bool loadB(FieldDescr* field_d, Record* record);
+	//double loadR(FieldDescr* field_d, Record* record);
+	//std::string loadS(FieldDescr* field_d, Record* record);
+	//int loadT(FieldDescr* field_d, Record* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
 
-	void saveB(FieldDescr* field_d, bool b, uint8_t* record);
-	void saveR(FieldDescr* field_d, double r, uint8_t* record);
-	void saveS(FieldDescr* field_d, const std::string& s, uint8_t* record);
-	int saveT(FieldDescr* field_d, int pos, uint8_t* record) const;
+	//void saveB(FieldDescr* field_d, bool b, Record* record);
+	//void saveR(FieldDescr* field_d, double r, Record* record);
+	//void saveS(FieldDescr* field_d, const std::string& s, Record* record);
+	//int saveT(FieldDescr* field_d, int pos, Record* record) const;
 
 	void SetDrive(uint8_t drive) const;
 	void SetUpdateFlag() const;
@@ -124,20 +125,20 @@ public:
 	LockMode NewLockMode(LockMode mode);
 	bool TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind);
 	bool ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref);
-	bool Lock(int n, uint16_t kind) const;
-	void Unlock(int n);
+	bool Lock(int32_t n, uint16_t kind) const;
+	void Unlock(int32_t n);
 	void RunErrorM(LockMode mode);
 
-	void SetTWorkFlag(uint8_t* record);
-	bool HasTWorkFlag(uint8_t* record);
+	//void SetTWorkFlag(uint8_t* record);
+	//bool HasTWorkFlag(uint8_t* record);
 
-	void SetRecordUpdateFlag(uint8_t* record);
-	void ClearRecordUpdateFlag(uint8_t* record);
-	bool HasRecordUpdateFlag(uint8_t* record);
+	//void SetRecordUpdateFlag(uint8_t* record);
+	//void ClearRecordUpdateFlag(uint8_t* record);
+	//bool HasRecordUpdateFlag(uint8_t* record);
 
-	bool DeletedFlag(uint8_t* record);
-	void ClearDeletedFlag(uint8_t* record) const;
-	void SetDeletedFlag(uint8_t* record) const;
+	//bool DeletedFlag(uint8_t* record);
+	//void ClearDeletedFlag(uint8_t* record) const;
+	//void SetDeletedFlag(uint8_t* record) const;
 
 	uint16_t RdPrefix() const;
 	void WrPrefix() const;
@@ -146,14 +147,13 @@ public:
 	bool HasIndexFile() const;
 	bool HasTextFile() const;
 
-	bool SearchKey(XString& XX, XKey* Key, int& NN, uint8_t* record) const;
+	bool SearchKey(XString& XX, XKey* Key, int& NN, Record* record) const;
 	bool SearchXKey(XKey* K, XString& X, int& N);
 
 	FileD* OpenDuplicateF(bool createTextFile);
 	void DeleteDuplicateF(FileD* TempFD);
-	void ZeroAllFlds(uint8_t* record, bool delTFields);
-	void CopyRec(uint8_t* src_record, uint8_t* dst_record, bool delTFields);
-	void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
+	//void ZeroAllFlds(Record* record, bool delTFields);
+	//void DelAllDifTFlds(Record* record, Record* comp_record);
 
 	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
 	std::string SetTempCExt(char typ, bool isNet);
@@ -167,17 +167,17 @@ public:
 	bool NotCached();
 	bool Cached();
 
-	bool OpenF(const std::string& path, FileUseMode UM);
+	bool OpenF(const std::string& path, FileUseMode UM, bool is_project_file);
 	// open file(s) from disk
-	bool OpenF1(const std::string& path, FileUseMode UM);
+	bool OpenF1(const std::string& path, FileUseMode UM, bool is_project_file);
 	// load prefix(es) from file
-	bool OpenF2(const std::string& path);
-	void CreateF();
-	bool OpenCreateF(const std::string& path, FileUseMode UM);
+	bool OpenF2(const std::string& path, bool is_project_file);
+	void CreateF(bool is_project_file);
+	bool OpenCreateF(const std::string& path, FileUseMode UM, bool is_project_file);
 	void DeleteF();
 
 	void TestCFileError();
-	std::string SetPathMountVolumeSetNet(FileUseMode UM);
+	std::string SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file);
 	std::string SetPathAndVolume(char pathDelim = '\\');
 	void CFileError(int N);
 
@@ -187,6 +187,8 @@ public:
 
 	static void CopyH(HANDLE h1, HANDLE h2);
 	static std::string SetPathForH(HANDLE handle);
+
+	Record* LinkLastRec(int& n);
 
 private:
 	void lock_excl_and_write_prefix();

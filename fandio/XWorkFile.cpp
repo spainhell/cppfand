@@ -3,6 +3,7 @@
 #include "../fandio/FandXFile.h"
 #include "../Core/access.h"
 #include "KeyFldD.h"
+#include "../Common/Record.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"
@@ -25,7 +26,7 @@ XWorkFile::~XWorkFile()
 	FlushF(Handle, HandleError);
 }
 
-void XWorkFile::Main(char Typ, uint8_t* record)
+void XWorkFile::Main(OperationType oper_type, Record* record)
 {
 	xPage = new XPage();
 	nextXPage = xwFile->NewPage(xPage);
@@ -39,12 +40,12 @@ void XWorkFile::Main(char Typ, uint8_t* record)
 		xxPage->IsLeaf = true;
 		XKey* k = xScan->Key;
 
-		if (xScan->Kind == 1 &&
+		if (xScan->Kind == ScanMode::Index &&
 #ifdef FandSQL
 			!xScan->v_files->IsSQLFile &&
 #endif
 			(xScan->Bool == nullptr && (xKey->KFlds.empty() || KeyFldD::EquKFlds(k->KFlds, xKey->KFlds)))) {
-			CopyIndex(k, xKey->KFlds, Typ, record);
+			CopyIndex(k, xKey->KFlds, oper_type, record);
 		}
 		else {
 			if (frst) {
@@ -53,7 +54,7 @@ void XWorkFile::Main(char Typ, uint8_t* record)
 			else {
 				xScan->SeekRec(0);
 			}
-			Reset(xKey->KFlds, sizeof(XXPage) * 9, Typ, xScan->NRecs);
+			Reset(xKey->KFlds, sizeof(XXPage) * 9, oper_type, xScan->NRecs);
 			SortMerge(xKey, record);
 		}
 
@@ -64,7 +65,7 @@ void XWorkFile::Main(char Typ, uint8_t* record)
 	delete xPage; xPage = nullptr;
 }
 
-void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, uint8_t* record)
+void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper_type, Record* record)
 {
 
 	WRec* r = new WRec();
@@ -73,7 +74,7 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, uint8_t*
 
 	K->NrToPath(_parent, 1);
 	int page = XPath[XPathN].Page;
-	RunMsgOn(Typ, K->NRecs());
+	RunMsgOn(static_cast<char>(oper_type), K->NRecs());
 	int count = 0;
 
 	while (page != 0) {
@@ -99,7 +100,7 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, uint8_t*
 	RunMsgOff();
 }
 
-bool XWorkFile::GetCRec(uint8_t* record)
+bool XWorkFile::GetCRec(Record* record)
 {
 	bool result = false;
 	xScan->GetRec(record);
@@ -109,12 +110,12 @@ bool XWorkFile::GetCRec(uint8_t* record)
 	return result;
 }
 
-void XWorkFile::Output(XKey* xKey, WRec* R, uint8_t* record)
+void XWorkFile::Output(XKey* xKey, WRec* R, Record* record)
 {
 	xxPage->AddToLeaf(_parent, R, xKey, record);
 }
 
-void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NRecs)
+void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, OperationType oper_type, int NRecs)
 {
 	int BYTEs = 0;
 	int pages = 0;
@@ -124,7 +125,7 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NR
 
 	//while (KF != nullptr) {
 	for (KeyFldD* k : KF) {
-		if (Typ == 'D') {
+		if (oper_type == OperationType::Duplicate) {
 			RecLen += 6;
 		}
 		else {
@@ -167,11 +168,11 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NR
 	//@shl ax 3, 1; cmp bx, 1; ja @1; cmp cx, 0; jne @4; mov cx, 1;
 	//@mov pages 4.unsigned short, cx;
 
-	RunMsgOn(Typ, pages);
+	RunMsgOn(static_cast<char>(oper_type), pages);
 }
 
 /// precte zaznamy, vytvori uplnou delku klice, setridi zaznamy
-void XWorkFile::SortMerge(XKey* xKey, uint8_t* record)
+void XWorkFile::SortMerge(XKey* xKey, Record* record)
 {// z 'PW->A' se postupne berou jednotlive WRec;
 	// ty pak projdou upravou;
 	// a zpatky se vraci na stejne misto do PW->A;
@@ -282,7 +283,7 @@ void XWorkFile::ReadWPage(WPage* W, int Pg)
 	TestErr();
 }
 
-void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Chn, uint8_t* record)
+void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Chn, Record* record)
 {
 	size_t offset = 0;
 	PgWritten++;
@@ -311,7 +312,7 @@ void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Ch
 	}
 }
 
-void XWorkFile::Merge(XKey* xKey, uint8_t* record)
+void XWorkFile::Merge(XKey* xKey, Record* record)
 {
 	int npairs, newli, nxtnew, pg1, pg2;
 	int nxt = 0;
@@ -347,7 +348,7 @@ label1:
 	goto label1;
 }
 
-void XWorkFile::Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, uint8_t* record)
+void XWorkFile::Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, Record* record)
 {
 	bool eof1 = false;
 	bool eof2 = false;
@@ -429,5 +430,3 @@ void XWorkFile::PutFreeNr(int N)
 	NFreeNr++;
 	FreeNr[NFreeNr] = N;
 }
-
-

@@ -8,9 +8,10 @@
 #include "../Core/rdrun.h"
 #include "../MergeReport/RprtOpt.h"
 
+class ProjectRunner;
 enum class FieldType;
 class FieldDescr;
-struct EFldD;
+class EditableField;
 
 
 class DataEditor {
@@ -24,14 +25,14 @@ public:
     void SetEditD(EditD* edit);
 	void SetFileD(FileD* file_d);
 
-    uint8_t* GetRecord() const;
-    uint8_t* GetOriginalRecord() const;
+    Record* GetRecord() const;
+    Record* GetOriginalRecord() const;
 
 	void EditDataFile(FileD* FD, EditOpt* EO);
-    WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
+    uint16_t EditTxt(std::string& text, uint16_t pos, uint16_t maxlen, uint16_t maxcol, FieldType typ, bool del,
 	             bool star, bool upd, bool ret, unsigned int Delta); // r86
     int CRec();
-	void UpdateEdTFld(std::string& S);
+	void UpdateTextField(std::string& text);
     bool StartExit(EdExitD* X, bool Displ);
     bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F);
     std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);
@@ -41,20 +42,20 @@ public:
     void ReadParamsFromE(const EditD* edit);
     bool SelFldsForEO(EditOpt* EO, LinkD* LD);
     void DisplEditWw();
-    void GotoPrevRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld);
-    void GotoNextRecFld(int NewRec, std::vector<EFldD*>::iterator NewFld);
-    void GotoRecFld(int NewRec, const std::vector<EFldD*>::iterator& NewFld);
+    void GotoPrevRecFld(int NewRec, std::vector<EditableField*>::iterator NewFld);
+    void GotoNextRecFld(int NewRec, std::vector<EditableField*>::iterator NewFld);
+    void GotoRecFld(int NewRec, const std::vector<EditableField*>::iterator& NewFld);
     void SetNewCRec(int N, bool withRead);
-    bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
+    bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, uint16_t& Brk);
     bool OpenEditWw();
-    void RunEdit(XString* PX, WORD& Brk);
+    void RunEdit(XString* PX, uint16_t& Brk);
     void SetSelectFalse();
     //void PopEdit();
     EditD* GetEditD();
 
     bool TxtEdCtrlUBrk = false;
     bool TxtEdCtrlF4Brk = false;
-    std::vector<EFldD*>::iterator CFld;
+    std::vector<EditableField*>::iterator CFld;
 
 private:
     FileD* file_d_ = nullptr;
@@ -62,41 +63,46 @@ private:
     //uint8_t* original_record_ = nullptr;
     Record* current_rec_ = nullptr;
     Record* original_rec_ = nullptr;
-    std::unique_ptr<DataEditorParams> params_;
+    bool current_rec_is_ref = false;    // current record is owned by another object (will not be deleted in destructor)
+	std::unique_ptr<DataEditorParams> params_;
+    std::unique_ptr<ProjectRunner> runner_;
     EditD* edit_ = nullptr;
 
-    std::vector<EFldD*>::iterator FirstEmptyFld;
+    std::vector<EditableField*>::iterator FirstEmptyFld;
 
     int CNRecs() const;
     int AbsRecNr(int N);
     int LogRecNo(int N);
-    bool IsSelectedRec(WORD I);
+    bool IsSelectedRec(uint16_t I, Record* record);
     bool EquOldNewRec();
     void RdRec(int nr, Record* record);
     bool CheckOwner(EditD* E);
     bool CheckKeyIn(EditD* E);
     bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset);
-    WORD RecAttr(WORD I);
-    WORD FldRow(EFldD* D, WORD I);
+    uint16_t RecAttr(uint16_t I, Record* record);
+    uint16_t FldRow(EditableField* D, uint16_t I);
     bool HasTTWw(FieldDescr* F);
-    void DisplEmptyFld(EFldD* D, WORD I);
-    void Wr1Line(FieldDescr* F);
-    void DisplFld(EFldD* D, WORD I, uint8_t Color);
-    void DisplRec(WORD I);
+    void DisplEmptyFld(EditableField* D, uint16_t I);
+    void Wr1Line(FieldDescr* field, const Record* record) const;
+    void DisplFld(EditableField* D, uint16_t I, uint8_t Color, Record* record);
+    void DisplayRecord(uint16_t screen_data_row_nr);
     bool LockRec(bool Displ);
     void UnLockRec(EditD* E);
     void NewRecExit();
-    void SetCPage(WORD& c_page, ERecTxtD** rt);
+    void SetCPage(uint16_t& c_page, ERecTxtD** rt);
     void DisplRecNr(int N);
     void AdjustCRec();
-    
-    void DuplFld(FileD* src_file, FileD* dst_file, uint8_t* src_rec, uint8_t* dst_rec_new, 
-        uint8_t* dst_rec_old, FieldDescr* srd_fld, FieldDescr* dst_fld);
+	
+	/* void DuplFld(FileD* src_file, FileD* dst_file, uint8_t* src_rec, uint8_t* dst_rec_new, 
+        uint8_t* dst_rec_old, FieldDescr* srd_fld, FieldDescr* dst_fld); */
+
+    void DuplicateField(Record* src_record, FieldDescr* src_field, Record* dst_record, FieldDescr* dst_field);
+
     bool IsFirstEmptyFld();
-    void SetFldAttr(EFldD* D, WORD I, WORD Attr);
-    void IVoff();
-    void IVon();
-    void SetRecAttr(WORD I);
+    void SetFldAttr(EditableField* D, uint16_t I, uint16_t Attr);
+    void HighLightOff();
+    void HighLightOn();
+    void SetRecAttr(uint16_t I);
     void DisplTabDupl();
     void DisplaySystemLine();
     void DisplBool();
@@ -106,8 +112,8 @@ private:
     void WriteSL(std::vector<std::string>& SL);
     void DisplRecTxt();
     
-    void UpdMemberRef(uint8_t* POld, uint8_t* PNew);
-    void WrJournal(char Upd, void* RP, double Time);
+    void UpdMemberRef(Record* POld, Record* PNew);
+    void WrJournal(char Upd, Record* RP, double Time);
     bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md);
     bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd);
     void UnLockWithDep(LockMode OldMd);
@@ -115,7 +121,7 @@ private:
     bool CleanUp();
     bool DelIndRec(int I, int N);
     bool DeleteRecProc();
-    LogicControl* CompChk(EFldD* D, char Typ);
+    LogicControl* CompChk(EditableField* D, char Typ);
     void FindExistTest(FrmlElem* Z, LinkD** LD);
     bool TestAccRight(const std::string& acc_rights);
     bool ForNavigate(FileD* FD);
@@ -131,11 +137,11 @@ private:
     int UpdateIndexes();
     bool WriteCRec(bool MayDispl, bool& Displ);
     void DuplFromPrevRec();
-    void InsertRecProc(void* RP);
-    void AppendRecord(void* RP);
+    void InsertRecProc(Record* RP);
+    void AppendRecord(Record* RP);
     bool GotoXRec(XString* PX, int& N);
-    std::vector<EFldD*>::iterator FindEFld(FieldDescr* F);
-    void CreateOrErr(bool create, void* RP, int N);
+    std::vector<EditableField*>::iterator FindEFld(FieldDescr* F);
+    void CreateOrErr(bool create, Record* RP, int N);
     bool PromptSearch(bool create);
     bool PromptAndSearch(bool create);
     void PromptGotoRecNr();
@@ -148,13 +154,13 @@ private:
     void SwitchToAppend();
     bool CheckForExit(bool& Quit);
     bool FldInModeF3Key(FieldDescr* F);
-    bool IsSkipFld(EFldD* D);
+    bool IsSkipFld(EditableField* D);
     bool ExNotSkipFld();
     bool ProcessEnter(uint16_t mode); // orig. name: CtrlMProc
     bool GoPrevNextRec(short Delta, bool Displ);
     bool GetChpt(pstring Heslo, int& NN);
     void SetCRec(int I);
-    bool EditItemProc(bool del, bool ed, WORD& Brk);
+    bool EditItemProc(bool del, bool ed, WORD& brk);
     void SetSwitchProc();
     void PromptSelect();
     void SwitchRecs(short Delta);
@@ -174,7 +180,7 @@ private:
     bool DuplToPrevEdit();
     void Calculate2();
     void DelNewRec();
-    std::vector<EFldD*>::iterator FrstFldOnPage(WORD Page);
+    std::vector<EditableField*>::iterator FrstFldOnPage(WORD Page);
     void F6Proc();
     int GetEdRecNo();
     void SetEdRecNoEtc(int RNr);
@@ -192,15 +198,19 @@ private:
     void MouseProc();
     void ToggleSelectRec();
     void ToggleSelectAll();
-    void GoStartFld(EFldD* SFld);
+    void GoStartFld(EditableField* SFld);
+
+    std::string decodeField(FieldDescr* F, WORD LWw, Record* record);
+    std::string decodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B);
+	static void justifyString(std::string& T, WORD L, WORD M, char C);
 
 
     WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt,
                    double& RR, bool del, bool upd, bool ret, unsigned int Delta);
-    void SetWasUpdated(FileD* file_d, uint8_t* record);
+    void SetWasUpdated();
     void AssignFld(FieldDescr* F, FrmlElem* Z);
     bool TestMask(std::string& S, std::string Mask);
-    void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R);
+    void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* field, std::string& Txt, double& R);
 
     XKey* VK = nullptr;
     XWKey* WK = nullptr;

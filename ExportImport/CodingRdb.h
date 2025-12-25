@@ -12,7 +12,7 @@ public:
 	void CodeRdb(EditD* edit, bool Rotate);
 	void CompressTxt(WORD IRec, LongStr* s, char Typ);
 	void Wr(uint8_t c);
-	void CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ);
+	void CodeF(FileD* file_d, Record* record, bool rotate, WORD IRec, FieldDescr* F, char Typ);
 	void CompressCRdb(DataEditor* data_editor, EditD* edit);
 
 private:

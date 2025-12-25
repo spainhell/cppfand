@@ -6,15 +6,16 @@
 #include "../Core/models/Instr.h"
 #include "../Core/runfrml.h"
 #include "../Logging/Logging.h"
+#include "../Common/Record.h"
 
 
 int32_t GetIndex(Instr_getindex* PD)
 {
 	XString x;
 	FileD* lvFD = PD->loc_var1->FD;
-	XWKey* k = (XWKey*)PD->loc_var1->record;
+	XWKey* k = PD->loc_var1->key;
 
-	uint8_t* record = lvFD->GetRecSpace();
+	Record* record = new Record(lvFD);
 
 	LockMode md = lvFD->NewLockMode(RdMode);
 	if (PD->mode == ' ') {
@@ -81,7 +82,7 @@ int32_t GetIndex(Instr_getindex* PD)
 			kNew->Open(lvFD, k->KFlds, true, false);
 		}
 
-		lvFD->FF->CreateWIndex(Scan.get(), kNew, 'X');
+		lvFD->FF->CreateWIndex(Scan.get(), kNew, OperationType::Index);
 		k->Close(lvFD);
 		*k = *kNew;
 	}
@@ -91,7 +92,7 @@ int32_t GetIndex(Instr_getindex* PD)
 		if ((nr > 0) && (nr <= lvFD->FF->NRecs)) {
 			lvFD->ReadRec(nr, record);
 			if (PD->mode == '+') {
-				if (!lvFD->DeletedFlag(record)) {
+				if (!record->IsDeleted()) {
 					x.PackKF(lvFD, k->KFlds, record);
 					if (!k->RecNrToPath(lvFD, x, nr, record)) {
 						k->InsertOnPath(lvFD, x, nr);
@@ -106,7 +107,10 @@ int32_t GetIndex(Instr_getindex* PD)
 			}
 		}
 	}
-	delete[] record; record = nullptr;
+
+	delete record; record = nullptr;
 	lvFD->OldLockMode(md);
+
+	return 0;
 }
 

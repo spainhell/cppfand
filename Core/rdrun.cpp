@@ -10,11 +10,12 @@
 #include "obaseww.h"
 #include "runfrml.h"
 #include "../Common/DateTime.h"
+#include "../Common/Record.h"
 
 
-XString OldMXStr;                  /* Merge */
+XString OldMXStr;					/* Merge */
 bool Join;
-bool PrintView;                  /* Report */
+bool PrintView;						/* Report */
 TextFile Rprt;		// puvodne text - souvisi s text. souborem
 
 std::vector<FrmlElemSum*> PFZeroLst;
@@ -29,11 +30,6 @@ LocVarBlock LVBD;
 std::string CalcTxt;
 MergOpSt MergOpGroup = { _const, 0.0 };
 
-bool EFldD::Ed(bool IsNewRec)
-{
-	return ((FldD->Flg & f_Stored) != 0) && (EdU || IsNewRec && EdN);
-}
-
 void ResetLVBD()
 {
 	//LVBD.pChain = nullptr;
@@ -42,14 +38,16 @@ void ResetLVBD()
 	LVBD.func_name = "";
 }
 
-bool Add(FileD* file_d, Additive* add_d, uint8_t* record, double value, bool back)
+bool Add(FileD* file_d, Additive* add_d, Record* record, double value, bool back)
 {
 	bool result = true;
 
 	if (back) value = -value;
 
-	const double new_value = file_d->loadR(add_d->Field, record) + value;
-	file_d->saveR(add_d->Field, new_value, record);
+	//const double new_value = file_d->loadR(add_d->Field, record) + value;
+	const double new_value = record->LoadR(add_d->Field) + value;
+	//file_d->saveR(add_d->Field, new_value, record);
+	record->SaveR(add_d->Field, new_value);
 
 	if (add_d->Chk == nullptr) return result;
 
@@ -62,61 +60,69 @@ bool Add(FileD* file_d, Additive* add_d, uint8_t* record, double value, bool bac
 	return result;
 }
 
-void CrIndRec(FileD* file_d, uint8_t* record)
+void CrIndRec(FileD* file_d, Record* record)
 {
 	file_d->CreateRec(file_d->FF->NRecs + 1, record);
 	file_d->RecallRec(file_d->FF->NRecs, record);
 }
 
-bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, uint8_t* record, uint8_t** linkedRecord)
+Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record)
 {
 	// TODO: is param file_d needed?
 
-	bool result = true;
+	Record* result = nullptr;
 	LinkD* ld = add_d->LD;
 	kind2 = 'd';
 
 	if (ld != nullptr) {
-		if (LinkUpw(ld, n, false, record, linkedRecord)) {
-			// TODO: file_d should change after calling LinkUpw to 'ld->ToFD'
+		Record* rec = LinkUpw(ld, n, false, record);
+
+		if (rec != nullptr) {
+			result = new Record(add_d->File2);
+			//memcpy(result->GetRecord(), rec->GetRecord(), add_d->File2->GetRecordSize());
+			rec->CopyTo(result);
+			delete rec; rec = nullptr;
 			return result;
 		}
+
 		SetMsgPar(ld->RoleName);
 	}
 	else {
-		if (!LinkLastRec(add_d->File2, n, false, linkedRecord)
-#ifdef FandSQL
-			&& !file_d->IsSQLFile
-#endif
-			) {
+		// cond. for FandSQL removed
+		Record* r = add_d->File2->LinkLastRec(n);
+
+		if (r == nullptr) {
+			r = new Record(add_d->File2);
 			file_d->IncNRecs(1);
-			file_d->WriteRec(1, *linkedRecord);
+			file_d->WriteRec(1, r);
 		}
+
+		result = new Record(add_d->File2);
+		//memcpy(result->GetRecord(), r->GetRecord(), add_d->File2->GetRecordSize());
+		r->CopyTo(result);
+		delete r; r = nullptr;
+
 		return result;
 	}
 	kind2 = '+';
 	if ((add_d->Create == 2) || (add_d->Create == 1) && PromptYN(132)) {
-#ifdef FandSQL
-		if (file_d->IsSQLFile) Strm1->InsertRec(false, true) else
-#endif
-		{
-			file_d->ClearDeletedFlag(*linkedRecord);
-			if ((ld != nullptr) && (file_d->FF->file_type == FandFileType::INDEX)) {
-				CrIndRec(file_d, *linkedRecord);
-				n = file_d->FF->NRecs;
-			}
-			else {
-				file_d->CreateRec(n, *linkedRecord);
-			}
+		// cond. for FandSQL removed
+		result->ClearDeleted();
+		if ((ld != nullptr) && (file_d->FF->file_type == FandFileType::INDEX)) {
+			CrIndRec(file_d, result);
+			n = file_d->FF->NRecs;
+		}
+		else {
+			file_d->CreateRec(n, result);
 		}
 		return result;
 	}
 	WrLLF10Msg(119);
-	result = false;
+
 	return result;
 }
 
-bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, uint8_t* RP, uint8_t* new_record, int N, char Kind2, bool Back)
+bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, Record* RP, Record* new_record, int N, char Kind2, bool Back)
 {
 	if (file_d->Add.empty()) {
 		return true;
@@ -124,44 +130,25 @@ bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, uint8_t* RP, uint8_t* new_
 	if (Kind2 == '+') {
 		return RunAddUpdate(file_d, '+', nullptr, Back, nullptr, nullptr, new_record);
 	}
-	uint8_t* rec = file_d->GetRecSpace();
-#ifdef FandSQL
-	// TODO: cele pripadne predelat, po refactoringu uz to nesedi
-	if (CFile->IsSQLFile) {
-		ld = AD->LD; if (ld == nullptr) Strm1->SelectXRec(nullptr, nullptr, _equ, false)
-		else {
-			CFile = v_files; CRecPtr = RP; x.PackKF(ld->Args);
-			CFile = ld->ToFD; CRecPtr = CRold; Strm1->SelectXRec(ld->ToKey, @x, _equ, false)
-		}
-	}
-	else
-#endif
-		file_d->ReadRec(N, rec);
+	Record* rec = new Record(file_d);
+	// TODO: FandSQL condition removed
+	file_d->ReadRec(N, rec);
 
 	bool result = RunAddUpdate(file_d, 'd', rec, Back, nullptr, nullptr, new_record);
 
-	delete[] rec; rec = nullptr;
+	delete rec; rec = nullptr;
 	return result;
 }
 
-void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, uint8_t* rp, uint8_t* new_record, int n)
+void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, Record* rp, Record* new_record, int n)
 {
 	//XString x;
 	//LinkD* ld;
-#ifdef FandSQL
-	if (CFile->IsSQLFile) {
-		ld = add_d->LD; if (ld = nullptr) Strm1->UpdateXFld(nullptr, nullptr, add_d->Field)
-		else {
-			CFile = fd; CRecPtr = rp; x.PackKF(ld->Args);
-			CFile = ld->ToFD; CRecPtr = new_record; Strm1->UpdateXFld(ld->ToKey, @x, add_d->Field)
-		}
-	}
-	else
-#endif
-		file_d->WriteRec(n, new_record);
+	// TODO: FandSQL condition removed
+	file_d->WriteRec(n, new_record);
 }
 
-bool Assign(FileD* file_d, Additive* add_d, uint8_t* record)
+bool Assign(FileD* file_d, Additive* add_d, Record* record)
 {
 	double r = 0.0;
 	std::string s;
@@ -181,12 +168,7 @@ bool Assign(FileD* file_d, Additive* add_d, uint8_t* record)
 		break;
 	}
 	case 'S': {
-		if (f->field_type == FieldType::TEXT) {
-			s = RunString(file_d, z, record);
-		}
-		else {
-			s = RunString(file_d, z, record);
-		}
+		s = RunString(file_d, z, record);
 		break;
 	}
 	default: {
@@ -194,37 +176,37 @@ bool Assign(FileD* file_d, Additive* add_d, uint8_t* record)
 		break;
 	}
 	}
-	
-	uint8_t* linkedRecord = nullptr;
 
-	if (!Link(file_d, add_d, n2, kind2, record, &linkedRecord)) {
-		delete[] linkedRecord; linkedRecord = nullptr;
+	Record* linked = Link(file_d, add_d, n2, kind2, record);
+
+	if (linked == nullptr) {
+		//delete[] linkedRecord; linkedRecord = nullptr;
 		return false;
 	}
-
-	switch (f->frml_type) {
-	case 'R': {
-		add_d->File2->saveR(f, r, linkedRecord);
-		break;
-	}
-	case 'S': {
-		if (f->field_type == FieldType::TEXT) {
-			add_d->File2->saveS(f, s, linkedRecord);
+	else {
+		switch (f->frml_type) {
+		case 'R': {
+			//add_d->File2->saveR(f->Name, r, linked);
+			linked->SaveR(f, r);
+			break;
 		}
-		else {
-			add_d->File2->saveS(f, s, linkedRecord);
+		case 'S': {
+			//add_d->File2->saveS(f->Name, s, linked);
+			linked->SaveS(f, s);
+			break;
 		}
-		break;
-	}
-	default: {
-		add_d->File2->saveB(f, b, linkedRecord);
-		break;
-	}
-	}
-	add_d->File2->WriteRec(n2, linkedRecord);
+		default: {
+			//add_d->File2->saveB(f->Name, b, linked);
+			linked->SaveB(f, b);
+			break;
+		}
+		}
 
-	delete[] linkedRecord; linkedRecord = nullptr;
-	return true;
+		add_d->File2->WriteRec(n2, linked);
+
+		delete linked; linked = nullptr;
+		return true;
+	}
 }
 
 bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
@@ -276,7 +258,7 @@ bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
 	return result;
 }
 
-bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, LinkD* not_link_d, uint8_t* record)
+bool RunAddUpdate(FileD* file_d, char kind, Record* old_record, LinkD* not_link_d, Record* record)
 {
 	LockMode md;
 	LockForAdd(file_d, 0, false, md);
@@ -293,10 +275,10 @@ bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, LinkD* not_link
 	return result;
 }
 
-bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, uint8_t* record)
+bool RunAddUpdate(FileD* file_d, char kind, Record* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, Record* record)
 {
-	uint8_t* cr2 = nullptr;
-	uint8_t* cr2_old = nullptr;
+	Record* cr2 = nullptr;
+	Record* cr2_old = nullptr;
 	bool result = true;
 	Additive* add_d_back = nullptr;
 
@@ -310,14 +292,14 @@ bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, bool back, Addi
 				return result;
 			}
 			if ((not_link_d != nullptr) && (add->LD == not_link_d)) {
-				delete[] cr2; cr2 = nullptr;
-				delete[] cr2_old; cr2_old = nullptr;
+				delete cr2; cr2 = nullptr;
+				delete cr2_old; cr2_old = nullptr;
 				continue;
 			}
 			if (add->Assign) {
 				if (Assign(file_d, add, record)) {
-					delete[] cr2; cr2 = nullptr;
-					delete[] cr2_old; cr2_old = nullptr;
+					delete cr2; cr2 = nullptr;
+					delete cr2_old; cr2_old = nullptr;
 					continue;
 				}
 				else {
@@ -338,27 +320,29 @@ bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, bool back, Addi
 			int n2 = 0;
 			int n2_old = 0;
 			if (r != 0.0) {
-				if (!Link(file_d, add, n2, kind2, record, &cr2)) {
+				Record* linked = Link(file_d, add, n2, kind2, record);
+				if (linked == nullptr) {
 					throw std::exception("fail");
 				}
 			}
 			if (r_old != 0.0) {
-				if (!Link(file_d, add, n2_old, kind2_old, old_record, &cr2_old)) {
+				Record* linked = Link(file_d, add, n2_old, kind2_old, old_record);
+				if (linked == nullptr) {
 					throw std::exception("fail");
 				}
 				if (n2_old == n2) {
 					r = r - r_old;
 					if (r == 0.0) {
-						delete[] cr2; cr2 = nullptr;
-						delete[] cr2_old; cr2_old = nullptr;
+						delete cr2; cr2 = nullptr;
+						delete cr2_old; cr2_old = nullptr;
 						continue;
 					}
 					n2_old = 0;
 				}
 			}
 			if ((n2 == 0) && (n2_old == 0)) {
-				delete[] cr2; cr2 = nullptr;
-				delete[] cr2_old; cr2_old = nullptr;
+				delete cr2; cr2 = nullptr;
+				delete cr2_old; cr2_old = nullptr;
 				continue;
 			}
 			if (n2_old != 0) {
@@ -387,14 +371,14 @@ bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, bool back, Addi
 				WrUpdRec(add->File2, add, file_d, record, cr2, n2);
 			}
 
-			delete[] cr2; cr2 = nullptr;
-			delete[] cr2_old; cr2_old = nullptr;
+			delete cr2; cr2 = nullptr;
+			delete cr2_old; cr2_old = nullptr;
 		}
 	}
 
 	catch (std::exception&) {
-		delete[] cr2; cr2 = nullptr;
-		delete[] cr2_old; cr2_old = nullptr;
+		delete cr2; cr2 = nullptr;
+		delete cr2_old; cr2_old = nullptr;
 		result = false;
 		if (add_d_back != nullptr) {
 			bool b = RunAddUpdate(file_d, kind, old_record, true, add_d_back, not_link_d, record);  /* backtracking */

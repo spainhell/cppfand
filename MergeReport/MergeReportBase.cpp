@@ -22,9 +22,9 @@ void MergeReportBase::SetInput(RdbPos* rdb_pos, bool FromTxt)
 	base_compiler->SetInpTT(rdb_pos, FromTxt);
 }
 
-void MergeReportBase::SetInput(FileD* file_d, int Pos, bool Decode)
+void MergeReportBase::SetInput(std::string& s, int32_t license_nr, bool decode)
 {
-	base_compiler->SetInpTTPos(file_d, Pos, Decode);
+	base_compiler->SetInpStr(s, license_nr, decode, false);
 }
 
 MergeReportBase::MergeReportBase()
@@ -196,7 +196,7 @@ void MergeReportBase::ZeroSumFlds(std::vector<FrmlElemSum*>* sum)
 	}
 }
 
-void MergeReportBase::SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, uint8_t* record)
+void MergeReportBase::SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, Record* record)
 {
 	if (S == nullptr) return;
 	for (size_t i = 0; i < S->size(); i++) {

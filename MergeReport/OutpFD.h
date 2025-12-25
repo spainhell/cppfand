@@ -3,12 +3,13 @@
 #include <cstdint>
 
 class FileD;
+class Record;
 
 struct OutpFD
 {
 	FileD* FD = nullptr;
 	LockMode Md = NullMode;
-	uint8_t* RecPtr = nullptr;
+	Record* RecPtr = nullptr;
 	FileD* InplFD = nullptr;
 	bool Append = false;
 #ifdef FandSQL

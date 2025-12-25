@@ -3,6 +3,7 @@
 #include "XKey.h"
 #include "XPage.h"
 
+class Record;
 class XWorkFile;
 
 class XXPage /* for building XPage */
@@ -25,7 +26,7 @@ public:
 	void PutMLX(unsigned char M, unsigned char L); // ASM
 	void ClearRest(); // ASM
 	void PageFull();
-	void AddToLeaf(FileD* file_d, WRec* R, XKey* KD, uint8_t* record);
+	void AddToLeaf(FileD* file_d, WRec* R, XKey* KD, Record* record);
 	void AddToUpper(XXPage* P, int DownPage);
 
 private:

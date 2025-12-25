@@ -27,7 +27,7 @@
     <ClInclude Include="EditD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Record.h">
+    <ClInclude Include="EditableField.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,7 +44,7 @@
     <ClCompile Include="EditD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Record.cpp">
+    <ClCompile Include="EditableField.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

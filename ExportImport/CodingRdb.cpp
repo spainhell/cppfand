@@ -5,6 +5,7 @@
 #include "../Core/Compiler.h"
 #include "../Common/Coding.h"
 #include "../Common/FileD.h"
+#include "../Common/Record.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
@@ -16,34 +17,33 @@
 void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 {
 	std::string s;
-	FileD* cf = CFile;
-	uint8_t* cr = CRecPtr;
-	CFile = Chpt;
+	Record* record = new Record(Chpt);
 
-	CRecPtr = CFile->GetRecSpace();
-	RunMsgOn('C', CFile->FF->NRecs);
+	RunMsgOn('C', Chpt->FF->NRecs);
 	WORD irec = ChptTF->IRec;
 	bool compileAll = ChptTF->CompileAll;
-	for (int i = 1; i <= CFile->FF->NRecs; i++) {
-		CFile->ReadRec(i, CRecPtr);
+	for (int i = 1; i <= Chpt->FF->NRecs; i++) {
+		Chpt->ReadRec(i, record);
 		RunMsgN(i);
-		s = CFile->loadS(ChptTyp, CRecPtr);
-		std::string chapter_name = CFile->loadS(ChptName, CRecPtr);
+		//s = Chpt->loadS(ChptTyp, cr);
+		s = record->LoadS(ChptTyp);
+		std::string chapter_name = record->LoadS(ChptName); //Chpt->loadS(ChptName, record);
 		SetMsgPar(chapter_name);
 		if (Rotate && (s[0] == ' ' || s[0] == 'I')) {}
 		else {
-			CodeF(Rotate, i, ChptTxt, s[0]);
-			CodeF(Rotate, i, ChptOldTxt, s[0]);
-			CFile->WriteRec(i, CRecPtr);
+			CodeF(Chpt, record, Rotate, i, ChptTxt, s[0]);
+			CodeF(Chpt, record, Rotate, i, ChptOldTxt, s[0]);
+			Chpt->FF->WriteRec(i, record);
 		}
 	}
 	if (Rotate) {
 		int i = 1;
-		while (i <= CFile->FF->NRecs) {
-			CFile->ReadRec(i, CRecPtr);
-			s = CFile->loadS(ChptTyp, CRecPtr);
+		while (i <= Chpt->FF->NRecs) {
+			Chpt->ReadRec(i, record);
+			//s = Chpt->loadS(ChptTyp, cr);
+			s = record->LoadS(ChptTyp);
 			if (s[0] == ' ' || s[0] == 'I') {
-				CFile->DeleteRec(i, CRecPtr);
+				Chpt->DeleteRec(i, record);
 			}
 			else {
 				i++;
@@ -51,9 +51,7 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 		}
 	}
 	RunMsgOff();
-	ReleaseStore(&CRecPtr);
-	CFile = cf;
-	CRecPtr = cr;
+	//ReleaseStore(&cr);
 	CompressCRdb(nullptr, edit);
 	ChptTF->IRec = irec;
 	ChptTF->CompileAll = compileAll;
@@ -75,7 +73,7 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 	}
 	gc->input_pos = 1;
 	SwitchLevel = 0;
-	uint8_t* cr = CRecPtr;
+	//uint8_t* cr = CRecPtr;
 	ss = new LongStr(MaxLStrLen + 2);
 	l = 0;
 	if (Typ == 'E') {
@@ -121,7 +119,7 @@ label1:
 			MyMove(ss->A, s->A, l);
 			delete s; s = nullptr;
 			//ReleaseStore(&p2);
-			CRecPtr = cr;
+			//CRecPtr = cr;
 			return;
 		}
 		break;
@@ -198,22 +196,21 @@ void CodingRdb::Wr(uint8_t c)
 	ss->A[l] = (char)c;
 }
 
-void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
+void CodingRdb::CodeF(FileD* file_d, Record* record, bool rotate, WORD IRec, FieldDescr* F, char Typ)
 {
-	uint8_t* p = nullptr;
-	uint8_t* p2 = nullptr;
+	//int pos = file_d->loadT(F, record);
+	//if (pos == 0) return;
+	//MarkBoth(p, p2);
+	//std::string ss = ChptTF->Read(pos);
+	std::string ss = record->LoadS(F);
+	if (ss.empty()) return;
 
-	int pos = CFile->loadT(F, CRecPtr);
-	if (pos == 0) return;
-	MarkBoth(p, p2);
-
-	std::string ss = ChptTF->Read(pos);
 	LongStr* s = new LongStr(ss.length());
 	s->LL = ss.length();
 	memcpy(s->A, ss.c_str(), s->LL);
 
 	WORD l = s->LL;
-	ChptTF->Delete(pos);
+	record->SaveS(F, ""); //ChptTF->Delete(pos);
 	if (l == 0) goto label2;
 	if (rotate) {
 		if (F == ChptOldTxt) {
@@ -255,20 +252,18 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 		memcpy(s->A, coded.c_str(), coded.length());
 	}
 	else {
-		Coding::Code(s->A, l);
+		Coding::Code((uint8_t*)s->A, l);
 	}
 label2:
 	const std::string str(s->A, s->LL);
-	CFile->saveS(F, str, CRecPtr);
-	ReleaseStore(&p);
-	ReleaseStore(&p2);
+	record->SaveS(F, str);
 }
 
 void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 {
 	uint8_t* p = nullptr;
 	MarkStore(p);
-	uint8_t* cr = Chpt->FF->RecPtr;
+	//Record* cr = Chpt->FF->RecPtr;
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
 	SpecFDNameAllowed = true;
 
@@ -280,7 +275,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 
 	SaveFiles();
 	ReleaseStore(&p);
-	Chpt->FF->RecPtr = cr;
+	//Chpt->FF->RecPtr = cr;
 	//CFile = Chpt;
 	//CRecPtr = edit->NewRec->GetRecord();
 	//CFile->ReadRec(data_editor->CRec(), CRecPtr);

@@ -158,10 +158,10 @@ void TranslateCodePage(WORD& c)
 	// preklady nejsou podporovany - bude jen Latin2
 	if (c >= 0x80)
 		switch (printer[prCurr].Kod) {
-		case 'K': ConvKamenLatin(&c, 1, true);
-		case 'k': ConvToNoDiakr(&c, 1, TVideoFont::foKamen);
-		case 'L': ConvKamenLatin(&c, 1, false);
-		case 'l': ConvToNoDiakr(&c, 1, TVideoFont::foLatin2);
+		case 'K': ConvKamenLatin((uint8_t*)&c, 1, true);
+		case 'k': ConvToNoDiakr((uint8_t*)&c, 1, TVideoFont::foKamen);
+		case 'L': ConvKamenLatin((uint8_t*)&c, 1, false);
+		case 'l': ConvToNoDiakr((uint8_t*)&c, 1, TVideoFont::foLatin2);
 		}
 }
 

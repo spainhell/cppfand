@@ -180,7 +180,7 @@ bool SetTopDir(std::string& p, std::string& n)
 			return result;
 		}
 		CatFDName = n;
-		catalog->GetCatalogFile()->OpenF(CPath, Exclusive);
+		catalog->GetCatalogFile()->OpenF(CPath, Exclusive, false);
 		result = true;
 	}
 	catch (std::exception& e) {
@@ -193,7 +193,8 @@ void RunRdb(std::string& p)
 {
 	if (std::string n; !p.empty() && SetTopDir(p, n)) {
 		wwmix ww;
-		EditExecRdb(n, "main", nullptr, &ww);
+		unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
+		runner->EditExecRdb(n, "main", nullptr, &ww);
 		// CFile = catalog->GetCatalogFile();
 		// CFile->CloseFile();
 		catalog->Close();
@@ -213,9 +214,9 @@ void CallInstallRdb()
 	std::string p = ww.SelectDiskFile(".RDB", 35, true);
 	std::string n;
 	if ((!p.empty()) && SetTopDir(p, n)) {
-		InstallRdb(n);
-		CFile = catalog->GetCatalogFile();
-		CFile->CloseFile();
+		unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
+		runner->InstallRdb(n);
+		catalog->GetCatalogFile()->CloseFile();
 	}
 }
 
@@ -590,15 +591,15 @@ void DeleteFandFiles()
 		XWork.ClearUpdateFlag();
 	}
 
-	if (TWork.Handle != nullptr) {
-		try {
-			CloseF(TWork.Handle, HandleError);
-			deleteFile(FandWorkTName);
-		}
-		catch (std::exception&) {}
-		TWork.Handle = nullptr;
-		TWork.ClearUpdateFlag();
-	}
+	//if (TWork.Handle != nullptr) {
+	//	try {
+	//		CloseF(TWork.Handle, HandleError);
+	//		deleteFile(FandWorkTName);
+	//	}
+	//	catch (std::exception&) {}
+	//	TWork.Handle = nullptr;
+	//	TWork.ClearUpdateFlag();
+	//}
 }
 
 void OpenFileDialog()

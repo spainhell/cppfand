@@ -40,7 +40,7 @@ public:
 	Compiler(FileD* file_d, std::string& input);
 	~Compiler();
 	std::string Error(short N);
-	void SetInpStr(std::string& s);
+	void SetInpStr(std::string& s, int32_t license_nr = 0, bool decode = false, bool rdb_pos_clr = true);
 	void SetInpStdStr(std::string& s, bool ShowErr);
 	void SetInpTTPos(FileD* file_d, int Pos, bool Decode);
 	void SetInpTT(RdbPos* rdb_pos, bool FromTxt);
@@ -86,8 +86,8 @@ public:
 	FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller);
 	FrmlElem* RdFldNameFrmlF(char& FTyp, MergeReportBase* caller);
 	FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller);
-	FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, uint8_t* RP);
-	FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp);
+	FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, Record* RP);
+	FrmlElemRecVarField* MakeFldFrml(FieldDescr* field, char& FTyp);
 	void TestString(char FTyp);
 	void TestReal(char FTyp);
 	FrmlElem* RdFrml(char& FTyp, MergeReportBase* caller);

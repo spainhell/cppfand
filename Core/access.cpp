@@ -6,6 +6,7 @@
 #include "GlobalVariables.h"
 #include "../fandio/KeyFldD.h"
 #include "../Common/LinkD.h"
+#include "../Common/Record.h"
 #include "obaseww.h"
 #include "runfrml.h"
 #include "../fandio/Fand0File.h"
@@ -23,36 +24,36 @@ void TestCPathError()
 	}
 }
 
-bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord)
-{
-	*newRecord = file_d->GetRecSpace();
-	LockMode md = file_d->NewLockMode(RdMode);
-	auto result = true;
-#ifdef FandSQL
-	if (file_d->IsSQLFile) {
-		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1;
-		else {
-			file_d->ZeroAllFlds(*newRecord, false);
-			result = false;
-			N = 1;
-		}
-	}
-	else
-#endif
-	{
-		N = file_d->FF->NRecs;
-		if (N == 0) {
-			file_d->ZeroAllFlds(*newRecord, false);
-			result = false;
-			N = 1;
-		}
-		else {
-			file_d->ReadRec(N, *newRecord);
-		}
-	}
-	file_d->OldLockMode(md);
-	return result;
-}
+//bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord)
+//{
+//	*newRecord = file_d->GetRecSpace();
+//	LockMode md = file_d->NewLockMode(RdMode);
+//	auto result = true;
+//#ifdef FandSQL
+//	if (file_d->IsSQLFile) {
+//		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1;
+//		else {
+//			file_d->ZeroAllFlds(*newRecord, false);
+//			result = false;
+//			N = 1;
+//		}
+//	}
+//	else
+//#endif
+//	{
+//		N = file_d->FF->NRecs;
+//		if (N == 0) {
+//			file_d->ZeroAllFlds(*newRecord, false);
+//			result = false;
+//			N = 1;
+//		}
+//		else {
+//			file_d->FF->ReadRec(N, *newRecord);
+//		}
+//	}
+//	file_d->OldLockMode(md);
+//	return result;
+//}
 
 // ulozi hodnotu parametru do souboru
 void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add)
@@ -72,38 +73,99 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 	{
 		int n = 0;
 		LockMode md = file_d->NewLockMode(WrMode);
-		uint8_t* rec = nullptr;
+		
+		Record* rec = file_d->LinkLastRec(n);
 
-		if (!LinkLastRec(file_d, n, true, &rec)) {
+		if (rec == nullptr) {
+			// add a new empty record to the file
 			file_d->IncNRecs(1);
+			rec = new Record(file_d);
 			file_d->WriteRec(n, rec);
 		}
 
-		AssgnFrml(file_d, rec, field_d, frml, true, add);
+		AssgnFrml(rec, field_d, frml, add);
 		file_d->WriteRec(n, rec);
 		file_d->OldLockMode(md);
-		delete[] rec; rec = nullptr;
+		delete rec; rec = nullptr;
 	}
 }
 
+//// zrejme zajistuje pristup do jine tabulky (cizi klic)
+//bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord)
+//{
+//	FileD* from_FD = LD->FromFD;
+//	FileD* to_FD = LD->ToFD;
+//	*newRecord = to_FD->GetRecSpace();
+//
+//	XKey* K = LD->ToKey;
+//	XString x;
+//	x.PackKF(from_FD, LD->Args, record);
+//
+//	// TODO: FandSQL removed
+//
+//	const LockMode md = to_FD->NewLockMode(RdMode);
+//	bool lu;
+//	if (to_FD->FF->file_type == FandFileType::INDEX) {
+//		to_FD->FF->TestXFExist();
+//		lu = K->SearchInterval(to_FD, x, false, N);
+//	}
+//	else if (to_FD->FF->NRecs == 0) {
+//		lu = false;
+//		N = 1;
+//	}
+//	else {
+//		lu = to_FD->FF->SearchKey(x, K, N, *newRecord);
+//	}
+//
+//	if (lu) {
+//		to_FD->FF->ReadRec(N, *newRecord);
+//	}
+//	else {
+//		to_FD->ZeroAllFlds(*newRecord, false);
+//		for (size_t i = 0; i < LD->Args.size(); i++) {
+//			FieldDescr* F = LD->Args[i]->FldD;
+//			FieldDescr* F2 = K->KFlds[i]->FldD;
+//			if (F2->isStored()) {
+//				switch (F->frml_type) {
+//				case 'S': {
+//					x.S = from_FD->loadS(F, record);
+//					to_FD->saveS(F2, x.S, *newRecord);
+//					break;
+//				}
+//				case 'R': {
+//					const double r = from_FD->loadR(F, record);
+//					to_FD->saveR(F2, r, *newRecord);
+//					break;
+//				}
+//				case 'B': {
+//					const bool b = from_FD->loadB(F, record);
+//					to_FD->saveB(F2, b, *newRecord);
+//					break;
+//				}
+//				}
+//			}
+//		}
+//	}
+//
+//	// TODO: FandSQL removed
+//	to_FD->OldLockMode(md);
+//
+//	return lu;
+//}
+
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
-bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord)
+Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 {
 	FileD* from_FD = LD->FromFD;
 	FileD* to_FD = LD->ToFD;
-	*newRecord = to_FD->GetRecSpace();
+	Record* up_rec = new Record(to_FD);
 
 	XKey* K = LD->ToKey;
 	XString x;
 	x.PackKF(from_FD, LD->Args, record);
 
+	// TODO: FandSQL removed
 
-#ifdef FandSQL
-	if (ToFD->IsSQLFile) {
-		LU = Strm1->SelectXRec(K, @X, _equ, WithT); N = 1;
-		if (LU) goto label2; else goto label1;
-	}
-#endif
 	const LockMode md = to_FD->NewLockMode(RdMode);
 	bool lu;
 	if (to_FD->FF->file_type == FandFileType::INDEX) {
@@ -115,32 +177,32 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord
 		N = 1;
 	}
 	else {
-		lu = to_FD->FF->SearchKey(x, K, N, *newRecord);
+		lu = to_FD->FF->SearchKey(x, K, N, up_rec);
 	}
 
 	if (lu) {
-		to_FD->ReadRec(N, *newRecord);
+		to_FD->FF->ReadRec(N, up_rec);
 	}
 	else {
-		to_FD->ZeroAllFlds(*newRecord, false);
+		up_rec->Reset(); //to_FD->ZeroAllFlds(up_rec, false);
 		for (size_t i = 0; i < LD->Args.size(); i++) {
 			FieldDescr* F = LD->Args[i]->FldD;
 			FieldDescr* F2 = K->KFlds[i]->FldD;
 			if (F2->isStored()) {
 				switch (F->frml_type) {
 				case 'S': {
-					x.S = from_FD->loadS(F, record);
-					to_FD->saveS(F2, x.S, *newRecord);
+					const std::string s = record->LoadS(F);
+					up_rec->SaveS(F2, s);
 					break;
 				}
 				case 'R': {
-					const double r = from_FD->loadR(F, record);
-					to_FD->saveR(F2, r, *newRecord);
+					const double r = record->LoadR(F);
+					up_rec->SaveR(F2, r);
 					break;
 				}
 				case 'B': {
-					const bool b = from_FD->loadB(F, record);
-					to_FD->saveB(F2, b, *newRecord);
+					const bool b = record->LoadB(F);
+					up_rec->SaveB(F2, b);
 					break;
 				}
 				}
@@ -148,12 +210,10 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord
 		}
 	}
 
-#ifdef FandSQL
-	if (!ToFD->IsSQLFile)
-#endif
-		to_FD->OldLockMode(md);
+	// TODO: FandSQL removed
+	to_FD->OldLockMode(md);
 
-	return lu;
+	return up_rec;
 }
 
 LocVar* LocVarBlock::GetRoot()
@@ -260,66 +320,66 @@ std::string CExtToT(const std::string& dir, const std::string& name, std::string
 	return dir + name + ext;
 }
 
-std::string TWork_LoadS(FieldDescr* field, uint8_t* record)
-{
-	std::string result;
-	if (field->field_type == FieldType::TEXT && field->isStored())
-	{
-		char* source = (char*)record + field->Displ;
-		int32_t* pos = reinterpret_cast<int32_t*>(source);
-		if (*pos == 0) {
-			return result;
-		}
-		result = TWork.Read(*pos);
-	}
-	else {
-		// non-text field -> cannot be saved in TWork
-	}
-	return result;
-}
-
-void TWork_SaveS(FieldDescr* field, const std::string& text, uint8_t* record)
-{
-	if (field->field_type == FieldType::TEXT && field->isStored())
-	{
-		char* source = (char*)record + field->Displ;
-		uint32_t* pos = reinterpret_cast<uint32_t*>(source);
-		if (*pos == 0) {
-			// there is nothing saved now
-		}
-		else
-		{
-			// delete previous text
-			TWork.Delete(*pos);
-			*pos = 0;
-		}
-		if (text.empty()) {
-			// nothing to save
-		}
-		else {
-			*pos = TWork.Store(text);
-		}
-	}
-	else {
-		// non-text field -> cannot be saved in TWork
-	}
-}
-
-
-void TWork_DeleteT(FieldDescr* field, uint8_t* record)
-{
-	char* source = (char*)record + field->Displ;
-	int32_t* pos = reinterpret_cast<int32_t*>(source);
-	if (*pos == 0) return;
-	TWork.Delete(*pos);
-	*pos = 0;
-}
-
-void TWork_DeleteAllT(const std::vector<FieldDescr*>& fields, uint8_t* record)
-{
-	for (FieldDescr* field : fields) {
-		if (field->field_type == FieldType::TEXT && field->isStored()) {
-			TWork_DeleteT(field, record);
-		}
-	}
-}
+//std::string TWork_LoadS(FieldDescr* field, uint8_t* record)
+//{
+//	std::string result;
+//	if (field->field_type == FieldType::TEXT && field->isStored())
+//	{
+//		char* source = (char*)record + field->Displ;
+//		int32_t* pos = reinterpret_cast<int32_t*>(source);
+//		if (*pos == 0) {
+//			return result;
+//		}
+//		result = TWork.Read(*pos);
+//	}
+//	else {
+//		// non-text field -> cannot be saved in TWork
+//	}
+//	return result;
+//}
+//
+//void TWork_SaveS(FieldDescr* field, const std::string& text, uint8_t* record)
+//{
+//	if (field->field_type == FieldType::TEXT && field->isStored())
+//	{
+//		char* source = (char*)record + field->Displ;
+//		uint32_t* pos = reinterpret_cast<uint32_t*>(source);
+//		if (*pos == 0) {
+//			// there is nothing saved now
+//		}
+//		else
+//		{
+//			// delete previous text
+//			TWork.Delete(*pos);
+//			*pos = 0;
+//		}
+//		if (text.empty()) {
+//			// nothing to save
+//		}
+//		else {
+//			*pos = TWork.Store(text);
+//		}
+//	}
+//	else {
+//		// non-text field -> cannot be saved in TWork
+//	}
+//}
+//
+//
+//void TWork_DeleteT(FieldDescr* field, uint8_t* record)
+//{
+//	char* source = (char*)record + field->Displ;
+//	int32_t* pos = reinterpret_cast<int32_t*>(source);
+//	if (*pos == 0) return;
+//	TWork.Delete(*pos);
+//	*pos = 0;
+//}
+//
+//void TWork_DeleteAllT(const std::vector<FieldDescr*>& fields, uint8_t* record)
+//{
+//	for (FieldDescr* field : fields) {
+//		if (field->field_type == FieldType::TEXT && field->isStored()) {
+//			TWork_DeleteT(field, record);
+//		}
+//	}
+//}

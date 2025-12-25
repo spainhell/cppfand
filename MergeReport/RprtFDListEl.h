@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 
+class Record;
 class XKey;
 class FileD;
 class FrmlElem;
@@ -14,5 +15,5 @@ struct RprtFDListEl
 	FrmlElem* Cond = nullptr;
 	std::vector<KeyInD*> KeyIn;
 	bool SQLFilter = false;
-	void* LVRecPtr = nullptr;
+	Record* LVRecPtr = nullptr;
 };

@@ -10,9 +10,9 @@ public:
 	void Close(FileD* file_d);
 	void Release(FileD* file_d);
 	void ReleaseTree(FileD* file_d, int Page, bool IsClose);
-	void OneRecIdx(FileD* file_d, const std::vector<KeyFldD*>& key_fields, int N, uint8_t* record);
-	void InsertAtNr(FileD* file_d, int I, int RecNr, uint8_t* record);
-	int InsertGetNr(FileD* file_d, int RecNr, uint8_t* record);
+	void OneRecIdx(FileD* file_d, const std::vector<KeyFldD*>& key_fields, int N, Record* record);
+	void InsertAtNr(FileD* file_d, int I, int RecNr, Record* record);
+	int InsertGetNr(FileD* file_d, int RecNr, Record* record);
 	void DeleteAtNr(FileD* file_d, int I);
 	void AddToRecNr(FileD* file_d, int RecNr, short Dif);
 };

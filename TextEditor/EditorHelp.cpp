@@ -57,7 +57,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 	}
 
 	MarkStore(p);
-	FileD* cf = CFile;
+	FileD* cf = nullptr; //CFile;
 	int w = 0, w2 = 0;
 
 	try {
@@ -88,7 +88,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 			byName = false;
 			if (iStk > 0) {
 				R = Stk[iStk].Rdb;
-				CFile = Stk[iStk].FD;
+				cf = Stk[iStk].FD;
 				iRec = Stk[iStk].iR;
 				i = Stk[iStk].iT;
 				iStk--;
@@ -100,7 +100,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 
 		while (true) {
 			s = GetHlpText(R, name, byName, iRec);
-			FileD* cf2 = CFile;
+			FileD* cf2 = cf;
 			if (s.empty()) {
 				if (frst && (R->help_file == HelpFD) && (KbdChar == __CTRL_F1)) {
 					KbdChar = 0;
@@ -158,7 +158,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 				Stk[iStk].Rdb = R; Stk[iStk].FD = cf2;
 				Stk[iStk].iR = iRec; Stk[iStk].iT = i;
 				oldIRec = iRec; i = 1; delta = 0;
-				CFile = cf2;
+				cf = cf2;
 
 				KbdChar = Event.Pressed.KeyCombination();
 				switch (KbdChar) {
@@ -167,7 +167,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 					iStk--;
 					if (iStk > 0) {
 						R = Stk[iStk].Rdb;
-						CFile = Stk[iStk].FD;
+						cf = Stk[iStk].FD;
 						iRec = Stk[iStk].iR;
 						i = Stk[iStk].iT;
 						iStk--;
@@ -218,7 +218,7 @@ void Help(RdbD* R, std::string name, bool InCWw)
 	}
 
 	ReleaseStore(&p);
-	CFile = cf;
+	//CFile = cf;
 }
 
 void ClearHelpStkForCRdb()

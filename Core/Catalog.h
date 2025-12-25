@@ -41,7 +41,7 @@ public:
 
 private:
 	FileD* cat_file_;
-	uint8_t* record_;
+	Record* record_;
 	FieldDescr* cat_rdb_name_;
 	FieldDescr* cat_file_name_;
 	FieldDescr* cat_archive_;

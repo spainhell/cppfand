@@ -4,7 +4,7 @@
 #include "../fandio/FieldDescr.h"
 #include "../Core/rdrun.h"
 
-struct EFldD;
+class EditableField;
 class EditD;
 
 //extern std::vector<EditD*> v_edits;
@@ -16,7 +16,7 @@ class EditReader
 {
 public:
 	EditReader();
-	void NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec); // r158
+	void NewEditD(FileD* file_d, EditOpt* EO, Record* rec); // r158
 	void RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos);
 	EditD* GetEditD();
 
@@ -26,11 +26,11 @@ private:
 
 	void StoreRT(WORD Ln, std::vector<std::string>& SL, WORD NFlds);
 	void RdEForm(EditD* edit, RdbPos FormPos);
-	EFldD* FindScanNr(WORD N);
+	EditableField* FindScanNr(WORD N);
 	void AutoDesign(std::vector<FieldDescr*>& FL);
-	EFldD* FindEFld_E(FieldDescr* F);
+	EditableField* FindEFld_E(FieldDescr* F);
 	void ZeroUsed();
-	EFldD* LstUsedFld();
+	EditableField* LstUsedFld();
 	void SetFlag(FieldDescr* F);
 	void SetFrmlFlags(FrmlElem* Z);
 	void ReadDependencies(FileD* file_d);
@@ -43,5 +43,5 @@ private:
 	std::string StandardHead(EditD* edit);
 	//void SToSL(StringListEl** SLRoot, pstring s);
 	void TestedFlagOff();
-	std::string GetStr_E(FrmlElem* Z, uint8_t* record);
+	std::string GetStr_E(FrmlElem* Z, Record* record);
 };

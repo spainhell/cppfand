@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 
 #include "access.h"
 #include "Dependency.h"
@@ -69,21 +68,6 @@ struct EdExitD
 	/*"Q" quit   #0 dummy*/
 };
 
-struct EFldD
-{
-	//EFldD* ChainBack = nullptr;
-	FieldDescr* FldD = nullptr;
-	std::vector<LogicControl*> Checks;
-	FrmlElem* Impl = nullptr;
-	std::vector<Dependency*> Dependencies;
-	std::vector<XKey*> KL;
-	uint8_t Page = 0, Col = 0, Ln = 0, L = 0;
-	WORD ScanNr = 0;
-	bool Tab = false, Dupl = false, Used = false;
-	bool EdU = false, EdN = false;
-	bool Ed(bool IsNewRec);
-};
-
 struct ERecTxtD
 {
 	WORD N;
@@ -145,16 +129,16 @@ struct TypAndFrml
 	FrmlElem* Frml = nullptr; 
 	bool FromProlog = false, IsRetPar = false;
 	FileD* FD = nullptr; 
-	void* RecPtr = nullptr;
+	Record* record = nullptr;
 	FrmlElem* TxtFrml = nullptr; 
 	std::string Name; // if RecPtr != nullptr
 };
 
 
-extern XString OldMXStr;                  /* Merge */
+extern XString OldMXStr;	/* Merge */
 
 extern bool Join;
-extern bool PrintView;                  /* Report */
+extern bool PrintView;		/* Report */
 extern TextFile Rprt;		// puvodne text - souvisi s text. souborem
 
 extern std::vector<FrmlElemSum*> PFZeroLst;
@@ -172,15 +156,15 @@ struct MergOpSt { char Op; double Group; };
 extern MergOpSt MergOpGroup;
 
 void ResetLVBD();
-void CrIndRec(FileD* file_d, uint8_t* record);
-bool Link(FileD* file_d, Additive* add_d, int& n, char& kind2, uint8_t* record, uint8_t** linkedRecord);
-bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, uint8_t* RP, uint8_t* new_record, int N, char Kind2, bool Back);
-void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, uint8_t* rp, uint8_t* new_record, int n);
-bool Assign(FileD* file_d, Additive* add_d, uint8_t* record);
+void CrIndRec(FileD* file_d, Record* record);
+Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record);
+bool TransAdd(FileD* file_d, Additive* AD, FileD* FD, Record* RP, Record* new_record, int N, char Kind2, bool Back);
+void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, Record* rp, Record* new_record, int n);
+bool Assign(FileD* file_d, Additive* add_d, Record* record);
 bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md);
 
-bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, LinkD* not_link_d, uint8_t* record);
-bool RunAddUpdate(FileD* file_d, char kind, uint8_t* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, uint8_t* record);
+bool RunAddUpdate(FileD* file_d, char kind, Record* old_record, LinkD* not_link_d, Record* record);
+bool RunAddUpdate(FileD* file_d, char kind, Record* old_record, bool back, Additive* stop_add_d, LinkD* not_link_d, Record* record);
 
 bool TestExitKey(WORD KeyCode, EdExitD* X);
 void SetCompileAll();

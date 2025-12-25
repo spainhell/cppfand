@@ -17,7 +17,10 @@ public:
 	bool is_return_value = false;   // pridano navic - urcuje navratovou hodnotu funkce
 	char f_typ = '\0';
 	FileD* FD = nullptr;
-	uint8_t* record = nullptr;
+	Record* record = nullptr;		// type 'r'
+	XWKey* key = nullptr;			// type 'i'
+	FrmlElem* frml = nullptr;		// ?
+
 	instr_type oper = _notdefined;
 	FrmlElem* init = nullptr;
 

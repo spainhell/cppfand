@@ -20,6 +20,7 @@
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
 #include "../Common/DateTime.h"
+#include "../Common/Record.h"
 
 const uint8_t MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
@@ -115,15 +116,23 @@ std::string Compiler::Error(short N)
 	return ErrMsg;
 }
 
-void Compiler::SetInpStr(std::string& s)
+void Compiler::SetInpStr(std::string& s, int32_t license_nr, bool decode, bool rdb_pos_clr)
 {
-	input_string = s;
+	if (decode) {
+		input_string = Coding::CodingString(license_nr, s);
+	}
+	else {
+		input_string = s;
+	}
 
 	if (input_string.empty()) ForwChar = 0x1A;
 	else ForwChar = input_string[0];
 
 	input_pos = 0;
-	FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
+
+	if (rdb_pos_clr) {
+		FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
+	}
 }
 
 void Compiler::SetInpStdStr(std::string& s, bool ShowErr)
@@ -144,7 +153,7 @@ void Compiler::SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 	std::string raw_data = file_d->FF->TF->Read(Pos);
 
 	if (Decode) {
-		input_string = Coding::CodingString(file_d, raw_data);
+		input_string = Coding::CodingString(file_d->FF->TF->LicenseNr, raw_data);
 	}
 	else {
 		input_string = raw_data;
@@ -159,26 +168,26 @@ void Compiler::SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 {
 	if (rdb_pos->i_rec == 0) {
-		std::string run_str = RunString(CFile, (FrmlElem*)rdb_pos->rdb, CRecPtr);
+		std::string run_str = RunString(nullptr, (FrmlElem*)rdb_pos->rdb, nullptr);
 		SetInpStdStr(run_str, true);
 		return;
 	}
 	InpRdbPos = *rdb_pos;
 
 	RdbD* rdb = rdb_pos->rdb;
-	uint8_t* rec = rdb->v_files[0]->GetRecSpace();
+	Record* rec = new Record(rdb->v_files[0]);
 
 	rdb->v_files[0]->ReadRec(rdb_pos->i_rec, rec);
-	int pos;
+	std::string src;
 	if (FromTxt) {
-		pos = rdb->v_files[0]->loadT(ChptTxt, rec);
+		src = rec->LoadS(ChptTxt);
 	}
 	else {
-		pos = rdb->v_files[0]->loadT(ChptOldTxt, rec);
+		src = rec->LoadS(ChptOldTxt);
 	}
-	SetInpTTPos(rdb->v_files[0], pos, rdb->Encrypted);
+	SetInpStr(src, ChptTF->LicenseNr, rdb->Encrypted, false);
 
-	delete[] rec; rec = nullptr;
+	delete rec; rec = nullptr;
 }
 
 void Compiler::SetInpTTxtPos(FileD* file_d)
@@ -917,8 +926,7 @@ void Compiler::RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vec
 			//	k->IndexLen += kf->FldD->NBytes;
 			//	kf = kf->pChain;
 			//}
-			XWKey* k = new XWKey(f, true, true, kf1);
-			locvar->record = reinterpret_cast<uint8_t*>(k);
+			locvar->key = new XWKey(f, true, true, kf1);
 		}
 	}
 }
@@ -1107,18 +1115,17 @@ bool Compiler::FindLocVar(LocVarBlock* LVB, LocVar** LV)
 
 bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 {
-	FileD* CF = CFile;
-	uint8_t* CR = CRecPtr;
-	CFile = Chpt;
-	CRecPtr = Chpt->GetRecSpace();
+	Record* record = new Record(Chpt);
 	RdbD* R = CRdb;
-	auto result = false;
+	bool result = false;
 	while (R != nullptr) {
-		CFile = R->v_files[0];
-		for (WORD i = 1; i <= CFile->FF->NRecs; i++) {
-			CFile->ReadRec(i, CRecPtr);
-			std::string chapterType = CFile->loadS(ChptTyp, CRecPtr);
-			std::string chapterName = CFile->loadS(ChptName, CRecPtr);
+		FileD* f = R->v_files[0];
+		for (int32_t i = 1; i <= f->FF->NRecs; i++) {
+			f->ReadRec(i, record);
+			//std::string chapterType = f->loadS(ChptTyp, record);
+			std::string chapterType = record->LoadS(ChptTyp);
+			//std::string chapterName = f->loadS(ChptName, record);
+			std::string chapterName = record->LoadS(ChptName);
 			chapterName = TrailChar(chapterName, ' ');
 
 			if (chapterType.length() == 1
@@ -1135,8 +1142,7 @@ bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 		R = R->ChainBack;
 	}
 label1:
-	ReleaseStore(&CRecPtr);
-	CFile = CF; CRecPtr = CR;
+	// ReleaseStore(&CRecPtr);
 	return result;
 }
 
@@ -1188,8 +1194,8 @@ RprtOpt* Compiler::GetRprtOpt()
 void Compiler::CFileLikeFD(FileD* FD, WORD MsgNr)
 {
 	FileD* FD1;
-	if (!CFile->IsJournal && ((CFile == FD) || (CFile->OrigFD == FD))) return;
-	SetMsgPar(CFile->Name, FD->Name);
+	if (!processing_F->IsJournal && ((processing_F == FD) || (processing_F->OrigFD == FD))) return;
+	SetMsgPar(processing_F->Name, FD->Name);
 	RunError(MsgNr);
 }
 
@@ -1374,7 +1380,7 @@ XKey* Compiler::RdViewKey(FileD* file_d)
 
 	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->f_typ == 'i')) {
 		if (lv->FD != file_d) Error(164);
-		lastK = (XKey*)(lv->record);
+		lastK = lv->key;
 		goto label1;
 	}
 	Error(109);
@@ -2566,21 +2572,27 @@ FrmlElem* Compiler::RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 	return Z;
 }
 
-FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, uint8_t* RP)
+FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, Record* RP)
 {
-	auto Z1 = new FrmlElemNewFile(_newfile, 8);
+	if (RP != nullptr && FD->Name != RP->GetFileD()->Name) {
+		printf("Chyba v Compiler::FrmlContxt \n");
+	}
+	FrmlElemNewFile* Z1 = new FrmlElemNewFile(_newfile, 8);
 	Z1->Frml = Z;
 	Z1->NewFile = FD;
 	Z1->NewRP = RP;
 	return Z1;
 }
 
-FrmlElem* Compiler::MakeFldFrml(FieldDescr* F, char& FTyp)
+FrmlElemRecVarField* Compiler::MakeFldFrml(FieldDescr* field, char& FTyp)
 {
-	auto Z = new FrmlElemRecVarField(_field, 4);
-	Z->Field = F;
-	FTyp = F->frml_type;
-	return Z;
+	FTyp = field->frml_type;
+
+	FrmlElemRecVarField* rec_var = new FrmlElemRecVarField(_field, 4);
+	rec_var->Field = field;
+	//rec_var->File = file_d;
+	
+	return rec_var;
 }
 
 LinkD* Compiler::FindOwnLD(FileD* FD, std::string RoleName)
@@ -2663,7 +2675,9 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 		}
 		else {
 			RdLex();
-			result = MakeFldFrml(f, FTyp);
+			FrmlElemRecVarField* frml = MakeFldFrml(f, FTyp);
+			frml->File = FD;
+			result = frml;
 		}
 	}
 	return result;

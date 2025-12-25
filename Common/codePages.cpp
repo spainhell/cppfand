@@ -33,20 +33,19 @@ char CurrToKamen(char C)
 	return C;
 }
 
-void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont)
+void ConvToNoDiakr(uint8_t* buf, WORD L, TVideoFont FromFont)
 {
-	uint8_t* c = static_cast<uint8_t*>(Buf);
 	if (FromFont == TVideoFont::foAscii) return;
 	if (FromFont == TVideoFont::foLatin2) {
 		for (size_t i = 0; i < L; i++) {
-			if (c[i] < 0x80) continue;
-			c[i] = TabLtN[c[i]];
+			if (buf[i] < 0x80) continue;
+			buf[i] = TabLtN[buf[i]];
 		}
 	}
 	else {
 		for (size_t i = 0; i < L; i++) {
-			if (c[i] < 0x80) continue;
-			c[i] = TabKtN[c[i]];
+			if (buf[i] < 0x80) continue;
+			buf[i] = TabKtN[buf[i]];
 		}
 	}
 }
@@ -83,7 +82,7 @@ void ConvKamenToCurr(std::string& text, bool diacritic)
 	}
 }
 
-void ConvKamenLatin(void* Buf, WORD L, bool ToLatin)
+void ConvKamenLatin(uint8_t* Buf, WORD L, bool ToLatin)
 {
 }
 

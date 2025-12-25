@@ -1,6 +1,7 @@
 #include "EditReader.h"
 
 #include <algorithm>
+#include "EditableField.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Core/LogicControl.h"
@@ -15,6 +16,7 @@
 #include "../Core/rdrun.h"
 #include "../Core/runfrml.h"
 #include "../fandio/XWKey.h"
+#include "../Common/Record.h"
 
 //std::vector<EditD*> v_edits;
 
@@ -57,9 +59,9 @@ void EditReader::StoreRT(WORD Ln, std::vector<std::string>& SL, WORD NFlds)
 
 void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 {
-	//EFldD* D = nullptr;
-	//EFldD* D1 = nullptr;
-	EFldD* PrevD = nullptr;
+	//EditableField* D = nullptr;
+	//EditableField* D1 = nullptr;
+	EditableField* PrevD = nullptr;
 	FieldDescr* F = nullptr;
 	std::vector<std::string> SLRoot;
 	std::string s;
@@ -118,7 +120,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 
 	while (true) {
 		N++;
-		EFldD* D = new EFldD();
+		EditableField* D = new EditableField();
 		if (gc->Lexem == _number) {
 			M = gc->RdInteger();
 			if (M == 0) gc->OldError(115);
@@ -129,7 +131,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 			D->ScanNr = N;
 		}
 
-		EFldD* D1 = FindScanNr(D->ScanNr);
+		EditableField* D1 = FindScanNr(D->ScanNr);
 
 		//if (edit->FirstFld == nullptr) edit->FirstFld = D;
 		//else ChainLast(edit->FirstFld, D);
@@ -151,7 +153,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	gc->TestLex(';');
 	gc->SkipBlank(true);
 	/* read record lines */
-	std::vector<EFldD*>::iterator D = edit->FirstFld.begin();
+	std::vector<EditableField*>::iterator D = edit->FirstFld.begin();
 	NPages = 0;
 	NPages++;
 	Ln = 0;
@@ -232,7 +234,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 		gc->Error(30);
 	}
 	// sort items in FirstFld by ScanNr
-	std::ranges::sort(edit->FirstFld, [](const EFldD* a, const EFldD* b) {
+	std::ranges::sort(edit->FirstFld, [](const EditableField* a, const EditableField* b) {
 		return a->ScanNr < b->ScanNr;
 		});
 	//D = FindScanNr(1);
@@ -257,10 +259,10 @@ EditD* EditReader::GetEditD()
 	return edit_;
 }
 
-EFldD* EditReader::FindScanNr(WORD N)
+EditableField* EditReader::FindScanNr(WORD N)
 {
-	std::vector<EFldD*>::iterator D = edit_->FirstFld.begin();
-	EFldD* result = nullptr;
+	std::vector<EditableField*>::iterator D = edit_->FirstFld.begin();
+	EditableField* result = nullptr;
 	WORD M = 0xffff;
 	while (D != edit_->FirstFld.end()) {
 		if (((*D)->ScanNr >= N) && ((*D)->ScanNr < M)) {
@@ -283,7 +285,7 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 
 	for (FieldDescr* F : FL) {
 		//if (F == nullptr) continue;
-		EFldD* newD = new EFldD();
+		EditableField* newD = new EditableField();
 		edit_->FirstFld.push_back(newD);
 		newD->FldD = F;
 		newD->L = F->L;
@@ -347,7 +349,7 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 			er->SL.erase(er->SL.begin());
 			er->N = 1;
 
-			for (EFldD* D : edit_->FirstFld) {
+			for (EditableField* D : edit_->FirstFld) {
 				D->Ln--;
 			}
 
@@ -394,7 +396,7 @@ void EditReader::RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos)
 	}
 }
 
-std::string EditReader::GetStr_E(FrmlElem* Z, uint8_t* record)
+std::string EditReader::GetStr_E(FrmlElem* Z, Record* record)
 {
 	if (Z == nullptr) return "";
 	else {
@@ -408,7 +410,7 @@ std::string EditReader::GetStr_E(FrmlElem* Z, uint8_t* record)
 	}
 }
 
-void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
+void EditReader::NewEditD(FileD* file_d, EditOpt* EO, Record* rec)
 {
 	file_d_ = file_d;
 	edit_->FD = file_d;
@@ -434,8 +436,8 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	edit_->OwnerTyp = EO->OwnerTyp;
 	edit_->DownLD = EO->DownLD;
 	edit_->DownLV = EO->DownLV;
-	edit_->DownRecPtr = EO->DownRecPtr;
-	edit_->LVRecPtr = EO->LVRecPtr;
+	edit_->DownRecord = EO->DownRecord == nullptr ? nullptr : EO->DownRecord->Clone(); // TODO: opravdu clone? neni to hodnota predana odkazem do procedury?
+	edit_->LvRec = EO->LvRec;
 	edit_->KIRoot = EO->KIRoot;
 	edit_->SQLFilter = EO->SQLFilter;
 	edit_->SelKey = static_cast<XWKey*>(EO->SelKey);
@@ -462,7 +464,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		edit_->params_->OnlyTabs = true;
 		edit_->params_->OnlySearch = false;
 	}
-	if (edit_->LVRecPtr != nullptr) {
+	if (edit_->LvRec != nullptr) {
 		edit_->params_->EdRecVar = true;
 		edit_->params_->Only1Record = true;
 	}
@@ -528,14 +530,14 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 #endif
 
 		edit_->params_->AddSwitch = true;
-		edit_->Cond = RunEvalFrml(file_d, EO->Cond, record->GetRecord());
-		edit_->RefreshDelay = RunWordImpl(file_d, EO->RefreshDelayZ, spec.RefreshDelay, record->GetRecord()) * 1000;
-		edit_->SaveAfter = RunWordImpl(file_d, EO->SaveAfterZ, spec.UpdCount, record->GetRecord()) * 1000;
+		edit_->Cond = RunEvalFrml(file_d, EO->Cond, record);
+		edit_->RefreshDelay = RunWordImpl(file_d, EO->RefreshDelayZ, spec.RefreshDelay, record) * 1000;
+		edit_->SaveAfter = RunWordImpl(file_d, EO->SaveAfterZ, spec.UpdCount, record) * 1000;
 		if (EO->StartRecKeyZ != nullptr) {
-			edit_->StartRecKey = RunString(file_d, EO->StartRecKeyZ, record->GetRecord());
+			edit_->StartRecKey = RunString(file_d, EO->StartRecKeyZ, record);
 		}
-		edit_->StartRecNo = RunInt(file_d, EO->StartRecNoZ, record->GetRecord());
-		edit_->StartIRec = RunInt(file_d, EO->StartIRecZ, record->GetRecord());
+		edit_->StartRecNo = RunInt(file_d, EO->StartRecNoZ, record);
+		edit_->StartIRec = RunInt(file_d, EO->StartIRecZ, record);
 		edit_->VK = EO->ViewKey;
 		if (edit_->DownLD != nullptr) {
 			edit_->DownSet = true;
@@ -545,12 +547,13 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 			}
 			switch (edit_->OwnerTyp) {
 			case 'r': {
-				edit_->DownRecPtr = edit_->DownLV->record;
+				edit_->DownRecord = edit_->DownLV->record == nullptr 
+					? nullptr : edit_->DownLV->record->Clone(); // TODO: ??? // new Record(nullptr, edit_->DownLV->record);
 				break;
 			}
 			case 'F': {
-				edit_->OwnerRecNo = RunInt(file_d, (FrmlElem*)EO->DownLV, record->GetRecord());
-				edit_->DownRecPtr = edit_->DownLD->ToFD->GetRecSpace();
+				edit_->OwnerRecNo = RunInt(file_d, (FrmlElem*)EO->DownLV, record);
+				edit_->DownRecord = new Record(edit_->DownLD->ToFD);
 				break;
 			}
 			default:;
@@ -572,37 +575,37 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		}
 	}
 	if (EO->StartFieldZ != nullptr) {
-		std::string rss = RunString(file_d, EO->StartFieldZ, record->GetRecord());
+		std::string rss = RunString(file_d, EO->StartFieldZ, record);
 		std::string s = TrailChar(rss, ' ');
-		//EFldD* D = edit_->FirstFld;
+		//EditableField* D = edit_->FirstFld;
 		//while (D != nullptr) {
 		//	if (EquUpCase(D->FldD->Name, s)) {
 		//		edit_->StartFld = D;
 		//	}
 		//	D = D->pChain;
 		//}
-		for (EFldD* ef : edit_->FirstFld) {
+		for (EditableField* ef : edit_->FirstFld) {
 			if (EquUpCase(ef->FldD->Name, s)) {
 				edit_->StartFld = ef;
 			}
 		}
 	}
-	edit_->WatchDelay = RunInt(file_d, EO->WatchDelayZ, record->GetRecord()) * 1000;
+	edit_->WatchDelay = RunInt(file_d, EO->WatchDelayZ, record) * 1000;
 	if (EO->Head == nullptr) {
 		edit_->Head = StandardHead(edit_);
 	}
 	else {
-		edit_->Head = GetStr_E(EO->Head, record->GetRecord());
+		edit_->Head = GetStr_E(EO->Head, record);
 	}
-	edit_->Last = GetStr_E(EO->Last, record->GetRecord());
-	edit_->AltLast = GetStr_E(EO->AltLast, record->GetRecord());
-	edit_->CtrlLast = GetStr_E(EO->CtrlLast, record->GetRecord());
-	edit_->ShiftLast = GetStr_E(EO->ShiftLast, record->GetRecord());
+	edit_->Last = GetStr_E(EO->Last, record);
+	edit_->AltLast = GetStr_E(EO->AltLast, record);
+	edit_->CtrlLast = GetStr_E(EO->CtrlLast, record);
+	edit_->ShiftLast = GetStr_E(EO->ShiftLast, record);
 	F2NoUpd = edit_->params_->OnlyTabs && EO->Tab.empty() && !EO->NegTab && edit_->params_->OnlyAppend;
 
-	//EFldD* D = edit_->FirstFld;
+	//EditableField* D = edit_->FirstFld;
 	//while (D != nullptr) {
-	for (EFldD* D : edit_->FirstFld) {
+	for (EditableField* D : edit_->FirstFld) {
 		edit_->NFlds++;
 		F = D->FldD;
 		b = FieldInList(F, EO->Tab);
@@ -631,12 +634,12 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	MarkStore(edit_->AfterE);
 }
 
-EFldD* EditReader::FindEFld_E(FieldDescr* F)
+EditableField* EditReader::FindEFld_E(FieldDescr* F)
 {
-	EFldD* result = nullptr;
-	//EFldD* D = edit_->FirstFld;
+	EditableField* result = nullptr;
+	//EditableField* D = edit_->FirstFld;
 	//while (D != nullptr) {
-	for (EFldD* D : edit_->FirstFld) {
+	for (EditableField* D : edit_->FirstFld) {
 		if (D->FldD == F) {
 			result = D;
 			break;
@@ -648,26 +651,26 @@ EFldD* EditReader::FindEFld_E(FieldDescr* F)
 
 void EditReader::ZeroUsed()
 {
-	//EFldD* D = edit_->FirstFld;
+	//EditableField* D = edit_->FirstFld;
 	//while (D != nullptr) {
 	//	D->Used = false;
 	//	D = D->pChain;
 	//}
-	for (EFldD* D : edit_->FirstFld) {
+	for (EditableField* D : edit_->FirstFld) {
 		D->Used = false;
 	}
 }
 
-EFldD* EditReader::LstUsedFld()
+EditableField* EditReader::LstUsedFld()
 {
-	EFldD* result = nullptr;
-	//EFldD* D = edit_->LastFld;
+	EditableField* result = nullptr;
+	//EditableField* D = edit_->LastFld;
 	//while (D != nullptr) {
 	//	if (D->Used) break;
 	//	D = D->ChainBack;
 	//}
 	//return D;
-	std::vector<EFldD*>::reverse_iterator D = edit_->FirstFld.rbegin();
+	std::vector<EditableField*>::reverse_iterator D = edit_->FirstFld.rbegin();
 	for (; D != edit_->FirstFld.rend(); ++D) {
 		if ((*D)->Used) {
 			result = *D;
@@ -785,7 +788,7 @@ void EditReader::SetFlag(FieldDescr* F)
 	else {
 		F->field_flag = true;
 		if ((F->Flg & f_Stored) != 0) {
-			EFldD* D = FindEFld_E(F);
+			EditableField* D = FindEFld_E(F);
 			if (D != nullptr) {
 				D->Used = true;
 			}
@@ -812,7 +815,7 @@ void EditReader::ReadDependencies(FileD* file_d)
 	gc->Accept(')');
 
 	while (true) {
-		EFldD* D = FindEFld_E(gc->RdFldName(file_d));
+		EditableField* D = FindEFld_E(gc->RdFldName(file_d));
 		gc->Accept(_assign);
 		FrmlElem* Z = gc->RdFrml(FTyp, nullptr);
 
@@ -846,7 +849,7 @@ void EditReader::RdCheck()
 		ZeroUsed();
 		SetFrmlFlags(C->Bool);
 		TestedFlagOff();
-		EFldD* D = LstUsedFld();
+		EditableField* D = LstUsedFld();
 
 		if (D != nullptr) {
 			D->Checks.push_back(C);
@@ -875,7 +878,7 @@ void EditReader::RdImpl(FileD* file_d)
 		FieldDescr* F = gc->RdFldName(file_d);
 		gc->Accept(_assign);
 		FrmlElem* Z = gc->RdFrml(FTyp, nullptr);
-		EFldD* D = FindEFld_E(F);
+		EditableField* D = FindEFld_E(F);
 
 		if (D != nullptr) {
 			D->Impl = Z;
@@ -896,7 +899,7 @@ void EditReader::RdImpl(FileD* file_d)
 
 void EditReader::RdUDLI(FileD* file_d)
 {
-	CFile = file_d; // to be sure
+	// CFile = file_d; // to be sure
 	gc->processing_F = file_d;
 
 	gc->RdLex();
@@ -971,13 +974,13 @@ void EditReader::NewChkKey(FileD* file_d)
 			ZeroUsed();
 
 			for (KeyFldD* KF : K->KFlds) {
-				EFldD* D = FindEFld_E(KF->FldD);
+				EditableField* D = FindEFld_E(KF->FldD);
 				if (D != nullptr) {
 					D->Used = true;
 				}
 			}
 
-			EFldD* D = LstUsedFld();
+			EditableField* D = LstUsedFld();
 
 			if (D != nullptr) {
 				D->KL.push_back(K);

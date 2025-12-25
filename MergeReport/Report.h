@@ -98,10 +98,10 @@ private:
 	void ReadInpFile(InpD* ID);
 	void OpenInp();
 	void CloseInp();
-	WORD CompMFlds(std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M, short& NLv);
-	void GetMFlds(std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M);
+	WORD CompMFlds(FileD* file_d, Record* record, std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M, short& NLv);
+	void GetMFlds(FileD* file_d, Record* rec, std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M);
 	void MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C2);
-	void PutMFlds(std::vector<KeyFldD*>& M);
+	void PutMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M);
 	void GetMinKey();
 	void ZeroCount();
 	LvDescr* GetDifLevel();

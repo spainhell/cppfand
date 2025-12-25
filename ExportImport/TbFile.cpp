@@ -90,12 +90,12 @@ label1:
 				x_FD = nullptr;
 				x_I = i;
 				ForAllFDs(ForAllFilesOperation::find_fd_for_i, &x_FD, x_I);
-				CFile = x_FD;
-				if (CFile != nullptr) {
-					HANDLE h = CFile->FF->Handle;
+				//CFile = x_FD;
+				if (x_FD != nullptr) {
+					HANDLE h = x_FD->FF->Handle;
 					if (IsBackup) BackupFD();
 					else RestoreFD();
-					/*if (h == 0xff)*/ CFile->CloseFile();
+					/*if (h == 0xff)*/ x_FD->CloseFile();
 				}
 				else {
 					CPath = FExpand(catalog->GetPathName(i));

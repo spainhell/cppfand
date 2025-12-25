@@ -1,9 +1,9 @@
 #include "realDouble.h"
 
 
-double Real48ToDouble(void* buf)
+double Real48ToDouble(uint8_t* buf)
 {
-	unsigned char* real48 = (unsigned char*)buf;
+	uint8_t* real48 = buf;
 	if (real48[0] == 0) return 0.0; // null exponent = 0
 	double exponent = real48[0] - 129.0;
 	double mantissa = 0.0;
@@ -23,17 +23,17 @@ double Real48ToDouble(void* buf)
 	return mantissa * pow(2.0, exponent);
 }
 
-std::array<unsigned char, 6> DoubleToReal48(double D)
+std::array<uint8_t, 6> DoubleToReal48(double D)
 {
-	std::array<unsigned char, 6> real48{ 0, 0, 0, 0, 0, 0 };
-	unsigned char* da = (unsigned char*)&D;
+	std::array<uint8_t, 6> real48{ 0, 0, 0, 0, 0, 0 };
+	uint8_t* da = (uint8_t*)&D;
 
 	// copy negative flag
 	real48[5] |= da[7] & 0x80;
 	// get exponent
-	unsigned char b1 = da[7] & 0x7F;
-	unsigned short n = (unsigned short)(b1 << 4);
-	unsigned char b2 = da[6] & 0xF0;
+	uint8_t b1 = da[7] & 0x7F;
+	uint16_t n = (uint16_t)(b1 << 4);
+	uint8_t b2 = da[6] & 0xF0;
 	b2 >>= 4;
 	n |= b2;
 	if (n == 0) return real48;

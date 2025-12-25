@@ -172,9 +172,9 @@ void CfgFile::RdWDaysTab(wdaystt** wDaysTab, WORD& NWDaysTab, double& WDaysFirst
 	DWORD error;
 	ReadF(Handle, &NWDaysTab, 2, error);   // je to WORD - pocet zaznamu v kalendari
 	ReadF(Handle, &WDaysFirst, 6, error);  // v Pascalu real 6B
-	WDaysFirst = Real48ToDouble(&WDaysFirst);
+	WDaysFirst = Real48ToDouble((uint8_t*)&WDaysFirst);
 	ReadF(Handle, &WDaysLast, 6, error);  // v Pascalu real 6B
-	WDaysLast = Real48ToDouble(&WDaysLast);
+	WDaysLast = Real48ToDouble((uint8_t*)&WDaysLast);
 
 	*wDaysTab = new wdaystt[NWDaysTab];
 	for (int i = 0; i < NWDaysTab; i++) {

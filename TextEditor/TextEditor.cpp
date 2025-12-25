@@ -2050,7 +2050,7 @@ void TextEditor::Calculate()
 
 		switch (FTyp) {
 		case 'R': {
-			R = RunReal(CFile, Z, CRecPtr);
+			R = RunReal(nullptr, Z, nullptr);
 			str(R, 30, 10, txt);
 			txt = LeadChar(' ', TrailChar(txt, '0'));
 			if (txt[txt.length() - 1] == '.') {
@@ -2060,11 +2060,11 @@ void TextEditor::Calculate()
 		}
 		case 'S': {
 			/* wie RdMode fuer _textT ??*/
-			txt = RunString(CFile, Z, CRecPtr);
+			txt = RunString(nullptr, Z, nullptr);
 			break;
 		}
 		case 'B': {
-			if (RunBool(CFile, Z, CRecPtr)) txt = AbbrYes;
+			if (RunBool(nullptr, Z, nullptr)) txt = AbbrYes;
 			else txt = AbbrNo;
 			break;
 		}
@@ -2303,10 +2303,10 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 
 void DelStorClpBd(uint8_t* P1, LongStr* sp)
 {
-	TWork.Delete(ClpBdPos);
-	std::string data = std::string(sp->A, sp->LL);
-	ClpBdPos = TWork.Store(data);
-	ReleaseStore(&P1);
+	//TWork.Delete(ClpBdPos);
+	//std::string data = std::string(sp->A, sp->LL);
+	//ClpBdPos = TWork.Store(data);
+	//ReleaseStore(&P1);
 }
 
 void MarkRdClpBd(uint8_t* P1, LongStr* sp)
@@ -2845,13 +2845,13 @@ void TextEditor::Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vect
 
 void TextEditor::SetEditTxt(Instr_setedittxt* PD)
 {
-	if (PD->Insert != nullptr) Insert = !RunBool(CFile, PD->Insert, CRecPtr);
-	if (PD->Indent != nullptr) Indent = RunBool(CFile, PD->Indent, CRecPtr);
-	if (PD->Wrap != nullptr) Wrap = RunBool(CFile, PD->Wrap, CRecPtr);
-	if (PD->Just != nullptr) Just = RunBool(CFile, PD->Just, CRecPtr);
-	if (PD->ColBlk != nullptr) TypeB = RunBool(CFile, PD->ColBlk, CRecPtr);
-	if (PD->Left != nullptr) LeftMarg = MaxI(1, RunInt(CFile, PD->Left, CRecPtr));
-	if (PD->Right != nullptr) RightMarg = MaxI(LeftMarg, MinI(255, RunInt(CFile, PD->Right, CRecPtr)));
+	if (PD->Insert != nullptr) Insert = !RunBool(nullptr, PD->Insert, nullptr);
+	if (PD->Indent != nullptr) Indent = RunBool(nullptr, PD->Indent, nullptr);
+	if (PD->Wrap != nullptr) Wrap = RunBool(nullptr, PD->Wrap, nullptr);
+	if (PD->Just != nullptr) Just = RunBool(nullptr, PD->Just, nullptr);
+	if (PD->ColBlk != nullptr) TypeB = RunBool(nullptr, PD->ColBlk, nullptr);
+	if (PD->Left != nullptr) LeftMarg = MaxI(1, RunInt(nullptr, PD->Left, nullptr));
+	if (PD->Right != nullptr) RightMarg = MaxI(LeftMarg, MinI(255, RunInt(nullptr, PD->Right, nullptr)));
 }
 
 void TextEditor::GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg, short& pRightMarg)

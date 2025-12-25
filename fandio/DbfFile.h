@@ -5,6 +5,7 @@
 #include "DbfTFile.h"
 #include "FieldDescr.h"
 
+class Record;
 class FileD;
 
 class DbfFile : public DataFileBase
@@ -24,29 +25,16 @@ public:
 	bool WasRdOnly = false;
 	bool Eof = false;
 
-	size_t ReadRec(size_t rec_nr, void* record);
-	size_t WriteRec(size_t rec_nr, void* record);
-	void CreateRec(int n, void* record);
-	void DeleteRec(int n, void* record);
-	void DelAllDifTFlds(void* record, void* comp_record);
+	uint8_t* GetRecSpace() const;
+
+	size_t ReadRec(size_t rec_nr, Record* record);
+	size_t WriteRec(size_t rec_nr, Record* record);
+	void CreateRec(int n, Record* record);
+	void DeleteRec(int n, Record* record);
 
 	void IncNRecs(int n);
 	void DecNRecs(int n);
-	void PutRec(void* record, int& i_rec);
-
-	bool loadB(FieldDescr* field_d, void* record);
-	double loadR(FieldDescr* field_d, void* record);
-	std::string loadS(FieldDescr* field_d, void* record);
-	int loadT(FieldDescr* F, void* record);
-
-	void saveB(FieldDescr* field_d, bool b, void* record);
-	void saveR(FieldDescr* field_d, double r, void* record);
-	void saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record);
-	int saveT(FieldDescr* field_d, int pos, void* record);
-
-	void DelTFld(FieldDescr* field_d, void* record);
-	void DelTFlds(void* record);
-	void DelDifTFld(FieldDescr* field_d, void* record, void* comp_record);
+	void PutRec(Record* record, int& i_rec);
 
 	uint16_t RdPrefix();
 	void WrPrefix();
@@ -62,24 +50,31 @@ public:
 	void CloseFile();
 	void Close();
 
-	void SetTWorkFlag(void* record) const;
-	bool HasTWorkFlag(void* record) const;
-
-	void SetRecordUpdateFlag(void* record) const;
-	void ClearRecordUpdateFlag(void* record) const;
-	bool HasRecordUpdateFlag(void* record) const;
-
-	static bool DeletedFlag(void* record);
-	void ClearDeletedFlag(void* record);
-	void SetDeletedFlag(void* record);
-
+	static bool DeletedFlag(Record* record);
+	void ClearDeletedFlag(Record* record);
+	void SetDeletedFlag(Record* record);
 	FileD* GetFileD();
 
-	void ClearUpdateFlag() override;
 	std::string SetTempCExt(char typ, bool isNet) const;
 
 private:
 	FileD* _parent;
+
+	bool loadB(FieldDescr* field_d, uint8_t* record);
+	double loadR(FieldDescr* field_d, uint8_t* record);
+	std::string loadS(FieldDescr* field_d, uint8_t* record);
+	int loadT(FieldDescr* F, uint8_t* record);
+
+	void saveB(FieldDescr* field_d, bool b, uint8_t* record);
+	void saveR(FieldDescr* field_d, double r, uint8_t* record);
+	void saveS(FieldDescr* field_d, std::string s, uint8_t* record);
+	int saveT(FieldDescr* field_d, int pos, uint8_t* record);
+
+	void DelTFld(FieldDescr* field_d, uint8_t* record);
+	void DelTFlds(uint8_t* record);
+	void DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record);
+	void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);
+
 	double DBF_RforD(FieldDescr* field_d, uint8_t* source);
 	std::string _extToT(const std::string& input_path);
 };

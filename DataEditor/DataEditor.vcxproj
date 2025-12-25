@@ -20,17 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataEditorParams.h" />
+    <ClInclude Include="EditableField.h" />
     <ClInclude Include="EditD.h" />
     <ClInclude Include="EditReader.h" />
     <ClInclude Include="DataEditor.h" />
-    <ClInclude Include="Record.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataEditorParams.cpp" />
+    <ClCompile Include="EditableField.cpp" />
     <ClCompile Include="EditD.cpp" />
     <ClCompile Include="EditReader.cpp" />
     <ClCompile Include="DataEditor.cpp" />
-    <ClCompile Include="Record.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TextEditor\TextEditor.vcxproj">

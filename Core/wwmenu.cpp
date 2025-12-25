@@ -14,6 +14,7 @@
 #include "../TextEditor/EditorHelp.h"
 #include "../Common/codePages.h"
 #include "../Common/textfunc.h"
+#include "../Common/Record.h"
 #include "../Drivers/constants.h"
 
 
@@ -248,7 +249,8 @@ void TMenu::HandleEvent()
 				case __ALT_F2: {
 					if (IsTestRun && !IsBoxS) {
 						ClrEvent();
-						EditHelpOrCat(__ALT_F2, 2, hlp);
+						std::unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
+						runner->EditHelpOrCat(__ALT_F2, 2, hlp);
 						//KbdChar = 0;
 					}
 					break;
@@ -370,10 +372,10 @@ void TMenu::WrText(WORD I)
 
 void TMenu::SetPalette(Instr_menu* aPD)
 {
-	Palette[0] = RunWordImpl(CFile, aPD->mAttr[0], screen.colors.mNorm, CRecPtr);
-	Palette[1] = RunWordImpl(CFile, aPD->mAttr[1], screen.colors.mHili, CRecPtr);
-	Palette[2] = RunWordImpl(CFile, aPD->mAttr[2], screen.colors.mFirst, CRecPtr);
-	Palette[3] = RunWordImpl(CFile, aPD->mAttr[3], screen.colors.mDisabled, CRecPtr);
+	Palette[0] = RunWordImpl(nullptr, aPD->mAttr[0], screen.colors.mNorm, nullptr);
+	Palette[1] = RunWordImpl(nullptr, aPD->mAttr[1], screen.colors.mHili, nullptr);
+	Palette[2] = RunWordImpl(nullptr, aPD->mAttr[2], screen.colors.mFirst, nullptr);
+	Palette[3] = RunWordImpl(nullptr, aPD->mAttr[3], screen.colors.mDisabled, nullptr);
 }
 
 ChoiceD* TMenu::getChoice(size_t order)
@@ -400,12 +402,12 @@ void TMenu::countChoices(bool isMenuBar)
 	std::string s;
 	bool b = false;
 	for (auto& C : choices) {
-		b = RunBool(CFile, C->Condition, CRecPtr);
+		b = RunBool(nullptr, C->Condition, nullptr);
 		C->Displ = false;
 		if (b || C->DisplEver) {
 			C->Displ = true;
 			nTxt++;
-			s = RunString(CFile, C->TxtFrml, CRecPtr);
+			s = RunString(nullptr, C->TxtFrml, nullptr);
 			if (s.length() != 0) {
 				short maxLen = min(s.length(), TxtCols - 6);
 				if (s.length() > maxLen) s = s.substr(0, maxLen);
@@ -596,15 +598,15 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
 {
 	PD = aPD;
 	parent = aParent;
-	pstring s = RunString(CFile, aPD->HdLine, CRecPtr);
+	pstring s = RunString(nullptr, aPD->HdLine, nullptr);
 	s[0] = (char)MinI(s.length(), TxtCols - 6);
 	HdTxt = s;
 	HlpRdb = aPD->HelpRdb;
 	this->insertChoices(aPD->Choices, false);
 	SetPalette(aPD);
 	if (aPD->X != nullptr) {
-		C1 = RunInt(CFile, aPD->X, CRecPtr);
-		R1 = RunInt(CFile, aPD->Y, CRecPtr);
+		C1 = RunInt(nullptr, aPD->X, nullptr);
+		R1 = RunInt(nullptr, aPD->Y, nullptr);
 	}
 	else if (aPD->PullDown && aParent == nullptr) {
 		C1 = MenuX;
@@ -624,13 +626,14 @@ bool TMenuBoxP::ExecItem(WORD& I)
 	bool result = false;
 	if (!PD->PullDown) return result;
 
+	std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
 	if (I == 0) {
 		if ((Event.What == evMouseDown) || !PD->WasESCBranch) return result;
-		RunInstr(PD->ESCInstr);
+		runner->RunInstr(PD->ESCInstr);
 	}
 	else {
 		ChoiceD* choice = getChoice(I);
-		RunInstr(choice->v_instr);
+		runner->RunInstr(choice->v_instr);
 	}
 
 	if (ExitP) {
@@ -677,15 +680,16 @@ void TMenuBoxP::call()
 {
 	WORD i = 0;
 	uint8_t mx = 0, my = 0;
+	std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
 label1:
 	i = this->Exec(i);
 	if (!PD->PullDown) {
 		if (i == 0) {
 			if (!PD->WasESCBranch) return;
-			RunInstr(PD->ESCInstr);
+			runner->RunInstr(PD->ESCInstr);
 		}
 		else {
-			RunInstr(getChoice(i)->v_instr);
+			runner->RunInstr(getChoice(i)->v_instr);
 		}
 		if (BreakP || ExitP) {
 			if (PD->Loop) BreakP = false;
@@ -752,7 +756,12 @@ WORD TMenuBar::Exec()
 			break;
 		}
 		default: {
-			if (Event.Pressed.isChar() && !FindChar(Event.Pressed.Char)) continue;
+			if (!Event.Pressed.isChar()) {
+				continue;
+			}
+			if (!FindChar(Event.Pressed.Char)) {
+				continue;
+			}
 			enter = true;
 		label2:
 			WrText(iTxt);
@@ -875,12 +884,12 @@ TMenuBarP::TMenuBarP(Instr_menu* aPD)
 	this->insertChoices(aPD->Choices, true);
 	SetPalette(PD);
 	y1 = 1;
-	if (PD->Y != nullptr) y1 = RunInt(CFile, PD->Y, CRecPtr);
+	if (PD->Y != nullptr) y1 = RunInt(nullptr, PD->Y, nullptr);
 	x1 = 1;
 	l1 = TxtCols;
 	if (PD->X != nullptr) {
-		x1 = RunInt(CFile, PD->X, CRecPtr);
-		l1 = RunInt(CFile, PD->XSz, CRecPtr);
+		x1 = RunInt(nullptr, PD->X, nullptr);
+		l1 = RunInt(nullptr, PD->XSz, nullptr);
 	}
 	InitTMenuBar(x1, y1, l1);
 }
@@ -895,12 +904,14 @@ bool TMenuBarP::ExecItem(WORD& I)
 {
 	TRect r;
 	auto result = false;
+	std::unique_ptr<RunProcedure> runner = std::make_unique<RunProcedure>();
+
 	if (I == 0) {
 		if (!PD->WasESCBranch) return result;
-		RunInstr(PD->ESCInstr);
+		runner->RunInstr(PD->ESCInstr);
 	}
 	else {
-		RunInstr(getChoice(I)->v_instr);
+		runner->RunInstr(getChoice(I)->v_instr);
 	}
 	I = 0;
 	if (BreakP || ExitP) {
@@ -993,62 +1004,59 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	//FileD* cf = nullptr;
 	uint8_t* p = nullptr;
 	LockMode md = LockMode::NullMode;
-	uint8_t* cr = CRecPtr;
 	std::string result;
+	Record* record = nullptr;
 
 	if (ByName) {
 		if (R == nullptr) goto label5;
-		//CFile = (FileD*)rdb;  // TODO: toto je nesmysl
-		CFile = R->help_file;
-		if (CFile == HelpFD) {
-			if (CFile->FF->Handle == nullptr) goto label5;
+		if (R->help_file == HelpFD) {
+			if (R->help_file->FF->Handle == nullptr) goto label5;
 		}
 		else {
-			// CFile = rdb->help_file;
-			if (CFile == nullptr) goto label5;
+			if (R->help_file == nullptr) goto label5;
 		}
-		ConvToNoDiakr(&S[0], S.length(), fonts.VFont);
+		ConvToNoDiakr((uint8_t*)&S[0], S.length(), fonts.VFont);
 	}
 label1:
-	md = CFile->NewLockMode(RdMode);
-	if (CFile->FF->Handle == nullptr) goto label5;
-	CRecPtr = new uint8_t[CFile->FF->RecLen + 2]{ '\0' };
-	NmF = CFile->FldD[0];
-	TxtF = CFile->FldD[1];
+	md = R->help_file->NewLockMode(RdMode);
+	if (R->help_file->FF->Handle == nullptr) goto label5;
+	record = new Record(R->help_file); //new uint8_t[R->help_file->FF->RecLen + 2]{ '\0' };
+	NmF = R->help_file->FldD[0];
+	TxtF = R->help_file->FldD[1];
 	if (!ByName) {
-		i = MaxW(1, MinW(IRec, CFile->FF->NRecs));
-		CFile->ReadRec(i, CRecPtr);
+		i = MaxW(1, MinW(IRec, R->help_file->FF->NRecs));
+		R->help_file->FF->ReadRec(i, record);
 		goto label2;
 	}
-	for (i = 1; i <= CFile->FF->NRecs; i++) {
-		CFile->ReadRec(i, CRecPtr);
-		Nm = OldTrailChar(' ', CFile->loadS(NmF, CRecPtr));
-		if (CFile == HelpFD) fo = TVideoFont::foKamen;
+	for (i = 1; i <= R->help_file->FF->NRecs; i++) {
+		R->help_file->FF->ReadRec(i, record);
+		Nm = OldTrailChar(' ', record->LoadS(NmF));
+		if (R->help_file == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
-		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
+		ConvToNoDiakr((uint8_t*)&Nm[0], Nm.length(), fo);
 		if (EqualsMask(S, Nm)) {
 		label2:
-			result = CFile->loadS(TxtF, CRecPtr);
-			if (!ByName || (result.length() > 0) || (i == CFile->FF->NRecs)) {
-				if (CFile == HelpFD) {
+			result = record->LoadS(TxtF); //R->help_file->loadS(TxtF, record);
+			if (!ByName || (!result.empty()) || (i == R->help_file->FF->NRecs)) {
+				if (R->help_file == HelpFD) {
 					ConvKamenToCurr(result, !fonts.NoDiakrSupported);
 				}
 				IRec = i;
 				goto label3;
 			}
 			i++;
-			CFile->ReadRec(i, CRecPtr);
+			R->help_file->FF->ReadRec(i, record);
 			goto label2;
 		}
 	}
 label3:
-	CFile->OldLockMode(md);
-	if ((result.empty()) && (CFile != HelpFD)) {
+	R->help_file->OldLockMode(md);
+	if ((result.empty()) && (R->help_file != HelpFD)) {
 	label4:
 		R = R->ChainBack;
 		if (R != nullptr)
-			if ((R->help_file != nullptr) && (R->help_file != CFile)) {
-				CFile = R->help_file;
+			if ((R->help_file != nullptr) && (R->help_file != R->help_file)) {
+				R->help_file = R->help_file;
 				goto label1;
 			}
 			else {
@@ -1056,7 +1064,6 @@ label3:
 			}
 	}
 label5:
-	CRecPtr = cr;
 	return result;
 }
 
@@ -1066,7 +1073,7 @@ void DisplayLastLineHelp(RdbD* R, std::string Name, bool R24)
 
 	if ((R == nullptr) || (R->help_file != HelpFD) && (R->help_file == nullptr)) return;
 
-	FileD* cf = CFile;
+	//FileD* cf = CFile;
 	if (!Name.empty()) {
 		iRec = 0;
 		std::string sHelp = GetHlpText(R, Name, true, iRec);
@@ -1092,7 +1099,7 @@ void DisplayLastLineHelp(RdbD* R, std::string Name, bool R24)
 	if (R24) y--;
 	screen.ScrWrStr(1, y + 1, MsgLine, screen.colors.nNorm);
 	screen.ScrClr(MsgLine.length() + 1, y + 1, TxtCols - MsgLine.length(), 1, ' ', screen.colors.nNorm);
-	CFile = cf;
+	//CFile = cf;
 }
 
 void TMenu::InitTMenu()

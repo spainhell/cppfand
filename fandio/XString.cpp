@@ -8,6 +8,7 @@
 #include "../Core/runfrml.h"
 #include "../Common/realDouble.h"
 #include "../Common/CommonVariables.h"
+#include "../Common/Record.h"
 
 void XString::Clear()
 {
@@ -70,38 +71,38 @@ void XString::StoreStr(std::string V, KeyFldD* KF)
 		}
 		n = (X->L + 1) / 2;
 		//V = V.substr(0, n); // neni potreba, do fce vstupuje delka ...
-		StoreN(&V[0], n, KF->Descend);
+		StoreN((uint8_t*)&V[0], n, KF->Descend);
 	}
 	else {
-		StoreA(&V[0], X->L, KF->CompLex, KF->Descend);
+		StoreA((uint8_t*)&V[0], X->L, KF->CompLex, KF->Descend);
 	}
 }
 
 void XString::StoreBool(bool B, KeyFldD* KF)
 {
-	StoreN(&B, 1, KF->Descend);
+	StoreN((uint8_t*)&B, 1, KF->Descend);
 }
 
-void XString::StoreKF(FileD* file_d, KeyFldD* KF, uint8_t* record)
+void XString::StoreKF(FileD* file_d, KeyFldD* KF, Record* record)
 {
 	FieldDescr* F = KF->FldD;
 	switch (F->frml_type) {
 	case 'S': {
-		StoreStr(file_d->loadS(F, record), KF);
+		StoreStr(record->LoadS(F), KF);
 		break;
 	}
 	case 'R': {
-		StoreReal(file_d->loadR(F, record), KF);
+		StoreReal(record->LoadR(F), KF);
 		break;
 	}
 	case 'B': {
-		StoreBool(file_d->loadB(F, record), KF);
+		StoreBool(record->LoadB(F), KF);
 		break;
 	}
 	}
 }
 
-void XString::PackKF(FileD* file_d, std::vector<KeyFldD*>& KF, uint8_t* record)
+void XString::PackKF(FileD* file_d, std::vector<KeyFldD*>& KF, Record* record)
 {
 	Clear();
 	for (KeyFldD* k : KF) {
@@ -109,7 +110,7 @@ void XString::PackKF(FileD* file_d, std::vector<KeyFldD*>& KF, uint8_t* record)
 	}
 }
 
-bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<KeyFldD*>& KF, uint8_t* record)
+bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<KeyFldD*>& KF, Record* record)
 {
 	Clear();
 
@@ -138,7 +139,7 @@ bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<Ke
 	return KF.size() > FL.size();
 }
 
-void XString::StoreD(void* R, bool descend)
+void XString::StoreD(uint8_t* R, bool descend)
 {
 	unsigned char* data = (unsigned char*)R;
 	unsigned char origLen = S[0];
@@ -172,7 +173,7 @@ void XString::StoreD(void* R, bool descend)
 	}
 }
 
-void XString::StoreN(void* N, unsigned short len, bool descend)
+void XString::StoreN(uint8_t* N, unsigned short len, bool descend)
 {
 	std::string inpStr((char*)N, len);
 	pstring inpPStr = inpStr;
@@ -184,7 +185,7 @@ void XString::StoreN(void* N, unsigned short len, bool descend)
 	S += inpPStr;
 }
 
-void XString::StoreF(void* F, unsigned short len, bool descend)
+void XString::StoreF(uint8_t* F, unsigned short len, bool descend)
 {
 	unsigned char* data = (unsigned char*)F;
 	unsigned char origLen = S[0];
@@ -208,7 +209,7 @@ void XString::StoreF(void* F, unsigned short len, bool descend)
 	}
 }
 
-void XString::StoreA(void* A, unsigned short len, bool compLex, bool descend)
+void XString::StoreA(uint8_t* A, unsigned short len, bool compLex, bool descend)
 {
 	int endSpaces = 0; // pocet mezer na konci retezce
 	char* p = (char*)A;
@@ -239,7 +240,7 @@ void XString::StoreA(void* A, unsigned short len, bool compLex, bool descend)
 	}
 }
 
-void XString::negate_esdi(void* data, size_t len)
+void XString::negate_esdi(uint8_t* data, size_t len)
 {
 	unsigned char* src = (unsigned char*)data;
 	// neguj vsechny bity v datech

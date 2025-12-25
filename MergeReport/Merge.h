@@ -37,18 +37,18 @@ private:
 	std::vector<AssignD*> RdAssSequ();
 	void RdOutpRD(std::vector<OutpRD*>& RDRoot);
 
-	WORD CompMFlds(std::vector<KeyFldD*>& M);
-	void SetOldMFlds(std::vector<KeyFldD*>& M);
+	WORD CompMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M);
+	void SetOldMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M);
 	void ReadInpFileM(InpD* ID);
-	void RunAssign(std::vector<AssignD*> Assigns);
+	void RunAssign(FileD* file_d, Record* record, std::vector<AssignD*> Assigns);
 	void WriteOutp(std::vector<OutpRD*>& v_outputs);
 	void OpenInpM();
 	void OpenOutp();
 	void CloseInpOutp();
 	void MoveForwToRecM(InpD* ID);
-	void SetMFlds(std::vector<KeyFldD*>& M);
-	void MergeProc();
-	void JoinProc(WORD Ii, bool& EmptyGroup);
+	void SetMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M);
+	void MergeProc(FileD* file_d, Record* record);
+	void JoinProc(FileD* file_d, Record* record, WORD Ii, bool& EmptyGroup);
 
 	std::vector<OutpFD*> OutpFDRoot;
 	std::vector<OutpRD*> OutpRDs;

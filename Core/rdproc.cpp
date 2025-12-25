@@ -104,7 +104,7 @@ FrmlElem* RdRecVarFldFrml(Compiler* compiler, LocVar* LV, char& FTyp)
 	}
 	case 'i': {
 		FrmlElem22* fe22 = new FrmlElem22(_indexnrecs, 4);
-		fe22->WKey = (XWKey*)LV->record;
+		fe22->WKey = LV->key;
 		compiler->AcceptKeyWord("nrecs");
 		FTyp = 'R';
 		Z = fe22;
@@ -152,11 +152,10 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 		}
 		else {
 			if (lv->f_typ == 'i') {
-				std::vector<KeyFldD*>* kf = &((XWKey*)lv->record)->KFlds;
 				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) {
 					compiler->OldError(155);
 				}
-				if (!kf->empty() && !KeyFldD::EquKFlds(*kf, ld->ToKey->KFlds)) {
+				if (!lv->key->KFlds.empty() && !KeyFldD::EquKFlds(lv->key->KFlds, ld->ToKey->KFlds)) {
 					compiler->OldError(181);
 				}
 			}
@@ -169,7 +168,7 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 	compiler->TestIdentif();
 	for (LinkD* ld : LinkDRoot) {
 		sLexWord = gc->LexWord;
-		if ((ld->FromFD == CFile) && EquUpCase(ld->RoleName, sLexWord)) {
+		if ((ld->FromFD == compiler->processing_F) && EquUpCase(ld->RoleName, sLexWord)) {
 			if ((ld->IndexRoot == 0)) compiler->Error(116);
 			compiler->RdLex();
 			fd = ld->ToFD;
@@ -180,9 +179,8 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 				compiler->Accept(')');
 				if (lv->FD != fd) compiler->OldError(149);
 				if (lv->f_typ == 'i') {
-					std::vector<KeyFldD*>* kf = &((XWKey*)lv->record)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) compiler->OldError(155);
-					if (!kf->empty() && !KeyFldD::EquKFlds(*kf, ld->ToKey->KFlds)) compiler->OldError(181);
+					if (!lv->key->KFlds.empty() && !KeyFldD::EquKFlds(lv->key->KFlds, ld->ToKey->KFlds)) compiler->OldError(181);
 				}
 				*LLV = lv;
 				*LLD = ld;
@@ -515,12 +513,12 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 #ifdef FandSQL
 		if (v_files->typSQLFile) OldError(155);
 #endif
-		cf = CFile;
-		CFile = FD;
+		//cf = CFile;
+		//CFile = FD;
 		if (!compiler->IsRoleName(true, FD, &FD, &LD) || (LD == nullptr)) {
 			compiler->Error(9);
 		}
-		CFile = cf;
+		//CFile = cf;
 		iZ->LinkLD = LD;
 		FTyp = 'R';
 #ifdef FandSQL
@@ -583,8 +581,12 @@ FrmlElem* RdFunctionP(Compiler* compiler, char& FFTyp)
 		iZ->P1 = compiler->RdRealFrml(nullptr); compiler->Accept(',');
 		iZ->P2 = compiler->RdRealFrml(nullptr); compiler->Accept(',');
 		Typ = 'r';
-		if (IsRecVar(compiler, &LV)) iZ->P3 = (FrmlElem*)LV->record;
-		else iZ->P3 = compiler->RdFrml(Typ, nullptr);
+		if (IsRecVar(compiler, &LV)) {
+			iZ->P3 = LV->frml;
+		}
+		else {
+			iZ->P3 = compiler->RdFrml(Typ, nullptr);
+		}
 		iZ->N31 = Typ;
 		FTyp = 'R';
 	}
@@ -1046,7 +1048,7 @@ Instr_proc* RdProcArg(Compiler* compiler, char Caller)
 			compiler->RdLex();
 			TArg[N].FTyp = LV->f_typ;
 			TArg[N].FD = LV->FD;
-			TArg[N].RecPtr = LV->record;
+			TArg[N].record = LV->record;
 		}
 		else if (compiler->Lexem == '@') {
 			compiler->RdLex();
@@ -1284,7 +1286,9 @@ bool RdViewOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 			RdKeyList(compiler, X);
 			if (compiler->IsKeyWord("QUIT")) X->Typ = 'Q';
 			else if (compiler->IsKeyWord("REPORT")) {
-				if (X->AtWrRec || (EO->LVRecPtr != nullptr)) compiler->OldError(144);
+				if (X->AtWrRec || (EO->LvRec != nullptr)) {
+					compiler->OldError(144);
+				}
 				compiler->Accept('(');
 				X->Typ = 'R';
 				RO = compiler->GetRprtOpt();
@@ -1316,7 +1320,7 @@ bool RdViewOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 		}
 		compiler->Accept(')');
 	}
-	else if (EO->LVRecPtr != nullptr) {
+	else if (EO->LvRec != nullptr) {
 		result = false;
 	}
 	else if (compiler->IsOpt("COND")) {
@@ -1671,7 +1675,7 @@ Instr_edit* RdEditCall(Compiler* compiler)
 	instr_edit->options.UserSelFlds = true;
 
 	if (IsRecVar(compiler, &lv)) {
-		instr_edit->options.LVRecPtr = lv->record;
+		instr_edit->options.LvRec = lv->record;
 		instr_edit->EditFD = lv->FD;
 	}
 	else {
@@ -1709,7 +1713,7 @@ void RdEditOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 	if (compiler->IsOpt("FIELD")) {
 		EO->StartFieldZ = compiler->RdStrFrml(nullptr);
 	}
-	else if (EO->LVRecPtr != nullptr) {
+	else if (EO->LvRec != nullptr) {
 		compiler->Error(125);
 	}
 	else if (compiler->IsOpt("OWNER")) {
@@ -1736,7 +1740,7 @@ void RdEditOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 	}
 	else if (compiler->IsOpt("SEL")) {
 		LocVar* lv = RdIdxVar(compiler);
-		EO->SelKey = (XWKey*)lv->record;
+		EO->SelKey = lv->key;
 		if ((EO->ViewKey == nullptr)) {
 			compiler->OldError(108);
 		}
@@ -1890,7 +1894,7 @@ void RdRprtOpt(Compiler* compiler, RprtOpt* RO, bool has_first)
 		if (!has_first) {
 			compiler->OldError(51);
 			compiler->Accept('(');
-			compiler->RdKFList(RO->SK, CFile);
+			compiler->RdKFList(RO->SK, compiler->processing_F);
 			compiler->Accept(')');
 		}
 		WORD Low = compiler->input_pos;
@@ -1921,7 +1925,7 @@ void RdRprtOpt(Compiler* compiler, RprtOpt* RO, bool has_first)
 		if (!has_first) {
 			compiler->OldError(51);
 			compiler->Accept('(');
-			compiler->RdKFList(RO->SK, CFile);
+			compiler->RdKFList(RO->SK, compiler->processing_F);
 			compiler->Accept(')');
 		}
 		RO->Ctrl = RdSubFldList(compiler, RO->Flds, 'C');
@@ -1930,7 +1934,7 @@ void RdRprtOpt(Compiler* compiler, RprtOpt* RO, bool has_first)
 		if (!has_first) {
 			compiler->OldError(51);
 			compiler->Accept('(');
-			compiler->RdKFList(RO->SK, CFile);
+			compiler->RdKFList(RO->SK, compiler->processing_F);
 			compiler->Accept(')');
 		}
 		RO->Sum = RdSubFldList(compiler, RO->Flds, 'S');
@@ -2037,8 +2041,13 @@ Instr* RdCopyFile(Compiler* compiler)
 	CD->FD1 = RdPath(compiler, false, CD->Path1, CD->CatIRec1);
 	CD->WithX1 = RdX(compiler, CD->FD1);
 	if (compiler->Lexem == '/') {
-		if (CD->FD1 != nullptr) { CFile = CD->FD1; CD->ViewKey = compiler->RdViewKey(CD->FD1); }
-		else CD->Opt1 = RdCOpt(compiler);
+		if (CD->FD1 != nullptr) {
+			//CFile = CD->FD1; 
+			CD->ViewKey = compiler->RdViewKey(CD->FD1);
+		}
+		else {
+			CD->Opt1 = RdCOpt(compiler);
+		}
 	}
 	compiler->Accept(',');
 	CD->FD2 = RdPath(compiler, false, CD->Path2, CD->CatIRec2);
@@ -2364,7 +2373,7 @@ Instr* RdGetIndex(Compiler* compiler)
 	while (compiler->Lexem == ',') {
 		compiler->RdLex();
 		if (compiler->IsOpt("SORT")) {
-			if (!((XWKey*)lv->record)->KFlds.empty()) {
+			if (!lv->key->KFlds.empty()) {
 				compiler->OldError(175);
 			}
 			compiler->Accept('(');
@@ -2468,7 +2477,7 @@ Instr_graph* RdGraphP(Compiler* compiler)
 	if (compiler->IsOpt("GF")) PDGD->GF = compiler->RdStrFrml(nullptr);
 	else {
 		PDGD->FD = compiler->RdFileName();
-		CFile = PDGD->FD;
+		//CFile = PDGD->FD;
 		CViewKey = compiler->RdViewKey(PDGD->FD);
 		PDGD->ViewKey = CViewKey;
 		compiler->Accept(',');
@@ -2574,13 +2583,13 @@ Instr_recs* RdMixRecAcc(Compiler* compiler, PInstrCode Op)
 	Instr_recs* PD = nullptr;
 	FrmlElem* Z = nullptr;
 	char FTyp = '\0';
-	FileD* cf = CFile;
+	//FileD* cf = CFile;
 	if ((Op == PInstrCode::_appendRec) || (Op == PInstrCode::_recallrec)) {
 		// PD = GetPD(oper, 9);
 		PD = new Instr_recs(Op);
 		compiler->RdLex();
-		CFile = compiler->RdFileName();
-		PD->RecFD = CFile;
+		//CFile = compiler->RdFileName();
+		PD->RecFD = compiler->RdFileName();
 #ifdef FandSQL
 		if (CFile->typSQLFile) OldError(155);
 #endif
@@ -2593,15 +2602,16 @@ Instr_recs* RdMixRecAcc(Compiler* compiler, PInstrCode Op)
 		// PD = GetPD(oper, 15);
 		PD = new Instr_recs(Op);
 		compiler->RdLex();
+		FileD* file = nullptr;
 		if (Op == PInstrCode::_deleterec) {
-			CFile = compiler->RdFileName();
-			PD->RecFD = CFile;
+			file = compiler->RdFileName();
+			PD->RecFD = file;
 		}
 		else { /*_readrec,_writerec*/
 			if (!IsRecVar(compiler, &PD->LV)) compiler->Error(141);
-			CFile = PD->LV->FD;
+			file = PD->LV->FD;
 		}
-		XKey* K = compiler->RdViewKey(CFile);
+		XKey* K = compiler->RdViewKey(file);
 		compiler->Accept(',');
 #ifdef FandSQL
 		if (CFile->typSQLFile
@@ -2617,9 +2627,9 @@ Instr_recs* RdMixRecAcc(Compiler* compiler, PInstrCode Op)
 		case 'S': {
 			PD->ByKey = true;
 			if (PD->CompOp == 0) PD->CompOp = _equ;
-			if (K == nullptr) K = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
+			if (K == nullptr) K = file->Keys.empty() ? nullptr : file->Keys[0];
 			PD->Key = K;
-			if ((K == nullptr) && (!CFile->IsParFile || (Z->Op != _const)
+			if ((K == nullptr) && (!file->IsParFile || (Z->Op != _const)
 				|| (((FrmlElemString*)Z)->S.length() > 0))) compiler->OldError(24);
 			break;
 		}
@@ -2638,7 +2648,7 @@ Instr_recs* RdMixRecAcc(Compiler* compiler, PInstrCode Op)
 		compiler->Accept('+');
 		PD->AdUpd = true;
 	}
-	CFile = cf;
+	//CFile = cf;
 	return PD;
 }
 
@@ -2752,7 +2762,7 @@ Instr_assign* RdAssign(Compiler* compiler)
 				if ((compiler->Lexem != _number) || (compiler->LexWord != "0")) compiler->Error(183);
 				compiler->RdLex();
 				PD = new Instr_assign(PInstrCode::_asgnxnrecs); // GetPInstr(_asgnxnrecs, 4);
-				PD->xnrIdx = (XWKey*)LV->record;
+				PD->xnrIdx = LV->key;
 			}
 			else {
 				PD = new Instr_assign(PInstrCode::_asgnrecfld); // GetPInstr(_asgnrecfld, 13);
@@ -3158,12 +3168,12 @@ void ReadDeclChpt(Compiler* compiler)
 	}
 }
 
-FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, uint8_t* record)
+FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, Record* record)
 {
-	FileD* cf = CFile;
-	CFile = file_d;
-	uint8_t* cr = CRecPtr;
-	CRecPtr = record;
+	//FileD* cf = CFile;
+	//CFile = file_d;
+	//uint8_t* cr = CRecPtr;
+	//CRecPtr = record;
 
 	LocVarBlock oldLVBD = LVBD;
 	//LVBD = Compiler::ProcStack.front();
@@ -3216,7 +3226,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElemEval* X, uint8_t* record)
 		}
 	}
 
-	CFile = cf; CRecPtr = cr;
+	//CFile = cf; CRecPtr = cr;
 	LVBD = oldLVBD; /*for cond before cycle called when PushProcStk is !ready*/
 
 	return result;

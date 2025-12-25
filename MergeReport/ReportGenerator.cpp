@@ -28,13 +28,13 @@ ReportGenerator::~ReportGenerator()
 
 void ReportGenerator::RunAutoReport(RprtOpt* RO)
 {
-	uint8_t* p1 = RO->FDL[0]->FD->FF->RecPtr;
+	//Record* p1 = RO->FDL[0]->FD->FF->RecPtr;
 	std::string txt = GenAutoRprt(RO, true);
 	std::unique_ptr report = std::make_unique<Report>();
 	report->SetInput(txt, false);
 	report->Read(RO);
 	report->Run(RO);
-	RO->FDL[0]->FD->FF->RecPtr = p1;
+	//RO->FDL[0]->FD->FF->RecPtr = p1;
 }
 
 bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
@@ -42,7 +42,7 @@ bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 	wwmix ww;
 	bool result = false;
 
-	if ((RO->SK.empty()) && !gc->PromptSortKeys(CFile, RO->Flds, RO->SK)) {
+	if ((RO->SK.empty()) && !gc->PromptSortKeys(RO->FDL[0]->FD, RO->Flds, RO->SK)) {
 		return result;
 	}
 
@@ -54,14 +54,14 @@ bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 
 	RO->Mode = (AutoRprtMode)(N - 1);
 
-	CFile = RO->FDL[0]->FD;
+	// CFile = RO->FDL[0]->FD;
 
 	if (RO->Mode == _ARprt || RO->Mode == _ATotal) {
 		for (auto& f : RO->Flds) {
 			if (f->field_type != FieldType::TEXT) ww.PutSelect(f->Name);
 		}
 
-		if (!ww.SelFieldList(CFile, 37, false, RO->Ctrl)) {
+		if (!ww.SelFieldList(RO->FDL[0]->FD, 37, false, RO->Ctrl)) {
 			return result; // TODO: RO->Ctrl[0] is probably bad idea
 		}
 
@@ -69,7 +69,7 @@ bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 			if (f->frml_type == 'R') ww.PutSelect(f->Name);
 		}
 
-		if (!ww.SelFieldList(CFile, 38, true, RO->Sum)) {
+		if (!ww.SelFieldList(RO->FDL[0]->FD, 38, true, RO->Sum)) {
 			return result;  // TODO: RO->Sum[0] is probably bad idea
 		}
 	}
@@ -142,8 +142,8 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 		//f = f->pChain;
 	}
 
-	CFile = fd;
-	ww.SelFieldList(CFile, 36, true, ro->Flds);
+	//CFile = fd;
+	ww.SelFieldList(fd, 36, true, ro->Flds);
 	if (ro->Flds.empty()) return result;
 	ro->Mode = _ARprt;
 
@@ -151,13 +151,13 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 		ww.PutSelect(fl->Name);
 	}
 
-	if (!ww.SelFieldList(CFile, 37, false, ro->Ctrl)) return result;
+	if (!ww.SelFieldList(fd, 37, false, ro->Ctrl)) return result;
 
 	for (auto& fl : ro->Flds) {
 		if (fl->frml_type == 'R') ww.PutSelect(fl->Name);
 	}
 
-	if (!ww.SelFieldList(CFile, 38, false, ro->Sum)) return result;
+	if (!ww.SelFieldList(fd, 38, false, ro->Sum)) return result;
 
 	result = GenAutoRprt(ro, false);
 	return result;
@@ -249,7 +249,7 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 {
 	std::string s;
 
-	CFile = RO->FDL[0]->FD;
+	// CFile = RO->FDL[0]->FD;
 	ARMode = RO->Mode;
 	NLevels = RO->Ctrl.size();
 	PFldDs.clear();
@@ -286,7 +286,7 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 
 	if ((ARMode == _AErrRecs)) WrStr(report, "var noErrRecs:real;\r\n");
 	WrStr(report, "#I1_");
-	WrStr(report, CFile->Name);
+	WrStr(report, RO->FDL[0]->FD->Name);
 	if (!RO->SK.empty()) {
 		WrChar(report, '!');
 	}
@@ -338,7 +338,7 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		WrStr(report, "today,page;\r\n");
 		WrBlks(report, 19);
 		WrChar(report, 0x11);
-		s = CFile->Name;
+		s = RO->FDL[0]->FD->Name;
 		WrBlks(report, 8 - s.length());
 		ReplaceChar(s, '_', '-');
 		WrStr(report, s);
@@ -474,7 +474,7 @@ void ReportGenerator::WrStr(std::string& report, const char* s)
 
 void ReportGenerator::WrLevel(std::string& report, int Level)
 {
-	bool first; FieldDescr* f;
+	bool first; FieldDescr* field;
 	std::string s;
 	bool b = (Level == 0) && (ARMode == _AErrRecs);
 	if (b) WrStr(report, "(warning) { noErrRecs+=1},");
@@ -483,17 +483,17 @@ void ReportGenerator::WrLevel(std::string& report, int Level)
 		PFldD* d = &PFldDs[i];
 		if ((Level == 0) || d->IsSum || d->IsCtrl && (d->Level >= Level)) {
 			if (!first) WrChar(report, ',');
-			f = d->FldD;
-			s = f->Name;
+			field = d->FldD;
+			s = field->Name;
 			if ((Level != 0) && d->IsSum) {
 				s = "sum(" + s + ')';
 			}
-			if (f->field_type == FieldType::DATE) {
+			if (field->field_type == FieldType::DATE) {
 				WrStr(report, "strdate(");
 				WrStr(report, s);
 				WrStr(report, ",'");
 				//x = FieldDMask(f);
-				std::string x = f->Mask;
+				std::string x = field->Mask;
 				ReplaceChar(x, '\'', '\"');
 				WrStr(report, x);
 				WrStr(report, "')");
@@ -509,30 +509,31 @@ void ReportGenerator::WrLevel(std::string& report, int Level)
 	}
 	WrStr(report, ";\r\n");
 	int col = 1;
-	if (CFile->FF->file_type == FandFileType::RDB) WrChar(report, 0x11);
+	FileD* file = nullptr;
+	if (file->FF->file_type == FandFileType::RDB) WrChar(report, 0x11);
 
 	for (size_t i = 0; i < PFldDs.size(); i++) {
 		PFldD* d = &PFldDs[i];
-		if ((CFile->FF->file_type == FandFileType::RDB) && (i + 1 == PFldDs.size())) {
+		if ((file->FF->file_type == FandFileType::RDB) && (i + 1 == PFldDs.size())) {
 			WrChar(report, 0x11);
 		}
 		if (d->NxtLine) {
 			WrStr(report, "\r\n");
 			col = 1;
 		}
-		f = d->FldD;
-		int l = f->L;
+		field = d->FldD;
+		int l = field->L;
 		int n = d->ColItem - col;
 		col = d->ColItem + l;
 		if ((Level == 0) || d->IsSum || d->IsCtrl && (d->Level >= Level)) {
 			if ((Level != 0) && d->IsSum) { n -= 2; l += 2; }
 			WrBlks(report, n);
-			if (f->field_type == FieldType::FIXED || f->field_type == FieldType::REAL) {
-				int m = f->M;
+			if (field->field_type == FieldType::FIXED || field->field_type == FieldType::REAL) {
+				int m = field->M;
 				if (m != 0) {
 					for (size_t j = 0; j < l - m - 1; j++) WrChar(report, '_');
 					l = m;
-					if ((f->Flg & f_Comma) != 0) WrChar(report, ',');
+					if ((field->Flg & f_Comma) != 0) WrChar(report, ',');
 					else WrChar(report, '.');
 				}
 			}

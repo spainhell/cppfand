@@ -4,6 +4,7 @@
 #include "oaccess.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../Common/Record.h"
 
 Catalog::Catalog()
 {
@@ -20,7 +21,7 @@ Catalog::Catalog()
 Catalog::Catalog(FileD* file_d)
 {
 	cat_file_ = file_d;
-	record_ = cat_file_->GetRecSpace();
+	record_ = new Record(cat_file_);
 
 	if (cat_file_->FldD.empty()) {
 		throw std::exception("CompileHelpCatDcl: CatRdbName is NULL");
@@ -36,7 +37,7 @@ Catalog::Catalog(FileD* file_d)
 Catalog::~Catalog()
 {
 	delete cat_file_;
-	delete[] record_;
+	delete record_;
 }
 
 void Catalog::Close()
@@ -188,10 +189,10 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 
 void Catalog::GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std::string& volume) const
 {
-	if (file_d->Name == "PARAM3")
-	{
-		printf("");
-	}
+	//if (file_d->Name == "PARAM3")
+	//{
+	//	printf("");
+	//}
 
 	bool isRdb;
 
@@ -255,9 +256,11 @@ void Catalog::TurnCat(FileD* file_d, uint16_t Frst, uint16_t N, short I)
 		file_d->CloseFile();
 	}
 	file_d = catalog->GetCatalogFile();
-	uint8_t* p = file_d->GetRecSpace();
-	uint8_t* q = file_d->GetRecSpace();
+
+	Record* p = new Record(file_d);
+	Record* q = new Record(file_d);
 	uint16_t last = Frst + N - 1;
+	
 	if (I > 0)
 		while (I > 0) {
 			file_d->ReadRec(Frst, q);
@@ -278,14 +281,15 @@ void Catalog::TurnCat(FileD* file_d, uint16_t Frst, uint16_t N, short I)
 			file_d->WriteRec(Frst, q);
 			I++;
 		}
-	delete[] p; p = nullptr;
-	delete[] q; q = nullptr;
+	delete p; p = nullptr;
+	delete q; q = nullptr;
 }
 
 std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)
 {
 	cat_file_->ReadRec(rec_nr, record_);
-	std::string value = cat_file_->loadS(field, record_);
+	//std::string value = cat_file_->loadS(field, record_);
+	std::string value = record_->LoadS(field);
 	std::string result = TrailChar(value, ' ');
 	return result;
 }
@@ -293,6 +297,7 @@ std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)
 void Catalog::setValue(size_t rec_nr, FieldDescr* field, const std::string& value)
 {
 	cat_file_->ReadRec(rec_nr, record_);
-	cat_file_->saveS(field, value, record_);
+	//cat_file_->saveS(field, value, record_);
+	record_->SaveS(field, value);
 	cat_file_->WriteRec(rec_nr, record_);
 }

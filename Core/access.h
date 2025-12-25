@@ -30,8 +30,10 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d = nullptr, WORD i = 0);
 
 std::string TranslateOrd(std::string text);
 
-bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord);
-bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord);
+//bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord);
+Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record);
+//bool LinkLastRec(FileD* file_d, int& N, bool WithT, uint8_t** newRecord);
+
 
 void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add);
 
@@ -41,8 +43,8 @@ void TestCPathError();
 std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
 std::string CExtToX(std::string dir, std::string name, std::string ext);
 
-// functions for TWork file
-std::string TWork_LoadS(FieldDescr* field_d, uint8_t* record);
-void TWork_SaveS(FieldDescr* field, const std::string& text, uint8_t* record);
-void TWork_DeleteT(FieldDescr* field, uint8_t* record);
-void TWork_DeleteAllT(const std::vector<FieldDescr*>& fields, uint8_t* record);
+//// functions for TWork file
+//std::string TWork_LoadS(FieldDescr* field_d, uint8_t* record);
+//void TWork_SaveS(FieldDescr* field, const std::string& text, uint8_t* record);
+//void TWork_DeleteT(FieldDescr* field, uint8_t* record);
+//void TWork_DeleteAllT(const std::vector<FieldDescr*>& fields, uint8_t* record);

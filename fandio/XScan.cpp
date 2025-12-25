@@ -3,6 +3,7 @@
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
+#include "../Common/Record.h"
 #include "../Core/runfrml.h"
 
 
@@ -15,7 +16,7 @@ void AddFFs(XKey* K, pstring& s)
 
 /// asi vytvori XStringy pro zacatek a konec (rozsah) vyhledavani
 /// pokud se hleda interval v klici
-void CompKIFrml(FileD* file_d, XKey* K, std::vector<KeyInD*>& KI, bool AddFF, uint8_t* record)
+void CompKIFrml(FileD* file_d, XKey* K, std::vector<KeyInD*>& KI, bool AddFF, Record* record)
 {
 	XString x;
 	//while (KI != nullptr) {
@@ -33,11 +34,6 @@ void CompKIFrml(FileD* file_d, XKey* K, std::vector<KeyInD*>& KI, bool AddFF, ui
 	}
 }
 
-XScan::~XScan()
-{
-	delete page_;
-}
-
 XScan::XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT)
 {
 	FD = aFD;
@@ -46,23 +42,28 @@ XScan::XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT)
 	withT = aWithT;
 #ifdef FandSQL
 	if (aFD->IsSQLFile) {
-		if ((aKey != nullptr) && aKey->InWork) { P = (XPage*)GetStore(XPageSize); Kind = 3; }
-		else Kind = 4;
+		if ((aKey != nullptr) && aKey->InWork) { P = (XPage*)GetStore(XPageSize); Kind = ScanMode::WorkingIndex; }
+		else Kind = ScanMode::SQL;
 	}
 	else
 #endif
 	{
 		if (aKey != nullptr) {
 			page_ = new XPage();
-			Kind = 1;
+			Kind = ScanMode::Index;
 			if (!aKIRoot.empty()) {
-				Kind = 2;
+				Kind = ScanMode::Interval;
 			}
 		}
 	}
 }
 
-void XScan::Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record)
+XScan::~XScan()
+{
+	delete page_;
+}
+
+void XScan::Reset(FrmlElem* ABool, bool SQLFilter, Record* record)
 {
 	KeyInD* k = nullptr;
 	int n = 0;
@@ -74,19 +75,19 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record)
 		else Bool = nullptr;
 	}
 	switch (Kind) {
-	case 0: {
+	case ScanMode::Sequential: {
 		NRecs = FD->FF->NRecs;
 		break;
 	}
-	case 1:
-	case 3: {
+	case ScanMode::Index:
+	case ScanMode::WorkingIndex: {
 		if (Key != nullptr) {
 			if (!Key->InWork) FD->FF->TestXFExist();
 			NRecs = Key->NRecs();
 		}
 		break;
 	}
-	case 2: {
+	case ScanMode::Interval: {
 		if (!Key->InWork) FD->FF->TestXFExist();
 		CompKIFrml(FD, Key, KIRoot, true, record);
 		NRecs = 0;
@@ -105,16 +106,16 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, uint8_t* record)
 		break;
 	}
 #ifdef FandSQL
-	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), init); i_rec = 1; break; }
+	case ScanMode::SQL: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), init); i_rec = 1; break; }
 #endif
 	}
 	SeekRec(0);
 }
 
-void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, uint8_t* record)
+void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, Record* record)
 {
 	LockMode m;
-	if (Kind == 4) {
+	if (Kind == ScanMode::SQL) {
 		SK = aSK;
 		if (SQLFilter) {
 			Reset(BoolZ, true, record);
@@ -127,7 +128,7 @@ void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldM
 	}
 	if (!aSK.empty()) {
 		Reset(BoolZ, false, record);
-		FD->FF->ScanSubstWIndex(this, aSK, 'S');
+		FD->FF->ScanSubstWIndex(this, aSK, OperationType::Sort);
 		BoolZ = nullptr;
 	}
 	else {
@@ -136,12 +137,12 @@ void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldM
 
 	if (FD->NotCached()) {
 		switch (Kind) {
-		case 0: {
+		case ScanMode::Sequential: {
 			m = NoCrMode;
 			if (FD->FF->XF != nullptr) m = NoExclMode;
 			break;
 		}
-		case 1: {
+		case ScanMode::Index: {
 			m = OldMd;
 			if (Key->InWork) m = NoExclMode;
 			break;
@@ -158,7 +159,7 @@ void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldM
 void XScan::SubstWIndex(XWKey* WK)
 {
 	Key = WK;
-	if (Kind != 3) Kind = 1;
+	if (Kind != ScanMode::WorkingIndex) Kind = ScanMode::Index;
 	if (page_ == nullptr) {
 		page_ = new XPage();
 	}
@@ -175,7 +176,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 
 	Bool = aBool;
 #ifdef FandSQL
-	if (Kind = 4) {           /* !on .SQL with Workindex */
+	if (Kind = ScanMode::SQL) {           /* !on .SQL with Workindex */
 		KIRoot = GetZStore(sizeof(KIRoot^));
 		KIRoot->X1 =XX->S; KIRoot->X2 = XX->S;
 		New(SQLStreamPtr(Strm), init); i_rec = 1
@@ -191,7 +192,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 		b = Key->FindNr(FD, XX->S, n);
 		NRecs = n - new_key_in->XNrBeg + b;
 		new_key_in->N = NRecs;
-		Kind = 2;
+		Kind = ScanMode::Interval;
 	}
 	SeekRec(0);
 }
@@ -201,8 +202,8 @@ int32_t XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 	FD->FF->TestXFExist();
 	Bool = aBool;
 	OwnerLV = LV;
-	Kind = 2;
-	if (!KeyFldD::EquKFlds(((XWKey*)LV->record)->KFlds, LD->ToKey->KFlds)) {
+	Kind = ScanMode::Interval;
+	if (!KeyFldD::EquKFlds(LV->key->KFlds, LD->ToKey->KFlds)) {
 		// RunError(1181);
 		return 1181;
 	}
@@ -220,9 +221,11 @@ void XScan::ResetSQLTxt(FrmlPtr Z)
 }
 #endif
 
-void XScan::ResetLV(void* aRP)
+void XScan::ResetLV(Record* aRP)
 {
-	Strm = aRP; Kind = 5; NRecs = 1;
+	Strm = aRP; 
+	Kind = ScanMode::LocalVariable; 
+	NRecs = 1;
 }
 
 void XScan::Close()
@@ -240,7 +243,7 @@ void XScan::SeekRec(int I)
 	FrmlElem* z = nullptr;
 
 #ifdef FandSQL
-	if (Kind == 4) {
+	if (Kind == ScanMode::SQL) {
 		if (I != i_rec) /* !!! with SQLStreamPtr(Strm)^ do!!! */
 		{
 			if (NotFrst) InpClose; NotFrst = true;
@@ -251,7 +254,7 @@ void XScan::SeekRec(int I)
 		return;
 	}
 #endif
-	if ((Kind == 2) && (OwnerLV != nullptr)) {
+	if ((Kind == ScanMode::Interval) && (OwnerLV != nullptr)) {
 		IRec = 0;
 		NRecs = 0x20000000;
 		iOKey = 0;
@@ -263,13 +266,13 @@ void XScan::SeekRec(int I)
 	eof = I >= NRecs;
 	if (!eof) {
 		switch (Kind) {
-		case 1:
-		case 3: {
+		case ScanMode::Index:
+		case ScanMode::WorkingIndex: {
 			Key->NrToPath(FD, I + 1);
 			SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 			break;
 		}
-		case 2: {
+		case ScanMode::Interval: {
 			//k = KIRoot;
 			std::vector<KeyInD*>::iterator key_in = KIRoot.begin();
 			while (I >= (*key_in)->N) {
@@ -296,7 +299,7 @@ void XScan::SeekOnPage(int pageNr, unsigned short i)
 {
 	Key->GetXFile(FD)->RdPage(page_, pageNr);
 	items_on_page_ = page_->NItems - i + 1;
-	if (Kind == 2) {
+	if (Kind == ScanMode::Interval) {
 		if (items_on_page_ > NOfKI) {
 			items_on_page_ = NOfKI;
 		}
@@ -313,7 +316,7 @@ void XScan::NextIntvl()
 	int n = 0, nBeg = 0;
 
 	if (OwnerLV != nullptr) {
-		XWKey* k = (XWKey*)OwnerLV->record; // TODO: bude toto fungovat?
+		XWKey* k = OwnerLV->key;
 		while (iOKey < k->NRecs()) {
 			iOKey++;
 			xx.S = k->NrToStr(OwnerLV->FD, iOKey);
@@ -341,7 +344,7 @@ void XScan::NextIntvl()
 	}
 }
 
-void XScan::GetRec(uint8_t* record)
+void XScan::GetRec(Record* record)
 {
 	XString xx;
 	size_t item = 0;
@@ -358,33 +361,33 @@ void XScan::GetRec(uint8_t* record)
 		if (!eof) {
 			IRec++;
 			switch (Kind) {
-			case 0: {
+			case ScanMode::Sequential: {
 				RecNr = IRec;
 				FD->ReadRec(RecNr, record);
-				if (FD->DeletedFlag(record)) continue;
+				if (record->IsDeleted()) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;
 			}
-			case 1:
-			case 2: {
+			case ScanMode::Index:
+			case ScanMode::Interval: {
 				RecNr = page_->GetItem(_item)->GetN();
 				items_on_page_--;
 				if (items_on_page_ > 0) {
 					_item++;
 				}
-				else if ((Kind == 2) && (NOfKI == 0)) {
+				else if ((Kind == ScanMode::Interval) && (NOfKI == 0)) {
 					NextIntvl();
 				}
 				else if (page_->GreaterPage > 0) {
 					SeekOnPage(page_->GreaterPage, 1);
 				}
 				FD->ReadRec(RecNr, record);
-				if (FD->DeletedFlag(record)) continue;
+				if (record->IsDeleted()) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;
 			}
 #ifdef FandSQL
-			case 3: {
+			case ScanMode::WorkingIndex: {
 				NOnPg--;
 				xx.S = P->StrI(P->NItems - NOnPg);
 				if ((NOnPg == 0) && (P->GreaterPage > 0)) SeekOnPage(P->GreaterPage, 1);
@@ -393,8 +396,8 @@ void XScan::GetRec(uint8_t* record)
 				break;
 			}
 #endif
-			case 5: {
-				memcpy(record, Strm, FD->FF->RecLen + 1);
+			case ScanMode::LocalVariable: {
+				Strm->CopyTo(record); // memcpy(record, Strm, FD->FF->RecLen + 1);
 				break;
 			}
 			}

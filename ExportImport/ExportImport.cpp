@@ -22,6 +22,7 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
+#include "../Common/Record.h"
 #include "../Drivers/constants.h"
 
 
@@ -33,20 +34,29 @@ void ConvWinCp(unsigned char* buffer, const std::string& code_table, size_t leng
 	}
 }
 
-void VarFixImp(ThFile* F1, CpOption Opt)
+void VarFixImp(FileD* file_d, Record* record, ThFile* F1, CpOption Opt)
 {
 	pstring s;
 	int pos;
 	double r; WORD err;
 
 	F1->IsEOL = false;
-	for (FieldDescr* F : CFile->FldD) {
+	for (FieldDescr* F : file_d->FldD) {
 		if ((F->Flg & f_Stored) != 0) {
 			if (F1->IsEOL) {
 				switch (F->frml_type) {
-				case 'R': CFile->saveR(F, 0, CRecPtr); break;
-				case 'B': CFile->saveB(F, false, CRecPtr); break;
-				case 'S': CFile->saveS(F, "", CRecPtr); break;
+				case 'R': {
+					record->SaveR(F, 0);
+					break;
+				}
+				case 'B': {
+					record->SaveB(F, false);
+					break;
+				}
+				case 'S': {
+					record->SaveS(F, "");
+					break;
+				}
 				default: ;
 				}
 			}
@@ -62,13 +72,13 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					val(LeadChar(' ', s), r, err);
 					if ((F->Flg & f_Comma) != 0) {
 						r = r * Power10[F->M];
-						CFile->saveR(F, r, CRecPtr);
+						record->SaveR(F, r);
 					}
 					break;
 				}
 				case FieldType::ALFANUM: {
 					if (Opt == CpOption::cpFix) {
-						CFile->saveS(F, F1->RdFix(F->L), CRecPtr);
+						record->SaveS(F, F1->RdFix(F->L));
 					}
 					else {
 						char c = (char)gc->ForwChar;
@@ -80,16 +90,16 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						else {
 							s = F1->RdDelim(',');
 						}
-						CFile->saveS(F, s, CRecPtr);
+						record->SaveS(F, s);
 					}
 					break;
 				}
 				case FieldType::NUMERIC: {
 					if (Opt == CpOption::cpFix) {
-						CFile->saveS(F, F1->RdFix(F->L), CRecPtr);
+						record->SaveS(F, F1->RdFix(F->L));
 					}
 					else {
-						CFile->saveS(F, F1->RdDelim(','), CRecPtr);
+						record->SaveS(F, F1->RdDelim(','));
 					}
 					break;
 				}
@@ -105,20 +115,20 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						}
 					}
 					if (s == "") {
-						CFile->saveR(F, 0.0, CRecPtr);
+						record->SaveR(F, 0.0);
 					}
 					else if (F->field_type == FieldType::REAL) {
 						val(s, r, err);
-						CFile->saveR(F, r, CRecPtr);
+						record->SaveR(F, r);
 					}
 					else {
-						CFile->saveR(F, ValDate(s, F->Mask), CRecPtr);
+						record->SaveR(F, ValDate(s, F->Mask));
 					}
 					break;
 				}
 				case FieldType::BOOL: {
 					s = F1->RdFix(1);
-					CFile->saveB(F, s[1] = 'A', CRecPtr);
+					record->SaveB(F, s[1] == 'A');
 					if (Opt == CpOption::cpVar) {
 						F1->RdDelim(',');
 					}
@@ -128,10 +138,11 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					if (Opt == CpOption::cpVar) {
 						std::string x = F1->RdLongStr();
 						s = F1->RdDelim(',');
-						CFile->saveS(F, x, CRecPtr);
+						record->SaveS(F, x);
 					}
 					else {
-						CFile->saveT(F, 0, CRecPtr);
+						//file_d->saveT(F, 0, record);
+						record->SaveS(F, "");
 					}
 					break;
 				}
@@ -143,7 +154,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 	if (!F1->IsEOL) F1->RdDelim('\r');
 }
 
-void VarFixExp(ThFile* F2, CpOption Opt)
+void VarFixExp(FileD* file_d, Record* record, ThFile* F2, CpOption Opt)
 {
 	WORD i, n;
 	std::string s, s1;
@@ -151,14 +162,15 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 	bool first; double r;
 
 	first = true;
-	for (auto& F : CFile->FldD) {
+	for (auto& F : file_d->FldD) {
 		if ((F->Flg & f_Stored) != 0) {
 			if (first) first = false;
 			else if (Opt == CpOption::cpVar) F2->WrChar(',');
 
 			switch (F->field_type) {
 			case FieldType::FIXED: {
-				r = CFile->loadR(F, CRecPtr);
+				//r = file_d->loadR(F, record);
+				r = record->LoadR(F);
 				if ((F->Flg & f_Comma) != 0) r = r / Power10[F->M];
 				str(r, F->L, F->M, s);
 				if (s.length() > F->L) {
@@ -177,7 +189,8 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::ALFANUM: {
-				s = CFile->loadS(F, CRecPtr);
+				//s = file_d->loadS(F, record);
+				s = record->LoadS(F);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, ' ');
 					else s = LeadChar(' ', s);
@@ -191,7 +204,8 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::NUMERIC: {
-				s = CFile->loadS(F, CRecPtr);
+				//s = file_d->loadS(F, record);
+				s = record->LoadS(F);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, '0');
 					else s = LeadChar('0', s);
@@ -200,7 +214,8 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			}
 			case FieldType::DATE:
 			case FieldType::REAL: {
-				r = CFile->loadR(F, CRecPtr);
+				//r = file_d->loadR(F, record);
+				r = record->LoadR(F);
 				if ((r == 0.0) && (Opt == CpOption::cpVar)) s = "";
 				else if (F->field_type == FieldType::REAL) str(r, F->L, s);
 				else {
@@ -210,13 +225,13 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::BOOL: {
-				if (CFile->loadB(F, CRecPtr)) s = 'A';
+				if (record->LoadB(F)) s = 'A';
 				else s = 'N';
 				break;
 			}
 			case FieldType::TEXT: {
 				if (Opt == CpOption::cpVar) {
-					std::string xs = CFile->loadS(F, CRecPtr);
+					std::string xs = record->LoadS(F); //file_d->loadS(F, record);
 					F2->WrString(xs, true);
 					// delete x;
 				}
@@ -232,6 +247,8 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 void ImportTxt(CopyD* CD)
 {
 	ThFile* F1 = nullptr;
+	FileD* f = nullptr;
+	Record* rec = nullptr;
 	LockMode md;
 	auto FE = std::make_unique<FrmlElemString>(_const, 0);
 
@@ -248,30 +265,30 @@ void ImportTxt(CopyD* CD)
 			FE->S = F1->RdDelim(0x1A); //^Z
 			AsgnParFldFrml(CD->HdFD, CD->HdF, FE.get(), false);
 		}
-		CFile = CD->FD2;
-		CRecPtr = CD->FD2->GetRecSpace();
+		f = CD->FD2;
+		rec = new Record(CD->FD2);
 #ifdef FandSQL
-		if (CFile->IsSQLFile) {
+		if (f->IsSQLFile) {
 			New(q, init);
 			q->OutpRewrite(Append);
 		}
 		else
 #endif
-			md = CFile->FF->RewriteFile(CD->Append);
+			md = f->FF->RewriteFile(CD->Append);
 
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
-			CFile->ZeroAllFlds(CRecPtr, false);
-			CFile->ClearDeletedFlag(CRecPtr);
-			VarFixImp(F1, CD->Opt1);
+			rec->Reset(); //f->ZeroAllFlds(rec, false);
+			rec->ClearDeleted(); //f->ClearDeletedFlag(rec->GetRecord());
+			VarFixImp(f, rec, F1, CD->Opt1);
 			F1->ForwChar(); //{set IsEOF at End}
 #ifdef FandSQL
-			if (CFile->IsSQLFile) q->PutRec();
+			if (f->IsSQLFile) q->PutRec();
 			else
 #endif
 			{
-				CFile->PutRec(CRecPtr);
-				if (CD->Append && (CFile->FF->file_type == FandFileType::INDEX)) {
-					CFile->FF->TryInsertAllIndexes(CFile->IRec, CRecPtr);
+				f->PutRec(rec);
+				if (CD->Append && (f->FF->file_type == FandFileType::INDEX)) {
+					f->FF->TryInsertAllIndexes(f->IRec, rec);
 				}
 			}
 		}
@@ -284,12 +301,12 @@ void ImportTxt(CopyD* CD)
 #ifdef FandSQL
 	if (q != nullptr) {
 		q->OutpClose();
-		ClearRecSpace(CRecPtr);
+		ClearRecSpace(rec);
 	};
 #endif
 	if ((F1 != nullptr) && (F1->Handle != nullptr)) {
 		delete F1;
-		CFile->OldLockMode(md);
+		f->OldLockMode(md);
 	}
 }
 
@@ -298,6 +315,8 @@ void ExportTxt(CopyD* CD)
 	ThFile* F2 = nullptr;
 	LockMode md = NullMode;
 	XScan* Scan = nullptr;
+	FileD* f = nullptr;
+	Record* rec = nullptr;
 
 	try {
 		InOutMode m;
@@ -311,27 +330,29 @@ void ExportTxt(CopyD* CD)
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
 		if (CD->HdFD != nullptr) {
 			int n = 0;
-			uint8_t* rec = nullptr;
-			LinkLastRec(CD->HdFD, n, true, &rec);
-			pstring s = CFile->loadS(CD->HdF, rec);
+			rec = CD->HdFD->LinkLastRec(n);
+			if (rec == nullptr) {
+				rec = new Record(CD->HdFD);
+			}
+			pstring s = rec->LoadS(CD->HdF); //CD->HdFD->loadS(CD->HdF, rec);
 			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);
 			F2->WrString("\r\n");
-			CFile->ClearRecSpace(rec);
-			delete[] rec; rec = nullptr;
+			// TODO: is there TWork? CFile->ClearRecSpace(rec->GetRecord());
+			delete rec; rec = nullptr;
 		}
-		CFile = CD->FD1;
-		CRecPtr = CD->FD1->GetRecSpace();
-		md = CFile->NewLockMode(RdMode);
+		f = CD->FD1;
+		rec = new Record(CD->FD1);
+		md = f->NewLockMode(RdMode);
 		std::vector<KeyInD*> empty;
-		Scan = new XScan(CFile, CD->ViewKey, empty, true);
-		Scan->Reset(nullptr, false, CRecPtr);
+		Scan = new XScan(f, CD->ViewKey, empty, true);
+		Scan->Reset(nullptr, false, rec);
 		RunMsgOn('C', Scan->NRecs);
 		while (true) {
-			Scan->GetRec(CRecPtr);
+			Scan->GetRec(rec);
 			if (!Scan->eof) {
-				VarFixExp(F2, CD->Opt2);
+				VarFixExp(F2->FD, rec, F2, CD->Opt2);
 				F2->WrString("\r\n");
 				RunMsgN(Scan->IRec);
 				continue;
@@ -347,8 +368,8 @@ void ExportTxt(CopyD* CD)
 
 	if (Scan != nullptr) {
 		Scan->Close();
-		CFile->ClearRecSpace(CRecPtr);
-		CFile->OldLockMode(md);
+		// TODO: is there TWork? CFile->ClearRecSpace(CRecPtr);
+		f->OldLockMode(md);
 	}
 	if (F2 != nullptr && F2->Handle != nullptr) {
 		if (LastExitCode != 0) {
@@ -356,6 +377,8 @@ void ExportTxt(CopyD* CD)
 		}
 		delete F2;
 	}
+
+	delete rec; rec = nullptr;
 }
 
 void Cpy(HANDLE h, int sz, ThFile* F2)
@@ -369,7 +392,7 @@ void Cpy(HANDLE h, int sz, ThFile* F2)
 		else n = sz - i;
 		i += n;
 		ReadH(h, n, F2->buffer1);
-		CFile->TestCFileError();
+		F2->FD->TestCFileError();
 		F2->lBuf = n;
 		F2->WriteBuf(false);
 		RunMsgN(i);
@@ -384,28 +407,27 @@ void ExportFD(CopyD* CD)
 	LockMode md = NullMode;
 
 	try {
-		CFile = CD->FD1;
 		SaveFiles();
-		md = CFile->NewLockMode(RdMode);
+		md = CD->FD1->NewLockMode(RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
-		int n = CFile->FF->XNRecs(CD->FD1->Keys);
+		int n = CD->FD1->FF->XNRecs(CD->FD1->Keys);
 
 		if (n == 0) {
 			delete F2;
 			F2 = nullptr;
 		}
 		else {
-			Cpy(CFile->FF->Handle, CFile->UsedFileSize(), F2);
+			Cpy(CD->FD1->FF->Handle, CD->FD1->UsedFileSize(), F2);
 		}
 
-		if (CFile->FF->TF != nullptr) {
+		if (CD->FD1->FF->TF != nullptr) {
 			F2->RewriteT();
 			if (n == 0) {
 				delete F2;
 				F2 = nullptr;
 			}
 			else {
-				Cpy(CFile->FF->TF->Handle, CFile->FF->TF->UsedFileSize(), F2);
+				Cpy(CD->FD1->FF->TF->Handle, CD->FD1->FF->TF->UsedFileSize(), F2);
 			}
 		}
 
@@ -416,7 +438,7 @@ void ExportFD(CopyD* CD)
 				F2 = nullptr;
 			}
 			else {
-				Cpy(CFile->FF->XF->Handle, CFile->FF->XF->UsedFileSize(), F2);
+				Cpy(CD->FD1->FF->XF->Handle, CD->FD1->FF->XF->UsedFileSize(), F2);
 			}
 		}
 
@@ -430,7 +452,7 @@ void ExportFD(CopyD* CD)
 	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
 		if (LastExitCode != 0) F2->ClearBuf();
 		delete F2; F2 = nullptr;
-		CFile->OldLockMode(md);
+		CD->FD1->OldLockMode(md);
 	}
 }
 
@@ -621,10 +643,10 @@ void BackupM(Instr_backup* PD)
 
 	MarkStore(p);
 	if (PD->IsBackup) {
-		mask = RunString(CFile, PD->bmMasks, CRecPtr);
+		mask = RunString(nullptr, PD->bmMasks, nullptr);
 	}
 
-	std::string aDir = RunString(CFile, PD->bmDir, CRecPtr);
+	std::string aDir = RunString(nullptr, PD->bmDir, nullptr);
 	TzFile* F = new TzFile(PD->IsBackup, !PD->NoCompress, PD->bmSubDir, PD->bmOverwr, PD->BrCatIRec, aDir);
 
 	try {
@@ -700,11 +722,12 @@ void CodingCRdb(EditD* edit, bool rotate)
 	crdb->CodeRdb(edit, rotate);
 }
 
-void AddLicNr(FileD* file_d, FieldDescr* field_d, uint8_t* record)
+void AddLicNr(FileD* file_d, FieldDescr* field_d, Record* record)
 {
-	if (file_d->loadT(field_d, record) != 0) {
-		file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record);
-	}
+	//if (file_d->loadT(field_d, record) != 0) {
+	//	file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record);
+	//}
+	throw("Not implemented AddLicNr");
 }
 
 void CopyH(HANDLE H, pstring Nm)
@@ -730,8 +753,7 @@ void CopyH(HANDLE H, pstring Nm)
 
 bool PromptCodeRdb(EditD* edit)
 {
-	FileD* cf;
-	uint8_t* cr;
+	Record* record;
 	auto wx = std::make_unique<wwmix>();
 	Coding::SetPassword(Chpt, 1, "");
 	Coding::SetPassword(Chpt, 2, "");
@@ -748,8 +770,7 @@ bool PromptCodeRdb(EditD* edit)
 			goto label1;
 		}
 		if (b) {
-			CFile = Chpt;
-			CFile->FF->WrPrefixes();
+			Chpt->FF->WrPrefixes();
 			// TODO: SaveCache(0);
 			std::string s = CRdb->RdbDir;
 			AddBackSlash(s);
@@ -759,19 +780,15 @@ bool PromptCodeRdb(EditD* edit)
 		}
 		CodingCRdb(edit, true);
 		ChptTF->LicenseNr = (WORD)UserLicNrShow & 0x7FFF;
-		cf = CFile;
-		cr = CRecPtr;
-		CFile = Chpt;
-		CRecPtr = CFile->GetRecSpace();
+
+		record = new Record(Chpt);
 		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
-			CFile->ReadRec(i, CRecPtr);
-			AddLicNr(CFile, ChptOldTxt, CRecPtr);
-			AddLicNr(CFile, ChptTxt, CRecPtr);
-			CFile->WriteRec(i, CRecPtr);
+			Chpt->ReadRec(i, record);
+			AddLicNr(Chpt, ChptOldTxt, record);
+			AddLicNr(Chpt, ChptTxt, record);
+			Chpt->WriteRec(i, record);
 		}
-		ReleaseStore(&CRecPtr);
-		CFile = cf;
-		CRecPtr = cr;
+		//ReleaseStore(&CRecPtr);
 		return result;
 	}
 	if (b) {
