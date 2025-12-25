@@ -28,13 +28,13 @@ ReportGenerator::~ReportGenerator()
 
 void ReportGenerator::RunAutoReport(RprtOpt* RO)
 {
-	Record* p1 = RO->FDL[0]->FD->FF->RecPtr;
+	//Record* p1 = RO->FDL[0]->FD->FF->RecPtr;
 	std::string txt = GenAutoRprt(RO, true);
 	std::unique_ptr report = std::make_unique<Report>();
 	report->SetInput(txt, false);
 	report->Read(RO);
 	report->Run(RO);
-	RO->FDL[0]->FD->FF->RecPtr = p1;
+	//RO->FDL[0]->FD->FF->RecPtr = p1;
 }
 
 bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)

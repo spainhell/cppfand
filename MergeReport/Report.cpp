@@ -154,7 +154,7 @@ void Report::Read(RprtOpt* RO)
 			ID->OpWarn = _const;
 			KI.clear();
 			ID->ForwRecPtr = new Record(FD);
-			FD->FF->RecPtr = new Record(FD);
+			ID->RecPtr = new Record(FD);
 
 			if (base_compiler->Lexem == '(') {
 				base_compiler->RdLex();
@@ -174,7 +174,7 @@ void Report::Read(RprtOpt* RO)
 				&&
 				((*FDL)->Cond != nullptr || (!(*FDL)->KeyIn.empty()) || (Ii == 1) && RO->UserCondQuest))
 			{
-				ID->Bool = RunEvalFrml(FD, (*FDL)->Cond, FD->FF->RecPtr);
+				ID->Bool = RunEvalFrml(FD, (*FDL)->Cond, ID->RecPtr);
 				KI = (*FDL)->KeyIn;
 				ID->SQLFilter = (*FDL)->SQLFilter;
 				if (Ii == 1) {
@@ -646,7 +646,7 @@ label2:
 		Ii = 0;
 	}
 	else {
-		Z = base_compiler->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr);
+		Z = base_compiler->FrmlContxt(Z, processed_file, IDA[Ii]->RecPtr);
 		TestSetSumIi();
 		if ((FrmlSumEl != nullptr) && !FrstSumVar && (CBlk != nullptr)) {
 			base_compiler->OldError(59);
@@ -687,7 +687,7 @@ void Report::FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 	else Z = FindIiandFldFrml(&FD, FTyp);
 	if (Z == nullptr) base_compiler->Error(8);
 	TestSetSumIi();
-	*res = base_compiler->FrmlContxt(Z, FD, FD->FF->RecPtr);
+	*res = base_compiler->FrmlContxt(Z, FD, IDA[Ii]->RecPtr);
 }
 
 void Report::Rd_Oi()
@@ -1863,16 +1863,25 @@ void Report::ReadInpFile(InpD* ID)
 	//Record* rec = new Record(ID->Scan->FD/*, ID->ForwRecPtr->GetRecord()*/);
 	//delete ID->ForwRecPtr; ID->ForwRecPtr = nullptr;
 	//ID->ForwRecPtr = new Record(ID->Scan->FD);
-label1:
-	ID->Scan->GetRec(ID->ForwRecPtr);
-	if (ID->Scan->eof) return;
-	if (ESCPressed() && PromptYN(24)) {
-		WasLPTCancel = true;
-		GoExit(MsgLine);
+	while (true) {
+		ID->Scan->GetRec(ID->ForwRecPtr);
+		
+		if (ID->Scan->eof) return;
+		
+		if (ESCPressed() && PromptYN(24)) {
+			WasLPTCancel = true;
+			GoExit(MsgLine);
+		}
+		
+		RecCount++;
+		RunMsgN(RecCount);
+		
+		if (!RunBool(ID->Scan->FD, ID->Bool, ID->ForwRecPtr)) {
+			continue;
+		}
+		
+		break;
 	}
-	RecCount++;
-	RunMsgN(RecCount);
-	if (!RunBool(ID->Scan->FD, ID->Bool, ID->ForwRecPtr)) goto label1;
 	//delete rec; rec = nullptr;
 }
 
@@ -2053,7 +2062,7 @@ LvDescr* Report::GetDifLevel()
 void Report::MoveForwToRec(InpD* ID)
 {
 	FileD* f = ID->Scan->FD;
-	Record* rec = f->FF->RecPtr;
+	Record* rec = ID->RecPtr;
 	ID->ForwRecPtr->CopyTo(rec); //memcpy(rec->GetRecord(), ID->ForwRecPtr->GetRecord(), f->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
 
@@ -2083,7 +2092,7 @@ void Report::MoveFrstRecs()
 		}
 		else {
 			FileD* f = IDA[i]->Scan->FD;
-			Record* rec = f->FF->RecPtr;
+			Record* rec = IDA[i]->RecPtr;
 			rec->Reset(); //f->ZeroAllFlds(rec, false);
 			PutMFlds(f, rec, IDA[i]->MFld);
 		}

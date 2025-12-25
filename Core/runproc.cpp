@@ -67,6 +67,7 @@ void RunProcedure::UserHeadLine(std::string UserHeader)
 
 void RunProcedure::ReportProc(RprtOpt* RO, bool save)
 {
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
 	//void* p = nullptr;
 	//void* p2 = nullptr;
 	EditorMode md = EditorMode::Unknown;
@@ -124,6 +125,7 @@ void RunProcedure::ReportProc(RprtOpt* RO, bool save)
 	}
 	//label2:
 		//ReleaseBoth(p, p2);
+	//_CrtSetDbgFlag(0);
 }
 
 void RunProcedure::PromptAutoRprt(RprtOpt* RO)
@@ -187,8 +189,8 @@ void RunProcedure::AssignField(Instr_assign* PD)
 
 void RunProcedure::AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A)
 {
-	FileD* FD1 = LV1->FD;  // destination record
-	FileD* FD2 = LV2->FD;  // source record
+	// FileD* FD1 = LV1->FD;  // destination record
+	// FileD* FD2 = LV2->FD;  // source record
 	Record* RP1 = LV1->record;
 	Record* RP2 = LV2->record;
 
@@ -208,6 +210,9 @@ void RunProcedure::AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>&
 			auto newFileFrml = (FrmlElemNewFile*)a->Frml;
 			newFileFrml->NewRP = RP2;
 			AssgnFrml(RP1, a->OFldD, a->Frml, /*false,*/ false);
+			if (newFileFrml->NewFile->Name != newFileFrml->NewRP->GetFileD()->Name) {
+				printf("AssignRecVar fail");
+			}
 			break;
 		}
 		}
@@ -886,11 +891,11 @@ void RunProcedure::ForAllProc(Instr_forall* PD)
 
 	xScan->Close();
 	FD->OldLockMode(md);
-	
+
 	if (b) {
 		RunMsgOff();
 	}
-	
+
 	ReleaseStore(&p);
 	BreakP = false;
 }

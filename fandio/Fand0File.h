@@ -35,7 +35,7 @@ public:
 	std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
 
 	unsigned short RecLen = 0;
-	Record* RecPtr = nullptr; // Merge & Report dependency
+	//Record* RecPtr = nullptr; // Merge & Report dependency
 	int32_t NRecs = 0;
 	bool WasWrRec = false;
 	bool WasRdOnly = false;

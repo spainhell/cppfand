@@ -34,7 +34,7 @@ public:
 #ifdef FandSQL
 	void ResetSQLTxt(FrmlElem* Z);
 #endif
-	void ResetLV(void* aRP);
+	void ResetLV(Record* aRP);
 	void Close();
 	void SeekRec(int I);
 	void GetRec(Record* record);
@@ -50,7 +50,7 @@ private:
 	bool TempWX = false;
 	bool NotFrst = false;
 	bool withT = false;
-	void* Strm = nullptr; // {SQLStreamPtr or LVRecPtr}
+	Record* Strm = nullptr; // {SQLStreamPtr or LVRecPtr}
 	void SeekOnKI(int I);
 	void SeekOnPage(int pageNr, unsigned short i);
 	void NextIntvl();

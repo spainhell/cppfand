@@ -221,9 +221,11 @@ void XScan::ResetSQLTxt(FrmlPtr Z)
 }
 #endif
 
-void XScan::ResetLV(void* aRP)
+void XScan::ResetLV(Record* aRP)
 {
-	Strm = aRP; Kind = ScanMode::LocalVariable; NRecs = 1;
+	Strm = aRP; 
+	Kind = ScanMode::LocalVariable; 
+	NRecs = 1;
 }
 
 void XScan::Close()
@@ -395,7 +397,7 @@ void XScan::GetRec(Record* record)
 			}
 #endif
 			case ScanMode::LocalVariable: {
-				memcpy(record, Strm, FD->FF->RecLen + 1);
+				Strm->CopyTo(record); // memcpy(record, Strm, FD->FF->RecLen + 1);
 				break;
 			}
 			}
