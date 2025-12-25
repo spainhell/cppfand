@@ -65,7 +65,7 @@ std::string MsgLine;
 std::string MsgPar[4];
 
 WORD OldNumH; // r1 
-void* OldHTPtr = nullptr;
+//void* OldHTPtr = nullptr;
 
 //Cache cache;
 //std::map<FILE*, FileCache*> Cache::cacheMap;

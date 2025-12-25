@@ -12,11 +12,10 @@ std::string Coding::Code(const std::string& data)
 	return result;
 }
 
-void Coding::Code(void* data, size_t length)
+void Coding::Code(uint8_t* data, size_t length)
 {
-	uint8_t* pb = static_cast<uint8_t*>(data);
 	for (size_t i = 0; i < length; i++) {
-		pb[i] = pb[i] ^ 0xAA;
+		data[i] = data[i] ^ 0xAA;
 	}
 }
 

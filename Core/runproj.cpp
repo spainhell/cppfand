@@ -403,7 +403,7 @@ WORD ProjectRunner::FindHelpRecNr(FileD* FD, std::string& txt)
 	LockMode md = LockMode::NullMode;
 	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr;
 	WORD result = 0;
-	ConvToNoDiakr(&txt[0], txt.length(), fonts.VFont);
+	ConvToNoDiakr((uint8_t*)&txt[0], txt.length(), fonts.VFont);
 
 	Record* record = new Record(FD);
 	md = FD->NewLockMode(RdMode);
@@ -414,7 +414,7 @@ WORD ProjectRunner::FindHelpRecNr(FileD* FD, std::string& txt)
 		FD->FF->ReadRec(i, record);
 		std::string NmFtext = record->LoadS(NmF); // FD->loadS(NmF, record);
 		std::string nm = TrailChar(NmFtext, ' ');
-		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
+		ConvToNoDiakr((uint8_t*)&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
 			while ((i < FD->FF->NRecs) && (record->LoadS(TxtF).empty())) {
 				i++;
@@ -787,7 +787,7 @@ FileD* ProjectRunner::FindFD(Record* record)
 	return result;
 }
 
-void ProjectRunner::Diagnostics(void* MaxHp, int Free, FileD* FD)
+void ProjectRunner::Diagnostics(uint8_t* MaxHp, int Free, FileD* FD)
 {
 	std::string s1 = "---";
 	std::string s2 = "---";

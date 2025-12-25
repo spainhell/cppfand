@@ -252,7 +252,7 @@ void CodingRdb::CodeF(FileD* file_d, Record* record, bool rotate, WORD IRec, Fie
 		memcpy(s->A, coded.c_str(), coded.length());
 	}
 	else {
-		Coding::Code(s->A, l);
+		Coding::Code((uint8_t*)s->A, l);
 	}
 label2:
 	const std::string str(s->A, s->LL);

@@ -77,8 +77,8 @@ inline unsigned char toggleLatin2[] = {
 
 char NoDiakr(char C, TVideoFont fromFont);
 char CurrToKamen(char C);
-void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont);
+void ConvToNoDiakr(uint8_t* buf, WORD L, TVideoFont FromFont);
 void ConvToNoDiakr(std::string& text, TVideoFont FromFont);
 void ConvKamenToCurr(std::string& text, bool diacritic);
-void ConvKamenLatin(void* Buf, WORD L, bool ToLatin);
+void ConvKamenLatin(uint8_t* Buf, WORD L, bool ToLatin);
 char ToggleCS(char C);

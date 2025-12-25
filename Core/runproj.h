@@ -22,7 +22,7 @@ public:
 	void CreateOpenChpt(std::string Nm, bool create);
 	void CloseChpt();
 	FileD* FindFD(Record* record);
-	void Diagnostics(void* MaxHp, int Free, FileD* FD);
+	void Diagnostics(uint8_t* MaxHp, int Free, FileD* FD);
 	bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC);
 	void RdUserId(bool check);
 	WORD CompileMsgOn(CHAR_INFO* Buf, int& w);

@@ -26,9 +26,9 @@ public:
 	unsigned short GetA(unsigned short Off, unsigned short Len, bool CompLex, bool Descend, void* Buf);
 #endif
 private:
-	void StoreD(void* R, bool descend);
-	void StoreN(void* N, unsigned short len, bool descend);
-	void StoreF(void* F, unsigned short len, bool descend);
-	void StoreA(void* A, unsigned short len, bool compLex, bool descend);
-	void negate_esdi(void* data, size_t len);
+	void StoreD(uint8_t* R, bool descend);
+	void StoreN(uint8_t* N, unsigned short len, bool descend);
+	void StoreF(uint8_t* F, unsigned short len, bool descend);
+	void StoreA(uint8_t* A, unsigned short len, bool compLex, bool descend);
+	void negate_esdi(uint8_t* data, size_t len);
 };

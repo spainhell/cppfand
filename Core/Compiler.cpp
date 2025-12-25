@@ -556,11 +556,6 @@ void Compiler::RdLex()
 		default: break;
 		}
 	}
-
-	if (LexWord == "DD")
-	{
-		printf("DD");
-	}
 }
 
 bool Compiler::IsForwPoint()

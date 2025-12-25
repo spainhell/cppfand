@@ -44,6 +44,6 @@ std::string upperCaseString(std::string input);
 size_t ReplaceChar(std::string& text, char oldChar, char newChar);
 
 // old functions:
-unsigned short CountDLines(void* Buf, unsigned short L, char C); // r139 ASM
+unsigned short CountDLines(uint8_t* Buf, unsigned short L, char C); // r139 ASM
 
 std::vector<std::string> SplitString(const std::string& str, char delimiter);

@@ -259,7 +259,7 @@ size_t ReplaceChar(std::string& S, char C1, char C2)
 }
 
 // old functions
-unsigned short CountDLines(void* Buf, unsigned short L, char C)
+unsigned short CountDLines(uint8_t* Buf, unsigned short L, char C)
 {
 	std::string s = std::string((char*)Buf, L);
 	return (unsigned short)CountLines(s, C);

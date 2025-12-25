@@ -1015,7 +1015,7 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 		else {
 			if (R->help_file == nullptr) goto label5;
 		}
-		ConvToNoDiakr(&S[0], S.length(), fonts.VFont);
+		ConvToNoDiakr((uint8_t*)&S[0], S.length(), fonts.VFont);
 	}
 label1:
 	md = R->help_file->NewLockMode(RdMode);
@@ -1033,7 +1033,7 @@ label1:
 		Nm = OldTrailChar(' ', record->LoadS(NmF));
 		if (R->help_file == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
-		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
+		ConvToNoDiakr((uint8_t*)&Nm[0], Nm.length(), fo);
 		if (EqualsMask(S, Nm)) {
 		label2:
 			result = record->LoadS(TxtF); //R->help_file->loadS(TxtF, record);

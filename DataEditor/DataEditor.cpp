@@ -3799,7 +3799,7 @@ bool DataEditor::GetChpt(pstring Heslo, int& NN)
 		}
 		else {
 			s = OldTrailChar(' ', current_rec_->LoadS(file_d_->FldD.front()));
-			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
+			ConvToNoDiakr(&s[1], s.length(), fonts.VFont);
 			if (EqualsMask(&Heslo[1], Heslo.length(), s)) {
 				NN = j;
 				return true;
