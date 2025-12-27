@@ -16,9 +16,15 @@ public:
 	FrmlElem* Impl = nullptr;
 	std::vector<Dependency*> Dependencies;
 	std::vector<XKey*> KL;
-	std::uint8_t Page = 0, Col = 0, Ln = 0, L = 0;
+	std::uint8_t Page = 0;
+	std::uint8_t Col = 0;
+	std::uint8_t Ln = 0;
+	std::uint8_t L = 0;
 	uint16_t ScanNr = 0;
-	bool Tab = false, Dupl = false, Used = false;
-	bool EdU = false, EdN = false;
+	bool Tab = false; 
+	bool Dupl = false;
+	bool Used = false;
+	bool EdU = false;
+	bool EdN = false;
 	bool Ed(bool IsNewRec);
 };

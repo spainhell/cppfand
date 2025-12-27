@@ -1,12 +1,12 @@
 #include "EditReader.h"
 
 #include <algorithm>
+#include "Dependency.h"
 #include "EditableField.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Core/LogicControl.h"
 #include "../Core/Compiler.h"
-#include "../Core/Dependency.h"
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../fandio/KeyFldD.h"

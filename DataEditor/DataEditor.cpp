@@ -2,6 +2,7 @@
 #include <memory>
 #include <regex>
 
+#include "Dependency.h"
 #include "EditReader.h"
 #include "EditableField.h"
 #include "../TextEditor/TextEditor.h"

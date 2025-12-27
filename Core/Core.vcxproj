@@ -54,7 +54,6 @@
     <ClCompile Include="Catalog.cpp" />
     <ClCompile Include="CfgFile.cpp" />
     <ClCompile Include="datafiles.cpp" />
-    <ClCompile Include="Dependency.cpp" />
     <ClCompile Include="Implicit.cpp" />
     <ClCompile Include="LogicControl.cpp" />
     <ClCompile Include="Compiler.cpp" />
@@ -91,7 +90,6 @@
     <ClInclude Include="Catalog.h" />
     <ClInclude Include="CfgFile.h" />
     <ClInclude Include="datafiles.h" />
-    <ClInclude Include="Dependency.h" />
     <ClInclude Include="Implicit.h" />
     <ClInclude Include="LogicControl.h" />
     <ClInclude Include="Compiler.h" />

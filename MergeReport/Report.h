@@ -52,6 +52,9 @@ private:
 	LvDescr* LvToRd = nullptr;           /*all used while translating frml*/
 	BlkD* CBlkSave = nullptr;
 
+	LvDescr* FrstLvM;
+	LvDescr* LstLvM; /* LstLvM->Ft=RF */
+
 	bool FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF);
 	FrmlElem* FindIiandFldFrml(FileD** FD, char& FTyp);
 	void RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix);

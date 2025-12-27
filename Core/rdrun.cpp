@@ -19,8 +19,7 @@ bool PrintView;						/* Report */
 TextFile Rprt;		// puvodne text - souvisi s text. souborem
 
 std::vector<FrmlElemSum*> PFZeroLst;
-LvDescr* FrstLvM;
-LvDescr* LstLvM; /* LstLvM->Ft=RF */
+
 bool SelQuest;
 EditD* EditDRoot;
 FrmlElem* PgeSizeZ = nullptr, * PgeLimitZ = nullptr;

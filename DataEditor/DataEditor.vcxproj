@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataEditorParams.h" />
+    <ClInclude Include="Dependency.h" />
     <ClInclude Include="EditableField.h" />
     <ClInclude Include="EditD.h" />
     <ClInclude Include="EditReader.h" />
@@ -27,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataEditorParams.cpp" />
+    <ClCompile Include="Dependency.cpp" />
     <ClCompile Include="EditableField.cpp" />
     <ClCompile Include="EditD.cpp" />
     <ClCompile Include="EditReader.cpp" />

@@ -1,19 +1,16 @@
 #pragma once
 
 #include "access.h"
-#include "Dependency.h"
 #include "../fandio/FieldDescr.h"
 #include "legacy.h"
 #include "../DataEditor/EditD.h"
 #include "models/FrmlElem.h"
 #include "../fandio/XScan.h"
 #include "../MergeReport/BlkD.h"
-#include "../MergeReport/ConstListEl.h"
 
 
 struct OutpRD;
 struct OutpFD;
-struct LvDescr;
 class Instr;
 class Instr_proc;
 struct EdExitD;
@@ -141,8 +138,8 @@ extern bool PrintView;		/* Report */
 extern TextFile Rprt;		// puvodne text - souvisi s text. souborem
 
 extern std::vector<FrmlElemSum*> PFZeroLst;
-extern LvDescr* FrstLvM;
-extern LvDescr* LstLvM; /* LstLvM->Ft=RF */
+//extern LvDescr* FrstLvM;
+//extern LvDescr* LstLvM; /* LstLvM->Ft=RF */
 extern bool SelQuest;
 	/* Edit */
 extern FrmlElem* PgeSizeZ, *PgeLimitZ;
