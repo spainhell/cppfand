@@ -116,15 +116,6 @@ short CompReal(double R1, double R2, short M)
 	return _equ;
 }
 
-LongStr* CopyToLongStr(pstring& SS)
-{
-	WORD l = SS.length();
-	LongStr* s = new LongStr(l);
-	s->LL = l;
-	Move(&SS[1], s->A, l);
-	return s;
-}
-
 pstring LeadChar(char C, pstring S)
 {
 	// TODO: do it better
@@ -1252,112 +1243,112 @@ int RunInt(FileD* file_d, FrmlElem* X, Record* record)
 	return trunc(rr);
 }
 
-void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, Record* record)
-{
-	switch (Z->Op) {
-	case _newfile: {
-		FrmlElemNewFile* iZ = (FrmlElemNewFile*)Z;
-		TestTFrml(iZ->NewFile, F, iZ->Frml, TF02, TFD02, TF02Pos, iZ->NewRP);
-		break;
-	}
-	case _field: {
-		FrmlElemRecVarField* iZ = (FrmlElemRecVarField*)Z;
-		FieldDescr* f1 = iZ->Field;
-		if ((f1->field_type != FieldType::TEXT) || ((f1->Flg & f_Stored) == 0)) return;
-		if (F == nullptr) {
-			if ((f1->Flg & f_Encryp) != 0) return;
-		}
-		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
-		*TFD02 = file_d;
-		*TF02 = file_d->FF->TF;
-		//if (file_d->HasTWorkFlag(record)) {
-		//	*TF02 = &TWork; // TODO: is there anything in TWork?: 
-		//}
-		// TODO: replace this: 
-		// TF02Pos = file_d->loadT(f1, record);
-		break;
-	}
-	case _getlocvar: {
-		// local var is now always in memory, not in the work file
-		// TODO: what if this is record of?
-		break;
-		//if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
-		//*TFD02 = CFile;
-		//*TF02 = &TWork;
-		//TF02Pos = (int)((FrmlElemLocVar*)Z)->locvar->rdb;
-		//break;
-	}
-	case _access: {
-		int n;
-		FrmlElemAccess* iZ = (FrmlElemAccess*)Z;
-		LockMode md = iZ->File->NewLockMode(RdMode);
-		if (iZ->Link != nullptr) {
-			Record* newRecord = LinkUpw(iZ->Link, n, true, record);
-			TestTFrml(iZ->Link->ToFD, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord);
-			delete[] newRecord; newRecord = nullptr;
-		}
-		else {
-			Record* r = iZ->File->LinkLastRec(n);
-			if (r == nullptr) {
-				r = new Record(iZ->File);
-			}
-			TestTFrml(iZ->File, F, iZ->Frml, TF02, TFD02, TF02Pos, r);
-			delete r; r = nullptr;
-		}
-		iZ->File->OldLockMode(md);
-		break;
-	}
-	case _recvarfld: {
-		FrmlElemRecVarField* iZ = (FrmlElemRecVarField*)Z;
-		TestTFrml(iZ->File, F, iZ->Frml, TF02, TFD02, TF02Pos, iZ->record);
-		break;
-	}
-	}
-}
+//void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, Record* record)
+//{
+//	switch (Z->Op) {
+//	case _newfile: {
+//		FrmlElemNewFile* iZ = (FrmlElemNewFile*)Z;
+//		TestTFrml(iZ->NewFile, F, iZ->Frml, TF02, TFD02, TF02Pos, iZ->NewRP);
+//		break;
+//	}
+//	case _field: {
+//		FrmlElemRecVarField* iZ = (FrmlElemRecVarField*)Z;
+//		FieldDescr* f1 = iZ->Field;
+//		if ((f1->field_type != FieldType::TEXT) || ((f1->Flg & f_Stored) == 0)) return;
+//		if (F == nullptr) {
+//			if ((f1->Flg & f_Encryp) != 0) return;
+//		}
+//		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
+//		*TFD02 = file_d;
+//		*TF02 = file_d->FF->TF;
+//		//if (file_d->HasTWorkFlag(record)) {
+//		//	*TF02 = &TWork; // TODO: is there anything in TWork?: 
+//		//}
+//		// TODO: replace this: 
+//		// TF02Pos = file_d->loadT(f1, record);
+//		break;
+//	}
+//	case _getlocvar: {
+//		// local var is now always in memory, not in the work file
+//		// TODO: what if this is record of?
+//		break;
+//		//if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
+//		//*TFD02 = CFile;
+//		//*TF02 = &TWork;
+//		//TF02Pos = (int)((FrmlElemLocVar*)Z)->locvar->rdb;
+//		//break;
+//	}
+//	case _access: {
+//		int n;
+//		FrmlElemAccess* iZ = (FrmlElemAccess*)Z;
+//		LockMode md = iZ->File->NewLockMode(RdMode);
+//		if (iZ->Link != nullptr) {
+//			Record* newRecord = LinkUpw(iZ->Link, n, true, record);
+//			TestTFrml(iZ->Link->ToFD, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord);
+//			delete[] newRecord; newRecord = nullptr;
+//		}
+//		else {
+//			Record* r = iZ->File->LinkLastRec(n);
+//			if (r == nullptr) {
+//				r = new Record(iZ->File);
+//			}
+//			TestTFrml(iZ->File, F, iZ->Frml, TF02, TFD02, TF02Pos, r);
+//			delete r; r = nullptr;
+//		}
+//		iZ->File->OldLockMode(md);
+//		break;
+//	}
+//	case _recvarfld: {
+//		FrmlElemRecVarField* iZ = (FrmlElemRecVarField*)Z;
+//		TestTFrml(iZ->File, F, iZ->Frml, TF02, TFD02, TF02Pos, iZ->record);
+//		break;
+//	}
+//	}
+//}
 
-bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, Record* record)
-{
-	bool result = false;
-	*TF02 = nullptr;
+//bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, Record* record)
+//{
+//	bool result = false;
+//	*TF02 = nullptr;
+//
+//	TestTFrml(file_d, F, Z, TF02, TFD02, TF02Pos, record);
+//
+//	result = (*TF02) != nullptr;
+//	return result;
+//}
 
-	TestTFrml(file_d, F, Z, TF02, TFD02, TF02Pos, record);
-
-	result = (*TF02) != nullptr;
-	return result;
-}
-
-bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, FrmlElem* Z, Record* record)
-{
-	FileD* src_file;
-	FandTFile* src_T_file;
-	int src_T_pos;
-	bool result;
-
-	if (Z->Op == _gettxt) {
-		std::string text = GetTxt(dst_file, (FrmlElem16*)Z, record);
-		record->SaveS(F, text);
-		// TODO: replace this:
-		//pos = dst_file->FF->loadT(F, record->GetRecord());
-		result = true;
-	}
-	else if (CanCopyT(dst_file, F, Z, &src_T_file, &src_file, src_T_pos, record)) {
-		LockMode md1 = NullMode, md2 = NullMode;
-		if (!src_T_file->IsWork) md2 = src_file->NewLockMode(RdMode);
-		if (!dst_T_file->IsWork) md1 = dst_file->NewLockMode(WrMode);
-
-		std::string s = src_T_file->Read(src_T_pos);
-		pos = dst_T_file->Store(s);
-
-		if (!src_T_file->IsWork) src_file->OldLockMode(md2);
-		if (!dst_T_file->IsWork) dst_file->OldLockMode(md1);
-		result = true;
-	}
-	else {
-		result = false;
-	}
-
-	return result;
-}
+//bool TryCopyT(FileD* dst_file, FieldDescr* F, FandTFile* dst_T_file, int& pos, FrmlElem* Z, Record* record)
+//{
+//	FileD* src_file;
+//	FandTFile* src_T_file;
+//	int src_T_pos;
+//	bool result;
+//
+//	if (Z->Op == _gettxt) {
+//		std::string text = GetTxt(dst_file, (FrmlElem16*)Z, record);
+//		record->SaveS(F, text);
+//		// TODO: replace this:
+//		//pos = dst_file->FF->loadT(F, record->GetRecord());
+//		result = true;
+//	}
+//	else if (CanCopyT(dst_file, F, Z, &src_T_file, &src_file, src_T_pos, record)) {
+//		LockMode md1 = NullMode, md2 = NullMode;
+//		if (!src_T_file->IsWork) md2 = src_file->NewLockMode(RdMode);
+//		if (!dst_T_file->IsWork) md1 = dst_file->NewLockMode(WrMode);
+//
+//		std::string s = src_T_file->Read(src_T_pos);
+//		pos = dst_T_file->Store(s);
+//
+//		if (!src_T_file->IsWork) src_file->OldLockMode(md2);
+//		if (!dst_T_file->IsWork) dst_file->OldLockMode(md1);
+//		result = true;
+//	}
+//	else {
+//		result = false;
+//	}
+//
+//	return result;
+//}
 
 void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add)
 {
@@ -1365,48 +1356,48 @@ void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add)
 
 	switch (field_d->frml_type) {
 	case 'S': {
-		if (field_d->field_type == FieldType::TEXT) {
-			FandTFile* tf = nullptr;
+		//if (field_d->field_type == FieldType::TEXT) {
+		//	FandTFile* tf = nullptr;
 
-			/*bool work = file_d->HasTWorkFlag(record);
-			if (work) {
-				tf = &TWork;
-			}
-			else */if (file_d->FileType == DataFileType::FandFile) {
-				tf = file_d->FF->TF;
-			}
+		//	/*bool work = file_d->HasTWorkFlag(record);
+		//	if (work) {
+		//		tf = &TWork;
+		//	}
+		//	else */if (file_d->FileType == DataFileType::FandFile) {
+		//		tf = file_d->FF->TF;
+		//	}
 
-			int pos = 0;
+		//	int pos = 0;
 
-			if (file_d->FileType == DataFileType::FandFile && TryCopyT(file_d, field_d, tf, pos, X, record)) {
-				//if (deleteT && !work) {
-				//	file_d->FF->DelTFld(field_d, record);
-				//}
-				// TODO: replace this:
-				// file_d->saveT(field_d, pos, record);
-			}
-			else {
-				std::string s = RunString(file_d, X, record);
-				/*if (deleteT && !work) {
-					switch (file_d->FileType) {
-					case DataFileType::FandFile: {
-						file_d->FF->DelTFld(field_d, record);
-						break;
-					}
-					case DataFileType::DBF: {
-						file_d->DbfF->DelTFld(field_d, record);
-						break;
-					}
-					default: break;
-					}
-				}*/
-				record->SaveS(field_d, s);
-			}
-		}
-		else {
+		//	//if (file_d->FileType == DataFileType::FandFile /*&& TryCopyT(file_d, field_d, tf, pos, X, record)*/) {
+		//	//	//if (deleteT && !work) {
+		//	//	//	file_d->FF->DelTFld(field_d, record);
+		//	//	//}
+		//	//	// TODO: replace this:
+		//	//	// file_d->saveT(field_d, pos, record);
+		//	//}
+		//	//else {
+		//		std::string s = RunString(file_d, X, record);
+		//		/*if (deleteT && !work) {
+		//			switch (file_d->FileType) {
+		//			case DataFileType::FandFile: {
+		//				file_d->FF->DelTFld(field_d, record);
+		//				break;
+		//			}
+		//			case DataFileType::DBF: {
+		//				file_d->DbfF->DelTFld(field_d, record);
+		//				break;
+		//			}
+		//			default: break;
+		//			}
+		//		}*/
+		//		record->SaveS(field_d, s);
+		//	//}
+		//}
+		//else {
 			std::string s = RunString(file_d, X, record);
 			record->SaveS(field_d, s);
-		}
+		//}
 		break;
 	}
 	case 'R': {

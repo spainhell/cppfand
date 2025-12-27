@@ -1570,7 +1570,7 @@ bool FileD::IsActiveRdb()
 {
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		if (this == R->v_files[0]) return true;
+		if (this == R->project_file) return true;
 		R = R->ChainBack;
 	}
 	return false;
@@ -2015,8 +2015,14 @@ void FileD::CFileError(int N)
 
 void FileD::CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files)
 {
-	// find first_for_close in v_files
-	auto it0 = std::ranges::find(v_files, first_for_close);
+	std::ranges::borrowed_iterator_t<std::vector<FileD*>&> it0;
+	if (first_for_close == nullptr) {
+		it0 = v_files.begin();
+	}
+	else {
+		// find first_for_close in v_files
+		it0 = std::ranges::find(v_files, first_for_close);
+	}
 
 	while (it0 != v_files.end()) {
 		(*it0)->CloseFile();
@@ -2070,7 +2076,27 @@ std::string FileD::SetPathForH(HANDLE handle)
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {
-		for (FileD* fd : RD->v_files) {
+		if (RD->project_file != nullptr) {
+			if (RD->project_file->FF->Handle == handle) {
+				return RD->project_file->SetPathAndVolume();
+			}
+			if (RD->project_file->FF->TF != nullptr && RD->project_file->FF->TF->Handle == handle) {
+				RD->project_file->SetPathAndVolume();
+				return RD->project_file->CExtToT(CDir, CName, CExt);
+			}
+		}
+
+		if (RD->help_file != nullptr) {
+			if (RD->help_file->FF->Handle == handle) {
+				return RD->help_file->SetPathAndVolume();
+			}
+			if (RD->help_file->FF->TF != nullptr && RD->help_file->FF->TF->Handle == handle) {
+				RD->help_file->SetPathAndVolume();
+				return RD->help_file->CExtToT(CDir, CName, CExt);
+			}
+		}
+
+		for (FileD* fd : RD->data_files) {
 			if (fd->FF->Handle == handle) {
 				fd->SetPathAndVolume();
 				return CPath;

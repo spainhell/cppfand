@@ -11,7 +11,6 @@
 #endif
 
 double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record);
-LongStr* CopyToLongStr(pstring& SS);
 pstring LeadChar(char C, pstring S);
 bool RunBool(FileD* file_d, FrmlElem* X, Record* record);
 bool InReal(FileD* file_d, FrmlElemIn* frml, Record* record);
@@ -21,7 +20,7 @@ bool RunModulo(FileD* file_d, FrmlElemFunction* X, Record* record);
 bool RunEquMask(FileD* file_d, FrmlElemFunction* X, Record* record);
 double RunReal(FileD* file_d, FrmlElem* X, Record* record);
 int RunInt(FileD* file_d, FrmlElem* X, Record* record);
-bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, Record* record);
+//bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, Record* record);
 // bool TryCopyT(FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z);
 void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add);
 void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, Record* record);

@@ -1,19 +1,16 @@
 #pragma once
 
 #include "access.h"
-#include "Dependency.h"
 #include "../fandio/FieldDescr.h"
 #include "legacy.h"
 #include "../DataEditor/EditD.h"
 #include "models/FrmlElem.h"
 #include "../fandio/XScan.h"
 #include "../MergeReport/BlkD.h"
-#include "../MergeReport/ConstListEl.h"
 
 
 struct OutpRD;
 struct OutpFD;
-struct LvDescr;
 class Instr;
 class Instr_proc;
 struct EdExitD;
@@ -24,11 +21,10 @@ enum class MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifThenElse };
 struct AssignD
 {
 	MInstrCode Kind = MInstrCode::_zero;
-	FieldDescr* inputFldD = nullptr;
-	FieldDescr* outputFldD = nullptr;
-	uint8_t* ToPtr = nullptr;
-	uint8_t* FromPtr = nullptr; 
-	WORD L = 0;
+	Record* inputRecord = nullptr;
+	FieldDescr* inputField = nullptr;
+	Record* outputRecord = nullptr;
+	FieldDescr* outputField = nullptr;
 	bool Add = false; FrmlElem* Frml = nullptr; FieldDescr* OFldD = nullptr;
 	bool Add1 = false; FrmlElem* Frml1 = nullptr; LocVar* LV = nullptr;
 	bool Add2 = false; FrmlElem* Frml2 = nullptr;
@@ -142,8 +138,8 @@ extern bool PrintView;		/* Report */
 extern TextFile Rprt;		// puvodne text - souvisi s text. souborem
 
 extern std::vector<FrmlElemSum*> PFZeroLst;
-extern LvDescr* FrstLvM;
-extern LvDescr* LstLvM; /* LstLvM->Ft=RF */
+//extern LvDescr* FrstLvM;
+//extern LvDescr* LstLvM; /* LstLvM->Ft=RF */
 extern bool SelQuest;
 	/* Edit */
 extern FrmlElem* PgeSizeZ, *PgeLimitZ;

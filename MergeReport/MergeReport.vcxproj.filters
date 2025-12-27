@@ -68,5 +68,11 @@
     <ClCompile Include="OutpFD.h">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="InpD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RprtOpt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

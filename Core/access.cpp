@@ -237,12 +237,9 @@ void DirMinusBackslash(pstring& D)
 
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 {
-	//FileD* cf = CFile;
 	RdbD* R = CRdb;
-	while (R != nullptr) {
-		//FileD* f = R->v_files;
-		//while (f != nullptr) {
-		for (FileD* f : R->v_files) {
+	while (R != nullptr) { // TODO: this will not process RDB file (project_file)
+		for (FileD* f : R->data_files) {
 			switch (op) {
 			case ForAllFilesOperation::close: {
 				f->CloseFile();
@@ -276,13 +273,11 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 				}
 				break;
 			}
-			default:;
+			default: break;
 			}
-			//f = f->pChain;
 		}
 		R = R->ChainBack;
 	}
-	//CFile = cf;
 }
 
 std::string TranslateOrd(std::string text)

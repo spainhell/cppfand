@@ -132,24 +132,21 @@ void RunProcedure::PromptAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
 
-	RprtOpt* RO2;
-	RO2 = new RprtOpt();
-	Move(RO, RO2, sizeof(*RO));
-	//FieldList FL = RO->Flds;
-	//while (FL != nullptr) {
+	RprtOpt* RO2 = new RprtOpt();
+	RO->CopyTo(RO2);
+
 	for (FieldDescr* f : RO->Flds) {
-		//FieldDescr* F = FL->FldD;
-		if ((f->Flg & f_Stored) != 0) ww.PutSelect(f->Name);
-		else {
-			pstring tmpStr = SelMark;
-			ww.PutSelect(tmpStr + f->Name);
+		if (f->isStored()) {
+			ww.PutSelect(f->Name);
 		}
-		//FL = (FieldList)FL->pChain;
+		else {
+			ww.PutSelect((char)SelMark + f->Name);
+		}
 	}
-	//CFile = RO->FDL[0]->FD;
+	
 	if (!ww.SelFieldList(RO->FDL[0]->FD, 36, true, RO2->Flds)) return;
-	if ((RO->FDL[0]->Cond == nullptr) &&
-		!ww.PromptFilter("", &RO2->FDL[0]->Cond, &RO2->CondTxt)) return;
+	
+	if ((RO->FDL[0]->Cond == nullptr) && !ww.PromptFilter("", &RO2->FDL[0]->Cond, &RO2->CondTxt)) return;
 
 	const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
 	if (auto_report->SelForAutoRprt(RO2)) {
@@ -198,7 +195,7 @@ void RunProcedure::AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>&
 	for (AssignD* a : A) {
 		switch (a->Kind) {
 		case MInstrCode::_zero: {
-			FieldDescr* F = a->outputFldD;
+			FieldDescr* F = a->outputField;
 			switch (F->frml_type) {
 			case 'S': { RP1->SaveS(F, ""); break; }
 			case 'R': { RP1->SaveR(F, 0.0); break; }
@@ -347,7 +344,7 @@ void RunProcedure::DisplayProc(RdbD* R, WORD IRec)
 		if (str.empty()) return;
 	}
 	else {
-		FileD* f = R->v_files[0];
+		FileD* f = R->project_file;
 		std::unique_ptr<Record> rec = std::make_unique<Record>(Chpt);
 		f->ReadRec(IRec, rec.get());
 		//int pos = f->loadT(ChptTxt, rec);
@@ -1064,19 +1061,19 @@ void RunProcedure::PutTxt(Instr_puttxt* PD)
 	//	throw std::exception("runproc.cpp PutTxt() not implemented for non-FandFile");
 	//}
 
-	const bool canCopyT = CanCopyT(file_d, nullptr, z, &TF02, &TFD02, TF02Pos, nullptr);
+	//const bool canCopyT = CanCopyT(file_d, nullptr, z, &TF02, &TFD02, TF02Pos, nullptr);
 
-	if (canCopyT) {
-		h = OpenHForPutTxt(PD);
-		path = CPath;
-		Fand0File::CopyTFStringToH(nullptr, h, TF02, TFD02, TF02Pos);
-		CPath = path;
-	}
-	else {
+	//if (canCopyT) {
+	//	h = OpenHForPutTxt(PD);
+	//	path = CPath;
+	//	Fand0File::CopyTFStringToH(nullptr, h, TF02, TFD02, TF02Pos);
+	//	CPath = path;
+	//}
+	//else {
 		std::string s = RunString(nullptr, z, nullptr);
 		h = OpenHForPutTxt(PD);
 		WriteH(h, s.length(), s.c_str());
-	}
+	//}
 
 	CPath = path;
 	TestCPathError();
@@ -1148,8 +1145,8 @@ void RunProcedure::ResetCatalog()
 	while (CRdb != nullptr) {
 		//CFile = CRdb->v_files->pChain;
 		//while (CFile != nullptr) {
-		for (size_t i = 1; i < CRdb->v_files.size(); i++) {
-			FileD* f = CRdb->v_files[i];
+		for (size_t i = 0; i < CRdb->data_files.size(); i++) {
+			FileD* f = CRdb->data_files[i];
 			f->CloseFile();
 			f->CatIRec = catalog->GetCatalogIRec(f->Name, f->FF->file_type == FandFileType::RDB);
 #ifdef FandSQL
@@ -1665,7 +1662,7 @@ void RunProcedure::CallProcedure(Instr_proc* PD)
 	MarkBoth(p1, p2);
 
 	std::deque<LinkD*> ld = LinkDRoot;
-	size_t lstFDindex = CRdb->v_files.size() - 1; // index of last item in FileDRoot;
+	size_t lstFDindex = CRdb->data_files.size() - 1; // index of last item in FileDRoot;
 	gc->SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
@@ -1711,7 +1708,7 @@ void RunProcedure::CallProcedure(Instr_proc* PD)
 				std::string code = RunString(nullptr, PD->TArg[i].TxtFrml, nullptr);
 				gc->SetInpStdStr(code, true);
 				proc_file = RdFileD(PD->TArg[i].Name, DataFileType::FandFile, FandFileType::FAND16, "$");
-				CRdb->v_files.push_back(proc_file);
+				CRdb->data_files.push_back(proc_file);
 				gc->RestoreCompState(state);
 			}
 			else {
@@ -1853,7 +1850,7 @@ void RunProcedure::CallProcedure(Instr_proc* PD)
 	//}
 	//lstFD->pChain = nullptr;
 
-	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
+	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->data_files);
 
 	ReleaseStore(&p1);
 	ReleaseStore(&p2);

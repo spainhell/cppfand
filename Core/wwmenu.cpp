@@ -567,7 +567,7 @@ TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring Msg) : TMenuBox()
 	HlpRdb->help_file = HelpFD;
 	IsBoxS = true;
 	nTxt = CountDLines(&MsgTxt[1], MsgTxt.length(), '/') - 2;
-	Move(&screen.colors.mNorm, Palette, 3);
+	memcpy(&Palette, &screen.colors.mNorm, 3);
 	SetState(sfShadow, true);
 	InitTMenuBox(C1, R1);
 }

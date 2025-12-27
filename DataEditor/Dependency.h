@@ -1,5 +1,7 @@
 #pragma once
-#include "models/FrmlElem.h"
+#include "../Core/models/FrmlElem.h"
+
+class FrmlElem;
 
 /// <summary>
 /// Dependency class - #D

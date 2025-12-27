@@ -1901,7 +1901,8 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 		}
 		ii1 = i; RelPos = 1;
 		if (Posit > 1) {
-			Move(&txt[i], A, Posit);
+			//Move(&txt[i], A, Posit);
+			memcpy(A, &txt[i], Posit);
 			for (ii = 1; ii <= Posit - 1; i++) {
 				if (!CtrlKey.contains(txt[i])) RelPos++;
 				if (txt[i] == __CR) A[ii] = ' ';
@@ -1978,7 +1979,10 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 					while (A[ii] != ' ') ii++;
 					nw--; n = nb / nw;
 					if ((nw % nb != 0) && (nw % 2) && (nb > n)) n++;
-					if (Posit - ii > 0) Move(&A[ii], &A[ii + n], Posit - ii + 1);
+					if (Posit - ii > 0) {
+						//Move(&A[ii], &A[ii + n], Posit - ii + 1);
+						memcpy(&A[ii + n], &A[ii], Posit - ii + 1);
+					}
 					FillChar(&A[ii], n, 32); Posit += n;
 					nb -= n;
 				}
@@ -1989,7 +1993,10 @@ void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 			if (i < lst) A[Posit] = __CR; else Posit--;
 			//TestLenText(&_textT, _lenT, i, int(ii1) + Posit);
 			UpdatT = true;
-			if (Posit > 0) Move(A, &txt[ii1], Posit);
+			if (Posit > 0) {
+				//Move(A, &txt[ii1], Posit);
+				memcpy(&txt[ii1], A, Posit);
+			}
 			ii = ii1 + Posit - i; i = ii1 + Posit; lst += ii; llst += ii;
 			Posit = 1; RelPos = 1; ii1 = i;
 		}
@@ -2117,7 +2124,8 @@ void TextEditor::ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, i
 	if ((MemoryAvailable() > LenPrint) && (LenPrint < 0xFFF0)) {
 		char* t = new char[LenPrint];
 		p = t;
-		Move(&co[1], p, co->length());
+		//Move(&co[1], p, co->length());
+		memcpy(p, &(*co)[1], co->length());
 	}
 	else {
 		isPrintFile = true;
@@ -2204,7 +2212,8 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 					HMsgExit(CPath);
 				}
 				else {
-					Move(&txt[I1], &p[fs + 1], I2 - I1);
+					//Move(&txt[I1], &p[fs + 1], I2 - I1);
+					memcpy(&p[fs + 1], &txt[I1], I2 - I1);
 					fs += I2 - I1; LL1 += I2 - I1;
 				}
 				break;
@@ -2259,11 +2268,13 @@ bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 			case 'W':
 			case 'P': {
 				char* a = nullptr;
-				Move(&Arr[BegBPos], a, I1);
+				//Move(&Arr[BegBPos], a, I1);
+				memcpy(a, &Arr[BegBPos], I1);
 				a[I1 + 1] = __CR;
 				a[I1 + 2] = __LF;
 				if ((Oper == 'P') && !isPrintFile) {
-					Move(a, &p[fs + 1], I1 + 2);
+					//Move(a, &p[fs + 1], I1 + 2);
+					memcpy(&p[fs + 1], a, I1 + 2);
 				}
 				else {
 					WriteH(W1, I1 + 2, a);
@@ -2392,9 +2403,14 @@ bool TextEditor::BlockCGrasp(char Oper, uint8_t* P1, LongStr* sp)
 	I2 = 0;
 	i = EndBPos - BegBPos;
 	do {
-		Move(&Arr[BegBPos], a, i); a[i + 1] = __CR; a[i + 2] = __LF;
+		//Move(&Arr[BegBPos], a, i); 
+		memcpy(a, &Arr[BegBPos], i);
+		a[i + 1] = __CR; 
+		a[i + 2] = __LF;
 		if (Oper == 'M') TestLastPos(EndBPos, BegBPos);
-		Move(a, &sp->A[I2 + 1], i + 2); I2 += i + 2;
+		//Move(a, &sp->A[I2 + 1], i + 2); 
+		memcpy(&sp->A[I2 + 1], a, i + 2);
+		I2 += i + 2;
 		if (UpdatedL) KodLine();
 		NextLine(false);
 	} while (I2 != sp->LL);
@@ -2411,7 +2427,8 @@ void TextEditor::InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp)
 	i = MinW(I1 - I3, LineMaxSize - GetArrLineLength());
 	if (i > 0) {
 		TestLastPos(ww, ww + i);
-		Move(&sp->A[I3], &Arr[ww], i);
+		//Move(&sp->A[I3], &Arr[ww], i);
+		memcpy(&Arr[ww], &sp->A[I3], i);
 	}
 	if (UpdatedL) KodLine();
 }

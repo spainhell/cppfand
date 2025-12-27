@@ -4,7 +4,7 @@
 #include "../Core/Compiler.h"
 #include "../Core/rdrun.h"
 
-struct InpD;
+class InpD;
 class KeyFldD;
 
 struct TTD
@@ -51,6 +51,9 @@ private:
 	std::vector<FrmlElemSum*>* CZeroLst = nullptr;
 	LvDescr* LvToRd = nullptr;           /*all used while translating frml*/
 	BlkD* CBlkSave = nullptr;
+
+	LvDescr* FrstLvM;
+	LvDescr* LstLvM; /* LstLvM->Ft=RF */
 
 	bool FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF);
 	FrmlElem* FindIiandFldFrml(FileD** FD, char& FTyp);

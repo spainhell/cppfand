@@ -15,7 +15,7 @@ Record::Record(FileD* file_d)
 
 	for (FieldDescr* field_d : file_d->FldD) {
 		BRS_Value val;
-		_values.push_back(val);
+		_values.insert(std::pair(field_d->Name, val));
 	}
 }
 
@@ -56,17 +56,17 @@ void Record::Reset()
 {
 	_updated = false;
 	_deleted = false;
-	for (BRS_Value& val : _values) {
-		val.Reset();
+	for (std::pair<const std::string, BRS_Value>& val : _values) {
+		val.second.Reset();
 	}
 }
 
 bool Record::LoadB(FieldDescr* field) const
 {
 	if (field->isStored()) {
-		size_t index = _getFieldDescrIndexByName(field->Name);
-		if (std::cmp_not_equal(index, -1)) {
-			return _values[index].B;
+		std::map<std::string, BRS_Value>::const_iterator item = _values.find(field->Name);
+		if (item != _values.end()) {
+			return item->second.B;
 		}
 		else {
 			return false;
@@ -80,9 +80,9 @@ bool Record::LoadB(FieldDescr* field) const
 double Record::LoadR(FieldDescr* field) const
 {
 	if (field->isStored()) {
-		size_t index = _getFieldDescrIndexByName(field->Name);
-		if (std::cmp_not_equal(index, -1)) {
-			return _values[index].R;
+		std::map<std::string, BRS_Value>::const_iterator item = _values.find(field->Name);
+		if (item != _values.end()) {
+			return item->second.R;
 		}
 		else {
 			return 0.0;
@@ -96,9 +96,9 @@ double Record::LoadR(FieldDescr* field) const
 std::string Record::LoadS(FieldDescr* field) const
 {
 	if (field->isStored()) {
-		size_t index = _getFieldDescrIndexByName(field->Name);
-		if (std::cmp_not_equal(index, -1)) {
-			return _values[index].S;
+		std::map<std::string, BRS_Value>::const_iterator item = _values.find(field->Name);
+		if (item != _values.end()) {
+			return item->second.S;
 		}
 		else {
 			return "";
@@ -112,9 +112,9 @@ std::string Record::LoadS(FieldDescr* field) const
 void Record::SaveB(FieldDescr* field, bool value)
 {
 	if (field->isStored()) {
-		size_t index = _getFieldDescrIndexByName(field->Name);
-		if (std::cmp_not_equal(index, -1)) {
-			_values[index].B = value;
+		std::map<std::string, BRS_Value>::iterator item = _values.find(field->Name);
+		if (item != _values.end()) {
+			item->second.B = value;
 			SetUpdated();
 		}
 	}
@@ -123,9 +123,9 @@ void Record::SaveB(FieldDescr* field, bool value)
 void Record::SaveR(FieldDescr* field, double value)
 {
 	if (field->isStored()) {
-		size_t index = _getFieldDescrIndexByName(field->Name);
-		if (std::cmp_not_equal(index, -1)) {
-			_values[index].R = value;
+		std::map<std::string, BRS_Value>::iterator item = _values.find(field->Name);
+		if (item != _values.end()) {
+			item->second.R = value;
 			SetUpdated();
 		}
 	}
@@ -134,9 +134,9 @@ void Record::SaveR(FieldDescr* field, double value)
 void Record::SaveS(FieldDescr* field, const std::string& value)
 {
 	if (field->isStored()) {
-		size_t index = _getFieldDescrIndexByName(field->Name);
-		if (std::cmp_not_equal(index, -1)) {
-			_values[index].S = value;
+		std::map<std::string, BRS_Value>::iterator item = _values.find(field->Name);
+		if (item != _values.end()) {
+			item->second.S = value;
 			SetUpdated();
 		}
 	}
@@ -184,20 +184,28 @@ uint8_t Record::Compare(Record* rec1, Record* rec2)
 	for (size_t i = 0; i < rec1->_file_d->FldD.size(); i++) {
 		FieldDescr* field = rec1->_file_d->FldD[i];
 		if (field->isStored()) {
-			const BRS_Value& val1 = rec1->_values[i];
-			const BRS_Value& val2 = rec2->_values[i];
+			std::map<std::string, BRS_Value>::const_iterator itemA = rec1->_values.find(field->Name);
+			if (itemA == rec1->_values.end()) {
+				return 0x2;
+			}
+			
+			std::map<std::string, BRS_Value>::const_iterator itemB = rec2->_values.find(field->Name);
+			if (itemB == rec2->_values.end()) {
+				return 0x2;
+			}
+
 			switch (field->field_type) {
 			case FieldType::BOOL:
-				if (val1.B != val2.B) return 0x2;
+				if (itemA->second.B != itemB->second.B) return 0x2;
 				break;
 			case FieldType::FIXED:
 			case FieldType::REAL:
-				if (val1.R != val2.R) return 0x2;
+				if (itemA->second.R != itemB->second.R) return 0x2;
 				break;
 			case FieldType::ALFANUM:
 			case FieldType::NUMERIC:
 			case FieldType::TEXT:
-				if (val1.S != val2.S) return 0x2;
+				if (itemA->second.S != itemB->second.S) return 0x2;
 				break;
 			default:
 				// unknown field type
@@ -216,14 +224,4 @@ FieldDescr* Record::_getFieldDescrByName(const std::string& field_name) const
 		}
 	}
 	return nullptr; // field not found
-}
-
-size_t Record::_getFieldDescrIndexByName(const std::string& field_name) const
-{
-	for (size_t i = 0; i < _file_d->FldD.size(); i++) {
-		if (_file_d->FldD[i]->Name == field_name) {
-			return i;
-		}
-	}
-	return static_cast<size_t>(-1); // field not found
 }

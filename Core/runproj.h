@@ -8,7 +8,6 @@ class DataEditor;
 
 class ProjectRunner {
 public:
-	bool IsCurrChpt(FileD* file_d);
 	void ReleaseFilesAndLinksAfterChapter(EditD* edit);
 	bool ChptDel(FileD* file_d, DataEditor* data_editor);
 	WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit); /* 0-O.K., 1-fail, 2-fail && undo*/

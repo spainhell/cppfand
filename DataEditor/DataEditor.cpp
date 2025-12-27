@@ -2,6 +2,7 @@
 #include <memory>
 #include <regex>
 
+#include "Dependency.h"
 #include "EditReader.h"
 #include "EditableField.h"
 #include "../TextEditor/TextEditor.h"
@@ -2690,7 +2691,7 @@ bool DataEditor::OldRecDiffers()
 	XString x;
 	FieldDescr* f = nullptr;
 	bool result = false;
-	if (runner_->IsCurrChpt(file_d_) || (
+	if (file_d_ == CRdb->project_file || (
 		// TODO: FandSQL condition removed
 		(!file_d_->NotCached()))) return result;
 	Record* rec = new Record(file_d_);
@@ -3412,7 +3413,7 @@ void DataEditor::AutoReport()
 	PrintView = false;
 	const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
 	if (auto_report->SelForAutoRprt(RO)) {
-		SpecFDNameAllowed = runner_->IsCurrChpt(file_d_);
+		SpecFDNameAllowed = (file_d_ == CRdb->project_file);
 		auto_report->RunAutoReport(RO);
 		SpecFDNameAllowed = false;
 	}
@@ -3788,7 +3789,7 @@ bool DataEditor::GetChpt(pstring Heslo, int& NN)
 
 	for (int j = 1; j <= file_d_->FF->NRecs; j++) {
 		file_d_->ReadRec(j, current_rec_);
-		if (runner_->IsCurrChpt(file_d_)) {
+		if (file_d_ == CRdb->project_file) {
 			s = OldTrailChar(' ', current_rec_->LoadS(ChptName));
 			short i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
@@ -3837,7 +3838,7 @@ void DataEditor::UpdateTextField(std::string& text)
 void DataEditor::UpdateTxtPos(WORD TxtPos)
 {
 	LockMode md;
-	if (runner_->IsCurrChpt(file_d_)) {
+	if (file_d_ == CRdb->project_file) {
 		md = file_d_->NewLockMode(WrMode);
 		SetWasUpdated();
 		current_rec_->SaveR(ChptTxtPos, (short)TxtPos);
@@ -3909,7 +3910,7 @@ label1:
 	if (CRec() < CNRecs()) {
 		HdTxt[3] = 0x19; // ^Y
 	}
-	if (runner_->IsCurrChpt(file_d_)) {
+	if (file_d_ == CRdb->project_file) {
 		HdTxt = current_rec_->LoadS(ChptTyp) + ':' + current_rec_->LoadS(ChptName) + HdTxt;
 		TxtPos = trunc(current_rec_->LoadR(ChptTxtPos));
 		Breaks = BreakKeys2;
@@ -4020,7 +4021,7 @@ label2:
 		break;
 	}
 	case __SHIFT_F1:
-		if (runner_->IsCurrChpt(file_d_) || (file_d_ == CRdb->help_file)) {
+		if (file_d_ == CRdb->project_file || (file_d_ == CRdb->help_file)) {
 			if ((iStk < maxStk) && WriteCRec(false, Displ) && GetChpt(heslo, i)) {
 				params_->Append = false;
 				iStk++;
@@ -4233,7 +4234,7 @@ void DataEditor::PromptSelect()
 	else {
 		Txt = "";
 	}
-	if (runner_->IsCurrChpt(file_d_)) {
+	if (file_d_ == CRdb->project_file) {
 		runner_->ReleaseFilesAndLinksAfterChapter(edit_);
 	}
 	ReleaseStore(&edit_->AfterE);
@@ -4291,7 +4292,7 @@ void DataEditor::SwitchRecs(short Delta)
 	DisplAllWwRecs();
 	DisplRecNr(CRec());
 	edit_->EdUpdated = true;
-	if (runner_->IsCurrChpt(file_d_)) SetCompileAll();
+	if (file_d_ == CRdb->project_file) SetCompileAll();
 label1:
 	file_d_->OldLockMode(md);
 
@@ -4380,13 +4381,13 @@ void DataEditor::ImbeddEdit()
 
 	R = CRdb;
 	while (R != nullptr) {
-		for (size_t i = 1; i < R->v_files.size(); i++) {
-			FileD* f = R->v_files[i];
+		for (size_t i = 0; i < R->data_files.size(); i++) {
+			FileD* f = R->data_files[i];
 			if (data_editor2->ForNavigate(f)) {
 				if (f->ViewNames.empty()) {
 					std::string s = f->Name;
 					if (R != CRdb) {
-						s = R->v_files[0]->Name + "." + s;
+						s = R->project_file->Name + "." + s;
 					}
 					ww.PutSelect(s);
 				}
@@ -4398,7 +4399,7 @@ void DataEditor::ImbeddEdit()
 						}
 						else {
 							if (R != CRdb) {
-								s = R->v_files[0]->Name + "." + s;
+								s = R->project_file->Name + "." + s;
 							}
 							ww.PutSelect(s);
 						}
@@ -4420,10 +4421,10 @@ void DataEditor::ImbeddEdit()
 			std::string ss2 = s2;
 			do {
 				R = R->ChainBack;
-			} while (R->v_files[0]->Name != ss2);
+			} while (R->project_file->Name != ss2);
 		}
 
-		for (FileD* v_file : R->v_files) {
+		for (FileD* v_file : R->data_files) {
 			if (data_editor2->EquFileViewName(v_file, s1, &EO)) {
 				data_editor2->file_d_ = v_file;
 			}
@@ -4995,7 +4996,7 @@ void DataEditor::DisplCtrlAltLL(WORD Flags)
 			MsgLine = edit_->CtrlLast;
 			WrLLMsgTxt(edit_->CtrlLast);
 		}
-		else if (runner_->IsCurrChpt(file_d_)) WrLLMsg(125);
+		else if (file_d_ == CRdb->project_file) WrLLMsg(125);
 		else if (params_->EdRecVar) WrLLMsg(154);
 		else WrLLMsg(127);
 	}
@@ -5740,7 +5741,7 @@ label81:
 						}
 						case __ALT_F2:
 						case __ALT_F3:
-							if (runner_->IsCurrChpt(file_d_)) {
+							if (file_d_ == CRdb->project_file) {
 								if (KbdChar == __ALT_F3) {
 									ForAllFDs(ForAllFilesOperation::close_passive_fd);
 									runner_->EditHelpOrCat(KbdChar, 0, "");
@@ -5805,7 +5806,7 @@ label81:
 						case __CTRL_F9:
 						case __CTRL_F10:
 						case __ALT_F9:
-							if (runner_->IsCurrChpt(file_d_)) {
+							if (file_d_ == CRdb->project_file) {
 								Brk = 2;
 								SetEdRecNoEtc(0);
 								goto label71;

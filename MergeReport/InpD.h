@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "OutpRD.h"
+#include "ConstListEl.h"
 
 struct LvDescr;
 class XScan;
@@ -12,8 +13,11 @@ class KeyFldD;
 class FrmlElemSum;
 class LogicControl;
 
-struct InpD
+class InpD
 {
+public:
+	InpD();
+	~InpD();
 	XScan* Scan = nullptr;
 	bool AutoSort = false;
 	std::vector<KeyFldD*> SK;

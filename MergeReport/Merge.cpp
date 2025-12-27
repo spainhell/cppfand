@@ -181,7 +181,7 @@ void Merge::Run()
 {
 	short MinIi = 0, res = 0, NEof = 0;      /* RunMerge - body */
 	bool EmptyGroup = false, b = false;
-	//Compiler::ProcStack.push_front(&LVBD); //PushProcStk();
+
 	FileD* f = nullptr;
 	Record* rec = nullptr;
 
@@ -190,64 +190,77 @@ void Merge::Run()
 	MergOpGroup.Group = 1.0;
 	RunMsgOn('M', NRecsAll);
 	NRecsAll = 0;
+
 	for (short i = 1; i <= MaxIi; i++) {
 		ReadInpFileM(IDA[i]);
 	}
-label1:
-	MinIi = 0; NEof = 0;
-	for (short i = 1; i <= MaxIi; i++) /* !!! with IDA[I]^ do!!! */ {
-		f = IDA[i]->Scan->FD;
-		IDA[i]->IRec = IDA[i]->Scan->IRec;
-		ZeroSumFlds(IDA[i]->Sum);
-		if (IDA[i]->Scan->eof) NEof++;
-		if (OldMFlds.empty()) {
-			IDA[i]->Exist = !IDA[i]->Scan->eof;
-			MinIi = 1;
-		}
-		else {
+
+	while (true) {
+		MinIi = 0; NEof = 0;
+		for (short i = 1; i <= MaxIi; i++) {
+			f = IDA[i]->Scan->FD;
 			rec = IDA[i]->ForwRecPtr;
-			IDA[i]->Exist = false;
-			IDA[i]->Count = 0.0;
-			if (!IDA[i]->Scan->eof) {
-				if (MinIi == 0) goto label2;
-				res = CompMFlds(f, rec, IDA[i]->MFld);
-				if (res != _gt) {
-					if (res == _lt)
-					{
-					label2:
+			IDA[i]->IRec = IDA[i]->Scan->IRec;
+			ZeroSumFlds(IDA[i]->Sum);
+
+			if (IDA[i]->Scan->eof) NEof++;
+
+			if (OldMFlds.empty()) {
+				IDA[i]->Exist = !IDA[i]->Scan->eof;
+				MinIi = 1;
+			}
+			else {
+				rec = IDA[i]->ForwRecPtr;
+				IDA[i]->Exist = false;
+				IDA[i]->Count = 0.0;
+				if (!IDA[i]->Scan->eof) {
+					if (MinIi == 0) {
 						SetOldMFlds(f, rec, IDA[i]->MFld);
 						MinIi = i;
+						IDA[i]->Exist = true;
 					}
-					IDA[i]->Exist = true;
+					else {
+						res = CompMFlds(f, rec, IDA[i]->MFld);
+						if (res != _gt) {
+							if (res == _lt) {
+								SetOldMFlds(f, rec, IDA[i]->MFld);
+								MinIi = i;
+							}
+							IDA[i]->Exist = true;
+						}
+					}
 				}
 			}
 		}
-	}
-	for (short i = 1; i <= MinIi - 1; i++) {
-		IDA[i]->Exist = false;
-	}
-	if (NEof == MaxIi) {
-		b = SaveCache(0, f->FF->Handle);
-		RunMsgOff();
-		if (!b) {
-			GoExit(MsgLine);
+
+		for (short i = 1; i <= MinIi - 1; i++) {
+			IDA[i]->Exist = false;
 		}
-		CloseInpOutp();
-		//PopProcStk();
-		return;
+
+		if (NEof == MaxIi) {
+			b = SaveCache(0, f->FF->Handle);
+			RunMsgOff();
+			if (!b) {
+				GoExit(MsgLine);
+			}
+			CloseInpOutp();
+			return;
+		}
+
+		EmptyGroup = false;
+
+		if (Join) {
+			JoinProc(f, rec, 1, EmptyGroup);
+		}
+		else {
+			MergeProc(f, rec);
+		}
+
+		if (!EmptyGroup) {
+			WriteOutp(OutpRDs);
+			MergOpGroup.Group = MergOpGroup.Group + 1.0;
+		}
 	}
-	EmptyGroup = false;
-	if (Join) {
-		JoinProc(f, rec, 1, EmptyGroup);
-	}
-	else {
-		MergeProc(f, rec);
-	}
-	if (!EmptyGroup) {
-		WriteOutp(OutpRDs);
-		MergOpGroup.Group = MergOpGroup.Group + 1.0;
-	}
-	goto label1;
 }
 
 FrmlElem* Merge::RdFldNameFrml(char& FTyp)
@@ -497,37 +510,31 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 {
 	char FTyp = 0;
 	FileD* outputFile = outputRD->OD->FD;
-	void* outputRecPointer = outputRD->OD->RecPtr;
+	Record* outputRecPointer = outputRD->OD->RecPtr;
 
 	AssignD* newAssign = new AssignD();
 	FieldDescr* inputField = FindIiandFldD(outputField->Name);
-	newAssign->inputFldD = inputField;
+	newAssign->inputField = inputField;
+	newAssign->outputField = outputField;
 
 	if ((inputField == nullptr) || (inputField->frml_type != outputField->frml_type) ||
 		(inputField->frml_type == 'R') && (inputField->field_type != outputField->field_type))
 	{
 		newAssign->Kind = MInstrCode::_zero;
-		newAssign->outputFldD = outputField;
 	}
 	else {
 		FileD* inputFile = InpFD_M(Ii);
-		void* inputRecPointer = IDA[Ii]->RecPtr;
-		if ((inputFile->FF->file_type == outputFile->FF->file_type) && base_compiler->FldTypIdentity(inputField, outputField) && (inputField->field_type != FieldType::TEXT)
-			&& (inputField->isStored()) && (outputField->Flg == inputField->Flg))
-		{
+		Record* inputRecPointer = IDA[Ii]->RecPtr;
+		if (
+			(inputFile->FF->file_type == outputFile->FF->file_type)
+			&& base_compiler->FldTypIdentity(inputField, outputField)
+			//&& (inputField->field_type != FieldType::TEXT)
+			&& (inputField->isStored())
+			&& (outputField->Flg == inputField->Flg)
+			) {
 			newAssign->Kind = MInstrCode::_move;
-			newAssign->L = outputField->NBytes;
-			newAssign->ToPtr = (uint8_t*)outputRecPointer + outputField->Displ;
-			newAssign->FromPtr = (uint8_t*)inputRecPointer + inputField->Displ;
-			//if (RD_Ass != nullptr
-			//	&& RD_Ass->Kind == _move
-			//	&& (uintptr_t)(RD_Ass->FromPtr + RD_Ass->L) == (uintptr_t)newAssign->FromPtr
-			//	&& (uintptr_t)(RD_Ass->ToPtr + RD_Ass->L) == (uintptr_t)newAssign->ToPtr)
-			//{
-			//	RD_Ass->L += newAssign->L;
-			//	ReleaseStore(newAssign);
-			//	goto label1;
-			//}
+			newAssign->inputRecord = inputRecPointer;
+			newAssign->outputRecord = outputRecPointer;
 		}
 		else {
 			newAssign->Kind = MInstrCode::_output;
@@ -538,9 +545,8 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 			newAssign->Frml = base_compiler->FrmlContxt(Z, inputFile, IDA[Ii]->RecPtr);
 		}
 	}
-	//newAssign->pChain = RD_Ass;
+
 	outputRD->Ass.push_back(newAssign);
-	//label1:
 }
 
 FrmlElem* Merge::AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op)
@@ -595,11 +601,10 @@ bool Merge::FindAssignToF(std::vector<AssignD*> A, FieldDescr* F)
 
 void Merge::MakeImplAssign()
 {
-	AssignD* AD = nullptr;
 	if (RD->OD == nullptr) return;
-	for (auto& FNew : RD->OD->FD->FldD) { /*implic.assign   name = name*/
-		if (((FNew->Flg & f_Stored) != 0) && !FindAssignToF(RD->Ass, FNew)) {
-			ImplAssign(RD, FNew);
+	for (FieldDescr* output_field : RD->OD->FD->FldD) { /*implic.assign   name = name*/
+		if (output_field->isStored() && !FindAssignToF(RD->Ass, output_field)) {
+			ImplAssign(RD, output_field);
 		}
 	}
 }
@@ -822,74 +827,86 @@ void Merge::SetOldMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 
 void Merge::ReadInpFileM(InpD* ID)
 {
-	//CRecPtr = ID->ForwRecPtr;
-	Record* rec = new Record(ID->Scan->FD /*, ID->ForwRecPtr*/);
-label1:
-	ID->Scan->GetRec(rec);
-	if (ID->Scan->eof) return;
-	NRecsAll++;
-	RunMsgN(NRecsAll);
-	if (!RunBool(ID->Scan->FD, ID->Bool, rec)) {
-		goto label1;
+	Record* rec = ID->ForwRecPtr;
+	while (true) {
+		ID->Scan->GetRec(rec);
+		if (ID->Scan->eof) return;
+		NRecsAll++;
+		RunMsgN(NRecsAll);
+		if (!RunBool(ID->Scan->FD, ID->Bool, rec)) {
+			continue;
+		}
+		break;
 	}
-	delete rec; rec = nullptr;
 }
 
-void Merge::RunAssign(FileD* file_d, Record* record, std::vector<AssignD*> Assigns)
+void Merge::RunAssign(FileD* file_d, Record* record, const std::vector<AssignD*>& Assigns)
 {
-	for (auto* A : Assigns) {
-		/* !!! with A^ do!!! */
-		switch (A->Kind) {
+	for (AssignD* assign : Assigns) {
+		switch (assign->Kind) {
 		case MInstrCode::_move: {
-			if (A != nullptr && A->FromPtr != nullptr && A->ToPtr != nullptr) {
-				memcpy(A->ToPtr, A->FromPtr, A->L);
+			if (assign->inputRecord != nullptr && assign->inputField != nullptr
+				&& assign->outputRecord != nullptr && assign->outputField != nullptr) {
+				switch (assign->outputField->frml_type) {
+				case 'S': {
+					std::string s = assign->inputRecord->LoadS(assign->inputField);
+					assign->outputRecord->SaveS(assign->outputField, s);
+					break;
+				}
+				case 'R': {
+					double r = assign->inputRecord->LoadR(assign->inputField);
+					assign->outputRecord->SaveR(assign->outputField, r);
+					break;
+				}
+				case 'B': {
+					bool b = assign->inputRecord->LoadB(assign->inputField);
+					assign->outputRecord->SaveB(assign->outputField, b);
+					break;
+				}
+				}
+				break;
 			}
-			break;
 		}
 		case MInstrCode::_zero: {
-			switch (A->outputFldD->frml_type) {
+			switch (assign->outputField->frml_type) {
 			case 'S': {
-				//file_d->saveS(A->outputFldD, "", record); 
-				record->SaveS(A->outputFldD, "");
+				record->SaveS(assign->outputField, "");
 				break;
 			}
 			case 'R': {
-				//file_d->saveR(A->outputFldD, 0, record); 
-				record->SaveR(A->outputFldD, 0);
+				record->SaveR(assign->outputField, 0);
 				break;
 			}
 			case 'B': {
-				//file_d->saveB(A->outputFldD, false, record); 
-				record->SaveB(A->outputFldD, false);
+				record->SaveB(assign->outputField, false);
 				break;
 			}
 			}
 			break;
 		}
 		case MInstrCode::_output: {
-			// TODO: Assign has to be changed to Record !!! 
-			// AssgnFrml(CFile, CRecPtr, A->OFldD, A->Frml, A->Add);
+			AssgnFrml(record, assign->OFldD, assign->Frml, assign->Add);
 			break;
 		}
 		case MInstrCode::_locvar: {
-			LVAssignFrml(nullptr, A->LV, A->Add, A->Frml, nullptr);
+			LVAssignFrml(nullptr, assign->LV, assign->Add, assign->Frml, nullptr);
 			break;
 		}
 		case MInstrCode::_parfile: {
-			AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add);
+			AsgnParFldFrml(assign->FD, assign->PFldD, assign->Frml, assign->Add);
 			break;
 		}
 		case MInstrCode::_ifThenElse: {
-			if (RunBool(nullptr, A->Bool, nullptr)) {
-				RunAssign(file_d, record, A->Instr);
+			if (RunBool(nullptr, assign->Bool, nullptr)) {
+				RunAssign(file_d, record, assign->Instr);
 			}
 			else {
-				RunAssign(file_d, record, A->ElseInstr);
+				RunAssign(file_d, record, assign->ElseInstr);
 			}
 			break;
 		}
-		}
 	}
+}
 }
 
 void Merge::WriteOutp(std::vector<OutpRD*>& v_outputs)
@@ -1033,20 +1050,20 @@ void Merge::SetMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
 		F = m->FldD;
 		switch (F->frml_type) {
 		case 'S': {
-				//file_d->saveS(F, it0->S, record->GetRecord());
-				record->SaveS(F, it0->S);
-				break;
-			}
+			//file_d->saveS(F, it0->S, record->GetRecord());
+			record->SaveS(F, it0->S);
+			break;
+		}
 		case 'R': {
-				//file_d->saveR(F, it0->R, record->GetRecord());
-				record->SaveR(F, it0->R);
-				break;
-			}
+			//file_d->saveR(F, it0->R, record->GetRecord());
+			record->SaveR(F, it0->R);
+			break;
+		}
 		default: {
-				//file_d->saveB(F, it0->B, record->GetRecord()); 
-				record->SaveB(F, it0->B);
-				break;
-			}
+			//file_d->saveB(F, it0->B, record->GetRecord()); 
+			record->SaveB(F, it0->B);
+			break;
+		}
 		}
 
 		if (it0 != OldMFlds.end()) ++it0;

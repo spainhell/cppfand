@@ -63,8 +63,13 @@ void CloseFANDFiles()
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {
-		FileD* f = RD->v_files[0];
-		for (FileD* f : RD->v_files) {
+		//if (RD->project_file != nullptr) {
+		//	RD->project_file->CloseFile();
+		//}
+		if (RD->help_file != nullptr) {
+			RD->help_file->CloseFile();
+		}
+		for (FileD* f : RD->data_files) {
 			f->FF->ExLMode = f->FF->LMode;
 			f->CloseFile();
 		}
@@ -93,21 +98,17 @@ void OpenFANDFiles()
 
 	while (RD != nullptr) {
 		if (IsTestRun) {
-			RD->v_files[0]->OpenF(CPath, Exclusive, true);
+			RD->project_file->OpenF(CPath, Exclusive, true);
 		}
 		else {
-			RD->v_files[0]->OpenF(CPath, RdOnly, true);
+			RD->project_file->OpenF(CPath, RdOnly, true);
 		}
 
-		auto it0 = RD->v_files.begin();
-		++it0;
-
-		while (it0 != RD->v_files.end()) {
-			if ((*it0)->FF->ExLMode != NullMode) {
-				(*it0)->OpenF(CPath, Shared, false);
-				md = (*it0)->NewLockMode((*it0)->FF->ExLMode);
+		for (FileD* file : RD->data_files) {
+			if (file->FF->ExLMode != NullMode) {
+				file->OpenF(CPath, Shared, false);
+				md = file->NewLockMode(file->FF->ExLMode);
 			}
-			++it0;
 		}
 
 		RD = RD->ChainBack;
@@ -132,7 +133,7 @@ bool ActiveRdbOnDrive(WORD D)
 	auto result = true;
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		if (R->v_files[0]->FF->Drive == D) return result;
+		if (R->project_file->FF->Drive == D) return result;
 		R = R->ChainBack;
 	}
 	result = false;
@@ -144,7 +145,10 @@ void CloseFilesOnDrive(WORD drive)
 	RdbD* R = CRdb;
 
 	while (R != nullptr) {
-		for (FileD* f : R->v_files) {
+		if (R->project_file->FF->Drive == drive) {
+			R->project_file->CloseFile();
+		}
+		for (FileD* f : R->data_files) {
 			if (f->FF->Drive == drive) {
 				f->CloseFile();
 			}
@@ -252,16 +256,25 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 	isRdb = false;
 
 	while (R != nullptr) {
-		if (!R->v_files.empty()) {
-			FileD* F = R->v_files[0];
-			if ((file_d == F) && (file_d->CatIRec != 0)) {
+		if (file_d == R->project_file) {
+			if ((file_d == R->project_file) && (file_d->CatIRec != 0)) {
 				dir = R->RdbDir;
 				isRdb = true;
 				return true;
 			}
+			if ((file_d == R->help_file) || (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::RDB)) {
+				//.RDB
+				dir = R->RdbDir;
+				return true;
+			}
 		}
 
-		for (FileD* f : R->v_files) {
+		if (file_d == R->help_file) {
+			dir = R->RdbDir;
+			return true;
+		}
+
+		for (FileD* f : R->data_files) {
 			if (file_d == f) {
 				if ((file_d == R->help_file) || (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::RDB)) {
 					//.RDB

@@ -108,9 +108,6 @@
     <ClCompile Include="Users.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Dependency.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Implicit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -225,9 +222,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Users.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Dependency.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Implicit.h">
