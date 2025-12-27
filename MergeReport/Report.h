@@ -4,7 +4,7 @@
 #include "../Core/Compiler.h"
 #include "../Core/rdrun.h"
 
-struct InpD;
+class InpD;
 class KeyFldD;
 
 struct TTD

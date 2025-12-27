@@ -198,7 +198,7 @@ void RunProcedure::AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>&
 	for (AssignD* a : A) {
 		switch (a->Kind) {
 		case MInstrCode::_zero: {
-			FieldDescr* F = a->outputFldD;
+			FieldDescr* F = a->outputField;
 			switch (F->frml_type) {
 			case 'S': { RP1->SaveS(F, ""); break; }
 			case 'R': { RP1->SaveR(F, 0.0); break; }
@@ -1064,19 +1064,19 @@ void RunProcedure::PutTxt(Instr_puttxt* PD)
 	//	throw std::exception("runproc.cpp PutTxt() not implemented for non-FandFile");
 	//}
 
-	const bool canCopyT = CanCopyT(file_d, nullptr, z, &TF02, &TFD02, TF02Pos, nullptr);
+	//const bool canCopyT = CanCopyT(file_d, nullptr, z, &TF02, &TFD02, TF02Pos, nullptr);
 
-	if (canCopyT) {
-		h = OpenHForPutTxt(PD);
-		path = CPath;
-		Fand0File::CopyTFStringToH(nullptr, h, TF02, TFD02, TF02Pos);
-		CPath = path;
-	}
-	else {
+	//if (canCopyT) {
+	//	h = OpenHForPutTxt(PD);
+	//	path = CPath;
+	//	Fand0File::CopyTFStringToH(nullptr, h, TF02, TFD02, TF02Pos);
+	//	CPath = path;
+	//}
+	//else {
 		std::string s = RunString(nullptr, z, nullptr);
 		h = OpenHForPutTxt(PD);
 		WriteH(h, s.length(), s.c_str());
-	}
+	//}
 
 	CPath = path;
 	TestCPathError();

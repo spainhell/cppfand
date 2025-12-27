@@ -2731,7 +2731,7 @@ std::vector<AssignD*> MakeImplAssign(Compiler* compiler, FileD* FD1, FileD* FD2)
 					|| (F1->frml_type == 'R')
 					&& (F1->field_type != F2->field_type)) {
 					A->Kind = MInstrCode::_zero;
-					A->outputFldD = F1;
+					A->outputField = F1;
 				}
 				else {
 					A->Kind = MInstrCode::_output;

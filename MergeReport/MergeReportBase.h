@@ -31,14 +31,14 @@ protected:
 	void SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, Record* record);
 
 	WORD Ii, Oi, SumIi;
-	char WhatToRd; /*i=Oi output FDs;O=O outp.FDs*/
-	int NRecsAll;
+	char WhatToRd = '\0'; /*i=Oi output FDs;O=O outp.FDs*/
+	int NRecsAll = 0;
 
 	InpD* IDA[30];
-	short MaxIi;
+	short MaxIi = 0;
 
 	std::vector<ConstListEl> OldMFlds;
 	std::vector<ConstListEl> NewMFlds;
 
-	Compiler* base_compiler;
+	Compiler* base_compiler = nullptr;
 };

@@ -18,7 +18,7 @@ enum class ValueType : uint8_t {
 class BRS_Value
 {
 public:
-	ValueType value_type = ValueType::UNKNOWN;
+	//ValueType value_type = ValueType::UNKNOWN;
 
 	bool B = false;
 	double R = 0.0;

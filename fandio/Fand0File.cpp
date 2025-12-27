@@ -222,12 +222,18 @@ void Fand0File::DecNRecs(int n)
 	WasWrRec = true;
 }
 
-void Fand0File::PutRec(Record* record, int& i_rec)
+size_t Fand0File::PutRec(Record* record, int& i_rec)
 {
 	NRecs++;
-	WriteData(i_rec * RecLen + FirstRecPos, RecLen, record);
+	
+	std::map<FieldDescr*, int32_t> unchanged_fields;
+	std::unique_ptr buffer = _getRowDataFromRecord(record, unchanged_fields);
+	size_t result = WriteData(i_rec * RecLen + FirstRecPos, RecLen, buffer.get());
+
 	i_rec++;
 	Eof = true;
+
+	return result;
 }
 
 bool Fand0File::loadB(FieldDescr* field_d, uint8_t* record)
@@ -1086,37 +1092,52 @@ void Fand0File::RecallRec(int recNr, Record* record)
 	WriteRec(recNr, record);
 }
 
-void Fand0File::GenerateNew000File(XScan* x, Record* record, void (*msgFuncUpdate)(int32_t))
+void Fand0File::GenerateNew000File(XScan* x, void (*msgFuncUpdate)(int32_t))
 {
-	// vytvorime si novy buffer pro data,
-	// ten pak zapiseme do souboru naprimo (bez cache)
+	//// vytvorime si novy buffer pro data,
+	//// ten pak zapiseme do souboru naprimo (bez cache)
 
-	const unsigned short header000len = 6; // 4B pocet zaznamu, 2B delka jednoho zaznamu
-	// z puvodniho .000 vycteme pocet zaznamu a jejich delku
-	const size_t totalLen = x->FD->FF->NRecs * x->FD->FF->RecLen + header000len;
-	unsigned char* buffer = new unsigned char[totalLen] { 0 };
-	size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
+	//const unsigned short header000len = 6; // 4B pocet zaznamu, 2B delka jednoho zaznamu
+	//// z puvodniho .000 vycteme pocet zaznamu a jejich delku
+	//const size_t totalLen = x->FD->FF->NRecs * x->FD->FF->RecLen + header000len;
+	//unsigned char* buffer = new unsigned char[totalLen] { 0 };
+	//size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
+
+	//while (!x->eof) {
+	//	if (msgFuncUpdate) {
+	//		msgFuncUpdate(x->IRec);
+	//	}
+	//	NRecs++;
+	//	memcpy(&buffer[offset], record, RecLen);
+	//	offset += RecLen;
+	//	_parent->IRec++;
+	//	Eof = true;
+	//	x->GetRec(record);
+	//}
+
+	//// zapiseme hlavicku
+	//memcpy(&buffer[0], &NRecs, 4);
+	//memcpy(&buffer[4], &RecLen, 2);
+
+	//// provedeme primy zapis do souboru
+	//WriteH(Handle, totalLen, buffer);
+
+	//delete[] buffer; buffer = nullptr;
+
+	std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
+	
+	x->GetRec(record.get());
 
 	while (!x->eof) {
 		if (msgFuncUpdate) {
 			msgFuncUpdate(x->IRec);
 		}
-		NRecs++;
-		memcpy(&buffer[offset], record, RecLen);
-		offset += RecLen;
-		_parent->IRec++;
+		PutRec(record.get(), _parent->IRec);
 		Eof = true;
-		x->GetRec(record);
+		x->GetRec(record.get());
 	}
 
-	// zapiseme hlavicku
-	memcpy(&buffer[0], &NRecs, 4);
-	memcpy(&buffer[4], &RecLen, 2);
-
-	// provedeme primy zapis do souboru
-	WriteH(Handle, totalLen, buffer);
-
-	delete[] buffer; buffer = nullptr;
+	WrPrefix();
 }
 
 void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type)
@@ -1172,31 +1193,29 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, Operatio
 
 void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)())
 {
-	std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
-
 	std::vector<KeyInD*> empty;
-	XScan* Scan = new XScan(_parent, nullptr, empty, false);
-	Scan->Reset(nullptr, false, record.get());
-	ScanSubstWIndex(Scan, SK, OperationType::Sort);
-	FileD* FD2 = _parent->OpenDuplicateF(false);
+	XScan* scan = new XScan(_parent, nullptr, empty, false);
+	scan->Reset(nullptr, false, nullptr); // record not needed for sorting? previously there was a record allocated in this method
+	ScanSubstWIndex(scan, SK, OperationType::Sort);
+	FileD* subst_file = _parent->OpenDuplicateF(false);
 
 	if (msgFuncOn) {
-		msgFuncOn('S', Scan->NRecs);
+		msgFuncOn('S', scan->NRecs);
 	}
 
-	Scan->GetRec(record.get());
+	//Scan->GetRec(record.get());
 
 	// write data to a file .100
-	FD2->FF->GenerateNew000File(Scan, record.get(), msgFuncUpdate);
+	subst_file->FF->GenerateNew000File(scan, msgFuncUpdate);
 
-	SubstDuplF(FD2, false);
-	Scan->Close();
+	SubstDuplF(subst_file, false);
+	scan->Close();
 
 	if (msgFuncOff) {
 		msgFuncOff();
 	}
 
-	delete FD2; FD2 = nullptr;
+	delete subst_file; subst_file = nullptr;
 }
 
 void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
@@ -1576,15 +1595,12 @@ std::unique_ptr<uint8_t[]> Fand0File::_getRowDataFromRecord(Record* record, cons
 					if (it != unchanged_T_fields.end()) {
 						// unchanged field -> copy only the position
 						saveT(field, it->second, buffer.get());
-						break;
 					}
-					else
-					{
+					else {
 						// changed field -> save new value
 						saveS(_parent, field, val.S, buffer.get());
 					}
 				}
-				
 				break;
 			}
 			default:

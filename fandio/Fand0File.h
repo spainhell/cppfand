@@ -57,7 +57,7 @@ public:
 	size_t WriteRec(size_t rec_nr, Record* record);
 	void CreateRec(int n, Record* record);
 	void DeleteRec(int n, Record* record);
-	void PutRec(Record* record, int& i_rec);
+	size_t PutRec(Record* record, int& i_rec);
 
 	void CompileRecLen();
 	int UsedFileSize() const;
@@ -99,7 +99,7 @@ public:
 	void OverWrXRec(int RecNr, Record* P2, Record* P, Record* record);
 	void RecallRec(int recNr, Record* record);
 
-	void GenerateNew000File(XScan* x, Record* record, void (*msgFuncUpdate)(int32_t));
+	void GenerateNew000File(XScan* x, void (*msgFuncUpdate)(int32_t));
 	void CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type);
 	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type);
 	void SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)());

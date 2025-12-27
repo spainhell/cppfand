@@ -33,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BlkD.cpp" />
+    <ClCompile Include="InpD.cpp" />
     <ClCompile Include="OutpFD.h" />
     <ClCompile Include="ReportGenerator.cpp" />
     <ClCompile Include="Merge.cpp" />

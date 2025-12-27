@@ -24,11 +24,10 @@ enum class MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifThenElse };
 struct AssignD
 {
 	MInstrCode Kind = MInstrCode::_zero;
-	FieldDescr* inputFldD = nullptr;
-	FieldDescr* outputFldD = nullptr;
-	uint8_t* ToPtr = nullptr;
-	uint8_t* FromPtr = nullptr; 
-	WORD L = 0;
+	Record* inputRecord = nullptr;
+	FieldDescr* inputField = nullptr;
+	Record* outputRecord = nullptr;
+	FieldDescr* outputField = nullptr;
 	bool Add = false; FrmlElem* Frml = nullptr; FieldDescr* OFldD = nullptr;
 	bool Add1 = false; FrmlElem* Frml1 = nullptr; LocVar* LV = nullptr;
 	bool Add2 = false; FrmlElem* Frml2 = nullptr;

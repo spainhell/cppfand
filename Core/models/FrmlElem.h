@@ -5,7 +5,7 @@
 
 class Record;
 struct MergOpSt;
-struct InpD;
+class InpD;
 class XWKey;
 struct FuncD;
 class LinkD;
