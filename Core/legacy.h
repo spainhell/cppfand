@@ -51,7 +51,6 @@ void CloseGraph(); // IGNORE
 //WORD Random(WORD rozsah);
 
 WORD ParamCount(); // vrací počet parametrů příkazové řádky
-pstring ParamStr(short index);
 
 inline void Exit() { return; }
 
@@ -59,7 +58,6 @@ inline void Exit() { return; }
 inline void Halt(WORD code) { exit(code); }
 
 void FillChar(void* cil, int delka, size_t vypln);
-void Move(void* zdroj, void* cil, WORD delka);
 uint8_t Hi(WORD cislo);
 uint8_t Lo(WORD cislo);
 WORD Swap(WORD cislo);

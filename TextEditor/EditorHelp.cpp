@@ -152,7 +152,8 @@ void Help(RdbD* R, std::string name, bool InCWw)
 					iStk++;
 				}
 				else {
-					Move(&Stk[2], Stk, sizeof(Stk) - 4);
+					//Move(&Stk[2], Stk, sizeof(Stk) - 4);
+					memcpy(Stk, &Stk[2], sizeof(Stk - 4));
 				}
 
 				Stk[iStk].Rdb = R; Stk[iStk].FD = cf2;
@@ -226,7 +227,8 @@ void ClearHelpStkForCRdb()
 	WORD i = 1;
 	while (i <= iStk) {
 		if (Stk[i].Rdb == CRdb) {
-			Move(&Stk[i + 1], &Stk[i], (iStk - i) * 12);
+			//Move(&Stk[i + 1], &Stk[i], (iStk - i) * 12);
+			memcpy(&Stk[i], &Stk[i + 1], (iStk - i) * 12);
 			iStk--;
 		}
 		else {

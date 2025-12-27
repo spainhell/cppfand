@@ -39,6 +39,7 @@
     <ClCompile Include="Merge.cpp" />
     <ClCompile Include="Report.cpp" />
     <ClCompile Include="MergeReportBase.cpp" />
+    <ClCompile Include="RprtOpt.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

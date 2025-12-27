@@ -116,15 +116,6 @@ short CompReal(double R1, double R2, short M)
 	return _equ;
 }
 
-LongStr* CopyToLongStr(pstring& SS)
-{
-	WORD l = SS.length();
-	LongStr* s = new LongStr(l);
-	s->LL = l;
-	Move(&SS[1], s->A, l);
-	return s;
-}
-
 pstring LeadChar(char C, pstring S)
 {
 	// TODO: do it better

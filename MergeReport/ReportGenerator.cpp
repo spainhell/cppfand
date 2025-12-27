@@ -247,13 +247,12 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 {
 	std::string s;
 
-	// CFile = RO->FDL[0]->FD;
+	FileD* report_file = RO->FDL[0]->FD;
 	ARMode = RO->Mode;
 	NLevels = RO->Ctrl.size();
 	PFldDs.clear();
-	//FieldListEl* fl = RO->Flds;
-	//while (fl != nullptr) {
-	for (auto f : RO->Flds) {
+
+	for (FieldDescr* f : RO->Flds) {
 		PFldD d = PFldD();
 		d.FldD = f;
 		d.IsSum = FieldInList(f, RO->Sum);
@@ -271,18 +270,18 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 			//ReleaseStore(d);
 		}
 		else {
-			//ChainLast(PFldDs, d);
 			PFldDs.push_back(d);
 		}
 	}
 
 	Design(RO);
 
-	// Txt = new LongStr(2); // (LongStr*)GetZStore(2);
 	std::string report = "";
 	report.reserve(2048);
 
-	if ((ARMode == _AErrRecs)) WrStr(report, "var noErrRecs:real;\r\n");
+	if ((ARMode == _AErrRecs)) {
+		WrStr(report, "var noErrRecs:real;\r\n");
+	}
 	WrStr(report, "#I1_");
 	WrStr(report, RO->FDL[0]->FD->Name);
 	if (!RO->SK.empty()) {
@@ -294,11 +293,17 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	std::vector<KeyFldD*>::iterator it0 = RO->SK.begin();
 
 	for (FieldDescr* f : RO->Ctrl) {
-		if (!first) WrChar(report, ',');
-		//FieldDescr* f = fl2->FldD;
+		if (!first) {
+			WrChar(report, ',');
+		}
+
 		if ((it0 != RO->SK.end()) && (f == (*it0)->FldD)) {
-			if ((*it0)->Descend) WrChar(report, '>');
-			if ((*it0)->CompLex) WrChar(report, '~');
+			if ((*it0)->Descend) {
+				WrChar(report, '>');
+			}
+			if ((*it0)->CompLex) {
+				WrChar(report, '~');
+			}
 			++it0; // = (KeyFldD*)it0->pChain;
 		}
 		else if (f->field_type == FieldType::ALFANUM) {
@@ -307,20 +312,28 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		else {
 			// do nothing
 		}
+
 		WrStr(report, f->Name);
-		//fl2 = (FieldListEl*)fl2->pChain;
 		first = false;
 	}
 
 	if (it0 != RO->SK.end()) {
-		if (!first) WrChar(report, ';');
+		if (!first) {
+			WrChar(report, ';');
+		}
 		first = true;
 		while (it0 != RO->SK.end()) {
-			if (!first) WrChar(report, ',');
-			if ((*it0)->Descend) WrChar(report, '>');
-			if ((*it0)->CompLex) WrChar(report, '~');
+			if (!first) {
+				WrChar(report, ',');
+			}
+			if ((*it0)->Descend) {
+				WrChar(report, '>');
+			}
+			if ((*it0)->CompLex) {
+				WrChar(report, '~');
+			}
 			WrStr(report, (*it0)->FldD->Name);
-			++it0; // = (KeyFldD*)it0->pChain;
+			++it0;
 			first = false;
 		}
 	}
@@ -413,7 +426,7 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	WrStr(report, "\r\n#DH .notsolo;\r\n");
 	if (ARMode != _ATotal) {
 		WrStr(report, "\r\n#DE ");
-		WrLevel(report, 0);
+		WrLevel(report_file, report, 0);
 	}
 	for (size_t i = 1; i <= NLevels; i++) {
 		WrStr(report, "\r\n#CF_");
@@ -422,11 +435,11 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 			if (d->IsCtrl && (d->Level == i)) WrStr(report, d->FldD->Name);
 		}
 		WrChar(report, ' ');
-		WrLevel(report, i);
+		WrLevel(report_file, report, i);
 	}
 	if ((!RO->Ctrl.empty()) || (!RO->Sum.empty())) {
 		WrStr(report, "\r\n#RF (sum(1)>0) ");
-		WrLevel(report, NLevels + 1);
+		WrLevel(report_file, report, NLevels + 1);
 	}
 	if (WithNRecs) {
 		WrStr(report, "\r\n#RF ");
@@ -470,17 +483,21 @@ void ReportGenerator::WrStr(std::string& report, const char* s)
 	report.append(s);
 }
 
-void ReportGenerator::WrLevel(std::string& report, int Level)
+void ReportGenerator::WrLevel(FileD* file_d, std::string& report, int Level)
 {
 	bool first; FieldDescr* field;
 	std::string s;
 	bool b = (Level == 0) && (ARMode == _AErrRecs);
-	if (b) WrStr(report, "(warning) { noErrRecs+=1},");
+	if (b) {
+		WrStr(report, "(warning) { noErrRecs+=1},");
+	}
 	first = true;
 	for (size_t i = 0; i < PFldDs.size(); i++) /*while (d != nullptr)*/ {
 		PFldD* d = &PFldDs[i];
 		if ((Level == 0) || d->IsSum || d->IsCtrl && (d->Level >= Level)) {
-			if (!first) WrChar(report, ',');
+			if (!first) {
+				WrChar(report, ',');
+			}
 			field = d->FldD;
 			s = field->Name;
 			if ((Level != 0) && d->IsSum) {
@@ -490,29 +507,33 @@ void ReportGenerator::WrLevel(std::string& report, int Level)
 				WrStr(report, "strdate(");
 				WrStr(report, s);
 				WrStr(report, ",'");
-				//x = FieldDMask(f);
 				std::string x = field->Mask;
 				ReplaceChar(x, '\'', '\"');
 				WrStr(report, x);
 				WrStr(report, "')");
 			}
-			else WrStr(report, s);
+			else {
+				WrStr(report, s);
+			}
 			first = false;
 		}
-		//d = d->pChain;
 	}
 	if (b) {
-		if (!first) WrChar(report, ',');
+		if (!first) {
+			WrChar(report, ',');
+		}
 		WrStr(report, "errortext+cond(^error:' ??')");
 	}
 	WrStr(report, ";\r\n");
 	int col = 1;
-	FileD* file = nullptr;
-	if (file->FF->file_type == FandFileType::RDB) WrChar(report, 0x11);
+
+	if (file_d->FF->file_type == FandFileType::RDB) {
+		WrChar(report, 0x11);
+	}
 
 	for (size_t i = 0; i < PFldDs.size(); i++) {
 		PFldD* d = &PFldDs[i];
-		if ((file->FF->file_type == FandFileType::RDB) && (i + 1 == PFldDs.size())) {
+		if ((file_d->FF->file_type == FandFileType::RDB) && (i + 1 == PFldDs.size())) {
 			WrChar(report, 0x11);
 		}
 		if (d->NxtLine) {

@@ -10,12 +10,19 @@ class FrmlElem;
 
 enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
 
-struct RprtOpt
+class RprtOpt
 {
+public:
+	RprtOpt();
+	~RprtOpt();
+	void CopyTo(RprtOpt* dst);
 	std::vector<RprtFDListEl*> FDL;
 	std::string Path;
 	uint16_t CatIRec = 0;
-	bool UserSelFlds = false, UserCondQuest = false, FromStr = false, SyntxChk = false;
+	bool UserSelFlds = false;
+	bool UserCondQuest = false;
+	bool FromStr = false;
+	bool SyntxChk = false;
 	FrmlElem* Times = nullptr;
 	AutoRprtMode Mode = _ALstg;
 	RdbPos RprtPos;
@@ -23,10 +30,12 @@ struct RprtOpt
 	std::vector<FieldDescr*> Ctrl;
 	std::vector<FieldDescr*> Sum;
 	std::vector<KeyFldD*> SK;
-	FrmlElem* WidthFrml = nullptr, * Head = nullptr;
+	FrmlElem* WidthFrml = nullptr;
+	FrmlElem* Head = nullptr;
 	uint16_t Width = 0;
 	std::string CondTxt;
 	std::string HeadTxt;
 	char Style = '\0';
-	bool Edit = false, PrintCtrl = false;
+	bool Edit = false;
+	bool PrintCtrl = false;
 };

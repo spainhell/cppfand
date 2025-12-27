@@ -34,5 +34,5 @@ private:
 	void WrBlks(std::string& report, int N);
 	void WrStr(std::string& report, std::string& S);
 	void WrStr(std::string& report, const char* s);
-	void WrLevel(std::string& report, int Level);
+	void WrLevel(FileD* file_d, std::string& report, int Level);
 };

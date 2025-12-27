@@ -379,21 +379,9 @@ WORD ParamCount()
 	return (WORD)paramstr.size();
 }
 
-pstring ParamStr(short index)
-{
-	if (index >= paramstr.size()) return "";
-	pstring ptmp = paramstr[index].c_str();
-	return ptmp;
-}
-
 void FillChar(void* cil, int delka, size_t vypln)
 {
 	memset(cil, vypln, delka);
-}
-
-void Move(void* zdroj, void* cil, WORD delka)
-{
-	memmove(cil, zdroj, delka);
 }
 
 uint8_t Hi(WORD cislo)

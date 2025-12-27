@@ -132,24 +132,21 @@ void RunProcedure::PromptAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
 
-	RprtOpt* RO2;
-	RO2 = new RprtOpt();
-	Move(RO, RO2, sizeof(*RO));
-	//FieldList FL = RO->Flds;
-	//while (FL != nullptr) {
+	RprtOpt* RO2 = new RprtOpt();
+	RO->CopyTo(RO2);
+
 	for (FieldDescr* f : RO->Flds) {
-		//FieldDescr* F = FL->FldD;
-		if ((f->Flg & f_Stored) != 0) ww.PutSelect(f->Name);
-		else {
-			pstring tmpStr = SelMark;
-			ww.PutSelect(tmpStr + f->Name);
+		if (f->isStored()) {
+			ww.PutSelect(f->Name);
 		}
-		//FL = (FieldList)FL->pChain;
+		else {
+			ww.PutSelect((char)SelMark + f->Name);
+		}
 	}
-	//CFile = RO->FDL[0]->FD;
+	
 	if (!ww.SelFieldList(RO->FDL[0]->FD, 36, true, RO2->Flds)) return;
-	if ((RO->FDL[0]->Cond == nullptr) &&
-		!ww.PromptFilter("", &RO2->FDL[0]->Cond, &RO2->CondTxt)) return;
+	
+	if ((RO->FDL[0]->Cond == nullptr) && !ww.PromptFilter("", &RO2->FDL[0]->Cond, &RO2->CondTxt)) return;
 
 	const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
 	if (auto_report->SelForAutoRprt(RO2)) {

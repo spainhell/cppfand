@@ -11,7 +11,6 @@
 #endif
 
 double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record);
-LongStr* CopyToLongStr(pstring& SS);
 pstring LeadChar(char C, pstring S);
 bool RunBool(FileD* file_d, FrmlElem* X, Record* record);
 bool InReal(FileD* file_d, FrmlElemIn* frml, Record* record);
