@@ -2,6 +2,7 @@
 #include <string>
 #include "../Core/Project.h"
 #include "../fandio/FieldDescr.h"
+#include "../Common/RdbPos.h"
 
 
 enum class FandFileType;

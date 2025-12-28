@@ -18,9 +18,6 @@ Catalog* catalog = nullptr;
 FileD* HelpFD;
 //size_t InpArrLen, CurrPos, OldErrPos;
 
-structXPath XPath[20];
-WORD XPathN;
-
 FandXFile XWork(nullptr);
 //FandTFile TWork(nullptr);
 int ClpBdPos = 0;

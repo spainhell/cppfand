@@ -881,9 +881,11 @@ void EditReader::RdImpl(FileD* file_d)
 		EditableField* D = FindEFld_E(F);
 
 		if (D != nullptr) {
+			// implicit for editable field
 			D->Impl = Z;
 		}
 		else {
+			// implicit for non-editable field
 			Implicit* ID = new Implicit(F, Z);
 			edit_->Impl.push_back(ID);
 		}

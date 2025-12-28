@@ -66,6 +66,9 @@
     <ClInclude Include="OperationType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RdbPos.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="textfunc.cpp">

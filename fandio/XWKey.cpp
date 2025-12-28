@@ -1,12 +1,8 @@
 #include "XWKey.h"
 #include <memory>
-#include "../Core/access.h"
-#include "../Core/base.h"
-#include "../fandio/FieldDescr.h"
-#include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
-#include "../Core/legacy.h"
 #include "XPage.h"
+#include "FandXFile.h"
 
 
 XWKey::XWKey(FileD* parent): XKey(parent)

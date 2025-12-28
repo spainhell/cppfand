@@ -7,6 +7,15 @@ class FileD;
 class XWFile;
 class XPage;
 
+struct structXPath
+{
+	int Page = 0;
+	uint16_t I = 0;
+};
+
+extern structXPath XPath[20];
+extern uint16_t XPathN;
+
 class XKey
 {
 public:

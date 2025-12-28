@@ -1,8 +1,7 @@
 #pragma once
 #include <memory>
 
-#include "../Core/Project.h"
-// #include "../fandio/Record.h"
+#include "../Common/rdbPos.h"
 #include "../fandio/Fand0File.h"
 #include "../fandio/DbfFile.h"
 #include "../fandio/locks.h" // to be visible in other parts of code

@@ -3,6 +3,7 @@
 #include "Implicit.h"
 #include "Project.h"
 #include "../fandio/XKey.h"
+#include "../Common/RdbPos.h"
 
 
 class Instr;
@@ -20,12 +21,6 @@ struct KeyInD
 	int XNrBeg = 0, N = 0;
 	std::string X1;
 	std::string X2;
-};
-
-struct structXPath
-{
-	int Page = 0;
-	WORD I = 0;
 };
 
 struct LiRoots

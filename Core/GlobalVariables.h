@@ -6,9 +6,8 @@
 
 #include "ResFile.h"
 #include "Users.h"
-#include "../fandio/FandTFile.h"
 
-class MergeReportBase;
+// class MergeReportBase;
 
 
 // r474
@@ -25,8 +24,6 @@ extern Catalog* catalog;
 extern FileD* HelpFD;
 
 // r483
-extern structXPath XPath[20];
-extern WORD XPathN;
 extern FandXFile XWork;
 //extern FandTFile TWork;
 extern int ClpBdPos;

@@ -20,9 +20,3 @@ public:
 	std::string RdbDir;
 	std::string DataDir;
 };
-
-struct RdbPos
-{
-	Project* rdb = nullptr;
-	int i_rec = 0;
-};

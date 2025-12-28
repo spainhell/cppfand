@@ -9,6 +9,8 @@
 #include "../fandio/FandXFile.h"
 #include "../Logging/Logging.h"
 
+structXPath XPath[20];
+uint16_t XPathN;
 
 XKey::XKey(FileD* parent)
 {
