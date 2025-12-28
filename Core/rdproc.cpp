@@ -1816,7 +1816,7 @@ Instr* RdReportCall(Compiler* compiler)
 	compiler->Accept(',');
 	if (compiler->Lexem == '[') {
 		compiler->RdLex();
-		RO->RprtPos.rdb = (RdbD*)compiler->RdStrFrml(nullptr);
+		RO->RprtPos.rdb = (Project*)compiler->RdStrFrml(nullptr);
 		RO->RprtPos.i_rec = 0;
 		RO->FromStr = true;
 		compiler->Accept(']');
@@ -2455,7 +2455,7 @@ Instr* RdDisplay(Compiler* compiler)
 		compiler->RdLex();
 	}
 	else {
-		PD->Pos.rdb = (RdbD*)compiler->RdStrFrml(nullptr);
+		PD->Pos.rdb = (Project*)compiler->RdStrFrml(nullptr);
 		PD->Pos.i_rec = 0;
 	}
 	return PD;

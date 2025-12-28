@@ -12,7 +12,7 @@ ReadProlog::~ReadProlog()
 
 std::string ReadProlog::Read(RdbPos* rdb_pos)
 {
-	RdbD* ChptLRdb = rdb_pos->rdb;
+	Project* ChptLRdb = rdb_pos->rdb;
 	//uint8_t* CRecPtr = ChptLRdb->v_files[0]->GetRecSpace();
 	//ChptLRdb->v_files[0]->ReadRec(rdb_pos->i_rec, CRecPtr);
 	FieldDescr* ChptTxt = ChptLRdb->project_file->FldD[5];

@@ -61,7 +61,7 @@ void SaveFiles()
 
 void CloseFANDFiles()
 {
-	RdbD* RD = CRdb;
+	Project* RD = CRdb;
 	while (RD != nullptr) {
 		//if (RD->project_file != nullptr) {
 		//	RD->project_file->CloseFile();
@@ -85,7 +85,7 @@ void CloseFANDFiles()
 
 void OpenFANDFiles()
 {
-	RdbD* RD = nullptr;
+	Project* RD = nullptr;
 	LockMode md = NullMode;
 
 	OpenXWorkH();
@@ -131,7 +131,7 @@ void OpenFANDFiles()
 bool ActiveRdbOnDrive(WORD D)
 {
 	auto result = true;
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	while (R != nullptr) {
 		if (R->project_file->FF->Drive == D) return result;
 		R = R->ChainBack;
@@ -142,7 +142,7 @@ bool ActiveRdbOnDrive(WORD D)
 
 void CloseFilesOnDrive(WORD drive)
 {
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (R != nullptr) {
 		if (R->project_file->FF->Drive == drive) {
@@ -252,7 +252,7 @@ void ReleaseDrive(WORD D)
 
 bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 {
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	isRdb = false;
 
 	while (R != nullptr) {

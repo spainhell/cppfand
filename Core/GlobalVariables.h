@@ -20,7 +20,7 @@ extern std::deque<FuncD*> FuncDRoot;
 extern XKey* CViewKey;
 extern std::string TopRdbDir, TopDataDir;
 extern std::string CatFDName;
-extern RdbD* CRdb, *TopRdb;
+extern Project* CRdb, *TopRdb;
 extern Catalog* catalog;
 extern FileD* HelpFD;
 

@@ -924,7 +924,7 @@ void EditReader::RdUDLI(FileD* file_d)
 
 void EditReader::RdAllUDLIs(FileD* FD)
 {
-	RdbD* r = nullptr;
+	Project* r = nullptr;
 	if (FD->OrigFD != nullptr) {
 		// this v_files was created as 'LIKE'
 		RdAllUDLIs(FD->OrigFD);

@@ -38,7 +38,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	return TRUE;
 }
 
-RdbD* rdb = nullptr;
+Project* rdb = nullptr;
 FileD* rdbFile = nullptr;
 Record* data = nullptr;
 std::string code;

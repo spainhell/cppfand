@@ -127,7 +127,7 @@ FieldDescr* RunProlog::FindField(FileD* file_d, std::string field_name)
 
 FileD* RunProlog::FindFile(std::string file_name)
 {
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (R != nullptr) {
 		for (FileD* f : R->data_files) {
@@ -145,7 +145,7 @@ std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, F
 {
 	std::vector<std::string> result;
 
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (R != nullptr) {
 		if (R->project_file != nullptr && EquUpCase(R->project_file->Name, module_name)) {
@@ -175,7 +175,7 @@ std::vector<FileD*> RunProlog::GetFileDescsInModule(std::string& module_name, Fa
 {
 	std::vector<FileD*> result;
 
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (R != nullptr) {
 		if (R->project_file != nullptr && EquUpCase(R->project_file->Name, module_name)) {

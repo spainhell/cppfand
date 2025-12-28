@@ -1568,7 +1568,7 @@ int32_t FileD::GetXFileD()
 
 bool FileD::IsActiveRdb()
 {
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	while (R != nullptr) {
 		if (this == R->project_file) return true;
 		R = R->ChainBack;
@@ -2074,7 +2074,7 @@ void FileD::CopyH(HANDLE h1, HANDLE h2)
 
 std::string FileD::SetPathForH(HANDLE handle)
 {
-	RdbD* RD = CRdb;
+	Project* RD = CRdb;
 	while (RD != nullptr) {
 		if (RD->project_file != nullptr) {
 			if (RD->project_file->FF->Handle == handle) {

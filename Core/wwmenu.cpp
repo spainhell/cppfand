@@ -563,7 +563,7 @@ TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring Msg) : TMenuBox()
 {
 	MsgTxt = Msg;
 
-	HlpRdb = new RdbD();
+	HlpRdb = new Project();
 	HlpRdb->help_file = HelpFD;
 	IsBoxS = true;
 	nTxt = CountDLines(&MsgTxt[1], MsgTxt.length(), '/') - 2;
@@ -831,7 +831,7 @@ void TMenuBar::GetItemRect(WORD I, TRect* R)
 //{
 //	ReadMessage(MsgNr);
 //	MsgTxt = MsgLine;
-//	HlpRdb = (RdbD*)HelpFD;
+//	HlpRdb = (Project*)HelpFD;
 //	nTxt = (CountDLines(&MsgTxt[1], MsgTxt.length(), '/') - 1) / 2;
 //	Move(&screen.colors.mNorm, Palette, 3);
 //	InitTMenuBar(1, 1, TxtCols);
@@ -994,7 +994,7 @@ void MenuBarProc(Instr_menu* PD)
 	ReleaseStore(&p);
 }
 
-std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
+std::string GetHlpText(Project* R, std::string S, bool ByName, WORD& IRec)
 {
 	FieldDescr* NmF = nullptr;
 	FieldDescr* TxtF = nullptr;
@@ -1067,7 +1067,7 @@ label5:
 	return result;
 }
 
-void DisplayLastLineHelp(RdbD* R, std::string Name, bool R24)
+void DisplayLastLineHelp(Project* R, std::string Name, bool R24)
 {
 	size_t i = 0, y = 0; WORD iRec = 0;
 

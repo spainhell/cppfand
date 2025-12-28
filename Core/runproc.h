@@ -26,7 +26,7 @@ private:
 	void SortProc(FileD* FD, std::vector<KeyFldD*>& SK);
 	void MergeProc(Instr_merge_display* PD);
 	void WritelnProc(Instr_writeln* PD);
-	void DisplayProc(RdbD* R, WORD IRec);
+	void DisplayProc(Project* R, WORD IRec);
 	void ClrWwProc(Instr_clrww* PD);
 	void ExecPgm(Instr_exec* PD);
 	void CallRdbProc(Instr_call* PD);

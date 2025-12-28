@@ -168,7 +168,7 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 		return result;
 	}
 
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (true) {
 		for (int i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {

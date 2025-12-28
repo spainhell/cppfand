@@ -237,7 +237,7 @@ void DirMinusBackslash(pstring& D)
 
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 {
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	while (R != nullptr) { // TODO: this will not process RDB file (project_file)
 		for (FileD* f : R->data_files) {
 			switch (op) {

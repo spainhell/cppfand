@@ -4370,7 +4370,7 @@ void DataEditor::ImbeddEdit()
 	WORD Brk;
 	//std::vector<std::string> SL;
 	EditOpt* EO = nullptr;
-	RdbD* R = nullptr; int w = 0;
+	Project* R = nullptr; int w = 0;
 
 	MarkStore(p);
 	w = PushW(1, 1, TxtCols, TxtRows, true, true);

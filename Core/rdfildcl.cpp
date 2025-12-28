@@ -1055,7 +1055,7 @@ XKey* RdFileOrAlias1(FileD* F)
 
 void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD)
 {
-	RdbD* r = nullptr;
+	Project* r = nullptr;
 	gc->TestIdentif();
 	XKey* k = RdFileOrAlias1(file_d);
 	FileD* found_f = nullptr;

@@ -81,7 +81,7 @@ void ProjectRunner::ReleaseFilesAndLinksAfterChapter(EditD* edit)
 	//if (edit != nullptr) {
 	//	CRecPtr = edit->NewRec->GetRecord();
 	//}
-	RdbD* R = CRdb->ChainBack;
+	Project* R = CRdb->ChainBack;
 	if (R != nullptr) {
 		CRdb->help_file = R->help_file;
 	}
@@ -560,7 +560,7 @@ void ProjectRunner::SetChptFldD()
 
 void ProjectRunner::SetRdbDir(FileD* file_d, char Typ, std::string* Nm)
 {
-	RdbD* r = nullptr; RdbD* rb = nullptr;
+	Project* r = nullptr; Project* rb = nullptr;
 	std::string d;
 	r = CRdb;
 	rb = r->ChainBack;
@@ -621,10 +621,10 @@ void ProjectRunner::ResetRdOnly()
 	}
 }
 
-RdbD* ProjectRunner::PrepareRdb(const std::string& name, std::string& name1)
+Project* ProjectRunner::PrepareRdb(const std::string& name, std::string& name1)
 {
 	short i = 0, n = 0;
-	RdbD* rdb_d = new RdbD();
+	Project* rdb_d = new Project();
 
 	rdb_d->ChainBack = CRdb;
 	rdb_d->OldLDRoot = LinkDRoot;
@@ -661,11 +661,11 @@ void ProjectRunner::CreateOpenChpt(std::string Nm, bool create)
 	FileUseMode um = Closed;
 
 	bool top = (CRdb == nullptr);
-	//CRdb = new RdbD();
+	//CRdb = new Project();
 	//CRdb->v_files.clear();
 	Chpt = nullptr;
 	FandTFile* oldChptTF = ChptTF;
-	RdbD* R = PrepareRdb(Nm, Nm1);
+	Project* R = PrepareRdb(Nm, Nm1);
 	CRdb = R;
 	Chpt = CRdb->project_file;
 	//Chpt->FF->RecPtr = new Record(Chpt);
@@ -790,7 +790,7 @@ void ProjectRunner::Diagnostics(uint8_t* MaxHp, int Free, FileD* FD)
 	std::string s2 = "---";
 	std::string s3 = "---";
 	std::string s4 = std::to_string(getAvailPhysMemory() / 1024 / 1024) + " MB";
-	RdbD* r = CRdb;
+	Project* r = CRdb;
 
 	while (r->ChainBack != nullptr) {
 		r = r->ChainBack;

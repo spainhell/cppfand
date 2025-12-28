@@ -174,7 +174,7 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	}
 	InpRdbPos = *rdb_pos;
 
-	RdbD* rdb = rdb_pos->rdb;
+	Project* rdb = rdb_pos->rdb;
 	Record* rec = new Record(rdb->project_file);
 
 	rdb->project_file->ReadRec(rdb_pos->i_rec, rec);
@@ -194,7 +194,7 @@ void Compiler::SetInpTTxtPos(FileD* file_d)
 {
 	SetInpTT(&file_d->ChptPos, true);
 	const size_t pos = file_d->TxtPosUDLI;
-	//RdbD* r = file_d->ChptPos.rdb;
+	//Project* r = file_d->ChptPos.rdb;
 	processing_F = file_d;
 
 	if (pos >= input_string.length()) {
@@ -248,7 +248,7 @@ WORD Compiler::RdDirective(bool& b)
 	};
 	WORD i;
 	pstring s(12);
-	RdbD* r = nullptr;
+	Project* r = nullptr;
 	bool res = false;
 
 	ReadChar();
@@ -1116,7 +1116,7 @@ bool Compiler::FindLocVar(LocVarBlock* LVB, LocVar** LV)
 bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 {
 	Record* record = new Record(Chpt);
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	bool result = false;
 	while (R != nullptr) {
 		FileD* f = R->project_file;
@@ -1155,7 +1155,7 @@ std::string Compiler::RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 
 	if (TxtExpr && (Lexem == '[')) {
 		RdLex();
-		Pos->rdb = (RdbD*)RdStrFrml(nullptr);
+		Pos->rdb = (Project*)RdStrFrml(nullptr);
 		Pos->i_rec = 0;
 		Accept(']');
 	}
@@ -2480,7 +2480,7 @@ FileD* Compiler::FindFileD()
 		return LV->FD;
 	}
 
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	while (R != nullptr) {
 		for (FileD* f : R->data_files) {
 			if (EquUpCase(f->Name, LexWord)) {

@@ -334,7 +334,7 @@ void RunProcedure::WritelnProc(Instr_writeln* PD)
 	}
 }
 
-void RunProcedure::DisplayProc(RdbD* R, WORD IRec)
+void RunProcedure::DisplayProc(Project* R, WORD IRec)
 {
 	std::string str;
 
@@ -1141,7 +1141,7 @@ void RunProcedure::DrawProc(Instr_graph* PD)
 
 void RunProcedure::ResetCatalog()
 {
-	RdbD* r = CRdb;
+	Project* r = CRdb;
 	while (CRdb != nullptr) {
 		//CFile = CRdb->v_files->pChain;
 		//while (CFile != nullptr) {
