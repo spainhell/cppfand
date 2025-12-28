@@ -232,7 +232,7 @@ void RunProcedure::AssignRecFld(Instr_assign* PD)
 void RunProcedure::SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
 {
 	LockMode md = FD->NewLockMode(ExclMode);
-	FD->SortByKey(SK, RunMsgOn, RunMsgN, RunMsgOff);
+	FD->SortByKey(SK);
 	FD->OldLockMode(md);
 	SaveFiles();
 }
@@ -1668,7 +1668,7 @@ void RunProcedure::CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = gc->input_string;
-	if (srcCode.find("last='',ww=(0,0,2,1)); end; PARAM1.nrecs>1: PARAM1.nrecs:=1; end; close(PARAM1);") != std::string::npos) {
+	if (srcCode.find("var pgm:string; begin lproc(Indexy); pgm:=PARAM3.TTT;   proc([pgm]); end;") != std::string::npos) {
 		printf("");
 	}
 #endif

@@ -14,12 +14,12 @@
 #include "../Drivers/files.h"
 
 
-FileD::FileD(DataFileType f_type)
+FileD::FileD(DataFileType f_type, ProgressCallbacks callbacks)
 {
 	this->FileType = f_type;
 	switch (f_type) {
 	case DataFileType::FandFile: {
-		this->FF = new Fand0File(this);
+		this->FF = new Fand0File(this, callbacks);
 		break;
 	}
 	case DataFileType::DBF: {
@@ -354,6 +354,7 @@ void FileD::SetHandleT(HANDLE handle)
 	switch (FileType) {
 	case DataFileType::FandFile: {
 		FF->TF->Handle = handle;
+		FF->TF->RdPrefix(false);
 		break;
 	}
 	case DataFileType::DBF: {
@@ -710,10 +711,10 @@ void FileD::AssignNRecs(bool Add, int N)
 	OldLockMode(md);
 }
 
-void FileD::SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const
+void FileD::SortByKey(std::vector<KeyFldD*>& keys) const
 {
 	if (FF != nullptr) {
-		FF->SortAndSubst(keys, msgFuncOn, msgFuncUpdate, msgFuncOff);
+		FF->SortAndSubst(keys);
 	}
 }
 

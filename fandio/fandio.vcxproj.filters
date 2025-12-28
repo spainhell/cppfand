@@ -120,6 +120,9 @@
     <ClInclude Include="KeyFldD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ProgressCallbacks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Fand0File.cpp">

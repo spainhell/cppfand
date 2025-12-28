@@ -972,7 +972,7 @@ void DataEditor::DisplEmptyFld(EditableField* D, WORD I)
 /// </summary>
 /// <param name="field"></param>
 /// <param name="record"></param>
-void DataEditor::Wr1Line(FieldDescr* field, const Record* record) const
+void DataEditor::Wr1Line(FieldDescr* field, Record* record) const
 {
 	auto X = screen.WhereX();
 	auto Y = screen.WhereY();
@@ -3380,7 +3380,7 @@ void DataEditor::Sorting()
 	}
 
 	try {
-		file_d_->SortByKey(SKRoot, RunMsgOn, RunMsgN, RunMsgOff);
+		file_d_->SortByKey(SKRoot);
 		edit_->EdUpdated = true;
 	}
 	catch (std::exception&) {

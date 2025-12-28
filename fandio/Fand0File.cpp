@@ -22,10 +22,10 @@
 
 const double FirstDate = 6.97248E+5;
 
-Fand0File::Fand0File(FileD* parent)
+Fand0File::Fand0File(FileD* parent, ProgressCallbacks callbacks)
 {
 	_parent = parent;
-	//_buffer = GetRecSpace();
+	_msgs = callbacks;
 }
 
 Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
@@ -36,7 +36,6 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 	Drive = orig.Drive;
 
 	_parent = parent;
-	//_buffer = GetRecSpace();
 
 	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
 	if (orig.XF != nullptr) XF = new FandXFile(*orig.XF, this);
@@ -44,8 +43,6 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 
 Fand0File::~Fand0File()
 {
-	//delete[] _buffer;
-
 	if (Handle != nullptr) {
 		CloseH(&Handle);
 	}
@@ -75,17 +72,17 @@ std::unique_ptr<uint8_t[]> Fand0File::GetRecSpaceUnique() const
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-size_t Fand0File::ReadRec(size_t rec_nr, Record* record)
+size_t Fand0File::ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields)
 {
-	if (record->GetFileD()->Name == "PARAM3")
-	{
-		printf("");
-	}
+	//if (record->GetFileD()->Name == "PARAM3")
+	//{
+	//	printf("");
+	//}
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
 	std::unique_ptr buffer = GetRecSpaceUnique();
 	size_t result = ReadRec(rec_nr, buffer.get());
-	_getValuesFromRawData(buffer.get(), record);
+	_getValuesFromRawData(buffer.get(), record, ignore_T_fields);
 	return result;
 }
 
@@ -112,7 +109,7 @@ size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 	std::unique_ptr orig_raw_data = GetRecSpaceUnique();
 	ReadRec(rec_nr, orig_raw_data.get());
 	std::map<FieldDescr*, int32_t> unchanged_fields = DelChangedTFields(orig_raw_data.get(), record);
-	
+
 	std::unique_ptr buffer = _getRowDataFromRecord(record, unchanged_fields);
 	size_t result = WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer.get());
 	return result;
@@ -225,7 +222,7 @@ void Fand0File::DecNRecs(int n)
 size_t Fand0File::PutRec(Record* record, int& i_rec)
 {
 	NRecs++;
-	
+
 	std::map<FieldDescr*, int32_t> unchanged_fields;
 	std::unique_ptr buffer = _getRowDataFromRecord(record, unchanged_fields);
 	size_t result = WriteData(i_rec * RecLen + FirstRecPos, RecLen, buffer.get());
@@ -233,6 +230,14 @@ size_t Fand0File::PutRec(Record* record, int& i_rec)
 	i_rec++;
 	Eof = true;
 
+	return result;
+}
+
+size_t Fand0File::PutRec(uint8_t* record)
+{
+	size_t result = WriteData(NRecs * RecLen + FirstRecPos, RecLen, record);
+	NRecs++;
+	Eof = true;
 	return result;
 }
 
@@ -360,6 +365,19 @@ int Fand0File::loadT(FieldDescr* F, uint8_t* record)
 	uint8_t* source = record + F->Displ;
 	if (record == nullptr) return 0;
 	return *reinterpret_cast<int*>(source);
+}
+
+std::string Fand0File::loadTfromPos(FieldDescr* field, int32_t pos)
+{
+	LockMode md = _parent->NewLockMode(RdMode);
+	std::string s = TF->Read(pos);
+	_parent->OldLockMode(md);
+
+	if (field->isEncrypted()) {
+		s = Coding::Code(s);
+	}
+
+	return s;
 }
 
 void Fand0File::saveB(FieldDescr* field_d, bool b, uint8_t* record)
@@ -893,7 +911,7 @@ int Fand0File::CreateIndexFile()
 			std::unique_ptr<XScan> scan = std::make_unique<XScan>(_parent, nullptr, empty, false);
 			std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
 			scan->Reset(nullptr, false, record.get());
-			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys);
+			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys, _msgs);
 			XW->Main(OperationType::Index, record.get());
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
@@ -1092,7 +1110,7 @@ void Fand0File::RecallRec(int recNr, Record* record)
 	WriteRec(recNr, record);
 }
 
-void Fand0File::GenerateNew000File(XScan* x, void (*msgFuncUpdate)(int32_t))
+void Fand0File::GenerateNew000File(XScan* x)
 {
 	//// vytvorime si novy buffer pro data,
 	//// ten pak zapiseme do souboru naprimo (bez cache)
@@ -1125,13 +1143,11 @@ void Fand0File::GenerateNew000File(XScan* x, void (*msgFuncUpdate)(int32_t))
 	//delete[] buffer; buffer = nullptr;
 
 	std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
-	
+
 	x->GetRec(record.get());
 
 	while (!x->eof) {
-		if (msgFuncUpdate) {
-			msgFuncUpdate(x->IRec);
-		}
+		_msgs.runMsgN(x->IRec);
 		PutRec(record.get(), _parent->IRec);
 		Eof = true;
 		x->GetRec(record.get());
@@ -1145,7 +1161,7 @@ void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type)
 	std::vector<XKey*> xw_keys;
 	xw_keys.push_back(K);
 	std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
-	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys);
+	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys, _msgs);
 	XW->Main(oper_type, record.get());
 }
 
@@ -1191,7 +1207,7 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, Operatio
 	Scan->SubstWIndex(k2);
 }
 
-void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)())
+void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 {
 	std::vector<KeyInD*> empty;
 	XScan* scan = new XScan(_parent, nullptr, empty, false);
@@ -1199,21 +1215,17 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK, void (*msgFuncOn)(int8_t
 	ScanSubstWIndex(scan, SK, OperationType::Sort);
 	FileD* subst_file = _parent->OpenDuplicateF(false);
 
-	if (msgFuncOn) {
-		msgFuncOn('S', scan->NRecs);
-	}
+	_msgs.runMsgOn('S', scan->NRecs);
 
 	//Scan->GetRec(record.get());
 
 	// write data to a file .100
-	subst_file->FF->GenerateNew000File(scan, msgFuncUpdate);
+	subst_file->FF->GenerateNew000File(scan);
 
 	SubstDuplF(subst_file, false);
 	scan->Close();
 
-	if (msgFuncOff) {
-		msgFuncOff();
-	}
+	_msgs.runMsgOff();
 
 	delete subst_file; subst_file = nullptr;
 }
@@ -1314,32 +1326,30 @@ void Fand0File::IndexFileProc(bool Compress)
 		RunError(result);
 	}
 
-	Record* record = new Record(_parent);
+	std::unique_ptr<uint8_t[]> record = GetRecSpaceUnique();
 	if (Compress) {
-		FileD* FD2 = _parent->OpenDuplicateF(false);
+		FileD* tmp_file = _parent->OpenDuplicateF(false);
 		for (int rec_nr = 1; rec_nr <= NRecs; rec_nr++) {
-			ReadRec(rec_nr, record);
-			if (!record->IsDeleted()) {
-				FD2->PutRec(record);
+			ReadRec(rec_nr, record.get());
+			if (record.get()[0] == '\0') {
+				tmp_file->FF->PutRec(record.get());
 			}
 		}
 		if (!SaveCache(0, Handle)) {
 			GoExit(MsgLine);
 		}
-		SubstDuplF(FD2, false);
-		NRecs = FD2->FF->NRecs;
+		SubstDuplF(tmp_file, false);
+		NRecs = tmp_file->FF->NRecs;
 		int xf_res = XFNotValid();
 		if (xf_res != 0) {
 			RunError(xf_res);
 		}
-		delete FD2; FD2 = nullptr;
+		delete tmp_file; tmp_file = nullptr;
 	}
 
 	XF->NoCreate = false;
 	TestXFExist();
 	_parent->OldLockMode(md);
-
-	delete record; record = nullptr;
 }
 
 void Fand0File::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
@@ -1496,8 +1506,11 @@ void Fand0File::TestDelErr(std::string& P)
 	}
 }
 
-void Fand0File::_getValuesFromRawData(uint8_t* buffer, Record* record)
+void Fand0File::_getValuesFromRawData(uint8_t* buffer, Record* record, bool ignore_T_fields)
 {
+	// ignore T fields is for processing coded .RDB files, if they are as Fand files
+	// e.g. kompletni udrzba souboru v Ucto
+
 	record->Clear();
 
 	if (buffer != nullptr) {
@@ -1506,46 +1519,38 @@ void Fand0File::_getValuesFromRawData(uint8_t* buffer, Record* record)
 
 			if (field->isStored()) {
 				switch (field->field_type) {
-				case FieldType::BOOL:
+				case FieldType::BOOL: {
 					val.B = loadB(field, buffer);
 					break;
+				}
 				case FieldType::DATE:
 				case FieldType::FIXED:
-				case FieldType::REAL:
+				case FieldType::REAL: {
 					val.R = loadR(field, buffer);
 					break;
+				}
 				case FieldType::ALFANUM:
-				case FieldType::NUMERIC:
-				case FieldType::TEXT:
+				case FieldType::NUMERIC: {
 					val.S = loadS(field, buffer);
 					break;
+				}
+				case FieldType::TEXT: {
+					if (ignore_T_fields) {
+						// skip T field loading, only load position
+						val.R = loadT(field, buffer);
+					}
+					else {
+						val.S = loadS(field, buffer);
+					}
+					break;
+				}
 				default:
 					// unknown field type
 					break;
 				}
 			}
 			else {
-				// TODO: calculated T fields? is it stored in TWork by default?
-
 				// calculated field
-				//switch (field->field_type) {
-				//case FieldType::BOOL:
-				//	val.B = RunBool(_file_d, field->Frml, _buffer);
-				//	break;
-				//case FieldType::DATE:
-				//case FieldType::FIXED:
-				//case FieldType::REAL:
-				//	val.R = RunReal(_file_d, field->Frml, _buffer);
-				//	break;
-				//case FieldType::ALFANUM:
-				//case FieldType::NUMERIC:
-				//case FieldType::TEXT:
-				//	val.S = RunString(_file_d, field->Frml, _buffer);
-				//	break;
-				//default:
-				//	// unknown field type
-				//	break;
-				//}
 			}
 			record->_values.insert(std::pair(field->Name, val));
 		}
@@ -1561,7 +1566,7 @@ void Fand0File::_getValuesFromRawData(uint8_t* buffer, Record* record)
 
 }
 
-std::unique_ptr<uint8_t[]> Fand0File::_getRowDataFromRecord(Record* record, const std::map<FieldDescr*, int32_t>& unchanged_T_fields)
+std::unique_ptr<uint8_t[]> Fand0File::_getRowDataFromRecord(Record* record, const std::map<FieldDescr*, int32_t>& unchanged_T_fields, bool ignore_T_fields)
 {
 	std::unique_ptr buffer = GetRecSpaceUnique();
 
@@ -1587,10 +1592,15 @@ std::unique_ptr<uint8_t[]> Fand0File::_getRowDataFromRecord(Record* record, cons
 			case FieldType::NUMERIC: {
 				saveS(_parent, field, val.S, buffer.get());
 				break;
-				}
+			}
 			case FieldType::TEXT: {
-				// check if this T field is unchanged -> copy from original buffer
-				if (field->field_type == FieldType::TEXT) {
+				if (ignore_T_fields) {
+					// skip T field saving, only save position from record
+					saveT(field, (int32_t)val.R, buffer.get());
+					break;
+				}
+				else {
+					// check if this T field is unchanged -> copy from original buffer
 					auto it = unchanged_T_fields.find(field);
 					if (it != unchanged_T_fields.end()) {
 						// unchanged field -> copy only the position

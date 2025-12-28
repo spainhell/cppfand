@@ -93,20 +93,40 @@ double Record::LoadR(FieldDescr* field) const
 	}
 }
 
-std::string Record::LoadS(FieldDescr* field) const
+std::string Record::LoadS(FieldDescr* field)
 {
+	std::string result;
+
 	if (field->isStored()) {
-		std::map<std::string, BRS_Value>::const_iterator item = _values.find(field->Name);
+		std::map<std::string, BRS_Value>::iterator item = _values.find(field->Name);
 		if (item != _values.end()) {
-			return item->second.S;
+			if (item->second.R == 0.0) {
+				return item->second.S;
+			}
+			else {
+				if (_file_d->FileType == DataFileType::FandFile) {
+					// T field stored as position in .T__ file
+					// need to load text from .T__ file
+					int pos = static_cast<int>(item->second.R);
+					item->second.S = _file_d->FF->loadTfromPos(field, pos);
+					// set R to 0.0 to indicate that text is loaded
+					item->second.R = 0.0;
+					result = item->second.S;
+				}
+				else {
+					throw std::runtime_error("Lazy loading T field from non-FandFile is not supported.");
+				}
+			}
 		}
 		else {
-			return "";
+			// return result (empty string)
 		}
 	}
 	else {
-		return RunString(this->_file_d, field->Frml, const_cast<Record*>(this));
+		result = RunString(this->_file_d, field->Frml, const_cast<Record*>(this));
 	}
+
+	return result;
 }
 
 void Record::SaveB(FieldDescr* field, bool value)
@@ -136,6 +156,7 @@ void Record::SaveS(FieldDescr* field, const std::string& value)
 	if (field->isStored()) {
 		std::map<std::string, BRS_Value>::iterator item = _values.find(field->Name);
 		if (item != _values.end()) {
+			item->second.R = 0.0; // indicates that text is stored in S
 			item->second.S = value;
 			SetUpdated();
 		}

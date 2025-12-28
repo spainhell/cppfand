@@ -173,6 +173,7 @@
     <ClInclude Include="FileEnums.h" />
     <ClInclude Include="KeyFldD.h" />
     <ClInclude Include="locks.h" />
+    <ClInclude Include="ProgressCallbacks.h" />
     <ClInclude Include="realFix.h" />
     <ClInclude Include="sort.h" />
     <ClInclude Include="TextFile.h" />

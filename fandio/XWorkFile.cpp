@@ -5,11 +5,16 @@
 #include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
-#include "../Core/RunMessage.h"
+//#include "../Core/RunMessage.h"
 #include "../fandio/FandXFile.h"
 
 
-XWorkFile::XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK)
+XWorkFile::XWorkFile(
+	FileD* parent,
+	XScan* AScan,
+	std::vector<XKey*>& AK,
+	ProgressCallbacks callbacks
+)
 {
 	_parent = parent;
 	WBaseSize = MaxWSize;
@@ -17,6 +22,7 @@ XWorkFile::XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK)
 	xScan = AScan;
 	x_keys_ = AK;
 	xwFile = AK[0]->GetXFile(parent);
+	_msgs = callbacks;
 }
 
 XWorkFile::~XWorkFile()
@@ -73,7 +79,7 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper
 
 	K->NrToPath(_parent, 1);
 	int page = XPath[XPathN].Page;
-	RunMsgOn(static_cast<char>(oper_type), K->NRecs());
+	_msgs.runMsgOn(static_cast<char>(oper_type), K->NRecs());
 	int count = 0;
 
 	while (page != 0) {
@@ -93,10 +99,10 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper
 			Output(K, r, record);
 		}
 		count += p->NItems;
-		RunMsgN(count);
+		_msgs.runMsgN(count);
 		page = p->GreaterPage;
 	}
-	RunMsgOff();
+	_msgs.runMsgOff();
 }
 
 bool XWorkFile::GetCRec(Record* record)
@@ -167,7 +173,7 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, OperationType op
 	//@shl ax 3, 1; cmp bx, 1; ja @1; cmp cx, 0; jne @4; mov cx, 1;
 	//@mov pages 4.unsigned short, cx;
 
-	RunMsgOn(static_cast<char>(oper_type), pages);
+	_msgs.runMsgOn(static_cast<char>(oper_type), pages);
 }
 
 /// precte zaznamy, vytvori uplnou delku klice, setridi zaznamy
@@ -208,7 +214,7 @@ void XWorkFile::SortMerge(XKey* xKey, Record* record)
 	if (NChains > 1) {
 		Merge(xKey, record);
 	}
-	RunMsgOff();
+	_msgs.runMsgOff();
 }
 
 void XWorkFile::TestErr()
@@ -286,7 +292,7 @@ void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Ch
 {
 	size_t offset = 0;
 	PgWritten++;
-	RunMsgN(PgWritten);
+	_msgs.runMsgN(PgWritten);
 	if (NChains == 1) {
 		for (size_t i = 0; i < N; i++) {
 			WRec r;

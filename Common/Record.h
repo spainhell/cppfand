@@ -44,7 +44,7 @@ public:
 
 	bool LoadB(FieldDescr* field) const;
 	double LoadR(FieldDescr* field) const;
-	std::string LoadS(FieldDescr* field) const;
+	std::string LoadS(FieldDescr* field);
 
 	void SaveB(FieldDescr* field, bool value);
 	void SaveR(FieldDescr* field, double value);

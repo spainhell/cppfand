@@ -23,7 +23,7 @@ enum class DataFileType
 class FileD
 {
 public:
-	FileD(DataFileType f_type);
+	FileD(DataFileType f_type, ProgressCallbacks callbacks);
 	FileD(const FileD& orig);
 	~FileD();
 
@@ -89,7 +89,7 @@ public:
 	void RecallRec(int recNr, Record* record);
 	void AssignNRecs(bool Add, int N);
 
-	void SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const;
+	void SortByKey(std::vector<KeyFldD*>& keys) const;
 	void IndexesMaintenance(bool remove_deleted);
 
 	//bool loadB(FieldDescr* field_d, Record* record);

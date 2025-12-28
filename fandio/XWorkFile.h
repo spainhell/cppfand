@@ -1,4 +1,7 @@
 #pragma once
+#include <functional>
+
+#include "ProgressCallbacks.h"
 #include "XKey.h"
 #include "XScan.h"
 #include "XXPage.h"
@@ -6,7 +9,12 @@
 class XWorkFile
 {
 public:
-	XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK);
+	XWorkFile(
+		FileD* parent,
+		XScan* AScan,
+		std::vector<XKey*>& AK,
+		ProgressCallbacks callbacks
+	);
 	~XWorkFile();
 
 	HANDLE Handle = nullptr;
@@ -46,4 +54,7 @@ private:
 	void Merge(XKey* xKey, Record* record);
 	void Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, Record* record);
 	void PutFreeNr(int N);
+
+	// Callback function pointers
+	ProgressCallbacks _msgs;
 };
