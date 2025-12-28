@@ -97,7 +97,7 @@ extern void* AfterCatFD; // r108
 //extern WORD BPBound; // r212
 extern bool ExitP, BreakP;
 extern int LastExitCode; // r215
-extern unsigned long HandleError; // r229
+
 extern std::string OldDir;
 extern std::string FandDir;
 extern std::string WrkDir;
@@ -105,11 +105,6 @@ extern std::string FandResName;
 extern std::string FandWorkName;
 extern std::string FandWorkXName;
 extern std::string FandWorkTName;
-extern std::string CPath;
-extern std::string CDir;
-extern std::string CName;
-extern std::string CExt;
-extern std::string CVol;
 extern bool WasLPTCancel;
 extern HANDLE WorkHandle;
 extern int MaxWSize; // {currently occupied in FANDWORK.$$$}
@@ -138,7 +133,6 @@ extern TPrTimeOut OldPrTimeOut;
 extern TPrTimeOut PrTimeOut;  // absolute 0:$478;
 extern bool WasInitDrivers;
 extern bool WasInitPgm;
-extern WORD LANNode;
 extern void (*CallOpenFandFiles)(); // r453
 extern void (*CallCloseFandFiles)(); // r454
 

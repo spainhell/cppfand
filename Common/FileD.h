@@ -71,8 +71,8 @@ public:
 	void SetWasRdOnly(bool was_read_only) const;
 	void SetHandle(HANDLE handle);
 	void SetHandleT(HANDLE handle);
-	void CheckT(int file_size);
-	void CheckX(int file_size);
+	int32_t CheckT(int file_size);
+	int32_t CheckX(int file_size);
 
 	//uint8_t* GetRecSpace() const;
 	//std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;

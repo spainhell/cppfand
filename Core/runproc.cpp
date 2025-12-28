@@ -37,6 +37,7 @@
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
 #include "../Common/Record.h"
+#include "../Common/CommonVariables.h"
 
 
 void RunProcedure::UserHeadLine(std::string UserHeader)

@@ -1,5 +1,6 @@
 #include "ThFile.h"
 #include "../Drivers/constants.h"
+#include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"

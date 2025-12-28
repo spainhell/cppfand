@@ -11,6 +11,7 @@
 
 #include "GlobalVariables.h"
 #include "../Common/textfunc.h"
+#include "../Common/CommonVariables.h"
 #include "../fandio/directory.h"
 
 std::vector<std::string> paramstr;

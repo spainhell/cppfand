@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "../Common/FileD.h"
+#include "../Common/CommonVariables.h"
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"

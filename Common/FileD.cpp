@@ -1,6 +1,8 @@
 #include "FileD.h"
 
 #include "Coding.h"
+#include "CommonVariables.h"
+#include "Record.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
@@ -9,7 +11,7 @@
 #include "../Common/compare.h"
 #include "../Logging/Logging.h"
 #include "../Common/textfunc.h"
-#include "Record.h"
+#include "../Drivers/files.h"
 
 
 FileD::FileD(DataFileType f_type)
@@ -123,9 +125,9 @@ long FileD::GetFileSize()
 	return result;
 }
 
-WORD FileD::GetNrKeys()
+uint16_t FileD::GetNrKeys()
 {
-	return static_cast<WORD>(Keys.size());
+	return static_cast<uint16_t>(Keys.size());
 }
 
 unsigned short FileD::GetFirstRecPos()
@@ -364,7 +366,7 @@ void FileD::SetHandleT(HANDLE handle)
 	}
 }
 
-void FileD::CheckT(int file_size)
+int32_t FileD::CheckT(int file_size)
 {
 	if (HasTextFile()) {
 		switch (FileType) {
@@ -378,9 +380,10 @@ void FileD::CheckT(int file_size)
 					&& !IsActiveRdb()
 					&& !Coding::HasPassword(this, 1, ""))
 				{
-					FileMsg(this, 616, ' ');
+					//FileMsg(this, 616, ' ');
 					Close();
-					GoExit(MsgLine);
+					//GoExit(MsgLine);
+					return 616;
 				}
 			}
 			break;
@@ -391,9 +394,10 @@ void FileD::CheckT(int file_size)
 			}
 			else {
 				DbfF->TF->RdPrefix(true);
-				FileMsg(this, 616, ' ');
+				//FileMsg(this, 616, ' ');
 				Close();
-				GoExit(MsgLine);
+				//GoExit(MsgLine);
+				return 616;
 			}
 			break;
 		}
@@ -403,9 +407,10 @@ void FileD::CheckT(int file_size)
 		}
 		}
 	}
+	return 0;
 }
 
-void FileD::CheckX(int file_size)
+int32_t FileD::CheckX(int file_size)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -414,7 +419,7 @@ void FileD::CheckX(int file_size)
 				FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
 			}
 			else {
-				WORD Signum = 0;
+				uint16_t Signum = 0;
 				FF->XF->ReadData(0, 2, &Signum);
 				FF->XF->RdPrefix();
 
@@ -425,17 +430,14 @@ void FileD::CheckX(int file_size)
 						|| ((FF->XF->MaxPage + 1) << XPageShft) > FileSizeH(FF->XF->Handle))
 					|| (FF->XF->NrKeys != 0) && (FF->XF->NrKeys != GetNrKeys()))
 				{
-
-					if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
-						FileMsg(this, 830, 'X');
-					}
-
 					if (FF->IsShared() && (FF->LMode < ExclMode)) {
 						ChangeLockMode(ExclMode, 0, false);
 					}
 
 					FF->LMode = ExclMode;
 					FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
+
+					return 830;
 				}
 			}
 		}
@@ -449,6 +451,7 @@ void FileD::CheckX(int file_size)
 		break;
 	}
 	}
+	return 0;
 }
 
 //uint8_t* FileD::GetRecSpace() const
@@ -1058,7 +1061,7 @@ LockMode FileD::NewLockMode(LockMode mode)
 	}
 }
 
-bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, WORD kind)
+bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind)
 {
 	if (FileType == DataFileType::FandFile) {
 		return TryLMode(this, CPath, mode, old_mode, kind, LANNode);
@@ -1068,7 +1071,7 @@ bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, WORD kind)
 	}
 }
 
-bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
+bool FileD::ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref)
 {
 	if (FileType == DataFileType::FandFile) {
 		return ChangeLMode(this, CPath, mode, kind, rd_pref, LANNode);
@@ -1078,10 +1081,10 @@ bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
 	}
 }
 
-bool FileD::Lock(int32_t n, WORD kind) const
+bool FileD::Lock(int32_t n, uint16_t kind) const
 {
 	if (FileType == DataFileType::FandFile) {
-		WORD m;
+		uint16_t m;
 		std::string XTxt = "CrX";
 		bool result = true;
 
@@ -1641,7 +1644,7 @@ bool FileD::OpenF(const std::string& path, FileUseMode UM, bool is_project_file)
 
 bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file)
 {
-	WORD n;
+	uint16_t n;
 	bool result = true;
 	SetLMode(NullMode);
 	SetPathMountVolumeSetNet(UM, is_project_file);
@@ -1766,8 +1769,18 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 			}
 			else {
 				if (catalog->OldToNewCat(file_size)) {
-					CheckT(file_size);
-					CheckX(file_size);
+					int32_t t_result = CheckT(file_size);
+					if (t_result == 616) {
+						FileMsg(this, 616, ' ');
+						GoExit(MsgLine);
+					}
+
+					int32_t x_result = CheckX(file_size);
+					if (x_result == 830) {
+						if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
+							FileMsg(this, 830, 'X');
+						}
+					}
 					SeekRec(0);
 					return true;
 				}
@@ -1805,8 +1818,18 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 		}
 	}
 
-	CheckT(file_size);
-	CheckX(file_size);
+	int32_t t_result = CheckT(file_size);
+	if (t_result == 616) {
+		FileMsg(this, 616, ' ');
+		GoExit(MsgLine);
+	}
+
+	int32_t x_result = CheckX(file_size);
+	if (x_result == 830) {
+		if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
+			FileMsg(this, 830, 'X');
+		}
+	}
 
 	SeekRec(0);
 	return true;
@@ -2055,7 +2078,7 @@ void FileD::CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<Fi
 
 void FileD::CopyH(HANDLE h1, HANDLE h2)
 {
-	const WORD BufSize = 32768;
+	const uint16_t BufSize = 32768;
 	uint8_t* p = new uint8_t[BufSize];
 	int sz = FileSizeH(h1);
 	SeekH(h1, 0);

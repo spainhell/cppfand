@@ -1,12 +1,12 @@
 #include "XWorkFile.h"
 
-#include "../fandio/FandXFile.h"
-#include "../Core/access.h"
 #include "KeyFldD.h"
 #include "../Common/Record.h"
+#include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"
+#include "../fandio/FandXFile.h"
 
 
 XWorkFile::XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK)
@@ -69,7 +69,6 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper
 {
 
 	WRec* r = new WRec();
-	// r->X.S = ""; pstring is always "" at the beginning
 	XPage* p = new XPage();
 
 	K->NrToPath(_parent, 1);

@@ -5,7 +5,6 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/runproc.h"
 
-#include <cstdio>
 #include <memory>
 #include <set>
 
@@ -14,6 +13,7 @@
 #include "../Core/obaseww.h"
 #include "../Core/wwmenu.h"
 #include "../Common/textfunc.h"
+#include "../Common/CommonVariables.h"
 
 
 TextEditorEvents::TextEditorEvents()

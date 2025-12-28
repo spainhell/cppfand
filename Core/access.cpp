@@ -12,6 +12,7 @@
 #include "../fandio/Fand0File.h"
 #include "../Logging/Logging.h"
 #include "../Common/compare.h"
+#include "../Common/CommonVariables.h"
 
 
 void TestCPathError()

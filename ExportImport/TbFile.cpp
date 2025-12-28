@@ -5,6 +5,7 @@
 #include "../Core/oaccess.h"
 #include "../Core/RunMessage.h"
 #include "../Common/compare.h"
+#include "../Common/CommonVariables.h"
 
 FileD* x_FD = nullptr;
 WORD x_I = 0;

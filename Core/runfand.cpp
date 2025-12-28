@@ -7,6 +7,7 @@
 #include "../Common/pstring.h"
 #include "../Common/compare.h"
 #include "../Common/realDouble.h"
+#include "../Common/CommonVariables.h"
 #include "OldDrivers.h"
 #include "access.h"
 #include "CfgFile.h"

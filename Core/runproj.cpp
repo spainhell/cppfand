@@ -16,6 +16,7 @@
 #include "access.h"
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
+#include "../Common/CommonVariables.h"
 #include "../TextEditor/EditorHelp.h"
 #include "../TextEditor/TextEditor.h"
 #include "../DataEditor/EditReader.h"

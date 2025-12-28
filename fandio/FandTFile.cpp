@@ -7,6 +7,7 @@
 #include "../Common/random.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 

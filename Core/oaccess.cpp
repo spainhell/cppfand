@@ -11,6 +11,7 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Drivers/constants.h"
+#include "../Common/CommonVariables.h"
 
 void OpenXWorkH()
 {

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdio>
+#include <string>
 
 enum class loglevel
 {
@@ -18,5 +19,6 @@ private:
 	static Logging* _instance;
 	static FILE* _file;
 	static loglevel _level;
+	std::string GetEnv(const char* name);
 };
 

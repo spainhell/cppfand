@@ -19,6 +19,7 @@
 #include "../Common/exprcmp.h"
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
+#include "../Common/CommonVariables.h"
 #include "../Logging/Logging.h"
 #include "../fandio/directory.h"
 
@@ -42,7 +43,6 @@ wdaystt* WDaysTab;
 char AbbrYes = 'Y';
 char AbbrNo = 'N';
 
-unsigned long HandleError;
 std::string OldDir;
 std::string FandDir;
 std::string WrkDir;
@@ -50,11 +50,6 @@ std::string FandResName;
 std::string FandWorkName;
 std::string FandWorkXName;
 std::string FandWorkTName;
-std::string CPath;
-std::string CDir;
-std::string CName;
-std::string CExt;
-std::string CVol;
 
 ResFile resFile;
 
@@ -81,7 +76,6 @@ TPrTimeOut OldPrTimeOut;
 TPrTimeOut PrTimeOut;  // absolute 0:$478;
 bool WasInitDrivers = false;
 bool WasInitPgm = false;
-WORD LANNode; // r. 431
 void (*CallOpenFandFiles)(); // r453
 void (*CallCloseFandFiles)(); // r454
 

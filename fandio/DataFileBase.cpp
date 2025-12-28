@@ -1,4 +1,5 @@
 #include "DataFileBase.h"
+#include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 

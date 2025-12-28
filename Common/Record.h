@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
 
-#include "../Common/FileD.h"
+#include "FileD.h"
 
 enum class ValueType : uint8_t {
 	UNKNOWN = 0,

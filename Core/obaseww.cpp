@@ -7,6 +7,7 @@
 #include "OldDrivers.h"
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
+#include "../Common/CommonVariables.h"
 
 WORD RunErrNr = 0;
 

@@ -11,6 +11,7 @@
 #include "runfrml.h"
 #include "../Common/DateTime.h"
 #include "../Common/Record.h"
+#include "../Common/CommonVariables.h"
 
 
 XString OldMXStr;					/* Merge */
