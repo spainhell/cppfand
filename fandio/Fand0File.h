@@ -124,6 +124,7 @@ private:
 
 	void DelTFld(FieldDescr* field_d, uint8_t* record);
 	void DelAllTFlds(int32_t rec_nr);
+	void DelAllTFldsFromRecord(Record* record);
 	[[nodiscard]] std::map<FieldDescr*, int32_t> DelChangedTFields(uint8_t* orig_raw_data, Record* new_record);
 	//void DelDifTFld(FieldDescr* field_d, uint8_t* record, uint8_t* comp_record);
 	//void DelAllDifTFlds(uint8_t* record, uint8_t* comp_record);

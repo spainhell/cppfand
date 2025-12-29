@@ -99,6 +99,7 @@ size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
 
+	//DelAllTFlds(rec_nr); // delete all 'T' fields from orig. record first
 	WasWrRec = true;
 
 	// get current record data in a file and create list of unchanged 'T' fields
@@ -541,6 +542,25 @@ void Fand0File::DelAllTFlds(int32_t rec_nr)
 		for (FieldDescr* field : _parent->FldD) {
 			if (field->field_type == FieldType::TEXT && field->isStored()) {
 				DelTFld(field, buffer.get());
+			}
+		}
+	}
+	else {
+		// this file doesn't contain T fields -> nothing to delete
+	}
+}
+
+/// <summary>
+/// Sets all T fields in the record to an empty string
+/// Not reading or writing to the file
+/// </summary>
+/// <param name="record"></param>
+void Fand0File::DelAllTFldsFromRecord(Record* record)
+{
+	if (has_T_fields()) {
+		for (FieldDescr* field : _parent->FldD) {
+			if (field->field_type == FieldType::TEXT && field->isStored()) {
+				record->SaveS(field, "");
 			}
 		}
 	}
@@ -1062,7 +1082,7 @@ void Fand0File::DeleteXRec(int RecNr, Record* record)
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
 	DeleteAllIndexes(RecNr, record);
-	// DelAllTFlds(RecNr); // T fields will be deleted during 
+	DelAllTFldsFromRecord(record); // T fields will be deleted during 
 	record->SetDeleted(); //SetDeletedFlag(record);
 	WriteRec(RecNr, record);
 	XF->NRecs--;
