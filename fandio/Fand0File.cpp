@@ -96,13 +96,9 @@ size_t Fand0File::ReadRec(size_t rec_nr, uint8_t* buffer)
 
 size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 {
-	if (record->GetFileD()->Name == "PARAM3")
-	{
-		printf("");
-	}
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
-	//DelAllTFlds(rec_nr); // delete all 'T' fields from orig. record first
+
 	WasWrRec = true;
 
 	// get current record data in a file and create list of unchanged 'T' fields
@@ -1066,7 +1062,7 @@ void Fand0File::DeleteXRec(int RecNr, Record* record)
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
 	DeleteAllIndexes(RecNr, record);
-	DelAllTFlds(RecNr);
+	// DelAllTFlds(RecNr); // T fields will be deleted during 
 	record->SetDeleted(); //SetDeletedFlag(record);
 	WriteRec(RecNr, record);
 	XF->NRecs--;
@@ -1326,8 +1322,8 @@ void Fand0File::IndexFileProc(bool Compress)
 		RunError(result);
 	}
 
-	std::unique_ptr<uint8_t[]> record = GetRecSpaceUnique();
 	if (Compress) {
+		std::unique_ptr<uint8_t[]> record = GetRecSpaceUnique();
 		FileD* tmp_file = _parent->OpenDuplicateF(false);
 		for (int rec_nr = 1; rec_nr <= NRecs; rec_nr++) {
 			ReadRec(rec_nr, record.get());

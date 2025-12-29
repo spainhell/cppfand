@@ -403,7 +403,7 @@ uint16_t PressedKey::KeyCombination()
 			// capital char (with Shift)
 			ControlKey = 0;
 		}
-		else if (ControlKey == 6 && Char != _key.uChar.AsciiChar) {
+		else if (ControlKey == 6 && Char == _key.uChar.AsciiChar) {
 			// Ctrl + Alt + V (@), ...
 			ControlKey = 0;
 		}

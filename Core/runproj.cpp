@@ -232,7 +232,7 @@ bool ProjectRunner::ChptDelFor(EditD* edit, RdbRecVars* X)
 bool ProjectRunner::ChptDel(FileD* file_d, DataEditor* data_editor)
 {
 	RdbRecVars New;
-	if (file_d == CRdb->project_file) {
+	if (file_d != CRdb->project_file) {
 		return true;
 	}
 	GetRdbRecVars(data_editor->GetEditD(), data_editor->GetRecord(), &New);
@@ -733,7 +733,10 @@ void ProjectRunner::CloseChpt()
 	SaveFiles();
 	bool del = Chpt->FF->NRecs == 0;
 	std::string d = CRdb->RdbDir;
+	
+	CRdb->project_file->CloseFile();
 	FileD::CloseAllAfter(nullptr, CRdb->data_files);
+	
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	void* p = CRdb;

@@ -144,9 +144,9 @@ void RunProcedure::PromptAutoRprt(RprtOpt* RO)
 			ww.PutSelect((char)SelMark + f->Name);
 		}
 	}
-	
+
 	if (!ww.SelFieldList(RO->FDL[0]->FD, 36, true, RO2->Flds)) return;
-	
+
 	if ((RO->FDL[0]->Cond == nullptr) && !ww.PromptFilter("", &RO2->FDL[0]->Cond, &RO2->CondTxt)) return;
 
 	const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
@@ -1071,9 +1071,9 @@ void RunProcedure::PutTxt(Instr_puttxt* PD)
 	//	CPath = path;
 	//}
 	//else {
-		std::string s = RunString(nullptr, z, nullptr);
-		h = OpenHForPutTxt(PD);
-		WriteH(h, s.length(), s.c_str());
+	std::string s = RunString(nullptr, z, nullptr);
+	h = OpenHForPutTxt(PD);
+	WriteH(h, s.length(), s.c_str());
 	//}
 
 	CPath = path;
@@ -1477,6 +1477,10 @@ void RunProcedure::RunInstr(const std::vector<Instr*>& instructions)
 		}
 		case PInstrCode::_indexfile: {
 			Instr_indexfile* iPD = (Instr_indexfile*)instr;
+			if (iPD->IndexFD->Name == "ROZPIS")
+			{
+				printf("");
+			}
 			iPD->IndexFD->IndexesMaintenance(iPD->Compress);
 			SaveFiles();
 			break;
@@ -1644,7 +1648,7 @@ void RunProcedure::Run(std::vector<Instr*>& PDRoot)
 
 void RunProcedure::CallProcedure(Instr_proc* PD)
 {
-	if (PD->ProcName == "KontrCfg") {
+	if (PD->ProcName == "Indexy05") {
 		printf("");
 	}
 

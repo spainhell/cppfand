@@ -236,45 +236,63 @@ void DirMinusBackslash(pstring& D)
 	if ((D.length() > 3) && (D[D.length() - 1] == '\\')) D[0]--;
 }
 
+void ProcessFileOperation(ForAllFilesOperation op, FileD* file_d)
+{
+	if (file_d == nullptr)
+	{
+		return;
+	}
+
+	switch (op) {
+	case ForAllFilesOperation::close: {
+		file_d->CloseFile();
+		break;
+	}
+	case ForAllFilesOperation::save: {
+		file_d->Save();
+		break;
+	}
+	case ForAllFilesOperation::clear_xf_update_lock: {
+		file_d->FF->ClearXFUpdLock();
+		break;
+	}
+	case ForAllFilesOperation::save_l_mode: {
+		file_d->FF->ExLMode = file_d->FF->LMode;
+		break;
+	}
+	case ForAllFilesOperation::set_old_lock_mode: {
+		file_d->OldLockMode(file_d->FF->ExLMode);
+		break;
+	}
+	case ForAllFilesOperation::close_passive_fd: {
+		if ((file_d->FF->file_type != FandFileType::RDB) && (file_d->FF->LMode == NullMode)) {
+			file_d->CloseFile();
+		}
+		break;
+	}
+	default: 
+		break;
+	}
+}
+
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 {
 	Project* R = CRdb;
-	while (R != nullptr) { // TODO: this will not process RDB file (project_file)
+	while (R != nullptr) {
+		ProcessFileOperation(op, R->project_file);
+		
+		ProcessFileOperation(op, R->help_file);
+		
 		for (FileD* f : R->data_files) {
-			switch (op) {
-			case ForAllFilesOperation::close: {
-				f->CloseFile();
-				break;
-			}
-			case ForAllFilesOperation::save: {
-				f->Save();
-				break;
-			}
-			case ForAllFilesOperation::clear_xf_update_lock: {
-				f->FF->ClearXFUpdLock();
-				break;
-			}
-			case ForAllFilesOperation::save_l_mode: {
-				f->FF->ExLMode = f->FF->LMode;
-				break;
-			}
-			case ForAllFilesOperation::set_old_lock_mode: {
-				f->OldLockMode(f->FF->ExLMode);
-				break;
-			}
-			case ForAllFilesOperation::close_passive_fd: {
-				if ((f->FF->file_type != FandFileType::RDB) && (f->FF->LMode == NullMode)) {
-					f->CloseFile();
-				}
-				break;
-			}
-			case ForAllFilesOperation::find_fd_for_i: {
-				if ((*file_d == nullptr) && (f->CatIRec == i)) {
+			if (op == ForAllFilesOperation::find_fd_for_i) {
+				if (*file_d == nullptr && f->CatIRec == i) {
 					*file_d = f;
+					return;
+					break;
 				}
-				break;
 			}
-			default: break;
+			else {
+				ProcessFileOperation(op, f);
 			}
 		}
 		R = R->ChainBack;

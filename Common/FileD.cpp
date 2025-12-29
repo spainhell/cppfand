@@ -2145,7 +2145,7 @@ std::string FileD::SetPathForH(HANDLE handle)
 	return CPath;
 }
 
-Record* FileD::LinkLastRec(int& n)
+Record* FileD::LinkLastRec(int32_t& n)
 {
 	Record* result = nullptr;
 	LockMode md = NewLockMode(RdMode);

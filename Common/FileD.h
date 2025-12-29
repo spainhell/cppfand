@@ -187,7 +187,7 @@ public:
 	static void CopyH(HANDLE h1, HANDLE h2);
 	static std::string SetPathForH(HANDLE handle);
 
-	Record* LinkLastRec(int& n);
+	Record* LinkLastRec(int32_t& n);
 
 private:
 	void lock_excl_and_write_prefix();
