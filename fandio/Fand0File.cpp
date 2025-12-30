@@ -124,16 +124,26 @@ void Fand0File::CreateRec(int n, Record* record)
 	WriteRec(n, record);
 }
 
-void Fand0File::DeleteRec(int n, Record* record)
+void Fand0File::DeleteRec(int32_t rec_nr, Record* record)
 {
-	DelAllTFlds(n);
-
-	for (int i = n; i <= NRecs - 1; i++) {
-		ReadRec(i + 1, record);
-		WriteRec(i, record);
+	if (file_type == FandFileType::INDEX) {
+		Logging* log = Logging::getInstance();
+		//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
+		TestXFExist();
+		DeleteAllIndexes(rec_nr, record);
+		DelAllTFldsFromRecord(record); // T fields will be deleted during 
+		record->SetDeleted(); //SetDeletedFlag(record);
+		WriteRec(rec_nr, record);
+		XF->NRecs--;
+	} 
+	else {
+		DelAllTFlds(rec_nr);
+		for (int i = rec_nr; i <= NRecs - 1; i++) {
+			ReadRec(i + 1, record);
+			WriteRec(i, record);
+		}
+		DecNRecs(1);
 	}
-
-	DecNRecs(1);
 }
 
 void Fand0File::CompileRecLen()
@@ -953,6 +963,10 @@ int Fand0File::CreateIndexFile()
 	return 0;
 }
 
+/// <summary>
+/// Tests whether an index file (XF) exists and is valid, creating it if necessary.
+/// </summary>
+/// <returns>Returns 0 if the index file exists and is valid or was successfully created; otherwise returns an error code</returns>
 int Fand0File::TestXFExist()
 {
 	if ((XF != nullptr) && XF->NotValid) {
@@ -1076,88 +1090,41 @@ void Fand0File::DeleteAllIndexes(int RecNr, Record* record)
 	}
 }
 
-void Fand0File::DeleteXRec(int RecNr, Record* record)
-{
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
-	TestXFExist();
-	DeleteAllIndexes(RecNr, record);
-	DelAllTFldsFromRecord(record); // T fields will be deleted during 
-	record->SetDeleted(); //SetDeletedFlag(record);
-	WriteRec(RecNr, record);
-	XF->NRecs--;
-}
-
-void Fand0File::OverWrXRec(int RecNr, Record* P2, Record* P, Record* record)
+void Fand0File::UpdateRec(int RecNr, Record* old_rec, Record* new_rec)
 {
 	XString x, x2;
-	record = P2;
-	if (record->IsDeleted()) {
-		record = P;
-		RecallRec(RecNr, record);
+
+	if (old_rec->IsDeleted()) {
+		RecallRec(RecNr, new_rec);
 		return;
 	}
 	TestXFExist();
 
-	for (auto& K : _parent->Keys) {
-		record = P;
-		x.PackKF(_parent, K->KFlds, record);
-		record = P2;
-		x2.PackKF(_parent, K->KFlds, record);
+	for (XKey* K : _parent->Keys) {
+		x.PackKF(_parent, K->KFlds, new_rec);
+		x2.PackKF(_parent, K->KFlds, old_rec);
 		if (x.S != x2.S) {
-			K->Delete(_parent, RecNr, record);
-			record = P;
-			K->Insert(_parent, RecNr, false, record);
+			K->Delete(_parent, RecNr, old_rec);
+			K->Insert(_parent, RecNr, false, new_rec);
 		}
 	}
 
-	record = P;
-	WriteRec(RecNr, record);
+	WriteRec(RecNr, new_rec);
 }
 
 void Fand0File::RecallRec(int recNr, Record* record)
 {
 	TestXFExist();
 	XF->NRecs++;
-	for (auto& K : _parent->Keys) {
+	for (XKey* K : _parent->Keys) {
 		K->Insert(_parent, recNr, false, record);
 	}
-	record->ClearDeleted(); //_parent->ClearDeletedFlag(record);
+	record->ClearDeleted();
 	WriteRec(recNr, record);
 }
 
 void Fand0File::GenerateNew000File(XScan* x)
 {
-	//// vytvorime si novy buffer pro data,
-	//// ten pak zapiseme do souboru naprimo (bez cache)
-
-	//const unsigned short header000len = 6; // 4B pocet zaznamu, 2B delka jednoho zaznamu
-	//// z puvodniho .000 vycteme pocet zaznamu a jejich delku
-	//const size_t totalLen = x->FD->FF->NRecs * x->FD->FF->RecLen + header000len;
-	//unsigned char* buffer = new unsigned char[totalLen] { 0 };
-	//size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
-
-	//while (!x->eof) {
-	//	if (msgFuncUpdate) {
-	//		msgFuncUpdate(x->IRec);
-	//	}
-	//	NRecs++;
-	//	memcpy(&buffer[offset], record, RecLen);
-	//	offset += RecLen;
-	//	_parent->IRec++;
-	//	Eof = true;
-	//	x->GetRec(record);
-	//}
-
-	//// zapiseme hlavicku
-	//memcpy(&buffer[0], &NRecs, 4);
-	//memcpy(&buffer[4], &RecLen, 2);
-
-	//// provedeme primy zapis do souboru
-	//WriteH(Handle, totalLen, buffer);
-
-	//delete[] buffer; buffer = nullptr;
-
 	std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
 
 	x->GetRec(record.get());
@@ -1282,7 +1249,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	MyDeleteFile(orig_path);
 	TestDelErr(orig_path);
 
-	// rename temp file to regular
+	// rename temp file to a regular one
 	std::string temp_path = SetTempCExt('0', false);
 	SaveCache(0, TempFD->FF->Handle);
 	CloseClearH(&TempFD->FF->Handle);
@@ -1295,14 +1262,11 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 		CloseClearH(&TF->Handle);
 		MyDeleteFile(orig_path_T);
 		TestDelErr(orig_path_T);
-		//*parent_tf = *ref_to_parent->FF->TF;
-		//ref_to_parent->FF->TF = parent_tf;
 		CloseClearH(&TempFD->FF->TF->Handle);
 		std::string temp_path_t = SetTempCExt('T', false);
 		RenameFile56(temp_path_t, orig_path_T, true);
 		TF->Handle = OpenH(orig_path_T, _isOldFile, UMode);
-		SetUpdateFlag(); //SetUpdHandle(TF->Handle);
-		//if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
+		SetUpdateFlag();
 	}
 
 	RdPrefixes();

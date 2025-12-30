@@ -251,7 +251,7 @@ bool ProjectRunner::IsDuplFileName(DataEditor* data_editor, std::string name)
 		FileD* f = data_editor->GetFileD();
 		Record* record = new Record(f); // CFile->GetRecSpace();
 
-		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
+		for (int i = 1; i <= Chpt->GetNRecs(); i++) {
 			if (i != data_editor->CRec()) {
 				f->ReadRec(i, record);
 				//if (f->loadS(ChptTyp, record) == "F") {
@@ -406,15 +406,15 @@ WORD ProjectRunner::FindHelpRecNr(FileD* FD, std::string& txt)
 	if (FD->FF->Handle == nullptr) goto label1;
 	NmF = FD->FldD[0];
 	TxtF = FD->FldD[1];
-	for (int32_t i = 1; i <= FD->FF->NRecs; i++) {
-		FD->FF->ReadRec(i, record);
+	for (int32_t i = 1; i <= FD->GetNRecs(); i++) {
+		FD->ReadRec(i, record);
 		std::string NmFtext = record->LoadS(NmF); // FD->loadS(NmF, record);
 		std::string nm = TrailChar(NmFtext, ' ');
 		ConvToNoDiakr((uint8_t*)&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
-			while ((i < FD->FF->NRecs) && (record->LoadS(TxtF).empty())) {
+			while ((i < FD->GetNRecs()) && (record->LoadS(TxtF).empty())) {
 				i++;
-				FD->FF->ReadRec(i, record);
+				FD->ReadRec(i, record);
 			}
 			result = i;
 			goto label2;
@@ -731,7 +731,7 @@ void ProjectRunner::CloseChpt()
 	if (CRdb == nullptr) return;
 	ClearHelpStkForCRdb();
 	SaveFiles();
-	bool del = Chpt->FF->NRecs == 0;
+	bool del = Chpt->GetNRecs() == 0;
 	std::string d = CRdb->RdbDir;
 	
 	CRdb->project_file->CloseFile();
@@ -1003,7 +1003,7 @@ bool ProjectRunner::CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor
 		FileD* file_d = rdb_editor->GetFileD();
 		Record* rec = rdb_editor->GetRecord();
 		rec->SaveB(ChptVerif, false);
-		file_d->WriteRec(rdb_editor->CRec(), rec);
+		file_d->UpdateRec(rdb_editor->CRec(), rec);
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
 		}
@@ -1318,7 +1318,7 @@ bool ProjectRunner::MergeOldNew(FileD* new_file, FileD* old_file)
 		MergeAndReplace(FDOld, FDNew);
 		result = true;
 	}
-	else if ((FDOld->FF->file_type == FandFileType::INDEX) && !EquKeys(FDOld->Keys, FDNew->Keys)) {
+	else if ((FDOld->IsIndexFile()) && !EquKeys(FDOld->Keys, FDNew->Keys)) {
 		Chpt->SetPathAndVolume();
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);
@@ -1381,7 +1381,7 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 		lmsg = CompileMsgOn(Buf, w);
 		//CRecPtr = v_files->FF->RecPtr;
 		Encryp = CRdb->Encrypted;
-		for (I = 1; I <= rdb_file->FF->NRecs; I++) {
+		for (I = 1; I <= rdb_file->GetNRecs(); I++) {
 			Record* record = new Record(rdb_file);
 			rdb_file->ReadRec(I, record);
 			RP.i_rec = I;
@@ -1435,7 +1435,7 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 							dbf_file->MakeDbfDcl(nm);
 
 							Txt = record->LoadS(ChptTxt);
-							rdb_file->WriteRec(I, record);
+							rdb_file->UpdateRec(I, record);
 						}
 					}
 #ifndef FandSQL
@@ -1473,7 +1473,7 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 									if (merged) {
 										// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
 										record->SaveS(ChptOldTxt, chapter_code);
-										rdb_file->WriteRec(I, record);
+										rdb_file->UpdateRec(I, record);
 									}
 									else {
 										throw std::exception("Merge of an old and a new file declaration unsuccessful.");
@@ -1482,7 +1482,7 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 								else {
 									// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
 									record->SaveS(ChptOldTxt, chapter_code);
-									rdb_file->WriteRec(I, record);
+									rdb_file->UpdateRec(I, record);
 								}
 							}
 						}
@@ -1522,7 +1522,7 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 							gc->GoCompileErr(I, 1145);
 						}
 						record->SaveS(ChptTxt, RprtTxt);
-						rdb_file->WriteRec(I, record);
+						rdb_file->UpdateRec(I, record);
 					}
 					else {
 						const std::unique_ptr report = std::make_unique<Report>();
@@ -1601,7 +1601,7 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 			if (Verif) {
 				rdb_file->ReadRec(I, record);
 				record->SaveB(ChptVerif, false);
-				rdb_file->WriteRec(I, record);
+				rdb_file->UpdateRec(I, record);
 			}
 		}
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
@@ -1672,7 +1672,7 @@ void ProjectRunner::GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_edit
 	data_editor->CFld = data_editor->GetEditD()->GetEFldIter(data_editor->GetEditD()->LastFld);
 	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
 	data_editor->GetRecord()->SaveR(ChptTxtPos, gc->input_pos);
-	data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
+	data_editor->GetFileD()->UpdateRec(data_editor->CRec(), data_editor->GetRecord());
 	data_editor->EditFreeTxt(ChptTxt, s, true, Brk);
 }
 
@@ -1815,7 +1815,7 @@ bool ProjectRunner::EditExecRdb(const std::string& name, const std::string& proc
 
 		bool skip_editor = false; // skip editor and wait for next key event in the 'while' loop
 
-		if (!top && (Chpt->FF->NRecs > 0))
+		if (!top && (Chpt->GetNRecs() > 0))
 			if (CompileRdb(Chpt, true, false, false)) {
 				if (gc->FindChpt('P', proc_name, true, &RP)) {
 					data_editor->GotoRecFld(RP.i_rec, data_editor->CFld);
@@ -1828,7 +1828,7 @@ bool ProjectRunner::EditExecRdb(const std::string& name, const std::string& proc
 				}
 				skip_editor = true;
 			}
-		else if (ChptTF->IRec <= Chpt->FF->NRecs) {
+		else if (ChptTF->IRec <= Chpt->GetNRecs()) {
 			data_editor->GotoRecFld(ChptTF->IRec, data_editor->CFld);
 		}
 
@@ -1963,14 +1963,14 @@ void ProjectRunner::UpdateUTxt()
 
 	WORD LicNr = (WORD)ChptTF->LicenseNr;
 	MarkStore(p1);
-	if (Chpt->FF->NRecs == 0) {
+	if (Chpt->GetNRecs() == 0) {
 		WrLLF10Msg(9);
 		return;
 	}
 
 	std::unique_ptr<Record> record = std::make_unique<Record>(Chpt);
 
-	Chpt->FF->ReadRec(1, record.get());
+	Chpt->ReadRec(1, record.get());
 	
 	if (record->LoadS(ChptTyp) != "U") {
 		WrLLF10Msg(9);
@@ -2003,7 +2003,7 @@ void ProjectRunner::UpdateUTxt()
 			b = false;
 			if (Upd) {
 				StoreChptTxt(ChptTxt, s, true);
-				Chpt->WriteRec(1, record.get());
+				Chpt->UpdateRec(1, record.get());
 			}
 			break;
 		}

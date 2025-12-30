@@ -62,8 +62,8 @@ bool Add(FileD* file_d, Additive* add_d, Record* record, double value, bool back
 
 void CrIndRec(FileD* file_d, Record* record)
 {
-	file_d->CreateRec(file_d->FF->NRecs + 1, record);
-	file_d->RecallRec(file_d->FF->NRecs, record);
+	file_d->CreateRec(file_d->GetNRecs() + 1, record);
+	file_d->RecallRec(file_d->GetNRecs(), record);
 }
 
 Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record)
@@ -94,7 +94,7 @@ Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record
 		if (r == nullptr) {
 			r = new Record(add_d->File2);
 			file_d->IncNRecs(1);
-			file_d->WriteRec(1, r);
+			file_d->UpdateRec(1, r);
 		}
 
 		result = new Record(add_d->File2);
@@ -108,9 +108,9 @@ Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record
 	if ((add_d->Create == 2) || (add_d->Create == 1) && PromptYN(132)) {
 		// cond. for FandSQL removed
 		result->ClearDeleted();
-		if ((ld != nullptr) && (file_d->FF->file_type == FandFileType::INDEX)) {
+		if ((ld != nullptr) && file_d->IsIndexFile()) {
 			CrIndRec(file_d, result);
-			n = file_d->FF->NRecs;
+			n = file_d->GetNRecs();
 		}
 		else {
 			file_d->CreateRec(n, result);
@@ -145,7 +145,7 @@ void WrUpdRec(FileD* file_d, Additive* add_d, FileD* fd, Record* rp, Record* new
 	//XString x;
 	//LinkD* ld;
 	// TODO: FandSQL condition removed
-	file_d->WriteRec(n, new_record);
+	file_d->UpdateRec(n, new_record);
 }
 
 bool Assign(FileD* file_d, Additive* add_d, Record* record)
@@ -202,7 +202,7 @@ bool Assign(FileD* file_d, Additive* add_d, Record* record)
 		}
 		}
 
-		add_d->File2->WriteRec(n2, linked);
+		add_d->File2->UpdateRec(n2, linked);
 
 		delete linked; linked = nullptr;
 		return true;

@@ -287,7 +287,7 @@ void ImportTxt(CopyD* CD)
 #endif
 			{
 				f->PutRec(rec);
-				if (CD->Append && (f->FF->file_type == FandFileType::INDEX)) {
+				if (CD->Append && f->IsIndexFile()) {
 					f->FF->TryInsertAllIndexes(f->IRec, rec);
 				}
 			}
@@ -700,9 +700,9 @@ void CheckFile(FileD* FD)
 	ReadH(h, 2, &Prfx.RecLen);
 	fs = FileSizeH(h);
 	CloseH(&h);
-	if ((FD->FF->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->FF->file_type != FandFileType::INDEX) ||
+	if ((FD->FF->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (!FD->IsIndexFile()) ||
 		((fs - FD->FF->FirstRecPos) / Prfx.RecLen < Prfx.NRecs) ||
-		(Prfx.NRecs > 0) && (FD->FF->file_type == FandFileType::INDEX)) {
+		(Prfx.NRecs > 0) && FD->IsIndexFile()) {
 		LastExitCode = 3;
 		return;
 	}
@@ -782,11 +782,11 @@ bool PromptCodeRdb(EditD* edit)
 		ChptTF->LicenseNr = (WORD)UserLicNrShow & 0x7FFF;
 
 		record = new Record(Chpt);
-		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
+		for (int i = 1; i <= Chpt->GetNRecs(); i++) {
 			Chpt->ReadRec(i, record);
 			AddLicNr(Chpt, ChptOldTxt, record);
 			AddLicNr(Chpt, ChptTxt, record);
-			Chpt->WriteRec(i, record);
+			Chpt->UpdateRec(i, record);
 		}
 		//ReleaseStore(&CRecPtr);
 		return result;

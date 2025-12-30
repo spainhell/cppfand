@@ -899,7 +899,7 @@ void Compiler::RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vec
 	AcceptKeyWord("OF");
 	FileD* f = RdFileName();
 	if (typ == 'i') {
-		if (f->FF->file_type != FandFileType::INDEX) {
+		if (!f->IsIndexFile()) {
 			OldError(108);
 		}
 		kf1.clear();
@@ -917,15 +917,6 @@ void Compiler::RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vec
 		}
 		/* frueher bei IsParList K = nullptr; warum? */
 		else {
-			//k = new XWKey(f);
-			//k->Duplic = true;
-			//k->InWork = true;
-			//k->KFlds = kf1;
-			//kf = kf1;
-			//while (kf != nullptr) {
-			//	k->IndexLen += kf->FldD->NBytes;
-			//	kf = kf->pChain;
-			//}
 			locvar->key = new XWKey(f, true, true, kf1);
 		}
 	}
@@ -1120,7 +1111,7 @@ bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	bool result = false;
 	while (R != nullptr) {
 		FileD* f = R->project_file;
-		for (int32_t i = 1; i <= f->FF->NRecs; i++) {
+		for (int32_t i = 1; i <= f->GetNRecs(); i++) {
 			f->ReadRec(i, record);
 			//std::string chapterType = f->loadS(ChptTyp, record);
 			std::string chapterType = record->LoadS(ChptTyp);
@@ -1385,7 +1376,7 @@ XKey* Compiler::RdViewKey(FileD* file_d)
 	}
 	Error(109);
 label1:
-	if (file_d->FF->file_type != FandFileType::INDEX)
+	if (!file_d->IsIndexFile())
 #ifdef FandSQL
 		if (file_d->typSQLFile) Error(24); else
 #endif
@@ -2357,7 +2348,7 @@ FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
 
-		if ((processing_F->FF->file_type != FandFileType::INDEX) || (CViewKey == nullptr)) {
+		if ((!processing_F->IsIndexFile()) || (CViewKey == nullptr)) {
 			OldError(118);
 		}
 

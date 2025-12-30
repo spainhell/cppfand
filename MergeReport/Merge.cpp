@@ -905,13 +905,12 @@ void Merge::RunAssign(FileD* file_d, Record* record, const std::vector<AssignD*>
 			}
 			break;
 		}
+		}
 	}
-}
 }
 
 void Merge::WriteOutp(std::vector<OutpRD*>& v_outputs)
 {
-	//while (RD != nullptr) {
 	for (OutpRD* RD : v_outputs) {
 		if (RunBool(nullptr, RD->Bool, nullptr)) {
 			OutpFD* OD = RD->OD;
@@ -919,9 +918,6 @@ void Merge::WriteOutp(std::vector<OutpRD*>& v_outputs)
 				RunAssign(RD->OD->FD, RD->OD->RecPtr, RD->Ass);
 			}
 			else {
-				//CFile = OD->FD;
-				//CRecPtr = OD->RecPtr;
-				//OD->FD->ClearDeletedFlag(OD->RecPtr);
 				OD->RecPtr->ClearDeleted();
 				RunAssign(RD->OD->FD, RD->OD->RecPtr, RD->Ass);
 #ifdef FandSQL
@@ -930,25 +926,26 @@ void Merge::WriteOutp(std::vector<OutpRD*>& v_outputs)
 #endif
 				{
 					OD->FD->PutRec(OD->RecPtr);
-					if (OD->Append && (OD->FD->FF->file_type == FandFileType::INDEX)) {
+					if (OD->Append && (OD->FD->IsIndexFile())) {
 						OD->FD->FF->TryInsertAllIndexes(OD->FD->IRec, OD->RecPtr);
 					}
 				}
 			}
 		}
-		//RD = RD->pChain;
 	}
 }
 
 void Merge::OpenInpM()
 {
 	NRecsAll = 0;
-	for (short I = 1; I <= MaxIi; I++)
-		/* !!! with IDA[I]^ do!!! */ {
+	for (short I = 1; I <= MaxIi; I++) {
 		FileD* f = IDA[I]->Scan->FD;
-		//CFile = IDA[I]->Scan->FD;
-		if (IDA[I]->IsInplace) IDA[I]->Md = f->NewLockMode(ExclMode);
-		else IDA[I]->Md = f->NewLockMode(RdMode);
+		if (IDA[I]->IsInplace) {
+			IDA[I]->Md = f->NewLockMode(ExclMode);
+		}
+		else {
+			IDA[I]->Md = f->NewLockMode(RdMode);
+		}
 		// TODO: CRecPtr on the next line?
 		IDA[I]->Scan->ResetSort(IDA[I]->SK, IDA[I]->Bool, IDA[I]->Md, IDA[I]->SQLFilter, nullptr);
 		NRecsAll += IDA[I]->Scan->NRecs;
@@ -957,27 +954,14 @@ void Merge::OpenInpM()
 
 void Merge::OpenOutp()
 {
-	//OutpFD* OD = OutpFDRoot;
-	//while (OD != nullptr) {
 	for (OutpFD* OD : OutpFDRoot) {
 		FileD* f = OD->FD;
-#ifdef FandSQL
-		if (f->IsSQLFile) {
-			New(Strm, init);
-			Strm->OutpRewrite(OD->Append);
-			CRecPtr = OD->RecPtr;
-			SetTWorkFlag();
+		// FandSQL condition removed
+		if (OD->InplFD != nullptr) {
+			OD->FD = f->OpenDuplicateF(true);
 		}
-		else
-#endif
-		{
-			if (OD->InplFD != nullptr) {
-				OD->FD = f->OpenDuplicateF(true);
-			}
-			else {
-				OD->Md = f->FF->RewriteFile(OD->Append);
-			}
-			//OD = OD->pChain;
+		else {
+			OD->Md = f->FF->RewriteFile(OD->Append);
 		}
 	}
 }

@@ -161,7 +161,7 @@ void RunProcedure::AssignField(Instr_assign* PD)
 	LockMode md = PD->FD->NewLockMode(WrMode);
 	FieldDescr* F = PD->FldD;
 	int N = RunInt(PD->FD, PD->RecFrml, nullptr);
-	if ((N <= 0) || (N > PD->FD->FF->NRecs)) {
+	if ((N <= 0) || (N > PD->FD->GetNRecs())) {
 		msg = 640;
 		SetMsgPar(PD->FD->Name, F->Name);
 		PD->FD->RunErrorM(md);
@@ -178,7 +178,7 @@ void RunProcedure::AssignField(Instr_assign* PD)
 		}
 
 		AssgnFrml(rec, F, PD->Frml, PD->Add);
-		PD->FD->WriteRec(N, rec);
+		PD->FD->UpdateRec(N, rec);
 		PD->FD->OldLockMode(md);
 
 		delete rec; rec = nullptr;
@@ -553,23 +553,22 @@ void RunProcedure::DeleteRecProc(Instr_recs* PD)
 	}
 	else {
 		n = RunInt(f, PD->RecNr, rec);
-		if ((n <= 0) || (n > f->FF->NRecs)) {
+		if ((n <= 0) || (n > f->GetNRecs())) {
 			f->OldLockMode(md);
 			delete rec;
 			return;
 		}
 	}
 	f->ReadRec(n, rec);
+	
 	if (PD->AdUpd && !rec->IsDeleted()) {
 		LastExitCode = (!RunAddUpdate(f, '-', nullptr, nullptr, rec));
 	}
-	if (f->FF->file_type == FandFileType::INDEX) {
-		if (!rec->IsDeleted()) f->FF->DeleteXRec(n, rec);
-	}
-	else {
-		f->DeleteRec(n, rec);
-	}
+	
+	f->DeleteRec(n, rec);
+
 	f->OldLockMode(md);
+	
 	delete rec; rec = nullptr;
 }
 
@@ -577,14 +576,14 @@ void RunProcedure::AppendRecProc(FileD* file_d)
 {
 	LockMode md = file_d->NewLockMode(CrMode);
 	Record* record = new Record(file_d);
-	record->Reset(); //file_d->ZeroAllFlds(record, false);
+	record->Reset();
 	record->SetDeleted();
-	file_d->CreateRec(file_d->FF->NRecs + 1, record);
+	file_d->CreateRec(file_d->GetNRecs() + 1, record);
 	delete record; record = nullptr;
 	file_d->OldLockMode(md);
 }
 
-void RunProcedure::UpdRec(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data)
+void RunProcedure::UpdateRecord(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data)
 {
 	Record* old_data = new Record(file_d);
 	file_d->ReadRec(rec_nr, old_data);
@@ -600,16 +599,12 @@ void RunProcedure::UpdRec(FileD* file_d, int rec_nr, bool ad_upd, Record* new_da
 		}
 	}
 
-	if (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::INDEX) {
-		file_d->FF->OverWrXRec(rec_nr, old_data, new_data, new_data);
+	if (file_d->FileType == DataFileType::FandFile && file_d->IsIndexFile()) {
+		file_d->UpdateRec(rec_nr, old_data, new_data);
 	}
 	else {
-		file_d->WriteRec(rec_nr, new_data);
+		file_d->UpdateRec(rec_nr, new_data);
 	}
-
-	//if (!deleted) {
-	//	file_d->DelAllDifTFlds(old_data, nullptr);
-	//}
 
 	delete old_data; old_data = nullptr;
 }
@@ -702,18 +697,16 @@ void RunProcedure::ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 
 	if (IsRead) {
 		lv->FD->ReadRec(N, record1);
-		//lv->FD->CopyRec(record1->GetRecord(), lv->record->GetRecord(), true);
 		record1->CopyTo(lv->record);
 	}
 	else {
-		//lv->FD->CopyRec(lv->record->GetRecord(), record1->GetRecord(), false);
 		lv->record->CopyTo(record1);
 		if (app) {
-			if (lv->FD->FileType == DataFileType::FandFile && lv->FD->FF->file_type == FandFileType::INDEX) {
+			if (lv->FD->FileType == DataFileType::FandFile && lv->FD->IsIndexFile()) {
 				lv->FD->RecallRec(N, record1);
 			}
 			else {
-				lv->FD->WriteRec(N, record1);
+				lv->FD->UpdateRec(N, record1);
 			}
 
 			if (ad) {
@@ -721,7 +714,7 @@ void RunProcedure::ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			}
 		}
 		else {
-			UpdRec(lv->FD, N, ad, record1);
+			UpdateRecord(lv->FD, N, ad, record1);
 		}
 	}
 
@@ -735,8 +728,6 @@ void RunProcedure::LinkRecProc(Instr_assign* assign_instr)
 	LinkD* ld = assign_instr->LinkLD;
 	Record* lr2 = assign_instr->RecLV2->record;
 
-	// TODO: is there anything in TWork?: ld->ToFD->ClearRecSpace(lr2->GetRecord());
-
 	Record* rec = LinkUpw(ld, n, true, assign_instr->RecLV1->record);
 
 	if (rec == nullptr) {
@@ -746,7 +737,6 @@ void RunProcedure::LinkRecProc(Instr_assign* assign_instr)
 		LastExitCode = 0;
 	}
 
-	//ld->ToFD->CopyRec(rec, lr2->GetRecord(), true);
 	rec->CopyTo(lr2);
 
 	delete rec; rec = nullptr;
@@ -867,13 +857,13 @@ void RunProcedure::ForAllProc(Instr_forall* PD)
 				md1 = FD->NewLockMode(WrMode);
 				//FD->CopyRec(lr->GetRecord(), cr->GetRecord(), false);
 				lr->CopyTo(cr);
-				UpdRec(FD, xScan->RecNr, true, cr);
+				UpdateRecord(FD, xScan->RecNr, true, cr);
 				FD->OldLockMode(md1);
 			}
 
 			if (!(ExitP || BreakP)) {
 				// TODO: FandSQL condition removed
-				if ((Key == nullptr) && (xScan->NRecs > FD->FF->NRecs)) {
+				if ((Key == nullptr) && (xScan->NRecs > FD->GetNRecs())) {
 					xScan->IRec--;
 					xScan->NRecs--;
 				}
@@ -1167,12 +1157,14 @@ void RunProcedure::PortOut(bool IsWord, WORD Port, WORD What)
 void RunProcedure::RecallRecProc(Instr_recs* PD)
 {
 	FileD* f = PD->RecFD;
-	Record* rec = new Record(f);
 
-	if (f->FF->file_type != FandFileType::INDEX) return;
+	if (!f->IsIndexFile()) return;
+	
+	Record* rec = new Record(f);
 	int N = RunInt(f, PD->RecNr, rec);
 	LockMode md = f->NewLockMode(CrMode);
-	if ((N > 0) && (N <= f->FF->NRecs)) {
+	
+	if ((N > 0) && (N <= f->GetNRecs())) {
 		f->ReadRec(N, rec);
 		if (rec->IsDeleted()) {
 			f->FF->RecallRec(N, rec);
@@ -1181,6 +1173,7 @@ void RunProcedure::RecallRecProc(Instr_recs* PD)
 			}
 		}
 	}
+
 	f->OldLockMode(md);
 	delete rec; rec = nullptr;
 }

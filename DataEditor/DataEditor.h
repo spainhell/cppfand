@@ -112,8 +112,8 @@ private:
     void WriteSL(std::vector<std::string>& SL);
     void DisplRecTxt();
     
-    void UpdMemberRef(Record* POld, Record* PNew);
-    void WrJournal(char Upd, Record* RP, double Time);
+    void UpdMemberRef(Record* old_record, Record* new_record);
+    void WrJournal(char Upd, Record* record, double Time);
     bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md);
     bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd);
     void UnLockWithDep(LockMode OldMd);

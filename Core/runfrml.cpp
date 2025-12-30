@@ -327,9 +327,9 @@ int RecNoFun(FileD* file_d, FrmlElemRecNo* Z, Record* record)
 
 	LockMode md = funcFD->NewLockMode(RdMode);
 	Record* newRecord = new Record(funcFD);
-	if (funcFD->FF->NRecs > 0) {
+	if (funcFD->GetNRecs() > 0) {
 		bool b;
-		if (funcFD->FF->file_type == FandFileType::INDEX) {
+		if (funcFD->IsIndexFile()) {
 			funcFD->FF->TestXFExist();
 			b = k->SearchInterval(funcFD, x, false, n);
 		}
@@ -357,15 +357,15 @@ int AbsLogRecNoFun(FileD* file_d, FrmlElemRecNo* Z, Record* record)
 
 	FileD* funcFD = Z->FFD;
 	LockMode md = funcFD->NewLockMode(RdMode);
-	if (N > funcFD->FF->NRecs) {
+	if (N > funcFD->GetNRecs()) {
 		funcFD->OldLockMode(md);
 		return result;
 	}
-	if (funcFD->FF->file_type == FandFileType::INDEX) {
+	if (funcFD->IsIndexFile()) {
 		funcFD->FF->TestXFExist();
 		if (Z->Op == _recnolog) {
 			Record* newRecord = new Record(funcFD);
-			funcFD->FF->ReadRec(N, newRecord);
+			funcFD->ReadRec(N, newRecord);
 			if (newRecord->IsDeleted()) {
 				funcFD->OldLockMode(md);
 				return result;
@@ -408,7 +408,7 @@ double LinkProc(FrmlElemLink* X, Record* record)
 	else {
 		N = RunInt(fromFD, X->LinkRecFrml, record);
 		LockMode md = fromFD->NewLockMode(RdMode);
-		if ((N <= 0) || (N > fromFD->FF->NRecs)) {
+		if ((N <= 0) || (N > fromFD->GetNRecs())) {
 			SetMsgPar(fromFD->Name, LD->RoleName);
 			fromFD->RunErrorM(md);
 			RunError(609);
@@ -1053,7 +1053,7 @@ label1:
 			RecNo = fX->FF->XNRecs(fX->Keys);
 		}
 		else {
-			RecNo = fX->FF->NRecs;
+			RecNo = fX->GetNRecs();
 		}
 		fX->OldLockMode(md);
 		result = RecNo;
@@ -2064,7 +2064,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg, Record* record)
 	record->Reset();
 
 	int N = RunInt(fd, X->P1, record);
-	if ((N <= 0) || (N > fd->FF->NRecs)) {
+	if ((N <= 0) || (N > fd->GetNRecs())) {
 		SetMsgPar(fd->Name, X->RecFldD->Name);
 		fd->RunErrorM(md);
 		RunError(Msg);

@@ -2114,11 +2114,13 @@ CpOption RdCOpt(Compiler* compiler)
 
 bool RdX(Compiler* compiler, FileD* FD)
 {
-	auto result = false;
+	bool result = false;
 	if ((compiler->Lexem == '.') && (FD != nullptr)) {
 		compiler->RdLex();
 		compiler->AcceptKeyWord("X");
-		if (FD->FF->file_type != FandFileType::INDEX) compiler->OldError(108);
+		if (!FD->IsIndexFile()) {
+			compiler->OldError(108);
+		}
 		result = true;
 	}
 	return result;
@@ -2244,7 +2246,7 @@ Instr* RdTurnCat(Compiler* compiler)
 	const std::string rdb_name = catalog->GetRdbName(first);
 	const std::string file_name = catalog->GetFileName(first);
 	int i = first + 1;
-	while (catalog->GetCatalogFile()->FF->NRecs >= i
+	while (catalog->GetCatalogFile()->GetNRecs() >= i
 		&& EquUpCase(rdb_name, catalog->GetRdbName(i))
 		&& EquUpCase(file_name, catalog->GetFileName(i))) {
 		i++;
@@ -2342,7 +2344,9 @@ Instr* RdIndexfile(Compiler* compiler)
 	auto PD = new Instr_indexfile(); // GetPD(_indexfile, 5);
 	compiler->RdLex();
 	PD->IndexFD = compiler->RdFileName();
-	if (PD->IndexFD->FF->file_type != FandFileType::INDEX) compiler->OldError(108);
+	if (!PD->IndexFD->IsIndexFile()) {
+		compiler->OldError(108);
+	}
 	if (compiler->Lexem == ',') {
 		compiler->RdLex();
 		compiler->AcceptKeyWord("COMPRESS");
@@ -2750,8 +2754,12 @@ std::vector<AssignD*> MakeImplAssign(Compiler* compiler, FileD* FD1, FileD* FD2)
 Instr_assign* RdAssign(Compiler* compiler)
 {
 	FileD* FD = nullptr; FieldDescr* F = nullptr;
-	LocVar* LV = nullptr; LocVar* LV2 = nullptr; char PV;
-	Instr_assign* PD = nullptr; pstring FName; char FTyp = 0;
+	LocVar* LV = nullptr; LocVar* LV2 = nullptr; 
+	char PV;
+	Instr_assign* PD = nullptr; 
+	std::string FName; 
+	char FTyp = 0;
+
 	if (compiler->ForwChar == '.')
 		if (compiler->FindLocVar(&LVBD, &LV) && (LV->f_typ == 'r' || LV->f_typ == 'i')) {
 			FTyp = LV->f_typ;
@@ -2761,24 +2769,25 @@ Instr_assign* RdAssign(Compiler* compiler)
 				compiler->Accept(_assign);
 				if ((compiler->Lexem != _number) || (compiler->LexWord != "0")) compiler->Error(183);
 				compiler->RdLex();
-				PD = new Instr_assign(PInstrCode::_asgnxnrecs); // GetPInstr(_asgnxnrecs, 4);
+				PD = new Instr_assign(PInstrCode::_asgnxnrecs);
 				PD->xnrIdx = LV->key;
 			}
 			else {
-				PD = new Instr_assign(PInstrCode::_asgnrecfld); // GetPInstr(_asgnrecfld, 13);
+				PD = new Instr_assign(PInstrCode::_asgnrecfld);
 				PD->AssLV = LV;
 				F = compiler->RdFldName(LV->FD);
 				PD->RecFldD = F;
 				if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
 				FTyp = F->frml_type;
-			label0:
 				compiler->RdAssignFrml(FTyp, PD->Add, &PD->Frml, nullptr);
 			}
 		}
 		else {
 			FName = compiler->LexWord;
 			FD = compiler->FindFileD();
-			if (FD->IsActiveRdb()) compiler->Error(121);
+			if (FD->IsActiveRdb()) {
+				compiler->Error(121);
+			}
 			compiler->RdLex(); compiler->RdLex();
 			if (compiler->IsKeyWord("ARCHIVES")) {
 				F = catalog->CatalogArchiveField();
@@ -2805,21 +2814,21 @@ Instr_assign* RdAssign(Compiler* compiler)
 				PD = new Instr_assign(PInstrCode::_asgnnrecs);
 				PD->FD = FD;
 				FTyp = 'R';
-				goto label0;
+				compiler->RdAssignFrml(FTyp, PD->Add, &PD->Frml, nullptr);
 			}
 			else {
 				if (!FD->IsParFile) compiler->OldError(64);
-				PD = new Instr_assign(PInstrCode::_asgnpar); // GetPInstr(_asgnpar, 13);
+				PD = new Instr_assign(PInstrCode::_asgnpar);
 				PD->FD = FD;
 				F = compiler->RdFldName(FD);
 				PD->FldD = F;
 				if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
 				FTyp = F->frml_type;
-				goto label0;
+				compiler->RdAssignFrml(FTyp, PD->Add, &PD->Frml, nullptr);
 			}
 		}
 	else if (compiler->ForwChar == '[') {
-		PD = new Instr_assign(PInstrCode::_asgnField); // GetPInstr(_asgnField, 18);
+		PD = new Instr_assign(PInstrCode::_asgnField);
 		FD = compiler->RdFileName();
 		PD->FD = FD; compiler->RdLex();
 #ifdef FandSQL
@@ -2830,8 +2839,10 @@ Instr_assign* RdAssign(Compiler* compiler)
 		compiler->Accept('.');
 		F = compiler->RdFldName(FD);
 		PD->FldD = F;
-		if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
-		PD->Indexarg = (FD->FF->file_type == FandFileType::INDEX) && compiler->IsKeyArg(F, FD);
+		if (!F->isStored()) {
+			compiler->OldError(14);
+		}
+		PD->Indexarg = FD->IsIndexFile() && compiler->IsKeyArg(F, FD);
 		compiler->RdAssignFrml(F->frml_type, PD->Add, &PD->Frml, nullptr);
 	}
 	else if (compiler->FindLocVar(&LVBD, &LV)) {
@@ -2843,53 +2854,52 @@ Instr_assign* RdAssign(Compiler* compiler)
 		case 'r': {
 			compiler->Accept(_assign);
 			if (!IsRecVar(compiler, &LV2)) compiler->Error(141);
-			PD = new Instr_assign(PInstrCode::_asgnrecvar); // GetPInstr(_asgnrecvar, 12);
+			PD = new Instr_assign(PInstrCode::_asgnrecvar);
 			PD->RecLV1 = LV;
 			PD->RecLV2 = LV2;
 			PD->Ass = MakeImplAssign(compiler, LV->FD, LV2->FD);
 			break;
 		}
 		default: {
-			PD = new Instr_assign(PInstrCode::_asgnloc); // GetPInstr(_asgnloc, 9);
-			PD->AssLV = LV; goto label0;
+			PD = new Instr_assign(PInstrCode::_asgnloc);
+			PD->AssLV = LV; 
+			compiler->RdAssignFrml(FTyp, PD->Add, &PD->Frml, nullptr);
 			break;
 		}
 		}
 	}
-	else if (compiler->IsKeyWord("USERNAME"))
-	{
-		PD = new Instr_assign(PInstrCode::_asgnusername); // GetPInstr(_asgnusername, 4);
-		goto label2;
+	else if (compiler->IsKeyWord("USERNAME")) {
+		PD = new Instr_assign(PInstrCode::_asgnusername);
+		compiler->Accept(_assign);
+		PD->Frml = compiler->RdStrFrml(nullptr);
 	}
-	else if (compiler->IsKeyWord("CLIPBD"))
-	{
-		PD = new Instr_assign(PInstrCode::_asgnClipbd); // GetPInstr(_asgnClipbd, 4);
-		goto label2;
+	else if (compiler->IsKeyWord("CLIPBD")) {
+		PD = new Instr_assign(PInstrCode::_asgnClipbd);
+		compiler->Accept(_assign);
+		PD->Frml = compiler->RdStrFrml(nullptr);
 	}
 	else if (compiler->IsKeyWord("ACCRIGHT")) {
-		PD = new Instr_assign(PInstrCode::_asgnAccRight); // GetPInstr(_asgnAccRight, 4);
-	label2:
+		PD = new Instr_assign(PInstrCode::_asgnAccRight);
 		compiler->Accept(_assign);
 		PD->Frml = compiler->RdStrFrml(nullptr);
 	}
 	else if (compiler->IsKeyWord("EDOK")) {
-		PD = new Instr_assign(PInstrCode::_asgnEdOk); // GetPInstr(_asgnEdOk, 4);
+		PD = new Instr_assign(PInstrCode::_asgnEdOk);
 		compiler->Accept(_assign);
 		PD->Frml = compiler->RdBool(nullptr);
 	}
-	else if (compiler->IsKeyWord("RANDSEED"))
-	{
-		PD = new Instr_assign(PInstrCode::_asgnrand); // GetPInstr(_asgnrand, 4);
-		goto label3;
+	else if (compiler->IsKeyWord("RANDSEED")) {
+		PD = new Instr_assign(PInstrCode::_asgnrand);
+		compiler->Accept(_assign);
+		PD->Frml = compiler->RdRealFrml(nullptr);
 	}
-	else if (compiler->IsKeyWord("TODAY"))
-	{
-		PD = new Instr_assign(PInstrCode::_asgnusertoday); // GetPInstr(_asgnusertoday, 4);
-		goto label3;
+	else if (compiler->IsKeyWord("TODAY")) {
+		PD = new Instr_assign(PInstrCode::_asgnusertoday);
+		compiler->Accept(_assign);
+		PD->Frml = compiler->RdRealFrml(nullptr);
 	}
 	else if (compiler->IsKeyWord("USERCODE")) {
-		PD = new Instr_assign(PInstrCode::_asgnusercode); // GetPInstr(_asgnusercode, 4);
-	label3:
+		PD = new Instr_assign(PInstrCode::_asgnusercode);
 		compiler->Accept(_assign);
 		PD->Frml = compiler->RdRealFrml(nullptr);
 	}
@@ -3247,7 +3257,7 @@ Instr* RdBackup(Compiler* compiler, char MTyp, bool IsBackup)
 	compiler->TestIdentif();
 
 	bool found = false;
-	for (int i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {
+	for (int i = 1; i <= catalog->GetCatalogFile()->GetNRecs(); i++) {
 		if (EquUpCase(catalog->GetRdbName(i), "ARCHIVES") && EquUpCase(catalog->GetFileName(i), compiler->LexWord)) {
 			compiler->RdLex();
 			PD->BrCatIRec = i;

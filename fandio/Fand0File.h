@@ -57,9 +57,10 @@ public:
 	size_t ReadRec(size_t rec_nr, uint8_t* buffer);
 	size_t WriteRec(size_t rec_nr, Record* record);
 	void CreateRec(int n, Record* record);
-	void DeleteRec(int n, Record* record);
+	void DeleteRec(int32_t rec_nr, Record* record);
 	size_t PutRec(Record* record, int& i_rec);
 	size_t PutRec(uint8_t* record);
+	void UpdateRec(int RecNr, Record* old_rec, Record* new_rec);
 
 	void CompileRecLen();
 	int UsedFileSize() const;
@@ -96,9 +97,6 @@ public:
 	bool SearchKey(XString& XX, XKey* Key, int& NN, Record* record);
 	int XNRecs(std::vector<XKey*>& K);
 	void TryInsertAllIndexes(int RecNr, Record* record);
-	void DeleteAllIndexes(int RecNr, Record* record);
-	void DeleteXRec(int RecNr, Record* record);
-	void OverWrXRec(int RecNr, Record* P2, Record* P, Record* record);
 	void RecallRec(int recNr, Record* record);
 
 	void GenerateNew000File(XScan* x);
@@ -115,12 +113,14 @@ public:
 	static void CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos);
 	std::string SetTempCExt(char typ, bool isNet) const;
 
-	std::string loadTfromPos(FieldDescr* field, int32_t pos); // due to lazy-loading of T fields in records
+	std::string loadTfromPos(FieldDescr* field, int32_t pos); // for lazy-loading of T fields in records
 
 private:
 	FileD* _parent;
 	//uint8_t* _buffer; // record buffer
 	bool is_null_value(FieldDescr* field_d, uint8_t* record);
+
+	void DeleteAllIndexes(int RecNr, Record* record);
 
 	void DelTFld(FieldDescr* field_d, uint8_t* record);
 	void DelAllTFlds(int32_t rec_nr);

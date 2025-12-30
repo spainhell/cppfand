@@ -1024,12 +1024,12 @@ label1:
 	NmF = R->help_file->FldD[0];
 	TxtF = R->help_file->FldD[1];
 	if (!ByName) {
-		i = MaxW(1, MinW(IRec, R->help_file->FF->NRecs));
-		R->help_file->FF->ReadRec(i, record);
+		i = MaxW(1, MinW(IRec, R->help_file->GetNRecs()));
+		R->help_file->ReadRec(i, record);
 		goto label2;
 	}
-	for (i = 1; i <= R->help_file->FF->NRecs; i++) {
-		R->help_file->FF->ReadRec(i, record);
+	for (i = 1; i <= R->help_file->GetNRecs(); i++) {
+		R->help_file->ReadRec(i, record);
 		Nm = OldTrailChar(' ', record->LoadS(NmF));
 		if (R->help_file == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
@@ -1037,7 +1037,7 @@ label1:
 		if (EqualsMask(S, Nm)) {
 		label2:
 			result = record->LoadS(TxtF); //R->help_file->loadS(TxtF, record);
-			if (!ByName || (!result.empty()) || (i == R->help_file->FF->NRecs)) {
+			if (!ByName || (!result.empty()) || (i == R->help_file->GetNRecs())) {
 				if (R->help_file == HelpFD) {
 					ConvKamenToCurr(result, !fonts.NoDiakrSupported);
 				}
@@ -1045,7 +1045,7 @@ label1:
 				goto label3;
 			}
 			i++;
-			R->help_file->FF->ReadRec(i, record);
+			R->help_file->ReadRec(i, record);
 			goto label2;
 		}
 	}

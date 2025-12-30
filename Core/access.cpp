@@ -81,11 +81,11 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 			// add a new empty record to the file
 			file_d->IncNRecs(1);
 			rec = new Record(file_d);
-			file_d->WriteRec(n, rec);
+			file_d->UpdateRec(n, rec);
 		}
 
 		AssgnFrml(rec, field_d, frml, add);
-		file_d->WriteRec(n, rec);
+		file_d->UpdateRec(n, rec);
 		file_d->OldLockMode(md);
 		delete rec; rec = nullptr;
 	}
@@ -173,7 +173,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 		to_FD->FF->TestXFExist();
 		lu = K->SearchInterval(to_FD, x, false, N);
 	}
-	else if (to_FD->FF->NRecs == 0) {
+	else if (to_FD->GetNRecs() == 0) {
 		lu = false;
 		N = 1;
 	}
@@ -182,7 +182,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 	}
 
 	if (lu) {
-		to_FD->FF->ReadRec(N, up_rec);
+		to_FD->ReadRec(N, up_rec);
 	}
 	else {
 		up_rec->Reset(); //to_FD->ZeroAllFlds(up_rec, false);

@@ -538,8 +538,12 @@ void RdFieldDList(FileD* file_d, bool stored)
 
 		if (stored) {
 			if (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::FAND8) {
-				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) gc->OldError(35);
-				else if ((F->field_type == FieldType::FIXED) && (F->NBytes > 5)) gc->OldError(36);
+				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) {
+					gc->OldError(35);
+				}
+				else if ((F->field_type == FieldType::FIXED) && (F->NBytes > 5)) {
+					gc->OldError(36);
+				}
 			}
 		}
 		else {
@@ -566,7 +570,7 @@ void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 			break;
 		}
 
-		if (file_d->FF->file_type == FandFileType::INDEX) {
+		if (file_d->IsIndexFile()) {
 			for (XKey* K : file_d->Keys) {
 				computed = false;
 				bool continueWithNextK = false;
@@ -730,9 +734,7 @@ FileD* RdFileD(std::string FileName, DataFileType data_file_type, FandFileType f
 		isJournal = true;
 		file_d = RdFileD_Journal(FileName, fand_file_type);
 		CRdb->data_files.push_back(file_d);
-		//ChainLast(FileDRoot, file_d);
 		MarkStore(p);
-		//goto label1;
 	}
 	else if (gc->IsKeyWord("LIKE")) {
 		file_d = RdFileD_Like(FileName, fand_file_type);

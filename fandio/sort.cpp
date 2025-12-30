@@ -89,7 +89,7 @@ int32_t GetIndex(Instr_getindex* PD)
 	else {
 		int nr = RunInt(lvFD, PD->condition, record);
 
-		if ((nr > 0) && (nr <= lvFD->FF->NRecs)) {
+		if ((nr > 0) && (nr <= lvFD->GetNRecs())) {
 			lvFD->ReadRec(nr, record);
 			if (PD->mode == '+') {
 				if (!record->IsDeleted()) {

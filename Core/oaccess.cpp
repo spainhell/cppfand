@@ -6,7 +6,6 @@
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
-#include "../fandio/FandTFile.h"
 #include "../fandio/FandXFile.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"

@@ -236,7 +236,7 @@ size_t FileD::ReadRec(size_t rec_nr, Record* record) const
 
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		result = FF->ReadRec(rec_nr, record);
+		result = FF->ReadRec(rec_nr, record, true);
 		break;
 	}
 	case DataFileType::DBF: {
@@ -252,7 +252,7 @@ size_t FileD::ReadRec(size_t rec_nr, Record* record) const
 	return result;
 }
 
-size_t FileD::WriteRec(size_t rec_nr, Record* record) const
+size_t FileD::UpdateRec(size_t rec_nr, Record* record) const
 {
 	size_t result;
 
@@ -271,6 +271,32 @@ size_t FileD::WriteRec(size_t rec_nr, Record* record) const
 	}
 	}
 
+	return result;
+}
+
+size_t FileD::UpdateRec(size_t rec_nr, Record* old_record, Record* new_record) const
+{
+	size_t result;
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		if (old_record == nullptr) {
+			FF->WriteRec((int32_t)rec_nr, new_record);
+		}
+		else {
+			FF->UpdateRec((int32_t)rec_nr, old_record, new_record);
+		}
+		result = 1;
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->WriteRec(rec_nr, new_record);
+		break;
+	}
+	default: {
+		result = 0;
+		break;
+	}
+	}
 	return result;
 }
 
@@ -642,7 +668,7 @@ void FileD::RecallRec(int recNr, Record* record)
 	}
 	case DataFileType::DBF: {
 		DbfF->ClearDeletedFlag(record);
-		WriteRec(recNr, record);
+		UpdateRec(recNr, record);
 		break;
 	}
 	default: break;
@@ -703,7 +729,7 @@ void FileD::AssignNRecs(bool Add, int N)
 	IncNRecs(N - OldNRecs);
 
 	for (int i = OldNRecs + 1; i <= N; i++) {
-		WriteRec(i, record);
+		UpdateRec(i, record);
 	}
 
 	delete record; record = nullptr;
@@ -1319,6 +1345,30 @@ void FileD::WrPrefixes() const
 	default:
 		break;
 	}
+}
+
+bool FileD::IsIndexFile() const
+{
+	bool result;
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		if (FF->file_type == FandFileType::INDEX) {
+			result = true;
+		}
+		else {
+			result = false;
+		}
+		break;
+	case DataFileType::DBF:
+		result = false;
+		break;
+	default:
+		result = true;
+		break;
+	}
+
+	return result;
 }
 
 bool FileD::HasIndexFile() const

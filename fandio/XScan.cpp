@@ -76,7 +76,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, Record* record)
 	}
 	switch (Kind) {
 	case ScanMode::Sequential: {
-		NRecs = FD->FF->NRecs;
+		NRecs = FD->GetNRecs();
 		break;
 	}
 	case ScanMode::Index:
@@ -363,12 +363,7 @@ void XScan::GetRec(Record* record)
 			switch (Kind) {
 			case ScanMode::Sequential: {
 				RecNr = IRec;
-				if (FD->FileType == DataFileType::FandFile) {
-					FD->FF->ReadRec(RecNr, record, true);
-				}
-				else {
-					FD->ReadRec(RecNr, record);
-				}
+				FD->ReadRec(RecNr, record);
 				if (record->IsDeleted()) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;

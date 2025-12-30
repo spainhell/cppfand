@@ -67,7 +67,7 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	gc->SetInpStr(numbers);
 	gc->RdLex();
 label1:
-	for (WORD i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {
+	for (WORD i = 1; i <= catalog->GetCatalogFile()->GetNRecs(); i++) {
 		if (!EquUpCase(catalog->GetRdbName(i), "ARCHIVES")) {
 			if (catalog->GetArchive(i) == ArNr) {
 				FSplit(catalog->GetPathName(i), d, FName, e);

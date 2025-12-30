@@ -242,7 +242,7 @@ void RunProlog::SaveToParamFile(FileD* file_d, FieldDescr* field_d, const std::s
 
 	Record* rec = file_d->LinkLastRec(rec_nr);
 	rec->SaveS(field_d, value);
-	file_d->WriteRec(rec_nr, rec);
+	file_d->UpdateRec(rec_nr, rec);
 
 	file_d->OldLockMode(md);
 	

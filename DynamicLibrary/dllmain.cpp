@@ -179,7 +179,7 @@ extern "C" int FAND_API UpdateChapter(int32_t recNr, char* chapterType, char* ch
 	std::string chapter_code = ConvertUnicodetoCP852(chapterCode);
 	data->SaveS(rdbFile->FldD[5], chapter_code);
 
-	rdbFile->WriteRec(recNr, data);
+	rdbFile->UpdateRec(recNr, data);
 
 	return rdbFile->FF->NRecs;
 }
