@@ -215,15 +215,15 @@ void Merge::Run()
 				IDA[i]->Count = 0.0;
 				if (!IDA[i]->Scan->eof) {
 					if (MinIi == 0) {
-						SetOldMFlds(f, rec, IDA[i]->MFld);
+						SetOldMFlds(rec, IDA[i]->MFld);
 						MinIi = i;
 						IDA[i]->Exist = true;
 					}
 					else {
-						res = CompMFlds(f, rec, IDA[i]->MFld);
+						res = CompMFlds(rec, IDA[i]->MFld);
 						if (res != _gt) {
 							if (res == _lt) {
-								SetOldMFlds(f, rec, IDA[i]->MFld);
+								SetOldMFlds(rec, IDA[i]->MFld);
 								MinIi = i;
 							}
 							IDA[i]->Exist = true;
@@ -787,14 +787,14 @@ void Merge::RdOutpRD(std::vector<OutpRD*>& RDRoot)
 	MakeImplAssign();
 }
 
-WORD Merge::CompMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
+WORD Merge::CompMFlds(Record* record, std::vector<KeyFldD*>& M)
 {
 	XString x;
-	x.PackKF(file_d, M, record);
+	x.PackKF(M, record);
 	return CompStr(x.S, OldMXStr.S);
 }
 
-void Merge::SetOldMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M)
+void Merge::SetOldMFlds(Record* record, std::vector<KeyFldD*>& M)
 {
 	//ConstListEl* C = nullptr;
 	FieldDescr* F = nullptr;
@@ -1067,7 +1067,7 @@ void Merge::MergeProc(FileD* file_d, Record* record)
 				ReadInpFileM(ID);
 				if (ID->Scan->eof) res = _gt;
 				else {
-					res = CompMFlds(file_d, record, ID->MFld);
+					res = CompMFlds(record, ID->MFld);
 					if (res == _lt) file_d->CFileError(607);
 				}
 			} while (res != _gt);
@@ -1105,7 +1105,7 @@ void Merge::JoinProc(FileD* file_d, Record* record, WORD Ii, bool& EmptyGroup)
 					res = _gt;
 				}
 				else {
-					res = CompMFlds(file_d, record, ID->MFld);
+					res = CompMFlds(record, ID->MFld);
 					if (res == _lt) file_d->CFileError(607);
 				}
 			} while (res == _gt);

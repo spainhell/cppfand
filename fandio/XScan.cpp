@@ -305,7 +305,6 @@ void XScan::SeekOnPage(int pageNr, unsigned short i)
 		}
 		NOfKI -= items_on_page_;
 	}
-	//X = P->GetItem(I);
 	_item = i;
 }
 
@@ -363,7 +362,7 @@ void XScan::GetRec(Record* record)
 			switch (Kind) {
 			case ScanMode::Sequential: {
 				RecNr = IRec;
-				FD->ReadRec(RecNr, record);
+				FD->ReadRec(RecNr, record, true);
 				if (record->IsDeleted()) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;
@@ -381,7 +380,7 @@ void XScan::GetRec(Record* record)
 				else if (page_->GreaterPage > 0) {
 					SeekOnPage(page_->GreaterPage, 1);
 				}
-				FD->ReadRec(RecNr, record);
+				FD->ReadRec(RecNr, record, true);
 				if (record->IsDeleted()) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;

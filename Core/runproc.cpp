@@ -766,14 +766,14 @@ void RunProcedure::ForAllProc(Instr_forall* PD)
 		//KF = Link->ToKey->KFlds;
 		switch (PD->COwnerTyp) {
 		case 'r': {
-			xx.PackKF(LD->ToFD, LD->ToKey->KFlds, PD->CLV->record);
+			xx.PackKF(LD->ToKey->KFlds, PD->CLV->record);
 			break;
 		}
 		case 'F': {
 			md = LD->ToFD->NewLockMode(RdMode);
 			Record* rec = new Record(LD->ToFD); // ->GetRecSpace();
 			LD->ToFD->ReadRec(RunInt(LD->ToFD, (FrmlElem*)PD->CLV, rec), rec);
-			xx.PackKF(LD->ToFD, LD->ToKey->KFlds, rec);
+			xx.PackKF(LD->ToKey->KFlds, rec);
 			ReleaseStore(&p);
 			LD->ToFD->OldLockMode(md);
 			delete rec; rec = nullptr;

@@ -63,7 +63,7 @@ public:
 	void Reset();
 	size_t GetRecordSize();
 
-	size_t ReadRec(size_t rec_nr, Record* record) const;
+	size_t ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields = false) const;
 	size_t UpdateRec(size_t rec_nr, Record* record) const;
 	size_t UpdateRec(size_t rec_nr, Record* old_record, Record* new_record) const;
 	void PutRec(Record* record);

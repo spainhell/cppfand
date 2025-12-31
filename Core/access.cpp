@@ -163,7 +163,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 
 	XKey* K = LD->ToKey;
 	XString x;
-	x.PackKF(from_FD, LD->Args, record);
+	x.PackKF(LD->Args, record);
 
 	// TODO: FandSQL removed
 

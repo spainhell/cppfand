@@ -1009,7 +1009,7 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, Record* record)
 		}
 		N = (L + R) / 2;
 		ReadRec(N, record);
-		x.PackKF(_parent, Key->KFlds, record);
+		x.PackKF(Key->KFlds, record);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
 
@@ -1021,7 +1021,7 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, Record* record)
 			while (N > 1) {
 				N--;
 				ReadRec(N, record);
-				x.PackKF(_parent, Key->KFlds, record);
+				x.PackKF(Key->KFlds, record);
 				if (CompStr(x.S, XX.S) != _equ) {
 					N++;
 					ReadRec(N, record);
@@ -1101,8 +1101,8 @@ void Fand0File::UpdateRec(int RecNr, Record* old_rec, Record* new_rec)
 	TestXFExist();
 
 	for (XKey* K : _parent->Keys) {
-		x.PackKF(_parent, K->KFlds, new_rec);
-		x2.PackKF(_parent, K->KFlds, old_rec);
+		x.PackKF(K->KFlds, new_rec);
+		x2.PackKF(K->KFlds, old_rec);
 		if (x.S != x2.S) {
 			K->Delete(_parent, RecNr, old_rec);
 			K->Insert(_parent, RecNr, false, new_rec);

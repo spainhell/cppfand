@@ -851,8 +851,8 @@ bool DataEditor::CheckOwner(EditD* E)
 	bool result = true;
 	if (edit_->DownSet && (edit_->OwnerTyp != 'i')) {
 		XString X, X1;
-		X.PackKF(file_d_, edit_->DownKey->KFlds, current_rec_);
-		X1.PackKF(edit_->DownLD->ToFD, edit_->DownLD->ToKey->KFlds, edit_->DownRecord);
+		X.PackKF(edit_->DownKey->KFlds, current_rec_);
+		X1.PackKF(edit_->DownLD->ToKey->KFlds, edit_->DownRecord);
 		X.S[0] = (char)(MinW(X.S.length(), X1.S.length()));
 		if (X.S != X1.S) result = false;
 	}
@@ -867,7 +867,7 @@ bool DataEditor::CheckKeyIn(EditD* E)
 	//pstring* p2;
 	auto result = true;
 	if (edit_->KIRoot.empty()) return result;
-	X.PackKF(file_d_, edit_->VK->KFlds, current_rec_);
+	X.PackKF(edit_->VK->KFlds, current_rec_);
 	//while (k != nullptr) {
 	for (KeyInD* k : edit_->KIRoot) {
 		//p1 = k->X1; p2 = k->X2;
@@ -1479,7 +1479,7 @@ bool DataEditor::TestDuplKey(FileD* file_d, XKey* K)
 {
 	XString x;
 	int N = 0;
-	x.PackKF(file_d, K->KFlds, current_rec_);
+	x.PackKF(K->KFlds, current_rec_);
 	return K->Search(file_d, x, false, N) && (IsNewRec || (edit_->LockedRec != N));
 }
 
@@ -1536,7 +1536,7 @@ void DataEditor::BuildWork()
 				}
 			}
 			else {
-				xx.PackKF(edit_->DownLD->ToFD, edit_->DownLD->ToKey->KFlds, edit_->DownRecord);
+				xx.PackKF(edit_->DownLD->ToKey->KFlds, edit_->DownRecord);
 				Scan->ResetOwner(&xx, boolP);
 			}
 			if (!edit_->KIRoot.empty()) {
@@ -1911,9 +1911,9 @@ void DataEditor::UpdMemberRef(Record* old_record, Record* new_record)
 
 	for (LinkD* link_descr : LinkDRoot) {
 		if ((link_descr->MemberRef != 0) && (link_descr->ToFD == cf) && ((new_record != nullptr) || (link_descr->MemberRef != 2))) {
-			x_old.PackKF(cf, link_descr->ToKey->KFlds, old_record);
+			x_old.PackKF(link_descr->ToKey->KFlds, old_record);
 			if (new_record != nullptr) {
-				x_new.PackKF(cf, link_descr->ToKey->KFlds, new_record);
+				x_new.PackKF(link_descr->ToKey->KFlds, new_record);
 				if (x_new.S == x_old.S) continue;
 			}
 			// TODO: FandSQL condition removed
@@ -2155,7 +2155,7 @@ bool DataEditor::CleanUp()
 	}
 	if (params_->AddSwitch) {
 		for (auto& ld : LinkDRoot) {
-			if ((ld->MemberRef == 2) && (ld->ToFD == file_d_) && Owned(file_d_, nullptr, nullptr, ld, current_rec_) > 0) {
+			if ((ld->MemberRef == 2) && (ld->ToFD == file_d_) && Owned(nullptr, nullptr, ld, current_rec_) > 0) {
 				WrLLF10Msg(662);
 				return false;
 			}
@@ -2599,7 +2599,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	}
 
 	// prepare DB key from current item
-	x.PackKF(file_d_, LD->Args, current_rec_);
+	x.PackKF(LD->Args, current_rec_);
 	px = &x;
 	K = LD->ToKey;
 
@@ -2759,7 +2759,7 @@ int DataEditor::UpdateIndexes()
 				WK->DeleteAtNr(file_d_, CRec());
 			}
 			//record_ = edit_->NewRec->GetRecord();
-			x.PackKF(file_d_, VK->KFlds, current_rec_);
+			x.PackKF(VK->KFlds, current_rec_);
 			VK->Search(file_d_, x, true, N);
 		}
 		N = VK->PathToNr(file_d_);
@@ -4254,12 +4254,12 @@ void DataEditor::SwitchRecs(short Delta)
 	rec_nr1 = AbsRecNr(CRec());
 	file_d_->ReadRec(rec_nr1, record1.get());
 	if (HasIndex) {
-		x1.PackKF(file_d_, VK->KFlds, record1.get());
+		x1.PackKF(VK->KFlds, record1.get());
 	}
 	rec_nr2 = AbsRecNr(CRec() + Delta);
 	file_d_->ReadRec(rec_nr2, record2.get());
 	if (HasIndex) {
-		x2.PackKF(file_d_, VK->KFlds, record2.get());
+		x2.PackKF(VK->KFlds, record2.get());
 		if (x1.S != x2.S) {
 			file_d_->OldLockMode(md);
 			return;
@@ -4779,10 +4779,10 @@ void DataEditor::SetEdRecNoEtc(int RNr)
 			k = WK;
 		}
 		if (params_->WasUpdated) {
-			x.PackKF(file_d_, k->KFlds, original_rec_);
+			x.PackKF(k->KFlds, original_rec_);
 		}
 		else {
-			x.PackKF(file_d_, k->KFlds, current_rec_);
+			x.PackKF(k->KFlds, current_rec_);
 		}
 	}
 	EdRecKey = x.S;

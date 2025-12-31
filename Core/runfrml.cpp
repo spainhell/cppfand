@@ -31,11 +31,11 @@
 #include "../Common/DateTime.h"
 #include "../Common/Record.h"
 
-double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record)
+double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record)
 {
 	double r;
 	XString x;
-	x.PackKF(file_d, LD->ToKey->KFlds, record);
+	x.PackKF(LD->ToKey->KFlds, record);
 
 	FileD* fromFD = LD->FromFD;
 	LockMode md = fromFD->NewLockMode(RdMode);
@@ -1203,7 +1203,7 @@ label1:
 	}
 	case _owned: {
 		auto iX = (FrmlElemOwned*)X;
-		result = Owned(file_d, iX->ownBool, iX->ownSum, iX->ownLD, record);
+		result = Owned(iX->ownBool, iX->ownSum, iX->ownLD, record);
 		break;
 	}
 	case _color: {
@@ -1843,7 +1843,7 @@ label1:
 	case _keyof: {
 		auto iZ = (FrmlElem20*)X;
 		XString x;
-		x.PackKF(iZ->LV->FD, iZ->PackKey->KFlds, iZ->LV->record);
+		x.PackKF(iZ->PackKey->KFlds, iZ->LV->record);
 		result = x.S;
 		break;
 	}

@@ -117,6 +117,8 @@ public:
 
 private:
 	FileD* _parent;
+	std::vector<FieldDescr*>* fields_ = nullptr;
+	std::vector<KeyFldD*>* keys_ = nullptr;
 	//uint8_t* _buffer; // record buffer
 	bool is_null_value(FieldDescr* field_d, uint8_t* record);
 

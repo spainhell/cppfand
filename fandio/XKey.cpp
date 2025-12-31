@@ -264,7 +264,7 @@ bool XKey::RecNrToPath(FileD* file_d, XString& XX, int RecNr, Record* record)
 {
 	bool result = false;
 	XItem* x = nullptr; int n = 0;
-	XX.PackKF(file_d, KFlds, record);
+	XX.PackKF(KFlds, record);
 	Search(file_d, XX, false, n);
 	auto p = std::make_unique<XPage>();
 	size_t item = 1;
@@ -484,7 +484,7 @@ void XKey::ChainPrevLeaf(FileD* file_d, XPage* P, int N)
 bool XKey::Insert(FileD* file_d, int RecNr, bool Try, Record* record)
 {
 	int N = 0, XNr = 0; XString x;
-	x.PackKF(file_d, KFlds, record);
+	x.PackKF(KFlds, record);
 	if (Search(file_d, x, true, N)) {
 		if (Try) {
 			return false;

@@ -228,7 +228,7 @@ size_t FileD::GetRecordSize()
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-size_t FileD::ReadRec(size_t rec_nr, Record* record) const
+size_t FileD::ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields) const
 {
 	size_t result;
 	
@@ -236,7 +236,7 @@ size_t FileD::ReadRec(size_t rec_nr, Record* record) const
 
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		result = FF->ReadRec(rec_nr, record, true);
+		result = FF->ReadRec(rec_nr, record, ignore_T_fields);
 		break;
 	}
 	case DataFileType::DBF: {

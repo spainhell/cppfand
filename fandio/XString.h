@@ -16,8 +16,8 @@ public:
 	void StoreReal(double R, KeyFldD* KF);
 	void StoreStr(std::string V, KeyFldD* KF);
 	void StoreBool(bool B, KeyFldD* KF);
-	void StoreKF(FileD* file_d, KeyFldD* KF, Record* record);
-	void PackKF(FileD* file_d, std::vector<KeyFldD*>& KF, Record* record);
+	void StoreKF(KeyFldD* KF, Record* record);
+	void PackKF(std::vector<KeyFldD*>& KF, Record* record);
 	bool PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<KeyFldD*>& KF, Record* record);
 #ifdef FandSQL
 	void GetF(unsigned short Off, unsigned short Len, bool Descend, void* Buf);
