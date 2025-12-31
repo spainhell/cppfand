@@ -131,7 +131,7 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 		}
 		LinkD* ld = nullptr;
 		for (LinkD* ld1 : LinkDRoot) {
-			if ((ld1->FromFD == file_d) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD)) {
+			if ((ld1->FromFile == file_d) && (ld1->IndexRoot != 0) && (ld1->ToFile == lv->FD)) {
 				ld = ld1;
 			}
 		}
@@ -141,7 +141,7 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 		compiler->RdLex();
 		if (lv->f_typ == 'f') {
 #ifdef FandSQL
-			if (ld->ToFD->typSQLFile) Error(155);
+			if (ld->ToFile->typSQLFile) Error(155);
 #endif
 			compiler->Accept('[');
 			*LLV = (LocVar*)compiler->RdRealFrml(nullptr);
@@ -152,7 +152,7 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 		}
 		else {
 			if (lv->f_typ == 'i') {
-				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) {
+				if (ld->FromFile->IsSQLFile || ld->ToFile->IsSQLFile) {
 					compiler->OldError(155);
 				}
 				if (!lv->key->KFlds.empty() && !KeyFldD::EquKFlds(lv->key->KFlds, ld->ToKey->KFlds)) {
@@ -168,10 +168,10 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 	compiler->TestIdentif();
 	for (LinkD* ld : LinkDRoot) {
 		sLexWord = gc->LexWord;
-		if ((ld->FromFD == compiler->processing_F) && EquUpCase(ld->RoleName, sLexWord)) {
+		if ((ld->FromFile == compiler->processing_F) && EquUpCase(ld->RoleName, sLexWord)) {
 			if ((ld->IndexRoot == 0)) compiler->Error(116);
 			compiler->RdLex();
-			fd = ld->ToFD;
+			fd = ld->ToFile;
 			if (gc->Lexem == '(') {
 				compiler->RdLex();
 				if (!compiler->FindLocVar(&LVBD, &lv) || !(lv->f_typ == 'i' || lv->f_typ == 'r')) compiler->Error(177);
@@ -179,7 +179,7 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 				compiler->Accept(')');
 				if (lv->FD != fd) compiler->OldError(149);
 				if (lv->f_typ == 'i') {
-					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) compiler->OldError(155);
+					if (ld->FromFile->IsSQLFile || ld->ToFile->IsSQLFile) compiler->OldError(155);
 					if (!lv->key->KFlds.empty() && !KeyFldD::EquKFlds(lv->key->KFlds, ld->ToKey->KFlds)) compiler->OldError(181);
 				}
 				*LLV = lv;
@@ -189,7 +189,7 @@ char RdOwner(Compiler* compiler, FileD* file_d, LinkD** LLD, LocVar** LLV)
 			}
 			else {
 #ifdef FandSQL
-				if (ld->ToFD->typSQLFile) Error(155);
+				if (ld->ToFile->typSQLFile) Error(155);
 #endif
 				compiler->Accept('[');
 				*LLV = (LocVar*)compiler->RdRealFrml(nullptr);
@@ -2676,7 +2676,7 @@ Instr* RdLinkRec(Compiler* compiler)
 		compiler->RdLex();
 		compiler->Accept('(');
 		LV = RdRecVar(compiler);
-		if (LD->ToFD != LV->FD) compiler->OldError(141);
+		if (LD->ToFile != LV->FD) compiler->OldError(141);
 		compiler->Accept(')');
 	}
 	PD->RecLV2 = LV;

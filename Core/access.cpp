@@ -94,8 +94,8 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 //// zrejme zajistuje pristup do jine tabulky (cizi klic)
 //bool LinkUpw(LinkD* LD, int& N, bool WithT, uint8_t* record, uint8_t** newRecord)
 //{
-//	FileD* from_FD = LD->FromFD;
-//	FileD* to_FD = LD->ToFD;
+//	FileD* from_FD = LD->FromFile;
+//	FileD* to_FD = LD->ToFile;
 //	*newRecord = to_FD->GetRecSpace();
 //
 //	XKey* K = LD->ToKey;
@@ -157,8 +157,8 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
 Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 {
-	FileD* from_FD = LD->FromFD;
-	FileD* to_FD = LD->ToFD;
+	FileD* from_FD = LD->FromFile;
+	FileD* to_FD = LD->ToFile;
 	Record* up_rec = new Record(to_FD);
 
 	XKey* K = LD->ToKey;

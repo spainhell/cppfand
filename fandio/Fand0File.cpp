@@ -435,50 +435,50 @@ void Fand0File::saveR(FieldDescr* field_d, double r, uint8_t* record)
 	}
 }
 
-void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t* record)
+void Fand0File::saveS(FileD* parent, FieldDescr* field, std::string s, uint8_t* record)
 {
 	const uint8_t LeftJust = 1;
-	uint8_t* pRec = record + field_d->Displ;
+	uint8_t* pRec = record + field->Displ;
 
-	if (field_d->isStored()) {
-		short L = field_d->L;
-		short M = field_d->M;
-		switch (field_d->field_type) {
+	if (field->isStored()) {
+		short L = field->L;
+		short M = field->M;
+		switch (field->field_type) {
 		case FieldType::ALFANUM: {
-			s = s.substr(0, field_d->L); // delka retezce je max. field_d->L
+			s = s.substr(0, field->L); // delka retezce je max. field->L
 			if (M == LeftJust) {
 				// doplnime mezery zprava
 				memcpy(pRec, s.c_str(), s.length()); // probiha kontrola max. delky retezce
-				memset(&pRec[s.length()], ' ', field_d->L - s.length());
+				memset(&pRec[s.length()], ' ', field->L - s.length());
 			}
 			else {
 				// doplnime mezery zleva
-				memset(pRec, ' ', field_d->L - s.length());
-				memcpy(&pRec[field_d->L - s.length()], s.c_str(), s.length());
+				memset(pRec, ' ', field->L - s.length());
+				memcpy(&pRec[field->L - s.length()], s.c_str(), s.length());
 			}
-			if ((field_d->Flg & f_Encryp) != 0) {
+			if (field->isEncrypted()) {
 				Coding::Code(pRec, L);
 			}
 			break;
 		}
 		case FieldType::NUMERIC: {
-			s = s.substr(0, field_d->L); // delka retezce je max. field_d->L
+			s = s.substr(0, field->L); // delka retezce je max. field->L
 			uint8_t tmpArr[80]{ 0 };
 			if (M == LeftJust) {
 				// doplnime nuly zprava
 				s = TrailChar(s, ' ');
 				memcpy(tmpArr, s.c_str(), s.length());
-				memset(&tmpArr[s.length()], '0', field_d->L - s.length());
+				memset(&tmpArr[s.length()], '0', field->L - s.length());
 			}
 			else {
 				// doplnime nuly zleva
 				s = LeadChar(s, ' ');
-				memset(tmpArr, '0', field_d->L - s.length());
-				memcpy(&tmpArr[field_d->L - s.length()], s.c_str(), s.length());
+				memset(tmpArr, '0', field->L - s.length());
+				memcpy(&tmpArr[field->L - s.length()], s.c_str(), s.length());
 			}
-			bool odd = field_d->L % 2 == 1; // lichy pocet znaku
-			for (size_t i = 0; i < field_d->NBytes; i++) {
-				if (odd && i == field_d->NBytes - 1) {
+			bool odd = field->L % 2 == 1; // lichy pocet znaku
+			for (size_t i = 0; i < field->NBytes; i++) {
+				if (odd && i == field->NBytes - 1) {
 					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4);
 				}
 				else {
@@ -488,23 +488,23 @@ void Fand0File::saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t
 			break;
 		}
 		case FieldType::TEXT: {
-			if (int previous = loadT(field_d, record)) {
+			if (int previous = loadT(field, record)) {
 				LockMode md = parent->NewLockMode(WrMode);
 				TF->Delete(previous);
 				parent->OldLockMode(md);
 			}
 
 			if (s.empty()) {
-				saveT(field_d, 0, record);
+				saveT(field, 0, record);
 			}
 			else {
-				if (field_d->isEncrypted() != 0) {
+				if (field->isEncrypted() != 0) {
 					s = Coding::Code(s);
 				}
 
 				LockMode md = parent->NewLockMode(WrMode);
 				int pos = TF->Store(s);
-				saveT(field_d, pos, record);
+				saveT(field, pos, record);
 				parent->OldLockMode(md);
 				//}
 			}

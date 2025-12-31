@@ -553,7 +553,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, Record* rec)
 			}
 			case 'F': {
 				edit_->OwnerRecNo = RunInt(file_d, (FrmlElem*)EO->DownLV, record);
-				edit_->DownRecord = new Record(edit_->DownLD->ToFD);
+				edit_->DownRecord = new Record(edit_->DownLD->ToFile);
 				break;
 			}
 			default:;

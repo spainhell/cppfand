@@ -688,9 +688,9 @@ FileD* RdFileD_Like(const std::string& FileName, FandFileType FDTyp)
 	// copy LinkD records too
 	for (LinkD* l : LinkDRoot) {
 		// LinkD for OrigFD exists?
-		if (l->FromFD == FD) {
+		if (l->FromFile == FD) {
 			LinkD* copiedLinkD = new LinkD(*l);
-			copiedLinkD->FromFD = like;
+			copiedLinkD->FromFile = like;
 			LinkDRoot.push_front(copiedLinkD);
 		}
 	}
@@ -946,8 +946,8 @@ void RdKeyD(FileD* file_d)
 		L = new LinkD();
 
 		L->RoleName = name;
-		L->FromFD = file_d;
-		L->ToFD = FD;
+		L->FromFile = file_d;
+		L->ToFile = FD;
 		L->ToKey = K;
 		LinkDRoot.push_front(L);
 

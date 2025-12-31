@@ -41,7 +41,7 @@ DataEditor::DataEditor()
 {
 	params_ = std::make_unique<DataEditorParams>();
 	runner_ = std::make_unique<ProjectRunner>();
-	current_rec_ = new Record();
+	current_rec_ = nullptr;
 }
 
 DataEditor::DataEditor(EditD* edit)
@@ -1705,16 +1705,16 @@ bool DataEditor::OpenEditWw()
 	md2 = file_d_->NewLockMode(RdMode);
 
 	if (edit_->DownSet && (edit_->OwnerTyp == 'F')) {
-		md1 = edit_->DownLD->ToFD->NewLockMode(RdMode);
+		md1 = edit_->DownLD->ToFile->NewLockMode(RdMode);
 		n = edit_->OwnerRecNo;
 
-		if ((n == 0) || (n > edit_->DownLD->ToFD->GetNRecs())) {
-			edit_->DownLD->ToFD->RunErrorM(edit_->OldMd);
+		if ((n == 0) || (n > edit_->DownLD->ToFile->GetNRecs())) {
+			edit_->DownLD->ToFile->RunErrorM(edit_->OldMd);
 			RunError(611);
 		}
 
-		edit_->DownLD->ToFD->ReadRec(n, edit_->DownRecord);
-		edit_->DownLD->ToFD->OldLockMode(md1);
+		edit_->DownLD->ToFile->ReadRec(n, edit_->DownRecord);
+		edit_->DownLD->ToFile->OldLockMode(md1);
 	}
 
 	if (params_->Subset) {
@@ -1910,7 +1910,7 @@ void DataEditor::UpdMemberRef(Record* old_record, Record* new_record)
 	XKey* k = nullptr;
 
 	for (LinkD* link_descr : LinkDRoot) {
-		if ((link_descr->MemberRef != 0) && (link_descr->ToFD == cf) && ((new_record != nullptr) || (link_descr->MemberRef != 2))) {
+		if ((link_descr->MemberRef != 0) && (link_descr->ToFile == cf) && ((new_record != nullptr) || (link_descr->MemberRef != 2))) {
 			x_old.PackKF(link_descr->ToKey->KFlds, old_record);
 			if (new_record != nullptr) {
 				x_new.PackKF(link_descr->ToKey->KFlds, new_record);
@@ -1918,24 +1918,24 @@ void DataEditor::UpdMemberRef(Record* old_record, Record* new_record)
 			}
 			// TODO: FandSQL condition removed
 			k = GetFromKey(link_descr);
-			src_rec1 = new Record(link_descr->FromFD);
+			src_rec1 = new Record(link_descr->FromFile);
 			if (new_record != nullptr) {
-				src_rec2 = new Record(link_descr->FromFD);
+				src_rec2 = new Record(link_descr->FromFile);
 			}
 			std::vector<KeyInD*> empty;
-			Scan = new XScan(link_descr->FromFD, k, empty, true);
+			Scan = new XScan(link_descr->FromFile, k, empty, true);
 			Scan->ResetOwner(&x_old, nullptr);
 			// TODO: FandSQL condition removed
-			link_descr->FromFD->FF->ScanSubstWIndex(Scan, k->KFlds, OperationType::Work);
+			link_descr->FromFile->FF->ScanSubstWIndex(Scan, k->KFlds, OperationType::Work);
 
 			Scan->GetRec(src_rec1);
 			while (!Scan->eof) {
 				// TODO: FandSQL condition removed
 				if (new_record == nullptr) {
-					RunAddUpdate(link_descr->FromFD, '-', nullptr, false, nullptr, link_descr, src_rec1);
+					RunAddUpdate(link_descr->FromFile, '-', nullptr, false, nullptr, link_descr, src_rec1);
 					UpdMemberRef(src_rec1, nullptr);
 					// TODO: FandSQL condition removed
-					link_descr->FromFD->DeleteRec(Scan->RecNr, src_rec1);
+					link_descr->FromFile->DeleteRec(Scan->RecNr, src_rec1);
 				}
 				else {
 					src_rec1->CopyTo(src_rec2);
@@ -1944,16 +1944,16 @@ void DataEditor::UpdMemberRef(Record* old_record, Record* new_record)
 						KeyFldD* k1 = link_descr->ToKey->KFlds[i];
 						DuplicateField(new_record, k1->FldD, src_rec2, arg->FldD);
 					}
-					RunAddUpdate(link_descr->FromFD, 'd', src_rec1, false, nullptr, link_descr, src_rec2);
+					RunAddUpdate(link_descr->FromFile, 'd', src_rec1, false, nullptr, link_descr, src_rec2);
 					UpdMemberRef(src_rec1, src_rec2);
 					// TODO: FandSQL condition removed
-					link_descr->FromFD->UpdateRec(Scan->RecNr, src_rec1, src_rec2);
+					link_descr->FromFile->UpdateRec(Scan->RecNr, src_rec1, src_rec2);
 				}
 				Scan->GetRec(src_rec1);
 			}
 
 			Scan->Close();
-			// TODO: is there TWork? LD->FromFD->ClearRecSpace(p);
+			// TODO: is there TWork? LD->FromFile->ClearRecSpace(p);
 
 			delete src_rec1; src_rec1 = nullptr;
 			delete src_rec2; src_rec2 = nullptr;
@@ -2022,10 +2022,10 @@ bool DataEditor::LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md)
 	LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
 	auto result = false;
 	for (LinkD*& ld : LinkDRoot) {
-		if ((ld->ToFD == FD)
+		if ((ld->ToFile == FD)
 			&& ((NewMd != DelMode) && (ld->MemberRef != 0) || (ld->MemberRef == 1))
-			&& (ld->FromFD != FD)) {
-			file_d_ = ld->FromFD;
+			&& (ld->FromFile != FD)) {
+			file_d_ = ld->FromFile;
 			switch (Kind) {
 			case 0: {
 				file_d_->FF->TaLMode = file_d_->FF->LMode;
@@ -2042,7 +2042,7 @@ bool DataEditor::LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md)
 			}
 			}
 			if (!LockForAdd(file_d_, Kind, true, md)) return result;
-			if (!LockForMemb(ld->FromFD, Kind, NewMd, md)) return result;
+			if (!LockForMemb(ld->FromFile, Kind, NewMd, md)) return result;
 		}
 	}
 	result = true;
@@ -2155,7 +2155,7 @@ bool DataEditor::CleanUp()
 	}
 	if (params_->AddSwitch) {
 		for (auto& ld : LinkDRoot) {
-			if ((ld->MemberRef == 2) && (ld->ToFD == file_d_) && Owned(nullptr, nullptr, ld, current_rec_) > 0) {
+			if ((ld->MemberRef == 2) && (ld->ToFile == file_d_) && Owned(nullptr, nullptr, ld, current_rec_) > 0) {
 				WrLLF10Msg(662);
 				return false;
 			}
@@ -2442,7 +2442,7 @@ void DataEditor::GetSel2S(std::string& s, std::string& s2, char C, WORD wh)
 bool DataEditor::EquRoleName(pstring S, LinkD* LD)
 {
 	if (S == "") {
-		return LD->ToFD->Name == LD->RoleName;
+		return LD->ToFile->Name == LD->RoleName;
 	}
 	else {
 		return S == LD->RoleName;
@@ -2509,14 +2509,14 @@ void DataEditor::UpwEdit(LinkD* LkD)
 
 	if (LkD == nullptr) {
 		for (LinkD* ld : LinkDRoot) {
-			FileD* ToFD = ld->ToFD;
-			if ((ld->FromFD == file_d_) && data_editor2->ForNavigate(ToFD)) {
+			FileD* ToFD = ld->ToFile;
+			if ((ld->FromFile == file_d_) && data_editor2->ForNavigate(ToFD)) {
 				std::string s;
 				std::string rn = ld->RoleName;
 				if (ToFD->Name != rn) { s = "." + ld->RoleName; }
-				/*SL = ToFD->ViewNames;
+				/*SL = ToFile->ViewNames;
 				do {
-					s1 = data_editor2->GetFileViewName(ToFD, &SL) + s;
+					s1 = data_editor2->GetFileViewName(ToFile, &SL) + s;
 					ww.PutSelect(s1);
 					data_editor2->CFld = this->CFld;
 					data_editor2->SetPointTo(ld, &s1, &s2);
@@ -2559,41 +2559,41 @@ void DataEditor::UpwEdit(LinkD* LkD)
 
 		LD = nullptr;
 		for (auto& ld : LinkDRoot) {
-			if (ld->FromFD == this->file_d_
+			if (ld->FromFile == this->file_d_
 				&& data_editor2->EquRoleName(s2, ld)
-				&& data_editor2->EquFileViewName(ld->ToFD, s1, &EO)) {
+				&& data_editor2->EquFileViewName(ld->ToFile, s1, &EO)) {
 				LD = ld;
-				data_editor2->SetFileD(ld->ToFD);
+				data_editor2->SetFileD(ld->ToFile);
 				break;
 			}
 		}
 
 	}
 	else {
-		data_editor2->SetFileD(LkD->ToFD);
+		data_editor2->SetFileD(LkD->ToFile);
 		LD = LkD;
 		EO = new EditOpt();
 		EO->UserSelFlds = false;
 		std::string sl1;
 
-		//std::vector<std::string> SL = Link->ToFD->ViewNames;
+		//std::vector<std::string> SL = Link->ToFile->ViewNames;
 		//while (SL != nullptr) {
 		//	if (data_editor2->TestAccRight(SL)) {
 		//		SL1 = SL;
 		//	}
 		//	SL = SL->pChain;
 		//}
-		for (std::string& s : LD->ToFD->ViewNames) {
+		for (std::string& s : LD->ToFile->ViewNames) {
 			if (data_editor2->TestAccRight(s)) {
 				sl1 = s;
 			}
 		}
 
 		if (sl1.empty()) {
-			EO->Flds = gc->AllFldsList(LD->ToFD, false);
+			EO->Flds = gc->AllFldsList(LD->ToFile, false);
 		}
 		else {
-			RdUserView(LD->ToFD, sl1, EO);
+			RdUserView(LD->ToFile, sl1, EO);
 		}
 		EO->SetOnlyView = true;
 	}
@@ -2612,7 +2612,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 
 	if (data_editor2->SelFldsForEO(EO, nullptr)) {
 		EditReader* reader = new EditReader();
-		reader->NewEditD(LD->ToFD, EO, data_editor2->current_rec_);
+		reader->NewEditD(LD->ToFile, EO, data_editor2->current_rec_);
 		data_editor2->edit_ = reader->GetEditD();
 		data_editor2->edit_->ShiftF7_link = LkD;
 		data_editor2->edit_->ShiftF7_caller = edit_;
@@ -2635,7 +2635,7 @@ void DataEditor::DisplChkErr(LogicControl* logic_control)
 	LinkD* LD = nullptr;
 
 	FindExistTest(logic_control->Bool, &LD);
-	if (!logic_control->Warning && (LD != nullptr) && ForNavigate(LD->ToFD) && (*CFld)->Ed(IsNewRec)) {
+	if (!logic_control->Warning && (LD != nullptr) && ForNavigate(LD->ToFile) && (*CFld)->Ed(IsNewRec)) {
 		FileD* cf = file_d_;
 		//uint8_t* cr = record_;
 		Record* prev_rec = current_rec_;
@@ -3155,7 +3155,7 @@ bool DataEditor::PromptSearch(bool create)
 		return result;
 	}
 	if (HasIndex && edit_->DownSet && (VK == edit_->DownKey)) {
-		FileD* FD2 = edit_->DownLD->ToFD;
+		FileD* FD2 = edit_->DownLD->ToFile;
 		// Record* RP2 = edit_->DownRecord;
 		std::vector<KeyFldD*>::iterator KF2 = edit_->DownLD->ToKey->KFlds.begin();
 
@@ -4449,8 +4449,8 @@ void DataEditor::DownEdit()
 	std::unique_ptr<DataEditor> data_editor2 = std::make_unique<DataEditor>();
 
 	for (LinkD* ld : LinkDRoot) {
-		FileD* FD = ld->FromFD;
-		if ((ld->ToFD == file_d_) && data_editor2->ForNavigate(FD) && (ld->IndexRoot != 0)) {
+		FileD* FD = ld->FromFile;
+		if ((ld->ToFile == file_d_) && data_editor2->ForNavigate(FD) && (ld->IndexRoot != 0)) {
 			/*own key with equal beginning*/
 			XKey* K = GetFromKey(ld);
 
@@ -4492,10 +4492,10 @@ void DataEditor::DownEdit()
 		data_editor2->GetSel2S(s1, s2, '/', 2);
 
 		for (LinkD* ld : LinkDRoot) {
-			if ((ld->ToFD != file_d_)
+			if ((ld->ToFile != file_d_)
 				|| (ld->IndexRoot == 0)
 				|| (s2 != GetFromKey(LD)->Alias)
-				|| !data_editor2->EquFileViewName(ld->FromFD, s1, &EO)) {
+				|| !data_editor2->EquFileViewName(ld->FromFile, s1, &EO)) {
 				continue;
 			}
 			else {
@@ -4503,7 +4503,7 @@ void DataEditor::DownEdit()
 			}
 		}
 
-		data_editor2->file_d_ = LD->FromFD;
+		data_editor2->file_d_ = LD->FromFile;
 		if (EO == nullptr) {
 			EO = new EditOpt();
 		}
@@ -4537,7 +4537,7 @@ void DataEditor::ShiftF7Proc()
 	LinkD* LD1 = nullptr;
 	for (LinkD* ld : LinkDRoot) {
 		for (KeyFldD* arg : ld->Args) {
-			if ((arg->FldD == F) && ForNavigate(ld->ToFD)) LD1 = ld;
+			if ((arg->FldD == F) && ForNavigate(ld->ToFile)) LD1 = ld;
 		}
 	}
 	if (LD1 != nullptr) {

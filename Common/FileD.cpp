@@ -380,7 +380,9 @@ void FileD::SetHandleT(HANDLE handle)
 	switch (FileType) {
 	case DataFileType::FandFile: {
 		FF->TF->Handle = handle;
-		FF->TF->RdPrefix(false);
+		if (FF->TF->Handle != nullptr) {
+			FF->TF->RdPrefix(false);
+		}
 		break;
 	}
 	case DataFileType::DBF: {

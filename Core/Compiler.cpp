@@ -2509,7 +2509,7 @@ LinkD* Compiler::FindLD(FileD* file_d, std::string RoleName)
 	// pro soubory 'LIKE' neexistuje zaznam v LinkDRoot, budeme tedy prochazet i predky (OrigFD)
 	while (file_d != nullptr) {
 		for (auto& L : LinkDRoot) {
-			if ((L->FromFD == file_d) && EquUpCase(L->RoleName, RoleName)) {
+			if ((L->FromFile == file_d) && EquUpCase(L->RoleName, RoleName)) {
 				return L;
 			}
 		}
@@ -2533,7 +2533,7 @@ bool Compiler::IsRoleName(bool both, FileD* file_d, FileD** up_file_d, LinkD** l
 		*link = FindLD(file_d, LexWord);
 		if (*link != nullptr) {
 			RdLex();
-			*up_file_d = (*link)->ToFD;
+			*up_file_d = (*link)->ToFile;
 			return result;
 		}
 	}
@@ -2591,8 +2591,8 @@ LinkD* Compiler::FindOwnLD(FileD* FD, std::string RoleName)
 	std::string lw = LexWord;
 	LinkD* result = nullptr;
 	for (auto& ld : LinkDRoot) {
-		if ((ld->ToFD == FD)
-			&& EquUpCase(ld->FromFD->Name, lw)
+		if ((ld->ToFile == FD)
+			&& EquUpCase(ld->FromFile->Name, lw)
 			&& (ld->IndexRoot != 0)
 			&& EquUpCase(ld->RoleName, RoleName))
 		{
@@ -2637,8 +2637,8 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 		}
 
 		FileD* previous_f = processing_F;
-		//CFile = result_owned->ownLD->FromFD;
-		processing_F = result_owned->ownLD->FromFD;
+		//CFile = result_owned->ownLD->FromFile;
+		processing_F = result_owned->ownLD->FromFile;
 
 		if (Lexem == '.') {
 			RdLex();

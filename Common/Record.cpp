@@ -4,10 +4,6 @@
 #include <utility>
 #include "../Core/runfrml.h"
 
-Record::Record()
-{
-	_file_d = nullptr;
-}
 
 Record::Record(FileD* file_d)
 {
@@ -123,7 +119,7 @@ std::string Record::LoadS(FieldDescr* field)
 		}
 	}
 	else {
-		result = RunString(this->_file_d, field->Frml, const_cast<Record*>(this));
+		result = RunString(this->_file_d, field->Frml, this);
 	}
 
 	return result;

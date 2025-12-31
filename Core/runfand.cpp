@@ -196,8 +196,6 @@ void RunRdb(std::string& p)
 		wwmix ww;
 		unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
 		runner->EditExecRdb(n, "main", nullptr, &ww);
-		// CFile = catalog->GetCatalogFile();
-		// CFile->CloseFile();
 		catalog->Close();
 	}
 }
@@ -378,13 +376,7 @@ void InitRunFand()
 	// Ww
 	ss.Empty = true;
 	ss.Pointto = nullptr;
-	// DataEditor::TxtEdCtrlUBrk = false;  // now initialized in DataEditor constructor
-	// DataEditor::TxtEdCtrlF4Brk = false; // now initialized in DataEditor constructor
 	InitMouseEvents();
-	// Editor
-	//std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Text, TextType::Unknown);
-	//editor->InitTxtEditor();
-	//TextEditor::InitTxtEditor();
 
 	WasInitPgm = true;
 

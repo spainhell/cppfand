@@ -31,7 +31,6 @@ public:
 class Record
 {
 public:
-	Record();
 	Record(FileD* file_d);
 	~Record();
 	void CopyTo(Record* dst_record) const;

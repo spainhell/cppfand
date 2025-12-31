@@ -770,12 +770,12 @@ void RunProcedure::ForAllProc(Instr_forall* PD)
 			break;
 		}
 		case 'F': {
-			md = LD->ToFD->NewLockMode(RdMode);
-			Record* rec = new Record(LD->ToFD); // ->GetRecSpace();
-			LD->ToFD->ReadRec(RunInt(LD->ToFD, (FrmlElem*)PD->CLV, rec), rec);
+			md = LD->ToFile->NewLockMode(RdMode);
+			Record* rec = new Record(LD->ToFile); // ->GetRecSpace();
+			LD->ToFile->ReadRec(RunInt(LD->ToFile, (FrmlElem*)PD->CLV, rec), rec);
 			xx.PackKF(LD->ToKey->KFlds, rec);
 			ReleaseStore(&p);
-			LD->ToFD->OldLockMode(md);
+			LD->ToFile->OldLockMode(md);
 			delete rec; rec = nullptr;
 			break;
 		}

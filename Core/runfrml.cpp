@@ -37,7 +37,7 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record)
 	XString x;
 	x.PackKF(LD->ToKey->KFlds, record);
 
-	FileD* fromFD = LD->FromFD;
+	FileD* fromFD = LD->FromFile;
 	LockMode md = fromFD->NewLockMode(RdMode);
 	fromFD->FF->TestXFExist();
 	XKey* K = GetFromKey(LD);
@@ -394,7 +394,7 @@ double LinkProc(FrmlElemLink* X, Record* record)
 	int N;
 
 	LinkD* LD = X->LinkLD;
-	FileD* fromFD = LD->FromFD;
+	FileD* fromFD = LD->FromFile;
 	if (X->LinkFromRec) {
 		//if (!LinkUpw(LD, N, false, X->LinkLV->record->GetRecord(), &rec)) {
 		//	N = -N;
@@ -955,7 +955,7 @@ label1:
 		if (iX->Link != nullptr) {
 			Record* newRecord = LinkUpw(iX->Link, RecNo, false, record);
 
-			result = RunReal(iX->Link->ToFD, iX->Frml, newRecord);
+			result = RunReal(iX->Link->ToFile, iX->Frml, newRecord);
 			delete newRecord; newRecord = nullptr;
 		}
 		else {
@@ -1284,7 +1284,7 @@ int RunInt(FileD* file_d, FrmlElem* X, Record* record)
 //		LockMode md = iZ->File->NewLockMode(RdMode);
 //		if (iZ->Link != nullptr) {
 //			Record* newRecord = LinkUpw(iZ->Link, n, true, record);
-//			TestTFrml(iZ->Link->ToFD, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord);
+//			TestTFrml(iZ->Link->ToFile, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord);
 //			delete[] newRecord; newRecord = nullptr;
 //		}
 //		else {
@@ -1470,14 +1470,14 @@ bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL)
 
 XKey* GetFromKey(LinkD* LD)
 {
-	if (LD->FromFD->Keys.empty()) return nullptr;
+	if (LD->FromFile->Keys.empty()) return nullptr;
 
-	// find key in Link->FromFD->Keys with the same index root as Link->IndexRoot
-	vector<XKey*>::iterator it = ranges::find_if(LD->FromFD->Keys, [LD](XKey* K) {
+	// find key in Link->FromFile->Keys with the same index root as Link->IndexRoot
+	vector<XKey*>::iterator it = ranges::find_if(LD->FromFile->Keys, [LD](XKey* K) {
 		return K->IndexRoot == LD->IndexRoot;
 		});
 
-	if (it != LD->FromFD->Keys.end()) {
+	if (it != LD->FromFile->Keys.end()) {
 		return *it;
 	}
 	else {
@@ -1561,7 +1561,7 @@ label1:
 
 		if (iX7->Link != nullptr) {
 			Record* newRecord = LinkUpw(iX7->Link, RecNo, true, record);
-			result = RunString(iX7->Link->ToFD, iX7->Frml, newRecord);
+			result = RunString(iX7->Link->ToFile, iX7->Frml, newRecord);
 			delete newRecord; newRecord = nullptr;
 		}
 		else {

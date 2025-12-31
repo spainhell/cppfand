@@ -139,7 +139,7 @@ private:
 
 	void saveB(FieldDescr* field_d, bool b, uint8_t* record);
 	void saveR(FieldDescr* field_d, double r, uint8_t* record);
-	void saveS(FileD* parent, FieldDescr* field_d, std::string s, uint8_t* record);
+	void saveS(FileD* parent, FieldDescr* field, std::string s, uint8_t* record);
 	int saveT(FieldDescr* field_d, int pos, uint8_t* record);
 
 	std::string _extToT(const std::string& input_path);
