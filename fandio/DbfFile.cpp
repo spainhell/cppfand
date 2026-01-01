@@ -553,7 +553,7 @@ void DbfFile::SaveFile()
 void DbfFile::CloseFile()
 {
 	WrPrefixes();
-	SaveCache(0, Handle);
+	//SaveCache(0, Handle);
 	TruncFile();
 
 	// close .DBT or .FTP text file

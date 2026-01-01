@@ -43,8 +43,6 @@ void SaveFiles()
 {
 	Logging* log = Logging::getInstance();
 
-	if (!CacheExist()) return;
-
 	// save catalog
 	FileD* catalog_file = catalog->GetCatalogFile();
 	log->log(loglevel::DEBUG, "SaveFiles() Catalog: 0x%p, %s ", catalog_file->FF->Handle, catalog_file->Name.c_str());
@@ -53,10 +51,10 @@ void SaveFiles()
 	log->log(loglevel::DEBUG, "SaveFiles() calling ForAllFDs(::save)");
 	ForAllFDs(ForAllFilesOperation::save);
 
-	bool b = SaveCache(0, catalog_file->FF->Handle);
+	//bool b = SaveCache(0, catalog_file->FF->Handle);
 	// TODO: HANDLE: FlushHandles();
 
-	if (!b) GoExit(MsgLine);
+	//if (!b) GoExit(MsgLine);
 }
 
 void CloseFANDFiles()

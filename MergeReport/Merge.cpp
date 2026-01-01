@@ -238,11 +238,11 @@ void Merge::Run()
 		}
 
 		if (NEof == MaxIi) {
-			b = SaveCache(0, f->FF->Handle);
+			//b = SaveCache(0, f->FF->Handle);
 			RunMsgOff();
-			if (!b) {
-				GoExit(MsgLine);
-			}
+			//if (!b) {
+			//	GoExit(MsgLine);
+			//}
 			CloseInpOutp();
 			return;
 		}

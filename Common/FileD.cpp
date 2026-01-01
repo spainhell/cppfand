@@ -1920,7 +1920,7 @@ bool FileD::OpenCreateF(const std::string& path, FileUseMode UM, bool is_project
 			WrPrefixes();
 
 			if (FileType == DataFileType::FandFile) {
-				SaveCache(0, FF->Handle);
+				//SaveCache(0, FF->Handle);
 				CloseClearH(&FF->Handle);
 
 				if (FF->file_type == FandFileType::INDEX) {
@@ -1932,7 +1932,7 @@ bool FileD::OpenCreateF(const std::string& path, FileUseMode UM, bool is_project
 				}
 			}
 			else if (FileType == DataFileType::DBF) {
-				SaveCache(0, DbfF->Handle);
+				//SaveCache(0, DbfF->Handle);
 				CloseClearH(&DbfF->Handle);
 
 				if (DbfF->TF != nullptr) {

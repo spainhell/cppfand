@@ -822,7 +822,7 @@ void Fand0File::CloseFile()
 	else {
 		WrPrefixes();
 	}
-	SaveCache(0, Handle);
+	//SaveCache(0, Handle);
 	TruncFile();
 
 	// close index file
@@ -942,9 +942,9 @@ int Fand0File::CreateIndexFile()
 			XW->Main(OperationType::Index, record.get());
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
-			if (!SaveCache(0, Handle)) {
-				GoExit(MsgLine);
-			}
+			//if (!SaveCache(0, Handle)) {
+			//	GoExit(MsgLine);
+			//}
 			/*FlushHandles; */
 		}
 		fail = false;
@@ -1245,14 +1245,14 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	}
 
 	// close and delete original file
-	SaveCache(0, Handle);
+	//SaveCache(0, Handle);
 	CloseClearH(&Handle);
 	MyDeleteFile(orig_path);
 	TestDelErr(orig_path);
 
 	// rename temp file to a regular one
 	std::string temp_path = SetTempCExt('0', false);
-	SaveCache(0, TempFD->FF->Handle);
+	//SaveCache(0, TempFD->FF->Handle);
 	CloseClearH(&TempFD->FF->Handle);
 	RenameFile56(temp_path, orig_path, true);
 	Handle = OpenH(orig_path, _isOldFile, UMode);
@@ -1276,7 +1276,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 {
 	TempFD->FF->WrPrefixes();
-	SaveCache(0, Handle);
+	//SaveCache(0, Handle);
 	SetTempCExt('0', true);
 	FileD::CopyH(TempFD->FF->Handle, Handle);
 
@@ -1316,9 +1316,9 @@ void Fand0File::IndexFileProc(bool Compress)
 				tmp_file->FF->PutRec(record.get());
 			}
 		}
-		if (!SaveCache(0, Handle)) {
-			GoExit(MsgLine);
-		}
+		//if (!SaveCache(0, Handle)) {
+		//	GoExit(MsgLine);
+		//}
 		SubstDuplF(tmp_file, false);
 		NRecs = tmp_file->FF->NRecs;
 		int xf_res = XFNotValid();

@@ -137,6 +137,6 @@ extern void (*CallOpenFandFiles)(); // r453
 extern void (*CallCloseFandFiles)(); // r454
 
 extern double userToday;
-extern __int32 UserLicNr;
+extern int32_t UserLicNr;
 
 extern ResFile resFile;

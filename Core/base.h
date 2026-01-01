@@ -61,8 +61,6 @@ bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_m
 
 // ***  VIRTUAL HANDLES  ***
 bool IsNetCVol();
-bool CacheExist();
-bool SaveCache(WORD ErrH, HANDLE f);
 
 long SeekH(HANDLE handle, size_t pos);
 long FileSizeH(HANDLE handle);
