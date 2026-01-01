@@ -2,6 +2,7 @@
 
 #include "../fandio/FieldDescr.h"
 #include "../DataEditor/EditReader.h"
+#include "../Common/LongStr.h"
 
 
 class DataEditor;

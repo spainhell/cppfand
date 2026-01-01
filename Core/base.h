@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Common/LongStr.h"
 #include <array>
 #include "../Common/pstring.h"
 #include "../fandio/FileEnums.h"
@@ -92,9 +91,6 @@ void SetCurrPrinter(short NewPr);
 typedef std::array<uint8_t, 4> TPrTimeOut;
 
 void OpenWorkH();
-
-void NonameStartFunction();
-
 
 // UCTOxx methods
 int32_t RunFndFilesExe(std::string cmd_line);

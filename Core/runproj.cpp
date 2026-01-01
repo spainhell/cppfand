@@ -42,7 +42,7 @@ struct RdbRecVars
 	char Typ = 0;
 	std::string Name;
 	std::string Ext;
-	std::string Txt; 
+	std::string Txt;
 	std::string OldTxt;
 	FandFileType FTyp = FandFileType::UNKNOWN;
 	int CatIRec = 0;
@@ -127,7 +127,7 @@ void ProjectRunner::GetRdbRecVars(const EditD* edit, Record* record, RdbRecVars*
 	GetSplitChapterName(file_d, record, X->Name, X->Ext);
 	X->Txt = record->LoadS(ChptTxt);
 	X->OldTxt = record->LoadS(ChptOldTxt);
-	
+
 	if (X->Typ == 'F') {
 		X->FTyp = ExtToTyp(X->Ext);
 		X->CatIRec = catalog->GetCatalogIRec(X->Name, false);
@@ -733,10 +733,10 @@ void ProjectRunner::CloseChpt()
 	SaveFiles();
 	bool del = Chpt->GetNRecs() == 0;
 	std::string d = CRdb->RdbDir;
-	
+
 	CRdb->project_file->CloseFile();
 	FileD::CloseAllAfter(nullptr, CRdb->data_files);
-	
+
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	void* p = CRdb;
@@ -973,21 +973,12 @@ bool ProjectRunner::CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor
 		ForAllFDs(ForAllFilesOperation::clear_xf_update_lock);
 	}
 
-	//CFile = lstFD->pChain;
-	//while (CFile != nullptr) {
-	//	CFile->CloseFile();
-	//	CFile = CFile->pChain;
-	//}
-	//lstFD->pChain = nullptr;
-
 	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->data_files);
 
 	LinkDRoot = oldLd;
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
-	//edit = OldE;
-	//EditDRoot = E;
-	//data_editor->ReadParamsFromE(EE);
+
 	CRdb = RP.rdb;
 	PrevCompInp.clear();
 
@@ -1016,15 +1007,15 @@ void ProjectRunner::RdUserId(bool check)
 	std::string pw;
 	std::set<uint16_t> acc;
 
-	//ptrRdFldNameFrml = nullptr;
 	gc->rdFldNameType = FieldNameType::none;
 	gc->RdLex();
+
 	if (gc->Lexem == 0x1A) return;
 	if (check) {
 		wwmix ww;
 		pw = ww.PassWord(false);
 	}
-	//label1:
+
 	while (true) {
 		gc->TestLex(_quotedstr);
 		std::string name = gc->LexWord;
@@ -1042,33 +1033,24 @@ void ProjectRunner::RdUserId(bool check)
 			acc = RdAccRights();
 		}
 		else {
-			//acc[0] = 1;
-			//acc[1] = (char)code;
 			acc.clear();
 			acc.insert(code);
 		}
 
 		if (check) {
 			if (EquUpCase(pw, pw2)) {
-				//UserName = name;
-				//UserCode = code;
-				//UserPassWORD = pw2;
-				//AccRight = acc;
 				user->set(name, code, pw2, acc);
 				return;
 			}
 		}
 		else if (code == 0) {
-			//UserName = name;
-			//UserCode = code;
-			//UserPassWORD = pw2;
 			user->set_acc_0(name, code, pw2);
 		}
+
 		if (gc->Lexem != 0x1A) {
 			gc->Accept(';');
 			if (gc->Lexem != 0x1A) {
 				continue;
-				// goto label1;
 			}
 		}
 		break;
@@ -1132,18 +1114,17 @@ FileD* ProjectRunner::RdF(FileD* file_d, std::string FileName, Record* record)
 		gc->SetInpStr(s);
 	}
 	else {
-		//int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
-		//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 		std::string source = record->LoadS(ChptTxt);
 		gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted, false);
 	}
 
 	if (EquUpCase(ext, ".DBF")) {
 		return RdFileD(name, DataFileType::DBF, FDTyp, ext);
-	} else {
+	}
+	else {
 		return RdFileD(name, DataFileType::FandFile, FDTyp, ext);
 	}
-	
+
 }
 
 FileD* ProjectRunner::RdOldF(FileD* file_d, const std::string& file_name, Record* record)
@@ -1151,9 +1132,6 @@ FileD* ProjectRunner::RdOldF(FileD* file_d, const std::string& file_name, Record
 	std::string d, name, ext;
 	FSplit(file_name, d, name, ext);
 	FandFileType FDTyp = ExtToTyp(ext);
-
-	//int pos = file_d->loadT(ChptOldTxt, file_d->FF->RecPtr);
-	//gc->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 
 	std::string source = record->LoadS(ChptOldTxt);
 	gc->SetInpStr(source, file_d->FF->TF->LicenseNr, CRdb->Encrypted, false);
@@ -1251,29 +1229,6 @@ bool ProjectRunner::MergeAndReplace(FileD* fd_old, FileD* fd_new)
 
 bool ProjectRunner::EquKeys(std::vector<XKey*>& K1, std::vector<XKey*>& K2)
 {
-	//auto result = false;
-	//while (K1 != nullptr) {
-	//	if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
-	//	std::vector<KeyFldD*>::iterator KF1 = K1->KFlds.begin();
-	//	std::vector<KeyFldD*>::iterator KF2 = K2->KFlds.begin();
-	//	while (KF1 != K1->KFlds.end()) {
-	//		if ((KF2 == K2->KFlds.end())
-	//			|| ((*KF1)->CompLex != (*KF2)->CompLex)
-	//			|| ((*KF1)->Descend != (*KF2)->Descend)
-	//			|| ((*KF1)->FldD->Name != (*KF2)->FldD->Name)) 
-	//		{
-	//			return result;
-	//		}
-	//		++KF1;
-	//		++KF2;
-	//	}
-	//	if (KF2 != K2->KFlds.end()) return result;
-	//	K1 = K1->Chain;
-	//	K2 = K2->Chain;
-	//}
-	//if (K2 != nullptr) return result;
-	//result = true;
-	//return result;
 	if (K1.size() != K2.size()) {
 		return false;
 	}
@@ -1298,7 +1253,6 @@ bool ProjectRunner::EquKeys(std::vector<XKey*>& K1, std::vector<XKey*>& K2)
 
 bool ProjectRunner::MergeOldNew(FileD* new_file, FileD* old_file)
 {
-	//std::deque<LinkD*> ld = LinkDRoot;
 	bool result = false;
 	FileD* FDOld = old_file;
 	FileD* FDNew = new_file;
@@ -1306,9 +1260,7 @@ bool ProjectRunner::MergeOldNew(FileD* new_file, FileD* old_file)
 
 	std::string Name = FDNew->Name;
 	FDNew->Name = "@";
-	//if (!RdFDSegment(0, Pos)) goto label1;
-	//ChainLast(FileDRoot, Chpt);
-	//FDOld = Chpt;
+
 	FDOld->Name = Name;
 	if ((FDNew->FF->file_type != FDOld->FF->file_type) || !EquStoredF(FDNew->FldD, FDOld->FldD)
 #ifdef FandSQL
@@ -1323,12 +1275,9 @@ bool ProjectRunner::MergeOldNew(FileD* new_file, FileD* old_file)
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);
 	}
-label1:
-	//FDNew->pChain = nullptr;
-	//LinkDRoot = ld;
+
 	FDNew->Name = Name;
 	FDNew->FullPath = CPath;
-	//CRecPtr = Chpt->FF->RecPtr;
 	return result;
 }
 
@@ -1340,7 +1289,6 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 	int w = 0;
 	int I = 0, J = 0, OldTxt = 0;
 	std::string Txt;
-	//int OldCRec = 0;
 	std::string STyp;
 	char Typ = '\0';
 	std::string Name, dir, nm, ext;
@@ -1355,22 +1303,15 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 	size_t lstFDindex = 0;
 	auto result = false;
 
-	//EditD* OldE = E;
 	EditReader* reader = new EditReader();
 	EditD* edit = nullptr;
 	MarkBoth(p, p2);
-	//p1 = p;
 
 	try {
 		IsCompileErr = false; FDCompiled = false;
-		//OldCRec = data_editor->CRec();
 		RP.rdb = CRdb;
 		bool rdb_top = (CRdb->ChainBack == nullptr);
 		if (rdb_top) {
-			//UserName[0] = 0;
-			//UserCode = 0;
-			//UserPassWORD[0] = 0;
-			//AccRight[0] = 0;
 			user->clear();
 
 			if (ChptTF->CompileAll || CompileFD) {
@@ -1379,8 +1320,8 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 		}
 
 		lmsg = CompileMsgOn(Buf, w);
-		//CRecPtr = v_files->FF->RecPtr;
 		Encryp = CRdb->Encrypted;
+
 		for (I = 1; I <= rdb_file->GetNRecs(); I++) {
 			Record* record = new Record(rdb_file);
 			rdb_file->ReadRec(I, record);
@@ -1490,21 +1431,6 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 					else {
 						// do nothing more
 					}
-
-					//else if (!RdFDSegment(I, OldTxt)) {
-					//	LinkDRoot = ld;
-					//	//ReleaseStore(&p1);
-					//	//CFile = Chpt;
-					//	goto label2;
-					//}
-
-					//else {
-					//	ChainLast(FileDRoot, v_files);
-					//	MarkStore(p1);
-					//	if (v_files->IsHlpFile) {
-					//		CRdb->help_file = v_files;
-					//	}
-					//}
 					break;
 				}
 				case 'M': {
@@ -1517,7 +1443,6 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 					if (Txt.empty() && IsTestRun) {
 						const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
 						RprtTxt = auto_report->SelGenRprt(Name);
-						//CFile = Chpt;
 						if (RprtTxt.empty()) {
 							gc->GoCompileErr(I, 1145);
 						}
@@ -1532,12 +1457,6 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 					break;
 				}
 				case 'P': {
-					//if (FileDRoot->pChain == nullptr) {
-					//	lstFD = FileDRoot;
-					//}
-					//else {
-					//	lstFD = (FileD*)LastInChain(FileDRoot);
-					//}
 					if (CRdb->data_files.empty()) {
 						throw std::exception("FileDRoot is empty");
 					}
@@ -1554,15 +1473,12 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 					break;
 				}
 				case 'E': {
-					//PushEdit();
 					std::vector<FieldDescr*> unusedFD;
 					std::unique_ptr<EditReader> e_reader = std::make_unique<EditReader>();
 					e_reader->RdFormOrDesign(unusedFD, RP);
 					// replace last 'edit' (exception handling)
 					delete edit;
 					edit = e_reader->GetEditD();
-					//E = OldE;
-					//EditDRoot = E;
 					break;
 				}
 				case 'U': {
@@ -1585,19 +1501,18 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 					break;
 				}
 #ifdef FandProlog
-						//case 'L': {
-						//	SetInpTTPos(Txt, Encryp);
-						//	TProgRoots* typeL = ReadProlog(I);
-						//	delete typeL; typeL = nullptr;
-						//	break;
-						//}
+				//case 'L': {
+				//	SetInpTTPos(Txt, Encryp);
+				//	TProgRoots* typeL = ReadProlog(I);
+				//	delete typeL; typeL = nullptr;
+				//	break;
+				//}
 #endif
 				}
 			}
 			//ReleaseStore(&p1);
-			ReleaseStore(&p2);
-			//CFile = Chpt;
-			//CRecPtr = v_files->FF->RecPtr;
+			//ReleaseStore(&p2);
+
 			if (Verif) {
 				rdb_file->ReadRec(I, record);
 				record->SaveB(ChptVerif, false);
@@ -1607,13 +1522,11 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
 			ChptTF->CompileAll = false;
 			ChptTF->CompileProc = false;
-			ChptTF->SetUpdateFlag(); //SetUpdHandle(ChptTF->Handle);
+			ChptTF->SetUpdateFlag();
 		}
 		CompileFD = false;
 		result = true;
-		//if (!run) {
-		//	Chpt->ReadRec(CRec(), edit->NewRecPtr);
-		//}
+
 		CompileMsgOff(Buf, w);
 #ifdef FandSQL
 		if (top && (Strm1 != nullptr)) Strm1->Login(UserName, UserPassWORD);
@@ -1749,6 +1662,7 @@ bool ProjectRunner::EditExecRdb(const std::string& name, const std::string& proc
 						return result;
 					}
 					catch (std::exception& e) {
+						printf("Exception in EditExecRdb(): %s\n", e.what());
 						if (IsCompileErr) {
 							WrErrMsg630(name);
 						}
@@ -1971,12 +1885,12 @@ void ProjectRunner::UpdateUTxt()
 	std::unique_ptr<Record> record = std::make_unique<Record>(Chpt);
 
 	Chpt->ReadRec(1, record.get());
-	
+
 	if (record->LoadS(ChptTyp) != "U") {
 		WrLLF10Msg(9);
 		return;
 	}
-	
+
 	int w = PushW(1, 1, TxtCols, TxtRows - 1);
 	size_t TxtPos = 1;
 	TextAttr = screen.colors.tNorm;

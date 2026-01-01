@@ -761,21 +761,6 @@ void OpenWorkH()
 	}
 }
 
-void NonameStartFunction()
-{
-	// TODO:
-	// CurPSP = ptr(PrefixSeg, 0);
-	// MyHeapEnd = HeapEnd;
-	ExtendHandles();
-	prCurr = -1;
-	ExitSave = ExitProc;
-	ExitProc = MyExit;
-	//MyBP = nullptr;
-	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
-	FandResName = MyFExpand("FAND.RES", "FANDRES");
-	resFile.Open(FandResName);
-}
-
 int32_t RunFndFilesExe(std::string cmd_line)
 {
 	std::vector<std::string> args;

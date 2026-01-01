@@ -5,6 +5,7 @@
 
 #include "../Core/base.h"
 #include "../Common/pstring.h"
+#include "../Common/LongStr.h"
 
 class FrmlElem;
 class MergeReportBase;

@@ -1878,24 +1878,6 @@ label1:
 	return result;
 }
 
-//std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record)
-//{
-//	std::string s = RunString(file_d, X, record);
-//	if (s.length() > 255) s = s.substr(0, 255);
-//	return s;
-//}
-
-void AddToLongStr(LongStr* S, void* P, WORD L)
-{
-	L = MinW(L, MaxLStrLen - S->LL);
-	auto oldA = S->A;
-	S->A = new char[S->LL + L];
-	memcpy(S->A, oldA, S->LL);
-	memcpy(&S->A[S->LL], P, L);
-	S->LL += L;
-	delete[] oldA;
-}
-
 void StrMask(double R, pstring& Mask)
 {
 	pstring Num;

@@ -20,8 +20,6 @@ bool RunModulo(FileD* file_d, FrmlElemFunction* X, Record* record);
 bool RunEquMask(FileD* file_d, FrmlElemFunction* X, Record* record);
 double RunReal(FileD* file_d, FrmlElem* X, Record* record);
 int RunInt(FileD* file_d, FrmlElem* X, Record* record);
-//bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, Record* record);
-// bool TryCopyT(FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z);
 void AssgnFrml(Record* record, FieldDescr* field_d, FrmlElem* X, bool add);
 void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, Record* record);
 
@@ -31,8 +29,6 @@ bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 XKey* GetFromKey(LinkD* LD);
 FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, Record* record);
 std::string RunString(FileD* file_d, FrmlElem* X, Record* record);
-//std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record);
-void AddToLongStr(LongStr* S, void* P, WORD L);
 void StrMask(double R, pstring& Mask);
 std::string RunSelectStr(FileD* file_d, FrmlElemFunction* Z, Record* record);
 void LowCase(std::string& text);
