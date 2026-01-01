@@ -34,7 +34,8 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 	file_type = orig.file_type;
 	FirstRecPos = orig.FirstRecPos;
 	Drive = orig.Drive;
-
+	
+	_msgs = orig._msgs;
 	_parent = parent;
 
 	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
