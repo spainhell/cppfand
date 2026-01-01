@@ -30,17 +30,10 @@ FandTFile::~FandTFile()
 
 void FandTFile::Err(unsigned short n, bool ex) const
 {
-	if (IsWork) {
-		SetMsgPar(FandWorkTName);
-		WrLLF10Msg(n);
-		if (ex) GoExit(MsgLine);
-	}
-	else {
-		FileMsg(_parent->GetFileD(), n, 'T');
-		if (ex) {
-			_parent->GetFileD()->Close();
-			GoExit(MsgLine);
-		}
+	FileMsg(_parent->GetFileD(), n, 'T');
+	if (ex) {
+		_parent->GetFileD()->Close();
+		GoExit(MsgLine);
 	}
 }
 
@@ -56,7 +49,7 @@ int FandTFile::UsedFileSize() const
 
 bool FandTFile::NotCached() const
 {
-	return !IsWork && _parent->GetFileD()->NotCached();
+	return _parent->GetFileD()->NotCached();
 }
 
 bool FandTFile::Cached() const
@@ -103,8 +96,7 @@ void FandTFile::RdPrefix(bool check)
 
 	//if (!IsWork) { CompileAll = true; }
 
-	if (!IsWork
-		&& (_parent->GetFileD() == Chpt)
+	if (   (_parent->GetFileD() == Chpt)
 		&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(Version, T.Version, 4) != _equ))) {
 		CompileAll = true;
 	}
@@ -133,7 +125,7 @@ void FandTFile::RdPrefix(bool check)
 
 	if (IRec >= 0x6000) {
 		IRec = IRec - 0x2000;
-		if (!IsWork && (_parent->file_type == FandFileType::RDB)) LicenseNr = T.LicNr;
+		if (_parent->file_type == FandFileType::RDB) LicenseNr = T.LicNr;
 	}
 
 	if (IRec >= 0x4000) {

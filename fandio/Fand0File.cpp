@@ -1348,7 +1348,7 @@ void Fand0File::CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD*
 	pos = TF02Pos;
 	if (pos == 0) return;
 	FandTFile* tf = TF02;
-	if (!tf->IsWork) md2 = TFD02->NewLockMode(RdMode);
+	md2 = TFD02->NewLockMode(RdMode);
 	size_t l = 0;
 	tf->ReadData(pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
@@ -1388,8 +1388,7 @@ label3:
 	}
 	WriteH(h, l, &X[i]);
 label4:
-	if (!tf->IsWork) TFD02->OldLockMode(md2);
-	//CFile = file_d;
+	TFD02->OldLockMode(md2);
 }
 
 std::string Fand0File::SetTempCExt(char typ, bool isNet) const

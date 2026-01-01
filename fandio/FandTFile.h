@@ -29,8 +29,7 @@ public:
 	int MLen = 0;
 	std::string PwCode;
 	std::string Pw2Code;
-	
-	bool IsWork = false;
+
 	void Err(unsigned short n, bool ex) const;
 	void TestErr() const;
 	int UsedFileSize() const;
