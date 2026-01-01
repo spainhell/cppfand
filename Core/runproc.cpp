@@ -239,18 +239,12 @@ void RunProcedure::SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
 
 void RunProcedure::MergeProc(Instr_merge_display* PD)
 {
-	uint8_t* p = nullptr; uint8_t* p2 = nullptr;
-	MarkBoth(p, p2);
-
 	const std::unique_ptr merge = std::make_unique<Merge>();
 	merge->SetInput(&PD->Pos, true);
 	merge->Read();
 	merge->Run();
 
 	SaveFiles();
-
-	ReleaseStore(&p);
-	ReleaseStore(&p2);
 }
 
 void RunProcedure::WritelnProc(Instr_writeln* PD)
@@ -619,7 +613,7 @@ void RunProcedure::ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	int N = 1;
 	XKey* k = PD->Key;
 	bool ad = PD->AdUpd;
-	LockMode md = lv->FD->GetLMode();
+	LockMode md = lv->FD->GetLockMode();
 	bool app = false;
 	Record* record1 = new Record(lv->FD);
 	if (PD->ByKey) {

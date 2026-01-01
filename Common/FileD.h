@@ -100,14 +100,14 @@ public:
 	void CreateT(const std::string& path) const;
 
 	FileUseMode GetUMode() const;
-	LockMode GetLMode() const;
-	LockMode GetExLMode() const;
-	LockMode GetTaLMode() const;
+	LockMode GetLockMode() const;
+	LockMode GetExLockMode() const;
+	LockMode GetTaLockMode() const;
 
-	void SetUMode(FileUseMode mode) const;
-	void SetLMode(LockMode mode) const;
-	void SetExLMode(LockMode mode) const;
-	void SetTaLMode(LockMode mode) const;
+	void SetUseMode(FileUseMode mode) const;
+	void SetLockMode(LockMode mode) const;
+	void SetExLockMode(LockMode mode) const;
+	void SetTaLockMode(LockMode mode) const;
 
 	void OldLockMode(LockMode mode);
 	LockMode NewLockMode(LockMode mode);

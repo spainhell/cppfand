@@ -1667,7 +1667,7 @@ bool DataEditor::OpenEditWw()
 	if (!file_d_->IsSQLFile)
 #endif
 		file_d_->OpenCreateF(CPath, Shared, false);
-	edit_->OldMd = edit_->FD->GetLMode();
+	edit_->OldMd = edit_->FD->GetLockMode();
 	UpdCount = 0;
 #ifdef FandSQL
 	if (file_d_->IsSQLFile) {

@@ -231,7 +231,7 @@ size_t FileD::GetRecordSize()
 size_t FileD::ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields) const
 {
 	size_t result;
-	
+
 	record->Reset();
 
 	switch (FileType) {
@@ -1008,25 +1008,25 @@ FileUseMode FileD::GetUMode() const
 	return mode;
 }
 
-LockMode FileD::GetLMode() const
+LockMode FileD::GetLockMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->LMode;
 	else return NullMode;
 }
 
-LockMode FileD::GetExLMode() const
+LockMode FileD::GetExLockMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->ExLMode;
 	else return NullMode;
 }
 
-LockMode FileD::GetTaLMode() const
+LockMode FileD::GetTaLockMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->TaLMode;
 	else return NullMode;
 }
 
-void FileD::SetUMode(FileUseMode mode) const
+void FileD::SetUseMode(FileUseMode mode) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -1040,7 +1040,7 @@ void FileD::SetUMode(FileUseMode mode) const
 	}
 }
 
-void FileD::SetLMode(LockMode mode) const
+void FileD::SetLockMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->LMode = mode;
@@ -1050,7 +1050,7 @@ void FileD::SetLMode(LockMode mode) const
 	}
 }
 
-void FileD::SetExLMode(LockMode mode) const
+void FileD::SetExLockMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->ExLMode = mode;
@@ -1060,7 +1060,7 @@ void FileD::SetExLMode(LockMode mode) const
 	}
 }
 
-void FileD::SetTaLMode(LockMode mode) const
+void FileD::SetTaLockMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->TaLMode = mode;
@@ -1477,49 +1477,6 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 	MyDeleteFile(CPath);
 }
 
-//void FileD::ZeroAllFlds(Record* record, bool delTFields)
-//{
-//	switch (FileType) {
-//	case DataFileType::FandFile: {
-//		if (delTFields) {
-//			this->FF->DelAllTFlds(record->GetRecord());
-//		}
-//		memset(record->GetRecord(), 0, FF->RecLen);
-//		break;
-//	}
-//	case DataFileType::DBF: {
-//		if (delTFields) {
-//			this->DbfF->DelAllTFlds(record->GetRecord());
-//		}
-//		memset(record->GetRecord(), 0, DbfF->RecLen);
-//		break;
-//	}
-//	default:;
-//	}
-//
-//	for (FieldDescr* F : FldD) {
-//		if (F->isStored() && (F->field_type == FieldType::ALFANUM)) {
-//			saveS(F, "", record);
-//		}
-//	}
-//}
-
-//void FileD::DelAllDifTFlds(Record* record, Record* comp_record)
-//{
-//	switch (FileType) {
-//	case DataFileType::FandFile: {
-//		FF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
-//		break;
-//	}
-//	case DataFileType::DBF: {
-//		DbfF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
-//		break;
-//	}
-//	default:
-//		break;
-//	}
-//}
-
 std::string FileD::CExtToT(const std::string& dir, const std::string& name, std::string ext)
 {
 	if (EquUpCase(ext, ".RDB")) {
@@ -1561,7 +1518,8 @@ std::string FileD::SetTempCExt(char typ, bool isNet)
 
 void FileD::SetHCatTyp(FandFileType fand_file_type)
 {
-	/// smaze Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat catalog
+	/// smaze Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() 
+	/// - musi existovat catalog
 	if (FileType == DataFileType::FandFile) {
 		FF->Handle = nullptr;
 		FF->file_type = fand_file_type;
@@ -1668,7 +1626,7 @@ bool FileD::NotCached()
 	if (GetUMode() == Shared) goto label1;
 	if (GetUMode() != RdShared) return false;
 label1:
-	if (GetLMode() == ExclMode) return false;
+	if (GetLockMode() == ExclMode) return false;
 	return true;
 }
 
@@ -1684,7 +1642,7 @@ bool FileD::OpenF(const std::string& path, FileUseMode UM, bool is_project_file)
 	if (OpenF1(path, UM, is_project_file)) {
 		if (IsShared()) {
 			ChangeLockMode(RdMode, 0, false);
-			SetLMode(RdMode);
+			SetLockMode(RdMode);
 		}
 		result = OpenF2(path, is_project_file);
 		OldLockMode(NullMode);
@@ -1699,7 +1657,7 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file
 {
 	uint16_t n;
 	bool result = true;
-	SetLMode(NullMode);
+	SetLockMode(NullMode);
 	SetPathMountVolumeSetNet(UM, is_project_file);
 	const bool b = is_project_file || (this == catalog->GetCatalogFile());
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
@@ -1716,7 +1674,7 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file
 			TestCFileError();
 		}
 		if ((HandleError == 5) && (GetUMode() == Exclusive)) {
-			SetUMode(RdOnly);
+			SetUseMode(RdOnly);
 			continue;
 		}
 		if (HandleError == 2) {
@@ -1977,19 +1935,19 @@ void FileD::TestCFileError()
 std::string FileD::SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file)
 {
 	std::string path = SetPathAndVolume();
-	SetUMode(UM);
+	SetUseMode(UM);
 	SetDrive((uint8_t)TestMountVol(path[0]));
 	if (!IsNetCVol() || is_project_file)
 		switch (UM) {
-		case RdShared: SetUMode(RdOnly); break;
-		case Shared: SetUMode(Exclusive); break;
+		case RdShared: SetUseMode(RdOnly); break;
+		case Shared: SetUseMode(Exclusive); break;
 
 		case Closed:
 		case RdOnly:
 		case Exclusive: break;
 		}
 	else if ((UM == Shared) && EquUpCase(CVol, "#R")) {
-		SetUMode(RdShared);
+		SetUseMode(RdShared);
 	}
 	CPath = path;
 	return path;
@@ -2201,22 +2159,14 @@ Record* FileD::LinkLastRec(int32_t& n)
 {
 	Record* result = nullptr;
 	LockMode md = NewLockMode(RdMode);
-#ifdef FandSQL
-	if (IsSQLFile) {
-		strm1->SelectXRec(nullptr, nullptr, _equ, withT);
+	// FandSQL condition removed
+	n = FF->NRecs;
+	if (n == 0) {
 		n = 1;
 	}
-	else
-#endif
-	{
-		n = FF->NRecs;
-		if (n == 0) {
-			n = 1;
-		}
-		else {
-			result = new Record(this);
-			ReadRec(n, result);
-		}
+	else {
+		result = new Record(this);
+		ReadRec(n, result);
 	}
 	OldLockMode(md);
 	return result;
@@ -2224,10 +2174,10 @@ Record* FileD::LinkLastRec(int32_t& n)
 
 void FileD::lock_excl_and_write_prefix()
 {
-	if (IsShared() && (GetLMode() < ExclMode)) {
+	if (IsShared() && (GetLockMode() < ExclMode)) {
 		ChangeLockMode(ExclMode, 0, false);
 	}
-	SetLMode(ExclMode);
+	SetLockMode(ExclMode);
 	SetUpdateFlag();
 	WrPrefix();
 }
