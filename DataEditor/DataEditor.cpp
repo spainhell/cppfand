@@ -4492,9 +4492,10 @@ void DataEditor::DownEdit()
 		data_editor2->GetSel2S(s1, s2, '/', 2);
 
 		for (LinkD* ld : LinkDRoot) {
+			XKey* key = GetFromKey(ld);
 			if ((ld->ToFile != file_d_)
 				|| (ld->IndexRoot == 0)
-				|| (s2 != GetFromKey(LD)->Alias)
+				|| (key != nullptr && s2 != key->Alias)
 				|| !data_editor2->EquFileViewName(ld->FromFile, s1, &EO)) {
 				continue;
 			}
@@ -4509,7 +4510,7 @@ void DataEditor::DownEdit()
 		}
 		if (data_editor2->SelFldsForEO(EO, LD)) {
 			EO->DownLD = LD;
-			EO->DownRecord = new Record(file_d_);
+			EO->DownRecord = this->current_rec_;
 			EditReader* reader = new EditReader();
 			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->current_rec_);
 			data_editor2->edit_ = reader->GetEditD();

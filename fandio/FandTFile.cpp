@@ -39,7 +39,9 @@ void FandTFile::Err(unsigned short n, bool ex) const
 
 void FandTFile::TestErr() const
 {
-	if (HandleError != 0) Err(700 + HandleError, true);
+	if (HandleError != 0) {
+		Err(700 + HandleError, true);
+	}
 }
 
 int FandTFile::UsedFileSize() const
@@ -93,8 +95,6 @@ void FandTFile::RdPrefix(bool check)
 	FreeRoot = T.FreeRoot; // 4B
 	MaxPage = T.MaxPage; // 4B
 	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
-
-	//if (!IsWork) { CompileAll = true; }
 
 	if (   (_parent->GetFileD() == Chpt)
 		&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(Version, T.Version, 4) != _equ))) {
@@ -736,20 +736,6 @@ void FandTFile::ReleasePage(int page_pos)
 	*(int32_t*)X = FreeRoot;
 	WriteData(page_pos, MPageSize, X);
 	FreeRoot = page_pos >> MPageShft;
-
-
-	//DWORD error;
-
-	//if (page_pos == (eofPos - MPageSize)) {
-	//	// je-li to posledni stranka souboru
-	//	eofPos = page_pos;
-	//	TruncF(Handle, error, eofPos); // tak zkratim soubor
-	//}
-	//else {
-	//	long l = FreeRoot / MPageSize;
-	//	WriteData(page_pos, 4, &l); // uvolnovanou stranku dam do seznamu volnych
-	//	FreeRoot = page_pos;
-	//}
 }
 
 void FandTFile::GetMLen()
