@@ -4,6 +4,7 @@
 #include <ctime>
 #include <memory>
 
+#include "../fandio/FormulaEvaluator.h"
 #include "../Common/CommonVariables.h"
 #include "../Common/compare.h"
 #include "../Common/pstring.h"
@@ -30,6 +31,18 @@
 #include "wwmix.h"
 #include "../Common/DateTime.h"
 #include "../Common/Record.h"
+
+// Define the global formula evaluator and initialize with actual functions
+// Note: initialized with lambdas that call the actual RunXxx functions
+namespace fandio {
+	FormulaEvaluator g_formula_evaluator = {
+		.eval_bool = [](FileD* fd, FrmlElem* f, Record* r) { return RunBool(fd, f, r); },
+		.eval_real = [](FileD* fd, FrmlElem* f, Record* r) { return RunReal(fd, f, r); },
+		.eval_int = [](FileD* fd, FrmlElem* f, Record* r) { return RunInt(fd, f, r); },
+		.eval_string = [](FileD* fd, FrmlElem* f, Record* r) { return RunString(fd, f, r); },
+		.eval_frml = [](FileD* fd, FrmlElem* f, Record* r) { return RunEvalFrml(fd, f, r); }
+	};
+}
 
 double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record)
 {

@@ -3,11 +3,11 @@
 #include "XKey.h"
 #include "XPage.h"
 #include "../Common/FileD.h"
-#include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
-#include "../Core/obaseww.h"
 #include "../fandio/FandXFile.h"
-#include "../Logging/Logging.h"
+
+// TODO: Remove this dependency when FileD is refactored
+#include "../Core/GlobalVariables.h"
 
 structXPath XPath[20];
 uint16_t XPathN;
@@ -201,9 +201,6 @@ int XKey::PathToNr(FileD* file_d)
 
 void XKey::NrToPath(FileD* file_d, int I)
 {
-	auto log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "XKey::NrToPath(%i)", I);
-
 	auto p = std::make_unique<XPage>();
 	int page = IndexRoot;
 	XPathN = 0;
@@ -354,8 +351,6 @@ label2:
 
 int XKey::NrToRecNr(FileD* file_d, int I)
 {
-	auto log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "XKey::NrToRecNr(%i)", I);
 	NrToPath(file_d, I);
 	return PathToRecNr(file_d);
 }
@@ -491,9 +486,8 @@ bool XKey::Insert(FileD* file_d, int RecNr, bool Try, Record* record)
 		}
 		else {
 			int result = parent_->FF->XFNotValid();
-			if (result != 0) {
-				RunError(result);
-			}
+			// Error is reported via XFNotValid callback and CFileError below
+			// RunError removed - error handling moved to callbacks
 			parent_->CFileError(822);
 		}
 	}

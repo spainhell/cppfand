@@ -1,7 +1,8 @@
 #include "locks.h"
 
-//#include "../Core/GlobalVariables.h"
-//#include "../Core/access.h"
+#include "FandioConfig.h"
+// TODO: Remove these Core dependencies - UI functions for lock waiting
+// Need to implement lock waiting callback in FandioCallbacks
 #include "../Core/base.h"
 #include "../Core/obaseww.h"
 

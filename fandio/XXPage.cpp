@@ -3,9 +3,8 @@
 #include "XWorkFile.h"
 #include "../Common/FileD.h"
 #include "../Common/Record.h"
-#include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
 
+using namespace fandio;
 
 void XXPage::Reset(XWorkFile* OwnerXW)
 {
@@ -80,14 +79,17 @@ void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, Record* record)
 				if (n == LastRecNr) return; /* overlapping intervals from  key in .. */
 				if (!KD->InWork && !KD->Duplic) {
 					if (!XW->msgWritten) {
-						SetMsgPar(file_d->Name);
-						if (IsTestRun) {
-							if (!PromptYN(832)) {
-								GoExit(MsgLine);
+						// Use callback instead of direct UI
+						if (XW->callbacks.on_decision) {
+							auto decision = XW->callbacks.on_decision(
+								PromptType::DuplicateKey,
+								"Duplicate key found during indexing",
+								file_d->Name
+							);
+							if (decision == UserDecision::Abort) {
+								XW->aborted = true;
+								return;
 							}
-						}
-						else {
-							WrLLF10Msg(828);
 						}
 						XW->msgWritten = true;
 					}

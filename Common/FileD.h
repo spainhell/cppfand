@@ -3,6 +3,7 @@
 
 #include "../Common/rdbPos.h"
 #include "../fandio/Fand0File.h"
+#include "../fandio/FandioCallbacks.h"
 #include "../fandio/DbfFile.h"
 #include "../fandio/locks.h" // to be visible in other parts of code
 
@@ -23,7 +24,7 @@ enum class DataFileType
 class FileD
 {
 public:
-	FileD(DataFileType f_type, ProgressCallbacks callbacks);
+	FileD(DataFileType f_type, fandio::FandioCallbacks callbacks);
 	FileD(const FileD& orig);
 	~FileD();
 

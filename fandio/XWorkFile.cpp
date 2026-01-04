@@ -3,17 +3,18 @@
 #include "KeyFldD.h"
 #include "../Common/Record.h"
 #include "../Common/CommonVariables.h"
-#include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
-//#include "../Core/RunMessage.h"
 #include "../fandio/FandXFile.h"
 
+// TODO: Remove this dependency
+#include "../Core/GlobalVariables.h"
+
+using namespace fandio;
 
 XWorkFile::XWorkFile(
 	FileD* parent,
 	XScan* AScan,
 	std::vector<XKey*>& AK,
-	ProgressCallbacks callbacks
+	FandioCallbacks cbs
 )
 {
 	_parent = parent;
@@ -22,7 +23,7 @@ XWorkFile::XWorkFile(
 	xScan = AScan;
 	x_keys_ = AK;
 	xwFile = AK[0]->GetXFile(parent);
-	_msgs = callbacks;
+	callbacks = cbs;
 }
 
 XWorkFile::~XWorkFile()
@@ -84,7 +85,7 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper
 
 	K->NrToPath(_parent, 1);
 	int page = XPath[XPathN].Page;
-	_msgs.runMsgOn(static_cast<char>(oper_type), K->NRecs());
+	callbacks.progress.runMsgOn(static_cast<char>(oper_type), K->NRecs());
 	int count = 0;
 
 	while (page != 0) {
@@ -104,10 +105,10 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper
 			Output(K, r, record);
 		}
 		count += p->NItems;
-		_msgs.runMsgN(count);
+		callbacks.progress.runMsgN(count);
 		page = p->GreaterPage;
 	}
-	_msgs.runMsgOff();
+	callbacks.progress.runMsgOff();
 }
 
 bool XWorkFile::GetCRec(Record* record)
@@ -163,7 +164,11 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, OperationType op
 		// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
 		MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array
 		if (MaxOnWPage < 4) {
-			RunError(624);
+			// Report error via callback
+			if (callbacks.on_error) {
+				callbacks.on_error(Error(ErrorCode::InsufficientMemory, "MaxOnWPage < 4"));
+			}
+			return; // Cannot continue
 		}
 		MaxWPage = 0;
 		NFreeNr = 0;
@@ -179,7 +184,7 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, OperationType op
 		//@shl ax 3, 1; cmp bx, 1; ja @1; cmp cx, 0; jne @4; mov cx, 1;
 		//@mov pages 4.unsigned short, cx;
 
-		_msgs.runMsgOn(static_cast<char>(oper_type), pages);
+		callbacks.progress.runMsgOn(static_cast<char>(oper_type), pages);
 	}
 	catch (std::exception& e)
 	{
@@ -225,14 +230,19 @@ void XWorkFile::SortMerge(XKey* xKey, Record* record)
 	if (NChains > 1) {
 		Merge(xKey, record);
 	}
-	_msgs.runMsgOff();
+	callbacks.progress.runMsgOff();
 }
 
 void XWorkFile::TestErr()
 {
 	if (HandleError != 0) {
-		SetMsgPar(FandWorkName);
-		RunError(700 + HandleError);
+		// Report error via callback instead of RunError
+		if (callbacks.on_error) {
+			callbacks.on_error(Error(
+				static_cast<ErrorCode>(700 + HandleError),
+				"Work file error",
+				FandWorkName, 'W'));
+		}
 	}
 }
 
@@ -303,7 +313,7 @@ void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Ch
 {
 	size_t offset = 0;
 	PgWritten++;
-	_msgs.runMsgN(PgWritten);
+	callbacks.progress.runMsgN(PgWritten);
 	if (NChains == 1) {
 		for (size_t i = 0; i < N; i++) {
 			WRec r;

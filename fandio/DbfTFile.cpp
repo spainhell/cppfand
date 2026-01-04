@@ -1,31 +1,70 @@
 #include "DbfTFile.h"
+#include "DbfFile.h"
 
 #include "../Common/CommonVariables.h"
-#include "../Core/access.h"
-#include "../Core/obaseww.h"
-#include "../Core/GlobalVariables.h"
+#include "../Common/FileD.h"
+#include "../Core/base.h"
+
+using namespace fandio;
 
 DbfTFile::DbfTFile(DbfFile* parent)
+	: _parent(parent), _callbacks(FandioCallbacks::Default())
 {
-	_parent = parent;
+}
+
+DbfTFile::DbfTFile(DbfFile* parent, FandioCallbacks callbacks)
+	: _parent(parent), _callbacks(callbacks)
+{
 }
 
 DbfTFile::~DbfTFile()
 {
 }
 
+// Legacy error handling - now uses callback instead of direct UI
 void DbfTFile::Err(unsigned short n, bool ex) const
 {
-	FileMsg(_parent->GetFileD(), n, 'T');
-	if (ex) {
+	Error err(static_cast<ErrorCode>(n), "",
+		_parent ? _parent->GetFileD()->FullPath : "", 'T');
+
+	if (_callbacks.on_error) {
+		_callbacks.on_error(err);
+	}
+
+	if (ex && _parent) {
 		_parent->GetFileD()->Close();
-		GoExit(MsgLine);
+		// Instead of GoExit, we just report the error
 	}
 }
 
 void DbfTFile::TestErr() const
 {
 	if (HandleError != 0) Err(700 + HandleError, true);
+}
+
+// New Result-based error reporting
+Result<void> DbfTFile::ReportError(ErrorCode code, bool fatal) const
+{
+	Error err(code, "",
+		_parent ? _parent->GetFileD()->FullPath : "", 'T');
+
+	if (_callbacks.on_error) {
+		_callbacks.on_error(err);
+	}
+
+	if (fatal && _parent) {
+		_parent->GetFileD()->Close();
+	}
+
+	return Result<void>::Err(err);
+}
+
+Result<void> DbfTFile::CheckHandleError() const
+{
+	if (HandleError != 0) {
+		return ReportError(static_cast<ErrorCode>(700 + HandleError), true);
+	}
+	return Result<void>::Ok();
 }
 
 int DbfTFile::UsedFileSize() const
@@ -60,7 +99,7 @@ void DbfTFile::RdPrefix(bool check)
 	}
 	if (Format == FptFormat) {
 		//FreePart = SwapLong((*FptHd).FreePart);
-		FptFormatBlockSize = Swap((*FptHd).BlockSize);
+		//FptFormatBlockSize = Swap((*FptHd).BlockSize);
 		return;
 	}
 }
@@ -116,17 +155,19 @@ std::string DbfTFile::Read(int32_t pos)
 	else {
 		switch (Format) {
 		case DbtFormat: {
-			LongStr* s = new LongStr(32768); //(LongStr*)GetStore(32770);
+			uint8_t p[32768];
+			//LongStr* s = new LongStr(32768); //(LongStr*)GetStore(32770);
 			pos = pos << MPageShft;
-			unsigned l = 0;
-			char* p = s->A;
+			// unsigned l = 0;
+			// char* p = s->A;
 			int offset = 0;
+			int32_t l = 0;
 
 			while (l <= 32768 - MPageSize) {
 				ReadData(pos, MPageSize, &p[offset]);
 				for (uint16_t i = 1; i <= MPageSize; i++) {
 					if (p[offset + i] == 0x1A) {
-						s->LL = l;
+						//s->LL = l;
 						//ReleaseStore(&s->A[l + 1]);
 						//return s;
 						return "";
@@ -137,9 +178,7 @@ std::string DbfTFile::Read(int32_t pos)
 				pos += MPageSize;
 			}
 			l--;
-			s->LL = l;
-			//ReleaseStore(&s->A[l + 1]);
-			break;
+			s = std::string((char*)p, l);
 			break;
 		}
 		case FptFormat: {
@@ -176,7 +215,7 @@ uint32_t DbfTFile::Store(const std::string& data)
 		int N = pos << MPageShft;
 		if (l > 0x7fff) l = 0x7fff;
 		WriteData(N, l, s);
-		FillChar(X, MPageSize, ' ');
+		memset(X, ' ', MPageSize);//FillChar(X, MPageSize, ' ');
 		X[0] = 0x1A; X[1] = 0x1A;
 		int rest = MPageSize - (l + 2) % MPageSize;
 		WriteData(N + l, rest + 2, X);
@@ -196,7 +235,7 @@ uint32_t DbfTFile::Store(const std::string& data)
 		l = FreePart * FptFormatBlockSize - N;
 		if (l > 0) {
 			unsigned char* p = new unsigned char[l];
-			FillChar(p, l, ' ');
+			memset(p, ' ', l); // FillChar(p, l, ' ');
 			WriteData(N, l, p);
 			delete[] p; p = nullptr;
 		}

@@ -1,6 +1,6 @@
 #pragma once
 #include "Fand0File.h"
-#include "../Core/switches.h"
+#include "FandioConfig.h"
 #ifdef FandSQL
 #include "channel.h"
 #endif

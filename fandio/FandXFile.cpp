@@ -1,22 +1,31 @@
 #include "FandXFile.h"
+#include "Fand0File.h"
 
 #include <memory>
 
 #include "../Common/FileD.h"
 #include "../Common/CommonVariables.h"
+
+// TODO: Remove these dependencies - needed for XWork global and FandWorkXName
+// XWork should be passed as parameter or use a flag instead of comparing &XWork
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
 
+using namespace fandio;
 
 FandXFile::FandXFile(Fand0File* parent)
+	: _parent(parent), _callbacks(FandioCallbacks::Default())
 {
-	_parent = parent;
+}
+
+FandXFile::FandXFile(Fand0File* parent, FandioCallbacks callbacks)
+	: _parent(parent), _callbacks(callbacks)
+{
 }
 
 FandXFile::FandXFile(const FandXFile& orig, Fand0File* parent)
+	: _parent(parent), _callbacks(orig._callbacks)
 {
-	_parent = parent;
 	NRecs = orig.NRecs;
 	NRecsAbs = orig.NRecsAbs;
 	NotValid = orig.NotValid;
@@ -49,8 +58,6 @@ void FandXFile::SetEmpty(int recs, unsigned char keys)
 
 void FandXFile::RdPrefix()
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "FandXFile::RdPrefix() 0x%p reading 18 Bytes", Handle);
 	ReadData(2, 4, &FreeRoot);
 	ReadData(6, 4, &MaxPage);
 	ReadData(10, 4, &NRecs);
@@ -61,9 +68,6 @@ void FandXFile::RdPrefix()
 
 void FandXFile::WrPrefix(int recs, unsigned char keys)
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "FandXFile::WrPrefix() 0x%p writing 20 Bytes, NRecsAbs = %i, NrKeys = %i",
-	//	Handle, CFile->NRecs, CFile->GetNrKeys());
 	unsigned short Signum = 0x04FF;
 	WriteData(0, 2, &Signum);
 	NRecsAbs = recs;
@@ -104,7 +108,12 @@ void FandXFile::ClearUpdLock()
 int FandXFile::XFNotValid(int recs, unsigned char keys)
 {
 	if (Handle == nullptr) {
-		RunError(903);
+		// Report error via callback instead of RunError
+		Error err(ErrorCode::IndexFileMissing, "Index file handle is null",
+			_parent ? _parent->GetFileD()->FullPath : "", 'X');
+		if (_callbacks.on_error) {
+			_callbacks.on_error(err);
+		}
 		return 903;
 	}
 	else {
@@ -205,16 +214,52 @@ void FandXFile::ReleasePage(XPage* P, int N)
 	WrPage(P, N);
 }
 
+// Legacy error handling - now uses callback instead of direct UI
 void FandXFile::Err(unsigned short N)
 {
-	if (this == &XWork) {
-		SetMsgPar(FandWorkXName);
-		RunError(N);
+	bool isWorkFile = (this == &XWork);
+	std::string filePath = isWorkFile ? FandWorkXName :
+		(_parent ? _parent->GetFileD()->FullPath : "");
+
+	Error err(static_cast<ErrorCode>(N), "", filePath, 'X');
+
+	if (_callbacks.on_error) {
+		_callbacks.on_error(err);
 	}
-	else {
+
+	if (!isWorkFile && _parent) {
 		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
-		FileMsg(_parent->GetFileD(), N, 'X');
 		_parent->Close();
-		GoExit(MsgLine);
+		// Instead of GoExit, we just report the error
+		// The caller should check for errors using Result-based API
 	}
+}
+
+// New Result-based error reporting
+Result<void> FandXFile::ReportError(ErrorCode code) const
+{
+	bool isWorkFile = (this == &XWork);
+	std::string filePath = isWorkFile ? FandWorkXName :
+		(_parent ? _parent->GetFileD()->FullPath : "");
+
+	Error err(code, "", filePath, 'X');
+
+	if (_callbacks.on_error) {
+		_callbacks.on_error(err);
+	}
+
+	if (!isWorkFile && _parent) {
+		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
+		_parent->Close();
+	}
+
+	return Result<void>::Err(err);
+}
+
+Result<void> FandXFile::CheckHandleError() const
+{
+	if (HandleError != 0) {
+		return ReportError(static_cast<ErrorCode>(700 + HandleError));
+	}
+	return Result<void>::Ok();
 }

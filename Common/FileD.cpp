@@ -14,7 +14,7 @@
 #include "../Drivers/files.h"
 
 
-FileD::FileD(DataFileType f_type, ProgressCallbacks callbacks)
+FileD::FileD(DataFileType f_type, fandio::FandioCallbacks callbacks)
 {
 	this->FileType = f_type;
 	switch (f_type) {
@@ -23,7 +23,7 @@ FileD::FileD(DataFileType f_type, ProgressCallbacks callbacks)
 		break;
 	}
 	case DataFileType::DBF: {
-		this->DbfF = new DbfFile(this);
+		this->DbfF = new DbfFile(this, callbacks);
 		break;
 	}
 	default:;

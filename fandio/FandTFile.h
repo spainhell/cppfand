@@ -2,6 +2,7 @@
 #include <string>
 
 #include "DataFileBase.h"
+#include "FandioCallbacks.h"
 
 typedef void* HANDLE;
 class Fand0File;
@@ -15,6 +16,7 @@ class FandTFile : public DataFileBase
 {
 public:
 	FandTFile(Fand0File* parent);
+	FandTFile(Fand0File* parent, fandio::FandioCallbacks callbacks);
 	FandTFile(const FandTFile& orig) = delete;
 	FandTFile(const FandTFile& orig, Fand0File* parent);
 	~FandTFile() override;
@@ -30,8 +32,14 @@ public:
 	std::string PwCode;
 	std::string Pw2Code;
 
+	// Legacy error handling (calls callback or does nothing)
 	void Err(unsigned short n, bool ex) const;
 	void TestErr() const;
+
+	// New Result-based interface
+	fandio::Result<void> ReportError(fandio::ErrorCode code, bool fatal = false) const;
+	fandio::Result<void> CheckHandleError() const;
+
 	int UsedFileSize() const;
 	bool NotCached() const;
 	bool Cached() const;
@@ -46,8 +54,13 @@ public:
 	uint32_t Store(const std::string& data);
 	void Delete(int32_t pos);
 
+	// Set callbacks for error handling
+	void SetCallbacks(fandio::FandioCallbacks callbacks) { _callbacks = callbacks; }
+
 private:
 	Fand0File* _parent;
+	fandio::FandioCallbacks _callbacks;
+
 	uint32_t ReadBuffer(size_t position, size_t count, uint8_t* buffer);
 	std::string ReadLongBuffer(uint32_t position);
 	uint32_t ReadLongBufferLength(uint32_t position);

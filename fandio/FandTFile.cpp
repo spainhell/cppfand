@@ -2,23 +2,33 @@
 
 #include <memory>
 #include "FandTFilePrefix.h"
+#include "Fand0File.h"
 #include "../Common/Coding.h"
 #include "../Common/FileD.h"
 #include "../Common/random.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Common/CommonVariables.h"
+
+// TODO: Remove this dependency - only needed for Chpt comparison in RdPrefix
+// This should be refactored to use a flag in FileD instead
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+
+using namespace fandio;
 
 FandTFile::FandTFile(Fand0File* parent)
+	: _parent(parent), _callbacks(FandioCallbacks::Default())
 {
-	_parent = parent;
+}
+
+FandTFile::FandTFile(Fand0File* parent, FandioCallbacks callbacks)
+	: _parent(parent), _callbacks(callbacks)
+{
 }
 
 FandTFile::FandTFile(const FandTFile& orig, Fand0File* parent)
+	: _parent(parent), _callbacks(orig._callbacks)
 {
-	_parent = parent;
 }
 
 FandTFile::~FandTFile()
@@ -28,12 +38,20 @@ FandTFile::~FandTFile()
 	}
 }
 
+// Legacy error handling - now uses callback instead of direct UI
 void FandTFile::Err(unsigned short n, bool ex) const
 {
-	FileMsg(_parent->GetFileD(), n, 'T');
-	if (ex) {
+	Error err(static_cast<ErrorCode>(n), "",
+		_parent ? _parent->GetFileD()->FullPath : "", 'T');
+
+	if (_callbacks.on_error) {
+		_callbacks.on_error(err);
+	}
+
+	if (ex && _parent) {
 		_parent->GetFileD()->Close();
-		GoExit(MsgLine);
+		// Instead of GoExit, we just report the error
+		// The caller should check for errors using Result-based API
 	}
 }
 
@@ -42,6 +60,31 @@ void FandTFile::TestErr() const
 	if (HandleError != 0) {
 		Err(700 + HandleError, true);
 	}
+}
+
+// New Result-based error reporting
+Result<void> FandTFile::ReportError(ErrorCode code, bool fatal) const
+{
+	Error err(code, "",
+		_parent ? _parent->GetFileD()->FullPath : "", 'T');
+
+	if (_callbacks.on_error) {
+		_callbacks.on_error(err);
+	}
+
+	if (fatal && _parent) {
+		_parent->GetFileD()->Close();
+	}
+
+	return Result<void>::Err(err);
+}
+
+Result<void> FandTFile::CheckHandleError() const
+{
+	if (HandleError != 0) {
+		return ReportError(static_cast<ErrorCode>(700 + HandleError), true);
+	}
+	return Result<void>::Ok();
 }
 
 int FandTFile::UsedFileSize() const

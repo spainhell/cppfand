@@ -2,17 +2,22 @@
 
 #include "DBaseHeader.h"
 #include "FieldDescr.h"
+// TODO: Remove this dependency (IsNetCVol)
 #include "../Core/GlobalVariables.h"
 #include "../Common/textfunc.h"
 #include "../Common/Coding.h"
 #include "../Common/DateTime.h"
-#include "../Core/obaseww.h"
 #include "../Common/CommonVariables.h"
 
 
 DbfFile::DbfFile(FileD* parent)
+	: _parent(parent), _callbacks(fandio::FandioCallbacks::Default())
 {
-	_parent = parent;
+}
+
+DbfFile::DbfFile(FileD* parent, fandio::FandioCallbacks callbacks)
+	: _parent(parent), _callbacks(callbacks)
+{
 }
 
 DbfFile::~DbfFile()
@@ -530,14 +535,24 @@ void DbfFile::TruncFile()
 
 	TruncF(Handle, HandleError, UsedFileSize());
 	if (HandleError != 0) {
-		FileMsg(_parent, 700 + HandleError, '0');
+		if (_callbacks.on_error) {
+			_callbacks.on_error(fandio::Error(
+				static_cast<fandio::ErrorCode>(700 + HandleError),
+				"File truncation error",
+				_parent->FullPath, '0'));
+		}
 	}
 	if (TF != nullptr) {
 		TruncF(TF->Handle, HandleError, TF->UsedFileSize());
 		if (HandleError != 0) {
-			FileMsg(GetFileD(), 700 + HandleError, 'T');
+			if (_callbacks.on_error) {
+				_callbacks.on_error(fandio::Error(
+					static_cast<fandio::ErrorCode>(700 + HandleError),
+					"Text file truncation error",
+					_parent->FullPath, 'T'));
+			}
 			GetFileD()->Close();
-			GoExit(MsgLine);
+			return; // Return instead of GoExit
 		}
 	}
 }

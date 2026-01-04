@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/2022/Professional/MSBuild/Current/Bin/MSBuild.exe\" cppfand.sln -p:Configuration=Debug -p:Platform=x64 -verbosity:minimal)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/amd64/MSBuild.exe\" cppfand.sln -p:Configuration=Debug -p:Platform=x64 -verbosity:minimal)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/2022/Professional/MSBuild/Current/Bin/MSBuild.exe\" C:/PROJECTS/cppfand/cppfand.sln -p:Configuration=Debug -p:Platform=x64 -verbosity:minimal)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/amd64/MSBuild.exe\" C:/PROJECTS/cppfand/cppfand.sln -p:Configuration=Debug -p:Platform=x64 -verbosity:minimal)"
+    ]
+  }
+}

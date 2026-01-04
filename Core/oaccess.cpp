@@ -1,5 +1,6 @@
 #include "oaccess.h"
 
+#include "../Logging/Logging.h"
 #include "base.h"
 #include "Compiler.h"
 #include "../Common/FileD.h"

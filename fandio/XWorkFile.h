@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 
-#include "ProgressCallbacks.h"
+#include "FandioCallbacks.h"
 #include "XKey.h"
 #include "XScan.h"
 #include "XXPage.h"
@@ -13,7 +13,7 @@ public:
 		FileD* parent,
 		XScan* AScan,
 		std::vector<XKey*>& AK,
-		ProgressCallbacks callbacks
+		fandio::FandioCallbacks callbacks
 	);
 	~XWorkFile();
 
@@ -25,6 +25,7 @@ public:
 	XPage* xPage = nullptr;
 	int nextXPage = 0;
 	bool msgWritten = false;
+	bool aborted = false;  // Set by callback if user aborts
 	int IRec = 0, RecNr = 0;
 	std::vector<KeyFldD*> KFRoot;
 	unsigned short NFreeNr = 0;
@@ -32,6 +33,9 @@ public:
 	WPage* PW1 = nullptr;
 	WPage* PW2 = nullptr;
 	int FreeNr[5]{ 0, 0, 0, 0, 0 };
+
+	// Callbacks for error/decision handling
+	fandio::FandioCallbacks callbacks;
 
 	void Main(OperationType oper_type, Record* record);
 	void CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper_type, Record* record);
@@ -54,7 +58,4 @@ private:
 	void Merge(XKey* xKey, Record* record);
 	void Merge2Chains(XKey* xKey, int Pg1, int Pg2, int Pg, int Nxt, Record* record);
 	void PutFreeNr(int N);
-
-	// Callback function pointers
-	ProgressCallbacks _msgs;
 };

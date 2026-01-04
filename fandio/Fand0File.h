@@ -4,10 +4,9 @@
 
 #include "FandTFile.h"
 #include "FandXFile.h"
-#include "../Core/switches.h"
+#include "FandioConfig.h"
+#include "FandioCallbacks.h"
 #include "FieldDescr.h"
-#include "ProgressCallbacks.h"
-#include "../Logging/Logging.h"
 #include "../Common/OperationType.h"
 
 class Record;
@@ -28,7 +27,7 @@ enum class FandFileType
 class Fand0File : public DataFileBase
 {
 public:
-	Fand0File(FileD* parent, ProgressCallbacks callbacks);
+	Fand0File(FileD* parent, fandio::FandioCallbacks callbacks);
 	Fand0File(const Fand0File& orig) = delete;
 	Fand0File(const Fand0File& orig, FileD* parent);
 	~Fand0File() override;
@@ -151,6 +150,6 @@ private:
 	std::unique_ptr<uint8_t[]> _getRowDataFromRecord(Record* record, const std::map<FieldDescr*, int32_t>& unchanged_T_fields, bool ignore_T_fields = false);
 
 	// Callback function pointers
-	ProgressCallbacks _msgs;
+	fandio::FandioCallbacks _callbacks;
 };
 

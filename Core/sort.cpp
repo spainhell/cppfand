@@ -1,11 +1,10 @@
 #include "sort.h"
 #include <queue>
 
-#include "XWKey.h"
+#include "../fandio/XWKey.h"
 #include "../Common/LinkD.h"
-#include "../Core/models/Instr.h"
-#include "../Core/runfrml.h"
-#include "../Logging/Logging.h"
+#include "models/Instr.h"
+#include "runfrml.h"
 #include "../Common/Record.h"
 
 

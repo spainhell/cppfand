@@ -4,6 +4,7 @@
 #include "DataFileBase.h"
 #include "DbfTFile.h"
 #include "FieldDescr.h"
+#include "FandioCallbacks.h"
 
 class Record;
 class FileD;
@@ -12,6 +13,7 @@ class DbfFile : public DataFileBase
 {
 public:
 	DbfFile(FileD* parent);
+	DbfFile(FileD* parent, fandio::FandioCallbacks callbacks);
 	~DbfFile() override;
 
 	DbfTFile* TF = nullptr;
@@ -59,6 +61,7 @@ public:
 
 private:
 	FileD* _parent;
+	fandio::FandioCallbacks _callbacks;
 
 	bool loadB(FieldDescr* field_d, uint8_t* record);
 	double loadR(FieldDescr* field_d, uint8_t* record);

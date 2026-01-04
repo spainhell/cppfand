@@ -7,8 +7,8 @@
 #include "realFix.h"
 #include "KeyFldD.h"
 
+// TODO: Remove this dependency (IsNetCVol, SetMsgPar)
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
 
 #include "../Common/Coding.h"
 #include "../Common/CommonVariables.h"
@@ -22,10 +22,10 @@
 
 const double FirstDate = 6.97248E+5;
 
-Fand0File::Fand0File(FileD* parent, ProgressCallbacks callbacks)
+Fand0File::Fand0File(FileD* parent, fandio::FandioCallbacks callbacks)
 {
 	_parent = parent;
-	_msgs = callbacks;
+	_callbacks = callbacks;
 }
 
 Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
@@ -34,8 +34,8 @@ Fand0File::Fand0File(const Fand0File& orig, FileD* parent)
 	file_type = orig.file_type;
 	FirstRecPos = orig.FirstRecPos;
 	Drive = orig.Drive;
-	
-	_msgs = orig._msgs;
+
+	_callbacks = orig._callbacks;
 	_parent = parent;
 
 	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
@@ -75,12 +75,6 @@ std::unique_ptr<uint8_t[]> Fand0File::GetRecSpaceUnique() const
 /// <param name="record">ukazatel na buffer</param>
 size_t Fand0File::ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields)
 {
-	//if (record->GetFileD()->Name == "PARAM3")
-	//{
-	//	printf("");
-	//}
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
 	std::unique_ptr buffer = GetRecSpaceUnique();
 	size_t result = ReadRec(rec_nr, buffer.get());
 	_getValuesFromRawData(buffer.get(), record, ignore_T_fields);
@@ -89,18 +83,12 @@ size_t Fand0File::ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields)
 
 size_t Fand0File::ReadRec(size_t rec_nr, uint8_t* buffer)
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
 	size_t result = ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer);
 	return result;
 }
 
 size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
-
-	//DelAllTFlds(rec_nr); // delete all 'T' fields from orig. record first
 	WasWrRec = true;
 
 	// get current record data in a file and create list of unchanged 'T' fields
@@ -128,8 +116,6 @@ void Fand0File::CreateRec(int n, Record* record)
 void Fand0File::DeleteRec(int32_t rec_nr, Record* record)
 {
 	if (file_type == FandFileType::INDEX) {
-		Logging* log = Logging::getInstance();
-		//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 		TestXFExist();
 		DeleteAllIndexes(rec_nr, record);
 		DelAllTFldsFromRecord(record); // T fields will be deleted during 
@@ -207,9 +193,15 @@ void Fand0File::Reset()
 
 void Fand0File::IncNRecs(int n)
 {
-#ifdef FandDemo
-	if (NRecs > 100) RunError(884);
-#endif
+	if (fandio::FandioConfig::DemoMode && NRecs > 100) {
+		if (_callbacks.on_error) {
+			_callbacks.on_error(fandio::Error(
+				fandio::ErrorCode::DemoLimit,
+				"Demo mode: record limit exceeded",
+				_parent->FullPath, '0'));
+		}
+		return;
+	}
 	NRecs += n;
 	SetUpdateFlag(); //SetUpdHandle(Handle);
 	if (file_type == FandFileType::INDEX) {
@@ -736,7 +728,12 @@ void Fand0File::TruncFile()
 	LockMode md = _parent->NewLockMode(RdMode);
 	TruncF(Handle, HandleError, UsedFileSize());
 	if (HandleError != 0) {
-		FileMsg(_parent, 700 + HandleError, '0');
+		if (_callbacks.on_error) {
+			_callbacks.on_error(fandio::Error(
+				static_cast<fandio::ErrorCode>(700 + HandleError),
+				"File truncation error",
+				_parent->FullPath, '0'));
+		}
 	}
 	if (TF != nullptr) {
 		TruncF(TF->Handle, HandleError, TF->UsedFileSize());
@@ -770,7 +767,12 @@ LockMode Fand0File::RewriteFile(bool append)
 
 	int notValid = XFNotValid();
 	if (notValid != 0) {
-		RunError(notValid);
+		if (_callbacks.on_error) {
+			_callbacks.on_error(fandio::Error(
+				static_cast<fandio::ErrorCode>(notValid),
+				"Index file not valid",
+				_parent->FullPath, 'X'));
+		}
 	}
 
 	if (file_type == FandFileType::INDEX) XF->NoCreate = true;
@@ -915,8 +917,6 @@ int Fand0File::XFNotValid()
 
 int Fand0File::CreateIndexFile()
 {
-	Logging* log = Logging::getInstance();
-
 	LockMode md = NullMode;
 	bool fail = false;
 
@@ -927,10 +927,8 @@ int Fand0File::CreateIndexFile()
 		_parent->Lock(0, 0);
 		/*ClearCacheCFile;*/
 		if (XF->Handle == nullptr) {
-			//RunError(903);
 			return 903;
 		}
-		log->log(loglevel::DEBUG, "CreateIndexFile() file 0x%p name '%s'", XF->Handle, _parent->Name.c_str());
 		XF->RdPrefix();
 		if (XF->NotValid) {
 			XF->SetEmpty(NRecs, _parent->GetNrKeys());
@@ -938,19 +936,15 @@ int Fand0File::CreateIndexFile()
 			std::unique_ptr<XScan> scan = std::make_unique<XScan>(_parent, nullptr, empty, false);
 			std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
 			scan->Reset(nullptr, false, record.get());
-			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys, _msgs);
+			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys, _callbacks);
 			XW->Main(OperationType::Index, record.get());
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
-			//if (!SaveCache(0, Handle)) {
-			//	GoExit(MsgLine);
-			//}
-			/*FlushHandles; */
 		}
 		fail = false;
 	}
 	catch (std::exception& e) {
-		// TODO: log error
+		// Error handled via callback
 	}
 
 	if (fail) {
@@ -959,7 +953,16 @@ int Fand0File::CreateIndexFile()
 	}
 	_parent->Unlock(0);
 	_parent->OldLockMode(md);
-	if (fail) GoExit(MsgLine);
+
+	if (fail) {
+		if (_callbacks.on_error) {
+			_callbacks.on_error(fandio::Error(
+				fandio::ErrorCode::IndexCreationFailed,
+				"Index file creation failed",
+				_parent->FullPath, 'X'));
+		}
+		return 1; // Return error code instead of GoExit
+	}
 
 	return 0;
 }
@@ -977,7 +980,7 @@ int Fand0File::TestXFExist()
 		}
 		int a = CreateIndexFile();
 		if (a != 0) {
-			RunError(a);
+			// Error already reported via callback in CreateIndexFile
 			return a;
 		}
 	}
@@ -1075,17 +1078,18 @@ label1:
 	WriteRec(RecNr, record);
 
 	if (XF->FirstDupl) {
-		SetMsgPar(_parent->Name);
-		WrLLF10Msg(828);
+		if (_callbacks.on_error) {
+			_callbacks.on_error(fandio::Error(
+				fandio::ErrorCode::DuplicateKeyWarning,
+				"Duplicate key - record marked as deleted",
+				_parent->Name, 'X'));
+		}
 		XF->FirstDupl = false;
 	}
 }
 
 void Fand0File::DeleteAllIndexes(int RecNr, Record* record)
 {
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
-
 	for (auto& K : _parent->Keys) {
 		K->Delete(_parent, RecNr, record);
 	}
@@ -1131,7 +1135,7 @@ void Fand0File::GenerateNew000File(XScan* x)
 	x->GetRec(record.get());
 
 	while (!x->eof) {
-		_msgs.runMsgN(x->IRec);
+		_callbacks.progress.runMsgN(x->IRec);
 		PutRec(record.get(), _parent->IRec);
 		Eof = true;
 		x->GetRec(record.get());
@@ -1145,7 +1149,7 @@ void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type)
 	std::vector<XKey*> xw_keys;
 	xw_keys.push_back(K);
 	std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
-	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys, _msgs);
+	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys, _callbacks);
 	XW->Main(oper_type, record.get());
 }
 
@@ -1164,7 +1168,12 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, Operatio
 		}
 
 		if (n > 255) {
-			WrLLF10Msg(155);
+			if (_callbacks.on_error) {
+				_callbacks.on_error(fandio::Error(
+					fandio::ErrorCode::IndexKeyTooLong,
+					"Index key too long",
+					_parent->FullPath, 'X'));
+			}
 			delete k2; k2 = nullptr;
 			return;
 		}
@@ -1199,7 +1208,7 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 	ScanSubstWIndex(scan, SK, OperationType::Sort);
 	FileD* subst_file = _parent->OpenDuplicateF(false);
 
-	_msgs.runMsgOn('S', scan->NRecs);
+	_callbacks.progress.runMsgOn('S', scan->NRecs);
 
 	//Scan->GetRec(record.get());
 
@@ -1209,7 +1218,7 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 	SubstDuplF(subst_file, false);
 	scan->Close();
 
-	_msgs.runMsgOff();
+	_callbacks.progress.runMsgOff();
 
 	delete subst_file; subst_file = nullptr;
 }
@@ -1233,7 +1242,13 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 {
 	int result = XFNotValid();
 	if (result != 0) {
-		RunError(result);
+		if (_callbacks.on_error) {
+			_callbacks.on_error(fandio::Error(
+				static_cast<fandio::ErrorCode>(result),
+				"Index file not valid",
+				_parent->FullPath, 'X'));
+		}
+		return;
 	}
 
 	std::string orig_path = _parent->SetPathAndVolume();
@@ -1304,7 +1319,14 @@ void Fand0File::IndexFileProc(bool Compress)
 
 	int result = XFNotValid();
 	if (result != 0) {
-		RunError(result);
+		if (_callbacks.on_error) {
+			_callbacks.on_error(fandio::Error(
+				static_cast<fandio::ErrorCode>(result),
+				"Index file not valid",
+				_parent->FullPath, 'X'));
+		}
+		_parent->OldLockMode(md);
+		return;
 	}
 
 	if (Compress) {
@@ -1323,7 +1345,12 @@ void Fand0File::IndexFileProc(bool Compress)
 		NRecs = tmp_file->FF->NRecs;
 		int xf_res = XFNotValid();
 		if (xf_res != 0) {
-			RunError(xf_res);
+			if (_callbacks.on_error) {
+				_callbacks.on_error(fandio::Error(
+					static_cast<fandio::ErrorCode>(xf_res),
+					"Index file not valid after compression",
+					_parent->FullPath, 'X'));
+			}
 		}
 		delete tmp_file; tmp_file = nullptr;
 	}
@@ -1481,8 +1508,12 @@ std::string Fand0File::_extToX(const std::string& dir, const std::string& name, 
 void Fand0File::TestDelErr(std::string& P)
 {
 	if (HandleError != 0) {
-		SetMsgPar(P);
-		RunError(827);
+		if (_callbacks.on_error) {
+			_callbacks.on_error(fandio::Error(
+				fandio::ErrorCode::DeleteFailed,
+				"File deletion failed",
+				P, '0'));
+		}
 	}
 }
 

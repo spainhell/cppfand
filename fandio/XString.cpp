@@ -3,9 +3,10 @@
 #include "realFix.h"
 #include "../Core/access.h"
 #include "../fandio/FieldDescr.h"
+// TODO: Remove this dependency
 #include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
-#include "../Core/runfrml.h"
+#include "FormulaEvaluator.h"
 #include "../Common/realDouble.h"
 #include "../Common/CommonVariables.h"
 #include "../Common/Record.h"
@@ -121,15 +122,15 @@ bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<Ke
 		KeyFldD* key_field = KF[i];
 		switch (key_field->FldD->frml_type) {
 		case 'S': {
-			StoreStr(RunString(file_d, Z, record), key_field);
+			StoreStr(fandio::g_formula_evaluator.eval_string(file_d, Z, record), key_field);
 			break;
 		}
 		case 'R': {
-			StoreReal(RunReal(file_d, Z, record), key_field);
+			StoreReal(fandio::g_formula_evaluator.eval_real(file_d, Z, record), key_field);
 			break;
 		}
 		case 'B': {
-			StoreBool(RunBool(file_d, Z, record), key_field);
+			StoreBool(fandio::g_formula_evaluator.eval_bool(file_d, Z, record), key_field);
 			break;
 		}
 		}

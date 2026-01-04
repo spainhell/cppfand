@@ -24,7 +24,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "../Prolog/RunProlog.h"
-#include "../fandio/sort.h"
+#include "sort.h"
 #include "../fandio/FandXFile.h"
 #include "../fandio/XWKey.h"
 #include "../TextEditor/TextEditor.h"

@@ -1,10 +1,11 @@
 #include "XScan.h"
 #include "XWKey.h"
 #include "../Common/FileD.h"
+// TODO: Remove this dependency
 #include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
 #include "../Common/Record.h"
-#include "../Core/runfrml.h"
+#include "FormulaEvaluator.h"
 
 
 void AddFFs(XKey* K, pstring& s)
@@ -215,7 +216,8 @@ int32_t XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 void XScan::ResetSQLTxt(FrmlPtr Z)
 {
 	LongStrPtr s;
-	New(SQLStreamPtr(Strm), init); s = RunString(Z);
+	New(SQLStreamPtr(Strm), init);
+	s = fandio::g_formula_evaluator.eval_string(nullptr, Z, nullptr);
 	SQLStreamPtr(Strm)->InpResetTxt(s); ReleaseStore(s);
 	eof = false;
 }
@@ -350,7 +352,7 @@ void XScan::GetRec(Record* record)
 #ifdef FandSQL
 	if (Kind == 4) {
 		repeat EOF = !SQLStreamPtr(Strm)->GetRec
-			until EOF || hasSQLFilter || RunBool(Bool);
+			until EOF || hasSQLFilter || (Bool && fandio::g_formula_evaluator.eval_bool(nullptr, Bool, nullptr));
 		inc(i_rec); return;
 	}
 #endif
@@ -364,7 +366,7 @@ void XScan::GetRec(Record* record)
 				RecNr = IRec;
 				FD->ReadRec(RecNr, record, true);
 				if (record->IsDeleted()) continue;
-				if (!RunBool(FD, Bool, record)) continue;
+				if (Bool && !fandio::g_formula_evaluator.eval_bool(FD, Bool, record)) continue;
 				break;
 			}
 			case ScanMode::Index:
@@ -382,7 +384,7 @@ void XScan::GetRec(Record* record)
 				}
 				FD->ReadRec(RecNr, record, true);
 				if (record->IsDeleted()) continue;
-				if (!RunBool(FD, Bool, record)) continue;
+				if (Bool && !fandio::g_formula_evaluator.eval_bool(FD, Bool, record)) continue;
 				break;
 			}
 #ifdef FandSQL
@@ -391,7 +393,7 @@ void XScan::GetRec(Record* record)
 				xx.S = P->StrI(P->NItems - NOnPg);
 				if ((NOnPg == 0) && (P->GreaterPage > 0)) SeekOnPage(P->GreaterPage, 1);
 				if (!Strm1->SelectXRec(Key, @xx, _equ, withT)) goto label1;
-				if (!RunBool(v_files, Bool, record)) goto label1;
+				if (Bool && !fandio::g_formula_evaluator.eval_bool(v_files, Bool, record)) goto label1;
 				break;
 			}
 #endif

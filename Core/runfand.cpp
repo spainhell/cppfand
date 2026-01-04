@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <Windows.h>
+#include "../Logging/Logging.h"
 #include "base.h"
 #include "legacy.h"
 #include "../Common/pstring.h"
@@ -592,14 +593,14 @@ void OpenFileDialog()
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = NULL;
-	ofn.lpstrFilter = "úloha RDB\0*.RDB\0všechny soubory\0*.*\0\0";
+	ofn.lpstrFilter = "ï¿½loha RDB\0*.RDB\0vï¿½echny soubory\0*.*\0\0";
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrTitle = "Vyberte úlohu";
+	ofn.lpstrTitle = "Vyberte ï¿½lohu";
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 	if (GetOpenFileName(&ofn))
 	{
-		printf("Dobøe to dopadlo :-)");
+		printf("Dobï¿½e to dopadlo :-)");
 	}
 	else
 	{

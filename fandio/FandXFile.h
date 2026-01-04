@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "DataFileBase.h"
+#include "FandioCallbacks.h"
 #include "XPage.h"
 #include "XXPage.h"
 
@@ -11,6 +12,7 @@ class FandXFile : public DataFileBase
 {
 public:
 	FandXFile(Fand0File* parent);
+	FandXFile(Fand0File* parent, fandio::FandioCallbacks callbacks);
 	FandXFile(const FandXFile& orig) = delete;
 	FandXFile(const FandXFile& orig, Fand0File* parent);
 	~FandXFile() override;
@@ -43,9 +45,18 @@ public:
 	int NewPage(XPage* P);
 	void ReleasePage(XPage* P, int N);
 
+	// Legacy error handling (calls callback)
 	void Err(unsigned short N);
+
+	// New Result-based interface
+	fandio::Result<void> ReportError(fandio::ErrorCode code) const;
+	fandio::Result<void> CheckHandleError() const;
+
+	// Set callbacks for error handling
+	void SetCallbacks(fandio::FandioCallbacks callbacks) { _callbacks = callbacks; }
 
 private:
 	Fand0File* _parent;
+	fandio::FandioCallbacks _callbacks;
 };
 
