@@ -88,7 +88,7 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	std::string s;
 
 	std::string result;
-	RdbD* r = CRdb;
+	Project* r = CRdb;
 	while (r != nullptr) {
 		for (size_t i = 0; i < r->data_files.size(); i++) {
 			s = r->data_files[i]->Name;

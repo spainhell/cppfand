@@ -4,6 +4,7 @@
 #include "../Common/DateTime.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../Common/CommonVariables.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obase.h"

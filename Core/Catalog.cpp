@@ -168,10 +168,10 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 		return result;
 	}
 
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (true) {
-		for (int i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {
+		for (int i = 1; i <= catalog->GetCatalogFile()->GetNRecs(); i++) {
 			if (EquUpCase(catalog->GetRdbName(i), R->project_file->Name) && EquUpCase(catalog->GetFileName(i), name)) {
 				result = i;
 				return result;
@@ -266,9 +266,9 @@ void Catalog::TurnCat(FileD* file_d, uint16_t Frst, uint16_t N, short I)
 			file_d->ReadRec(Frst, q);
 			for (uint16_t j = 1; j <= N - 1; j++) {
 				file_d->ReadRec(Frst + j, p);
-				file_d->WriteRec(Frst + j - 1, p);
+				file_d->UpdateRec(Frst + j - 1, p);
 			}
-			file_d->WriteRec(last, q);
+			file_d->UpdateRec(last, q);
 			I--;
 		}
 	else
@@ -276,9 +276,9 @@ void Catalog::TurnCat(FileD* file_d, uint16_t Frst, uint16_t N, short I)
 			file_d->ReadRec(last, q);
 			for (uint16_t j = 1; j <= N - 1; j++) {
 				file_d->ReadRec(last - j, p);
-				file_d->WriteRec(last - j + 1, p);
+				file_d->UpdateRec(last - j + 1, p);
 			}
-			file_d->WriteRec(Frst, q);
+			file_d->UpdateRec(Frst, q);
 			I++;
 		}
 	delete p; p = nullptr;
@@ -299,5 +299,5 @@ void Catalog::setValue(size_t rec_nr, FieldDescr* field, const std::string& valu
 	cat_file_->ReadRec(rec_nr, record_);
 	//cat_file_->saveS(field, value, record_);
 	record_->SaveS(field, value);
-	cat_file_->WriteRec(rec_nr, record_);
+	cat_file_->UpdateRec(rec_nr, record_);
 }

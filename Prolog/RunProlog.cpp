@@ -5,6 +5,7 @@
 #include "../Common/Compare.h"
 #include "../Core/Models/Instr.h"
 #include "../Common/exprcmp.h"
+#include "../Common/Record.h"
 
 RunProlog::RunProlog(Instr_lproc* prolog_instr)
 {
@@ -127,7 +128,7 @@ FieldDescr* RunProlog::FindField(FileD* file_d, std::string field_name)
 
 FileD* RunProlog::FindFile(std::string file_name)
 {
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (R != nullptr) {
 		for (FileD* f : R->data_files) {
@@ -145,11 +146,10 @@ std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, F
 {
 	std::vector<std::string> result;
 
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (R != nullptr) {
 		if (R->project_file != nullptr && EquUpCase(R->project_file->Name, module_name)) {
-			// skip the first file, which is the module itself
 			for (size_t i = 0; i < R->data_files.size(); i++) {
 				if (R->data_files[i]->FF->file_type == FandFileType::UNKNOWN) {
 					result.push_back(R->data_files[i]->Name);
@@ -175,7 +175,7 @@ std::vector<FileD*> RunProlog::GetFileDescsInModule(std::string& module_name, Fa
 {
 	std::vector<FileD*> result;
 
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (R != nullptr) {
 		if (R->project_file != nullptr && EquUpCase(R->project_file->Name, module_name)) {
@@ -222,34 +222,31 @@ std::vector<std::string> RunProlog::GetFilesWithStoredTexts(const std::vector<Fi
 
 std::string RunProlog::ReadFromParamFile(FileD* file_d, FieldDescr* field_d)
 {
-	int RecNo = 0;
-
+	int32_t rec_nr = 0;
 	LockMode lm = file_d->NewLockMode(RdMode);
-	uint8_t* newRecord = nullptr;
-	//LinkLastRec(file_d, RecNo, true, &newRecord);
-
-	std::string result = ""; // file_d->loadS(field_d, newRecord);
+	
+	Record* rec = file_d->LinkLastRec(rec_nr);
+	std::string result = rec->LoadS(field_d);
 
 	file_d->OldLockMode(lm);  /*possibly reading .T*/
-	// TODO: is there anything in TWork?: file_d->ClearRecSpace(newRecord);
-	delete[] newRecord; newRecord = nullptr;
+
+	delete[] rec; rec = nullptr;
 
 	return result;
 }
 
-void RunProlog::SaveToParamFile(FileD* file_d, FieldDescr* field_d, std::string value)
+void RunProlog::SaveToParamFile(FileD* file_d, FieldDescr* field_d, const std::string& value)
 {
-	int n = 0;
+	int32_t rec_nr = 0;
 	LockMode md = file_d->NewLockMode(WrMode);
-	uint8_t* rec = nullptr;
-	//LinkLastRec(file_d, n, true, &rec);
 
-	//file_d->FF->DelTFld(field_d, rec);
-	//file_d->saveS(field_d, value, rec);
+	Record* rec = file_d->LinkLastRec(rec_nr);
+	rec->SaveS(field_d, value);
+	file_d->UpdateRec(rec_nr, rec);
 
-	//file_d->WriteRec(n, rec);
 	file_d->OldLockMode(md);
-	delete[] rec; rec = nullptr;
+	
+	delete rec; rec = nullptr;
 }
 
 std::vector<std::string> RunProlog::GetDbfDeclaration(FileD* file_d)

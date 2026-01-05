@@ -7,10 +7,10 @@ class FileD;
 class LinkD;
 struct FuncD;
 
-class RdbD
+class Project
 {
 public:
-	RdbD* ChainBack = nullptr;
+	Project* ChainBack = nullptr;
 	FileD* project_file = nullptr;	// RDB project file
 	FileD* help_file = nullptr;		// HLP files
 	std::vector<FileD*> data_files; // data files
@@ -19,10 +19,4 @@ public:
 	bool Encrypted = false;
 	std::string RdbDir;
 	std::string DataDir;
-};
-
-struct RdbPos
-{
-	RdbD* rdb = nullptr;
-	int i_rec = 0;
 };

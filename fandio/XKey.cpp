@@ -9,6 +9,8 @@
 #include "../fandio/FandXFile.h"
 #include "../Logging/Logging.h"
 
+structXPath XPath[20];
+uint16_t XPathN;
 
 XKey::XKey(FileD* parent)
 {
@@ -71,7 +73,7 @@ bool XKey::Search(FileD* file_d, std::string const X, bool AfterEqu, int& RecNr)
 		unsigned short o = p->Off();
 		unsigned short nItems = p->NItems;
 		if (nItems == 0) {
-			RecNr = parent_->FF->NRecs + 1;
+			RecNr = parent_->GetNRecs() + 1;
 			XPath[1].I = 1;
 			searchResult = false;
 			delete x; x = nullptr;
@@ -86,14 +88,14 @@ bool XKey::Search(FileD* file_d, std::string const X, bool AfterEqu, int& RecNr)
 			x = new XItemLeaf(&p->A[iItemIndex]);
 
 			if (iItem > nItems) {
-				RecNr = parent_->FF->NRecs + 1;
+				RecNr = parent_->GetNRecs() + 1;
 			}
 			else {
 				RecNr = x->GetN();
 			}
 
 			if (result == _equ) {
-				if (((RecNr == 0) || (RecNr > parent_->FF->NRecs))) {
+				if (((RecNr == 0) || (RecNr > parent_->GetNRecs()))) {
 					GetXFile(file_d)->Err(833);
 				}
 				else {
@@ -125,7 +127,7 @@ bool XKey::Search(FileD* file_d, std::string const X, bool AfterEqu, int& RecNr)
 
 bool XKey::SearchInterval(FileD* file_d, XString& XX, bool AfterEqu, int& RecNr)
 {
-	return Search(file_d, XX, AfterEqu, RecNr) || IntervalTest && (RecNr <= parent_->FF->NRecs);
+	return Search(file_d, XX, AfterEqu, RecNr) || IntervalTest && (RecNr <= parent_->GetNRecs());
 }
 
 uint8_t XKey::XKeySearch(unsigned char* xitem, std::string xstring, unsigned short& iItem, size_t& iItemIndex,
@@ -251,7 +253,7 @@ int XKey::PathToRecNr(FileD* file_d)
 
 	int recnr = pxi->GetN();
 	int result = recnr;
-	if ((recnr == 0) || (recnr > parent_->FF->NRecs)) {
+	if ((recnr == 0) || (recnr > parent_->GetNRecs())) {
 		GetXFile(file_d)->Err(835);
 	}
 	//ReleaseStore(p);
@@ -262,7 +264,7 @@ bool XKey::RecNrToPath(FileD* file_d, XString& XX, int RecNr, Record* record)
 {
 	bool result = false;
 	XItem* x = nullptr; int n = 0;
-	XX.PackKF(file_d, KFlds, record);
+	XX.PackKF(KFlds, record);
 	Search(file_d, XX, false, n);
 	auto p = std::make_unique<XPage>();
 	size_t item = 1;
@@ -482,7 +484,7 @@ void XKey::ChainPrevLeaf(FileD* file_d, XPage* P, int N)
 bool XKey::Insert(FileD* file_d, int RecNr, bool Try, Record* record)
 {
 	int N = 0, XNr = 0; XString x;
-	x.PackKF(file_d, KFlds, record);
+	x.PackKF(KFlds, record);
 	if (Search(file_d, x, true, N)) {
 		if (Try) {
 			return false;

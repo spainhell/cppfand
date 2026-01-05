@@ -6,9 +6,8 @@
 
 #include "ResFile.h"
 #include "Users.h"
-#include "../fandio/FandTFile.h"
 
-class MergeReportBase;
+// class MergeReportBase;
 
 
 // r474
@@ -20,13 +19,11 @@ extern std::deque<FuncD*> FuncDRoot;
 extern XKey* CViewKey;
 extern std::string TopRdbDir, TopDataDir;
 extern std::string CatFDName;
-extern RdbD* CRdb, *TopRdb;
+extern Project* CRdb, *TopRdb;
 extern Catalog* catalog;
 extern FileD* HelpFD;
 
 // r483
-extern structXPath XPath[20];
-extern WORD XPathN;
 extern FandXFile XWork;
 //extern FandTFile TWork;
 extern int ClpBdPos;
@@ -100,7 +97,7 @@ extern void* AfterCatFD; // r108
 //extern WORD BPBound; // r212
 extern bool ExitP, BreakP;
 extern int LastExitCode; // r215
-extern unsigned long HandleError; // r229
+
 extern std::string OldDir;
 extern std::string FandDir;
 extern std::string WrkDir;
@@ -108,11 +105,6 @@ extern std::string FandResName;
 extern std::string FandWorkName;
 extern std::string FandWorkXName;
 extern std::string FandWorkTName;
-extern std::string CPath;
-extern std::string CDir;
-extern std::string CName;
-extern std::string CExt;
-extern std::string CVol;
 extern bool WasLPTCancel;
 extern HANDLE WorkHandle;
 extern int MaxWSize; // {currently occupied in FANDWORK.$$$}
@@ -141,11 +133,10 @@ extern TPrTimeOut OldPrTimeOut;
 extern TPrTimeOut PrTimeOut;  // absolute 0:$478;
 extern bool WasInitDrivers;
 extern bool WasInitPgm;
-extern WORD LANNode;
 extern void (*CallOpenFandFiles)(); // r453
 extern void (*CallCloseFandFiles)(); // r454
 
 extern double userToday;
-extern __int32 UserLicNr;
+extern int32_t UserLicNr;
 
 extern ResFile resFile;

@@ -83,7 +83,7 @@ private:
     uint16_t FldRow(EditableField* D, uint16_t I);
     bool HasTTWw(FieldDescr* F);
     void DisplEmptyFld(EditableField* D, uint16_t I);
-    void Wr1Line(FieldDescr* field, const Record* record) const;
+    void Wr1Line(FieldDescr* field, Record* record) const;
     void DisplFld(EditableField* D, uint16_t I, uint8_t Color, Record* record);
     void DisplayRecord(uint16_t screen_data_row_nr);
     bool LockRec(bool Displ);
@@ -112,8 +112,8 @@ private:
     void WriteSL(std::vector<std::string>& SL);
     void DisplRecTxt();
     
-    void UpdMemberRef(Record* POld, Record* PNew);
-    void WrJournal(char Upd, Record* RP, double Time);
+    void UpdMemberRef(Record* old_record, Record* new_record);
+    void WrJournal(char Upd, Record* record, double Time);
     bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md);
     bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd);
     void UnLockWithDep(LockMode OldMd);

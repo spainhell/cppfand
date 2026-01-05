@@ -96,7 +96,7 @@ bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, WORD Kind, bool
 			fileD->FF->WrPrefixes();
 		}
 		if (oldmode == ExclMode) {
-			SaveCache(0, fileD->FF->Handle);
+			//SaveCache(0, fileD->FF->Handle);
 			// ClearCacheCFile(); - this method does not exist anymore (we don't use a cache)
 		}
 		if (Mode < WrMode) {

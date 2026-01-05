@@ -6,11 +6,11 @@
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
-#include "../fandio/FandTFile.h"
 #include "../fandio/FandXFile.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Drivers/constants.h"
+#include "../Common/CommonVariables.h"
 
 void OpenXWorkH()
 {
@@ -43,8 +43,6 @@ void SaveFiles()
 {
 	Logging* log = Logging::getInstance();
 
-	if (!CacheExist()) return;
-
 	// save catalog
 	FileD* catalog_file = catalog->GetCatalogFile();
 	log->log(loglevel::DEBUG, "SaveFiles() Catalog: 0x%p, %s ", catalog_file->FF->Handle, catalog_file->Name.c_str());
@@ -53,15 +51,15 @@ void SaveFiles()
 	log->log(loglevel::DEBUG, "SaveFiles() calling ForAllFDs(::save)");
 	ForAllFDs(ForAllFilesOperation::save);
 
-	bool b = SaveCache(0, catalog_file->FF->Handle);
+	//bool b = SaveCache(0, catalog_file->FF->Handle);
 	// TODO: HANDLE: FlushHandles();
 
-	if (!b) GoExit(MsgLine);
+	//if (!b) GoExit(MsgLine);
 }
 
 void CloseFANDFiles()
 {
-	RdbD* RD = CRdb;
+	Project* RD = CRdb;
 	while (RD != nullptr) {
 		//if (RD->project_file != nullptr) {
 		//	RD->project_file->CloseFile();
@@ -85,7 +83,7 @@ void CloseFANDFiles()
 
 void OpenFANDFiles()
 {
-	RdbD* RD = nullptr;
+	Project* RD = nullptr;
 	LockMode md = NullMode;
 
 	OpenXWorkH();
@@ -131,7 +129,7 @@ void OpenFANDFiles()
 bool ActiveRdbOnDrive(WORD D)
 {
 	auto result = true;
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	while (R != nullptr) {
 		if (R->project_file->FF->Drive == D) return result;
 		R = R->ChainBack;
@@ -142,7 +140,7 @@ bool ActiveRdbOnDrive(WORD D)
 
 void CloseFilesOnDrive(WORD drive)
 {
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 
 	while (R != nullptr) {
 		if (R->project_file->FF->Drive == drive) {
@@ -252,7 +250,7 @@ void ReleaseDrive(WORD D)
 
 bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 {
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	isRdb = false;
 
 	while (R != nullptr) {

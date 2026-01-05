@@ -52,7 +52,7 @@ public:
 	virtual ~TMenu();
 	TMenu* parent = nullptr;
 	WORD iTxt = 0, nTxt = 0, mx = 0, my = 0;
-	RdbD* HlpRdb = nullptr;
+	Project* HlpRdb = nullptr;
 	uint8_t Palette[4]; // norm, curr, char, disabled
 	bool IsBoxS = false;
 	void ClearHlp();
@@ -153,5 +153,5 @@ public:
 WORD Menu(WORD MsgNr, WORD IStart);
 bool PrinterMenu(WORD Msg);
 void MenuBarProc(Instr_menu* PD);
-std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec);
-void DisplayLastLineHelp(RdbD* R, std::string Name, bool R24);
+std::string GetHlpText(Project* R, std::string S, bool ByName, WORD& IRec);
+void DisplayLastLineHelp(Project* R, std::string Name, bool R24);

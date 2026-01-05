@@ -1,15 +1,20 @@
 #include "XWorkFile.h"
 
-#include "../fandio/FandXFile.h"
-#include "../Core/access.h"
 #include "KeyFldD.h"
 #include "../Common/Record.h"
+#include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
-#include "../Core/RunMessage.h"
+//#include "../Core/RunMessage.h"
+#include "../fandio/FandXFile.h"
 
 
-XWorkFile::XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK)
+XWorkFile::XWorkFile(
+	FileD* parent,
+	XScan* AScan,
+	std::vector<XKey*>& AK,
+	ProgressCallbacks callbacks
+)
 {
 	_parent = parent;
 	WBaseSize = MaxWSize;
@@ -17,6 +22,7 @@ XWorkFile::XWorkFile(FileD* parent, XScan* AScan, std::vector<XKey*>& AK)
 	xScan = AScan;
 	x_keys_ = AK;
 	xwFile = AK[0]->GetXFile(parent);
+	_msgs = callbacks;
 }
 
 XWorkFile::~XWorkFile()
@@ -28,6 +34,11 @@ XWorkFile::~XWorkFile()
 
 void XWorkFile::Main(OperationType oper_type, Record* record)
 {
+	if (record->GetFileD()->Name == "ROZPIS")
+	{
+		printf("");
+	}
+
 	xPage = new XPage();
 	nextXPage = xwFile->NewPage(xPage);
 	msgWritten = false;
@@ -69,12 +80,11 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper
 {
 
 	WRec* r = new WRec();
-	// r->X.S = ""; pstring is always "" at the beginning
 	XPage* p = new XPage();
 
 	K->NrToPath(_parent, 1);
 	int page = XPath[XPathN].Page;
-	RunMsgOn(static_cast<char>(oper_type), K->NRecs());
+	_msgs.runMsgOn(static_cast<char>(oper_type), K->NRecs());
 	int count = 0;
 
 	while (page != 0) {
@@ -94,10 +104,10 @@ void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, OperationType oper
 			Output(K, r, record);
 		}
 		count += p->NItems;
-		RunMsgN(count);
+		_msgs.runMsgN(count);
 		page = p->GreaterPage;
 	}
-	RunMsgOff();
+	_msgs.runMsgOff();
 }
 
 bool XWorkFile::GetCRec(Record* record)
@@ -117,58 +127,64 @@ void XWorkFile::Output(XKey* xKey, WRec* R, Record* record)
 
 void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, OperationType oper_type, int NRecs)
 {
-	int BYTEs = 0;
-	int pages = 0;
-	const unsigned short kB60 = 0x0F000;
-	KFRoot = KF;
-	RecLen = 7;
+	try {
+		int BYTEs = 0;
+		int pages = 0;
+		const unsigned short kB60 = 0x0F000;
+		KFRoot = KF;
+		RecLen = 7;
 
-	//while (KF != nullptr) {
-	for (KeyFldD* k : KF) {
-		if (oper_type == OperationType::Duplicate) {
-			RecLen += 6;
-		}
-		else {
-			if (k->FldD != nullptr) {
-				RecLen += k->FldD->NBytes;
+		//while (KF != nullptr) {
+		for (KeyFldD* k : KF) {
+			if (oper_type == OperationType::Duplicate) {
+				RecLen += 6;
 			}
+			else {
+				if (k->FldD != nullptr) {
+					RecLen += k->FldD->NBytes;
+				}
+			}
+			//KF = KF->pChain;
 		}
-		//KF = KF->pChain;
+
+		//BYTEs = (MemoryAvailable() - RestBytes - sizeof(WRec)) / 3;
+
+		//if (BYTEs < 4096) {
+		//	RunError(624);
+		//}
+
+		//if (BYTEs < kB60) {
+		//	WPageSize = (unsigned short)BYTEs & 0xF000;
+		//}
+		//else {
+		WPageSize = kB60;
+		//}
+
+		// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
+		MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array
+		if (MaxOnWPage < 4) {
+			RunError(624);
+		}
+		MaxWPage = 0;
+		NFreeNr = 0;
+		PW = new WPage();
+		WRoot = GetFreeNr();
+		pages = (NRecs + MaxOnWPage - 1) / MaxOnWPage;
+
+		// nasledujici usek v ASM zrejme jen udela nejaky prepocet kvuli zobrazeni zpravy
+		// v RunMsgOn()
+		//asm mov dx, pages.unsigned short; mov bx, dx; mov cx, dx; mov ax, 1;
+		//@add cx 1, dx; test bx, 1; jz @2; sub cx, ax; shr bx, 1; add bx, 1; jmp @3;
+		//@shr bx 2, 1;            /* how many pages must be written ? */
+		//@shl ax 3, 1; cmp bx, 1; ja @1; cmp cx, 0; jne @4; mov cx, 1;
+		//@mov pages 4.unsigned short, cx;
+
+		_msgs.runMsgOn(static_cast<char>(oper_type), pages);
 	}
-
-	//BYTEs = (MemoryAvailable() - RestBytes - sizeof(WRec)) / 3;
-
-	//if (BYTEs < 4096) {
-	//	RunError(624);
-	//}
-
-	//if (BYTEs < kB60) {
-	//	WPageSize = (unsigned short)BYTEs & 0xF000;
-	//}
-	//else {
-	WPageSize = kB60;
-	//}
-
-	// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
-	MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array
-	if (MaxOnWPage < 4) {
-		RunError(624);
+	catch (std::exception& e)
+	{
+		printf("Exception in XWorkFile::Reset: %s\n", e.what());
 	}
-	MaxWPage = 0;
-	NFreeNr = 0;
-	PW = new WPage();
-	WRoot = GetFreeNr();
-	pages = (NRecs + MaxOnWPage - 1) / MaxOnWPage;
-
-	// nasledujici usek v ASM zrejme jen udela nejaky prepocet kvuli zobrazeni zpravy
-	// v RunMsgOn()
-	//asm mov dx, pages.unsigned short; mov bx, dx; mov cx, dx; mov ax, 1;
-	//@add cx 1, dx; test bx, 1; jz @2; sub cx, ax; shr bx, 1; add bx, 1; jmp @3;
-	//@shr bx 2, 1;            /* how many pages must be written ? */
-	//@shl ax 3, 1; cmp bx, 1; ja @1; cmp cx, 0; jne @4; mov cx, 1;
-	//@mov pages 4.unsigned short, cx;
-
-	RunMsgOn(static_cast<char>(oper_type), pages);
 }
 
 /// precte zaznamy, vytvori uplnou delku klice, setridi zaznamy
@@ -198,7 +214,7 @@ void XWorkFile::SortMerge(XKey* xKey, Record* record)
 		auto r = std::make_unique<WRec>();
 		r->PutN(RecNr);
 		r->PutIR(IRec);
-		r->X.PackKF(_parent, KFRoot, record);
+		r->X.PackKF(KFRoot, record);
 		size_t serLen = r->Serialize(buffer);
 		memcpy(&PW->A[offsetOfPwA], buffer, serLen);
 		n++;
@@ -209,7 +225,7 @@ void XWorkFile::SortMerge(XKey* xKey, Record* record)
 	if (NChains > 1) {
 		Merge(xKey, record);
 	}
-	RunMsgOff();
+	_msgs.runMsgOff();
 }
 
 void XWorkFile::TestErr()
@@ -287,7 +303,7 @@ void XWorkFile::WriteWPage(XKey* xKey, unsigned short N, int Pg, int Nxt, int Ch
 {
 	size_t offset = 0;
 	PgWritten++;
-	RunMsgN(PgWritten);
+	_msgs.runMsgN(PgWritten);
 	if (NChains == 1) {
 		for (size_t i = 0; i < N; i++) {
 			WRec r;

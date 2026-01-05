@@ -1,8 +1,7 @@
 #pragma once
 #include <memory>
 
-#include "../Core/Rdb.h"
-// #include "../fandio/Record.h"
+#include "../Common/rdbPos.h"
 #include "../fandio/Fand0File.h"
 #include "../fandio/DbfFile.h"
 #include "../fandio/locks.h" // to be visible in other parts of code
@@ -24,7 +23,7 @@ enum class DataFileType
 class FileD
 {
 public:
-	FileD(DataFileType f_type);
+	FileD(DataFileType f_type, ProgressCallbacks callbacks);
 	FileD(const FileD& orig);
 	~FileD();
 
@@ -64,44 +63,33 @@ public:
 	void Reset();
 	size_t GetRecordSize();
 
-	size_t ReadRec(size_t rec_nr, Record* record) const;
-	size_t WriteRec(size_t rec_nr, Record* record) const;
+	size_t ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields = false) const;
+	size_t UpdateRec(size_t rec_nr, Record* record) const;
+	size_t UpdateRec(size_t rec_nr, Record* old_record, Record* new_record) const;
+	void PutRec(Record* record);
+	
+	
 	int UsedFileSize() const;
 
 	bool GetWasRdOnly() const;
 	void SetWasRdOnly(bool was_read_only) const;
 	void SetHandle(HANDLE handle);
 	void SetHandleT(HANDLE handle);
-	void CheckT(int file_size);
-	void CheckX(int file_size);
+	int32_t CheckT(int file_size);
+	int32_t CheckX(int file_size);
 
-	//uint8_t* GetRecSpace() const;
-	//std::unique_ptr<uint8_t[]> GetRecSpaceUnique() const;
-
-	//void ClearRecSpace(Record* record); // delete 'T' from TWork
 	void CompileRecLen() const;
 
 	void IncNRecs(int n);
 	void DecNRecs(int n);
 	void SeekRec(int n);
 	void CreateRec(int n, Record* record) const;
-	void PutRec(Record* record);
 	void DeleteRec(int n, Record* record) const;
 	void RecallRec(int recNr, Record* record);
 	void AssignNRecs(bool Add, int N);
 
-	void SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const;
+	void SortByKey(std::vector<KeyFldD*>& keys) const;
 	void IndexesMaintenance(bool remove_deleted);
-
-	//bool loadB(FieldDescr* field_d, Record* record);
-	//double loadR(FieldDescr* field_d, Record* record);
-	//std::string loadS(FieldDescr* field_d, Record* record);
-	//int loadT(FieldDescr* field_d, Record* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
-
-	//void saveB(FieldDescr* field_d, bool b, Record* record);
-	//void saveR(FieldDescr* field_d, double r, Record* record);
-	//void saveS(FieldDescr* field_d, const std::string& s, Record* record);
-	//int saveT(FieldDescr* field_d, int pos, Record* record) const;
 
 	void SetDrive(uint8_t drive) const;
 	void SetUpdateFlag() const;
@@ -112,14 +100,14 @@ public:
 	void CreateT(const std::string& path) const;
 
 	FileUseMode GetUMode() const;
-	LockMode GetLMode() const;
-	LockMode GetExLMode() const;
-	LockMode GetTaLMode() const;
+	LockMode GetLockMode() const;
+	LockMode GetExLockMode() const;
+	LockMode GetTaLockMode() const;
 
-	void SetUMode(FileUseMode mode) const;
-	void SetLMode(LockMode mode) const;
-	void SetExLMode(LockMode mode) const;
-	void SetTaLMode(LockMode mode) const;
+	void SetUseMode(FileUseMode mode) const;
+	void SetLockMode(LockMode mode) const;
+	void SetExLockMode(LockMode mode) const;
+	void SetTaLockMode(LockMode mode) const;
 
 	void OldLockMode(LockMode mode);
 	LockMode NewLockMode(LockMode mode);
@@ -129,21 +117,11 @@ public:
 	void Unlock(int32_t n);
 	void RunErrorM(LockMode mode);
 
-	//void SetTWorkFlag(uint8_t* record);
-	//bool HasTWorkFlag(uint8_t* record);
-
-	//void SetRecordUpdateFlag(uint8_t* record);
-	//void ClearRecordUpdateFlag(uint8_t* record);
-	//bool HasRecordUpdateFlag(uint8_t* record);
-
-	//bool DeletedFlag(uint8_t* record);
-	//void ClearDeletedFlag(uint8_t* record) const;
-	//void SetDeletedFlag(uint8_t* record) const;
-
 	uint16_t RdPrefix() const;
 	void WrPrefix() const;
 	void WrPrefixes() const;
 
+	bool IsIndexFile() const;
 	bool HasIndexFile() const;
 	bool HasTextFile() const;
 
@@ -152,8 +130,6 @@ public:
 
 	FileD* OpenDuplicateF(bool createTextFile);
 	void DeleteDuplicateF(FileD* TempFD);
-	//void ZeroAllFlds(Record* record, bool delTFields);
-	//void DelAllDifTFlds(Record* record, Record* comp_record);
 
 	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
 	std::string SetTempCExt(char typ, bool isNet);
@@ -188,8 +164,9 @@ public:
 	static void CopyH(HANDLE h1, HANDLE h2);
 	static std::string SetPathForH(HANDLE handle);
 
-	Record* LinkLastRec(int& n);
+	Record* LinkLastRec(int32_t& n);
 
 private:
+	//Fand0File* FF = nullptr;	// FandFile reference
 	void lock_excl_and_write_prefix();
 };

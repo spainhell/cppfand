@@ -19,6 +19,7 @@
 #include "../Common/exprcmp.h"
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
+#include "../Common/CommonVariables.h"
 #include "../Logging/Logging.h"
 #include "../fandio/directory.h"
 
@@ -42,7 +43,6 @@ wdaystt* WDaysTab;
 char AbbrYes = 'Y';
 char AbbrNo = 'N';
 
-unsigned long HandleError;
 std::string OldDir;
 std::string FandDir;
 std::string WrkDir;
@@ -50,11 +50,6 @@ std::string FandResName;
 std::string FandWorkName;
 std::string FandWorkXName;
 std::string FandWorkTName;
-std::string CPath;
-std::string CDir;
-std::string CName;
-std::string CExt;
-std::string CVol;
 
 ResFile resFile;
 
@@ -81,12 +76,11 @@ TPrTimeOut OldPrTimeOut;
 TPrTimeOut PrTimeOut;  // absolute 0:$478;
 bool WasInitDrivers = false;
 bool WasInitPgm = false;
-WORD LANNode; // r. 431
 void (*CallOpenFandFiles)(); // r453
 void (*CallCloseFandFiles)(); // r454
 
 double userToday = 0;
-__int32 UserLicNr = 0;
+int32_t UserLicNr = 0;
 
 typedef FILE* filePtr;
 
@@ -436,19 +430,6 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	return (FILE*)handle;
 }
 
-WORD ReadLongH(FILE* handle, int bytes, void* buffer)
-{
-	if (handle == nullptr) RunError(706);
-	if (bytes <= 0) return 0;
-	auto readed = fread_s(buffer, bytes, 1, bytes, handle);
-	if (readed != static_cast<unsigned int>(bytes)) {
-		// nebyl nacten pozadovany pocet B
-		auto eofReached = feof(handle);
-		HandleError = ferror(handle);
-	}
-	return WORD(readed);
-}
-
 size_t WriteH(HANDLE handle, size_t length, const void* buffer)
 {
 	if (handle == nullptr) {
@@ -458,34 +439,15 @@ size_t WriteH(HANDLE handle, size_t length, const void* buffer)
 	if (length <= 0) {
 		return 0;
 	}
-	//fwrite(buffer, 1, length, handle);
-	//HandleError = ferror(handle);
+
 	return WriteF(handle, buffer, length, HandleError);
 }
 
 long FileSizeH(HANDLE handle)
 {
-	//int pos = PosH(handle);
-	//long result = MoveH(0, 2, handle);
-	//SeekH(handle, pos);
 	long size = SizeF(handle, HandleError);
 	return size;
 }
-
-//void TruncH(FILE* handle, size_t N)
-//{
-//	// cilem je zkratit delku souboru na N
-//	if (handle == nullptr) return;
-//	if (FileSizeH(handle) > N) {
-//		//_chsize((int)handle, N);
-//		SeekH(handle, N);
-//		int result = SetEndOfFile(handle);
-//		//SeekH(handle, 0);
-//		//SetFileValidData(handle, N);
-//		DWORD error = GetLastError();
-//		printf("%i", result);
-//	}
-//}
 
 void CloseH(HANDLE* handle)
 {
@@ -523,34 +485,12 @@ void CloseH(HANDLE* handle)
 #endif
 }
 
-void ClearCacheH(HANDLE h)
-{
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "ClearCacheH() 0x%p", h);
-	// smazeme cache
-	//cache.SaveRemoveCache(h);
-}
-
 void CloseClearH(HANDLE* h)
 {
 	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "CloseClearH() 0x%p", h);
 	if (h == nullptr) return;
-	//ClearCacheH(*h);
 	CloseH(h);
 }
-
-//void FlushH(FILE* handle)
-//{
-//	Logging* log = Logging::getInstance();
-//	//log->log(loglevel::DEBUG, "FlushH()      0x%p", handle);
-//	if (handle == nullptr) return;
-//	auto result = fflush(handle);
-//	if (result == EOF) { HandleError = result; }
-//	//SetHandle(handle);
-//	SetUpdHandle(handle);
-//	//CloseH(handle);
-//}
 
 WORD FindCtrlM(std::string& s, WORD i, WORD n)
 {
@@ -574,20 +514,6 @@ WORD SkipCtrlMJ(std::string& s, WORD i)
 	}
 	return i;
 }
-
-//void FlushHandles()
-//{
-	//TODO: HANDLE
-
-	//for (HANDLE handle : UpdHandles)	{
-	//	FlushF(handle, HandleError);
-	//}
-	//for (HANDLE handle : FlshHandles) {
-	//	FlushF(handle, HandleError);
-	//}
-	//ClearUpdHandles();
-	//ClearFlshHandles();
-//}
 
 int GetDateTimeH(FILE* handle)
 {
@@ -638,19 +564,6 @@ std::string MyFExpand(std::string Nm, std::string EnvName)
 	return result;
 }
 
-bool CacheExist()
-{
-	return true;
-	//return !cache.Empty();
-}
-
-bool SaveCache(WORD ErrH, HANDLE f)
-{
-	// saves cache to the file
-	//cache.SaveRemoveCache(f);
-	return true;
-}
-
 void MarkStore(void* p)
 {
 }
@@ -679,15 +592,6 @@ bool EqualsMask(void* p, WORD l, pstring Mask)
 	if (Mask.length() < 1) return false;
 	std::string Value = std::string((char*)p, l);
 	return CmpStringWithMask(Value, Mask);
-
-	// puvodni implementace pred pouzitim regexu
-	//if (Mask.length() < l) return false;
-	//uint8_t* inp = (uint8_t*)p;
-	//for (size_t i = 0; i < l; i++)
-	//{
-	//	if (inp[i] != Mask[i + 1]) return false;
-	//}
-	//return true;
 }
 
 bool EqualsMask(const std::string& value, std::string& mask)
@@ -857,21 +761,6 @@ void OpenWorkH()
 	}
 }
 
-void NonameStartFunction()
-{
-	// TODO:
-	// CurPSP = ptr(PrefixSeg, 0);
-	// MyHeapEnd = HeapEnd;
-	ExtendHandles();
-	prCurr = -1;
-	ExitSave = ExitProc;
-	ExitProc = MyExit;
-	//MyBP = nullptr;
-	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
-	FandResName = MyFExpand("FAND.RES", "FANDRES");
-	resFile.Open(FandResName);
-}
-
 int32_t RunFndFilesExe(std::string cmd_line)
 {
 	std::vector<std::string> args;
@@ -902,7 +791,7 @@ int32_t RunFndFilesExe(std::string cmd_line)
 		return 2; // blocked file
 	}
 	else {
-		WriteH(output, buf.length(), (int8_t*)buf.c_str());
+		WriteH(output, buf.length(), buf.c_str());
 		CloseH(&output);
 	}
 

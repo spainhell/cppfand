@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include "RprtFDListEl.h"
-#include "../Core/Rdb.h"
+#include "../Common/RdbPos.h"
 
 class FieldDescr;
 class KeyFldD;

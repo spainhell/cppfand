@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
 
-#include "../Common/FileD.h"
+#include "FileD.h"
 
 enum class ValueType : uint8_t {
 	UNKNOWN = 0,
@@ -30,7 +31,6 @@ public:
 class Record
 {
 public:
-	Record();
 	Record(FileD* file_d);
 	~Record();
 	void CopyTo(Record* dst_record) const;
@@ -43,7 +43,7 @@ public:
 
 	bool LoadB(FieldDescr* field) const;
 	double LoadR(FieldDescr* field) const;
-	std::string LoadS(FieldDescr* field) const;
+	std::string LoadS(FieldDescr* field);
 
 	void SaveB(FieldDescr* field, bool value);
 	void SaveR(FieldDescr* field, double value);

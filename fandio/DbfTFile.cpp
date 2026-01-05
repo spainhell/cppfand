@@ -1,7 +1,6 @@
 #include "DbfTFile.h"
 
-#include <cstdlib>
-#include <cstring>
+#include "../Common/CommonVariables.h"
 #include "../Core/access.h"
 #include "../Core/obaseww.h"
 #include "../Core/GlobalVariables.h"

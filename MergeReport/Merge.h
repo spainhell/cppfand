@@ -37,8 +37,8 @@ private:
 	std::vector<AssignD*> RdAssSequ();
 	void RdOutpRD(std::vector<OutpRD*>& RDRoot);
 
-	WORD CompMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M);
-	void SetOldMFlds(FileD* file_d, Record* record, std::vector<KeyFldD*>& M);
+	WORD CompMFlds(Record* record, std::vector<KeyFldD*>& M);
+	void SetOldMFlds(Record* record, std::vector<KeyFldD*>& M);
 	void ReadInpFileM(InpD* ID);
 	void RunAssign(FileD* file_d, Record* record, const std::vector<AssignD*>& Assigns);
 	void WriteOutp(std::vector<OutpRD*>& v_outputs);

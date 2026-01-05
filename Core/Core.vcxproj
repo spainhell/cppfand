@@ -68,7 +68,7 @@
     <ClCompile Include="obase.cpp" />
     <ClCompile Include="obaseww.cpp" />
     <ClCompile Include="printtxt.cpp" />
-    <ClCompile Include="Rdb.cpp" />
+    <ClCompile Include="Project.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
     <ClCompile Include="ResFile.cpp" />
     <ClCompile Include="RunMessage.cpp" />
@@ -105,7 +105,7 @@
     <ClInclude Include="obase.h" />
     <ClInclude Include="obaseww.h" />
     <ClInclude Include="printtxt.h" />
-    <ClInclude Include="Rdb.h" />
+    <ClInclude Include="Project.h" />
     <ClInclude Include="ResFile.h" />
     <ClInclude Include="RunMessage.h" />
     <ClInclude Include="runproj.h" />

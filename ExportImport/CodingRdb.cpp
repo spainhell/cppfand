@@ -19,10 +19,10 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 	std::string s;
 	Record* record = new Record(Chpt);
 
-	RunMsgOn('C', Chpt->FF->NRecs);
+	RunMsgOn('C', Chpt->GetNRecs());
 	WORD irec = ChptTF->IRec;
 	bool compileAll = ChptTF->CompileAll;
-	for (int i = 1; i <= Chpt->FF->NRecs; i++) {
+	for (int i = 1; i <= Chpt->GetNRecs(); i++) {
 		Chpt->ReadRec(i, record);
 		RunMsgN(i);
 		//s = Chpt->loadS(ChptTyp, cr);
@@ -33,12 +33,12 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 		else {
 			CodeF(Chpt, record, Rotate, i, ChptTxt, s[0]);
 			CodeF(Chpt, record, Rotate, i, ChptOldTxt, s[0]);
-			Chpt->FF->WriteRec(i, record);
+			Chpt->UpdateRec(i, record);
 		}
 	}
 	if (Rotate) {
 		int i = 1;
-		while (i <= Chpt->FF->NRecs) {
+		while (i <= Chpt->GetNRecs()) {
 			Chpt->ReadRec(i, record);
 			//s = Chpt->loadS(ChptTyp, cr);
 			s = record->LoadS(ChptTyp);

@@ -1913,7 +1913,7 @@ void Report::CloseInp()
 	}
 }
 
-WORD Report::CompMFlds(FileD* file_d, Record* record, std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M, short& NLv)
+WORD Report::CompMFlds(Record* record, std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M, short& NLv)
 {
 	XString x;
 	NLv = 0;
@@ -1923,7 +1923,7 @@ WORD Report::CompMFlds(FileD* file_d, Record* record, std::vector<ConstListEl>& 
 		KeyFldD* m = M[i];
 		NLv++;
 		x.Clear();
-		x.StoreKF(file_d, m, record);
+		x.StoreKF(m, record);
 		std::string s = x.S;
 		int res = CompStr(s, c.S);
 		if (res != _equ) {
@@ -1934,7 +1934,7 @@ WORD Report::CompMFlds(FileD* file_d, Record* record, std::vector<ConstListEl>& 
 	return _equ;
 }
 
-void Report::GetMFlds(FileD* file_d, Record* rec, std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M)
+void Report::GetMFlds(Record* rec, std::vector<ConstListEl>& C, std::vector<KeyFldD*>& M)
 {
 	//for (auto& c : C) {
 	for (size_t i = 0; i < C.size(); i++) {
@@ -1942,7 +1942,7 @@ void Report::GetMFlds(FileD* file_d, Record* rec, std::vector<ConstListEl>& C, s
 		KeyFldD* m = M[i];
 		XString x;
 		x.Clear();
-		x.StoreKF(file_d, m, rec);
+		x.StoreKF(m, rec);
 		c.S = x.S;
 		//M = M->pChain;
 	}
@@ -2005,15 +2005,15 @@ void Report::GetMinKey()
 			IDA[i]->Exist = false;
 			if (!IDA[i]->Scan->eof) {
 				if (mini == 0) {
-					GetMFlds(f, rec, NewMFlds, IDA[i]->MFld);
+					GetMFlds(rec, NewMFlds, IDA[i]->MFld);
 					mini = i;
 					IDA[i]->Exist = true;
 				}
 				else {
-					WORD res = CompMFlds(f, rec, NewMFlds, IDA[i]->MFld, nlv);
+					WORD res = CompMFlds(rec, NewMFlds, IDA[i]->MFld, nlv);
 					if (res != _gt) {
 						if (res == _lt) {
-							GetMFlds(f, rec, NewMFlds, IDA[i]->MFld);
+							GetMFlds(rec, NewMFlds, IDA[i]->MFld);
 							mini = i;
 						}
 						IDA[i]->Exist = true;
@@ -2114,7 +2114,7 @@ void Report::MergeProc(std::string& text)
 			LvDescr* L = ID->LstLvS;
 		label1:
 			ZeroSumFlds(L);
-			GetMFlds(f, rec, ID->OldSFlds, ID->SFld);
+			GetMFlds(rec, ID->OldSFlds, ID->SFld);
 			if (WasFF2) PrintPageHd(text);
 			Headings(L, ID->FrstLvS, text);
 			if (PrintDH == 0) PrintDH = 1;
@@ -2123,13 +2123,13 @@ void Report::MergeProc(std::string& text)
 			SumUp(f, ID->Sum, rec);
 			ReadInpFile(ID);
 			if (ID->Scan->eof) goto label4;
-			res = CompMFlds(f, rec, NewMFlds, ID->MFld, nlv);
+			res = CompMFlds(rec, NewMFlds, ID->MFld, nlv);
 			if ((res == _lt) && (MaxIi > 1)) {
 				SetMsgPar(ID->Scan->FD->Name);
 				RunError(607);
 			}
 			if (res != _equ) goto label4;
-			res = CompMFlds(f, rec, ID->OldSFlds, ID->SFld, nlv);
+			res = CompMFlds(rec, ID->OldSFlds, ID->SFld, nlv);
 			if (res == _equ) {
 				MoveForwToRec(ID);
 				goto label2;

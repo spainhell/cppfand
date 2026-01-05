@@ -31,13 +31,13 @@
 #include "../Common/DateTime.h"
 #include "../Common/Record.h"
 
-double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record)
+double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record)
 {
 	double r;
 	XString x;
-	x.PackKF(file_d, LD->ToKey->KFlds, record);
+	x.PackKF(LD->ToKey->KFlds, record);
 
-	FileD* fromFD = LD->FromFD;
+	FileD* fromFD = LD->FromFile;
 	LockMode md = fromFD->NewLockMode(RdMode);
 	fromFD->FF->TestXFExist();
 	XKey* K = GetFromKey(LD);
@@ -327,9 +327,9 @@ int RecNoFun(FileD* file_d, FrmlElemRecNo* Z, Record* record)
 
 	LockMode md = funcFD->NewLockMode(RdMode);
 	Record* newRecord = new Record(funcFD);
-	if (funcFD->FF->NRecs > 0) {
+	if (funcFD->GetNRecs() > 0) {
 		bool b;
-		if (funcFD->FF->file_type == FandFileType::INDEX) {
+		if (funcFD->IsIndexFile()) {
 			funcFD->FF->TestXFExist();
 			b = k->SearchInterval(funcFD, x, false, n);
 		}
@@ -357,15 +357,15 @@ int AbsLogRecNoFun(FileD* file_d, FrmlElemRecNo* Z, Record* record)
 
 	FileD* funcFD = Z->FFD;
 	LockMode md = funcFD->NewLockMode(RdMode);
-	if (N > funcFD->FF->NRecs) {
+	if (N > funcFD->GetNRecs()) {
 		funcFD->OldLockMode(md);
 		return result;
 	}
-	if (funcFD->FF->file_type == FandFileType::INDEX) {
+	if (funcFD->IsIndexFile()) {
 		funcFD->FF->TestXFExist();
 		if (Z->Op == _recnolog) {
 			Record* newRecord = new Record(funcFD);
-			funcFD->FF->ReadRec(N, newRecord);
+			funcFD->ReadRec(N, newRecord);
 			if (newRecord->IsDeleted()) {
 				funcFD->OldLockMode(md);
 				return result;
@@ -394,7 +394,7 @@ double LinkProc(FrmlElemLink* X, Record* record)
 	int N;
 
 	LinkD* LD = X->LinkLD;
-	FileD* fromFD = LD->FromFD;
+	FileD* fromFD = LD->FromFile;
 	if (X->LinkFromRec) {
 		//if (!LinkUpw(LD, N, false, X->LinkLV->record->GetRecord(), &rec)) {
 		//	N = -N;
@@ -408,7 +408,7 @@ double LinkProc(FrmlElemLink* X, Record* record)
 	else {
 		N = RunInt(fromFD, X->LinkRecFrml, record);
 		LockMode md = fromFD->NewLockMode(RdMode);
-		if ((N <= 0) || (N > fromFD->FF->NRecs)) {
+		if ((N <= 0) || (N > fromFD->GetNRecs())) {
 			SetMsgPar(fromFD->Name, LD->RoleName);
 			fromFD->RunErrorM(md);
 			RunError(609);
@@ -955,7 +955,7 @@ label1:
 		if (iX->Link != nullptr) {
 			Record* newRecord = LinkUpw(iX->Link, RecNo, false, record);
 
-			result = RunReal(iX->Link->ToFD, iX->Frml, newRecord);
+			result = RunReal(iX->Link->ToFile, iX->Frml, newRecord);
 			delete newRecord; newRecord = nullptr;
 		}
 		else {
@@ -1053,7 +1053,7 @@ label1:
 			RecNo = fX->FF->XNRecs(fX->Keys);
 		}
 		else {
-			RecNo = fX->FF->NRecs;
+			RecNo = fX->GetNRecs();
 		}
 		fX->OldLockMode(md);
 		result = RecNo;
@@ -1203,7 +1203,7 @@ label1:
 	}
 	case _owned: {
 		auto iX = (FrmlElemOwned*)X;
-		result = Owned(file_d, iX->ownBool, iX->ownSum, iX->ownLD, record);
+		result = Owned(iX->ownBool, iX->ownSum, iX->ownLD, record);
 		break;
 	}
 	case _color: {
@@ -1284,7 +1284,7 @@ int RunInt(FileD* file_d, FrmlElem* X, Record* record)
 //		LockMode md = iZ->File->NewLockMode(RdMode);
 //		if (iZ->Link != nullptr) {
 //			Record* newRecord = LinkUpw(iZ->Link, n, true, record);
-//			TestTFrml(iZ->Link->ToFD, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord);
+//			TestTFrml(iZ->Link->ToFile, F, iZ->Frml, TF02, TFD02, TF02Pos, newRecord);
 //			delete[] newRecord; newRecord = nullptr;
 //		}
 //		else {
@@ -1470,14 +1470,14 @@ bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL)
 
 XKey* GetFromKey(LinkD* LD)
 {
-	if (LD->FromFD->Keys.empty()) return nullptr;
+	if (LD->FromFile->Keys.empty()) return nullptr;
 
-	// find key in Link->FromFD->Keys with the same index root as Link->IndexRoot
-	vector<XKey*>::iterator it = ranges::find_if(LD->FromFD->Keys, [LD](XKey* K) {
+	// find key in Link->FromFile->Keys with the same index root as Link->IndexRoot
+	vector<XKey*>::iterator it = ranges::find_if(LD->FromFile->Keys, [LD](XKey* K) {
 		return K->IndexRoot == LD->IndexRoot;
 		});
 
-	if (it != LD->FromFD->Keys.end()) {
+	if (it != LD->FromFile->Keys.end()) {
 		return *it;
 	}
 	else {
@@ -1561,7 +1561,7 @@ label1:
 
 		if (iX7->Link != nullptr) {
 			Record* newRecord = LinkUpw(iX7->Link, RecNo, true, record);
-			result = RunString(iX7->Link->ToFD, iX7->Frml, newRecord);
+			result = RunString(iX7->Link->ToFile, iX7->Frml, newRecord);
 			delete newRecord; newRecord = nullptr;
 		}
 		else {
@@ -1843,7 +1843,7 @@ label1:
 	case _keyof: {
 		auto iZ = (FrmlElem20*)X;
 		XString x;
-		x.PackKF(iZ->LV->FD, iZ->PackKey->KFlds, iZ->LV->record);
+		x.PackKF(iZ->PackKey->KFlds, iZ->LV->record);
 		result = x.S;
 		break;
 	}
@@ -1876,24 +1876,6 @@ label1:
 	}
 	}
 	return result;
-}
-
-//std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record)
-//{
-//	std::string s = RunString(file_d, X, record);
-//	if (s.length() > 255) s = s.substr(0, 255);
-//	return s;
-//}
-
-void AddToLongStr(LongStr* S, void* P, WORD L)
-{
-	L = MinW(L, MaxLStrLen - S->LL);
-	auto oldA = S->A;
-	S->A = new char[S->LL + L];
-	memcpy(S->A, oldA, S->LL);
-	memcpy(&S->A[S->LL], P, L);
-	S->LL += L;
-	delete[] oldA;
 }
 
 void StrMask(double R, pstring& Mask)
@@ -2064,7 +2046,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg, Record* record)
 	record->Reset();
 
 	int N = RunInt(fd, X->P1, record);
-	if ((N <= 0) || (N > fd->FF->NRecs)) {
+	if ((N <= 0) || (N > fd->GetNRecs())) {
 		SetMsgPar(fd->Name, X->RecFldD->Name);
 		fd->RunErrorM(md);
 		RunError(Msg);

@@ -83,7 +83,7 @@ void XString::StoreBool(bool B, KeyFldD* KF)
 	StoreN((uint8_t*)&B, 1, KF->Descend);
 }
 
-void XString::StoreKF(FileD* file_d, KeyFldD* KF, Record* record)
+void XString::StoreKF(KeyFldD* KF, Record* record)
 {
 	FieldDescr* F = KF->FldD;
 	switch (F->frml_type) {
@@ -102,18 +102,20 @@ void XString::StoreKF(FileD* file_d, KeyFldD* KF, Record* record)
 	}
 }
 
-void XString::PackKF(FileD* file_d, std::vector<KeyFldD*>& KF, Record* record)
+void XString::PackKF(std::vector<KeyFldD*>& KF, Record* record)
 {
 	Clear();
 	for (KeyFldD* k : KF) {
-		StoreKF(file_d, k, record);
+		StoreKF(k, record);
 	}
 }
 
 bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<KeyFldD*>& KF, Record* record)
 {
-	Clear();
+	// TODO: could be file_d replaced with record->FileD?
 
+	Clear();
+	
 	for (size_t i = 0; i < FL.size(); i++) {
 		FrmlElem* Z = FL[i];
 		KeyFldD* key_field = KF[i];
@@ -131,11 +133,8 @@ bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<Ke
 			break;
 		}
 		}
-		//KF = KF->pChain;
-		//FL = FL->pChain;
 	}
 
-	//return KF != nullptr;
 	return KF.size() > FL.size();
 }
 

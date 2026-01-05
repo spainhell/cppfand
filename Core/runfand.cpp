@@ -7,6 +7,7 @@
 #include "../Common/pstring.h"
 #include "../Common/compare.h"
 #include "../Common/realDouble.h"
+#include "../Common/CommonVariables.h"
 #include "OldDrivers.h"
 #include "access.h"
 #include "CfgFile.h"
@@ -184,7 +185,7 @@ bool SetTopDir(std::string& p, std::string& n)
 		result = true;
 	}
 	catch (std::exception& e) {
-		// TODO: log error
+		printf("Exception in SetTopDir: %s\n", e.what());
 	}
 	return result;
 }
@@ -195,8 +196,6 @@ void RunRdb(std::string& p)
 		wwmix ww;
 		unique_ptr<ProjectRunner> runner = std::make_unique<ProjectRunner>();
 		runner->EditExecRdb(n, "main", nullptr, &ww);
-		// CFile = catalog->GetCatalogFile();
-		// CFile->CloseFile();
 		catalog->Close();
 	}
 }
@@ -251,11 +250,7 @@ void InitRunFand()
 	std::string txt;
 	double r = 0.0;
 
-
-	ClrEvent(); // instead of InitDrivers();
-
-	//ConsoleInit();
-	//WasInitDrivers = true;
+	ClrEvent();
 	InitAccess();
 
 	FandDir = getDirectory(paramstr[0]);
@@ -266,7 +261,7 @@ void InitRunFand()
 	GetCurrentDirectory(maxDir, currentDir);
 	printf("Current DIR: %s\n", currentDir);
 
-	NonameStartFunction();
+	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
 
 	OldPrTimeOut = PrTimeOut;
 	video.CursOn = 0x0607; // {if exit before reading.CFG}
@@ -293,8 +288,6 @@ void InitRunFand()
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::INFO, "LANNODE: %i", LANNode);
 
-	
-	
 	//h = ResFile.Handle;
 	//ReadH(h, 2, &n);
 	//if (n != ResVersion) {
@@ -319,6 +312,11 @@ void InitRunFand()
 	//}
 	//FrstMsgPos = PosH(h);
 	//// *** konec ***
+
+	
+	FandResName = MyFExpand("FAND.RES", "FANDRES");
+	resFile.Open(FandResName);
+
 	resFile.ReadInfo();
 
 	//std::vector<std::string> messages;
@@ -377,13 +375,7 @@ void InitRunFand()
 	// Ww
 	ss.Empty = true;
 	ss.Pointto = nullptr;
-	// DataEditor::TxtEdCtrlUBrk = false;  // now initialized in DataEditor constructor
-	// DataEditor::TxtEdCtrlF4Brk = false; // now initialized in DataEditor constructor
 	InitMouseEvents();
-	// Editor
-	//std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>(EditorMode::Text, TextType::Unknown);
-	//editor->InitTxtEditor();
-	//TextEditor::InitTxtEditor();
 
 	WasInitPgm = true;
 
@@ -590,16 +582,6 @@ void DeleteFandFiles()
 		XWork.Handle = nullptr;
 		XWork.ClearUpdateFlag();
 	}
-
-	//if (TWork.Handle != nullptr) {
-	//	try {
-	//		CloseF(TWork.Handle, HandleError);
-	//		deleteFile(FandWorkTName);
-	//	}
-	//	catch (std::exception&) {}
-	//	TWork.Handle = nullptr;
-	//	TWork.ClearUpdateFlag();
-	//}
 }
 
 void OpenFileDialog()

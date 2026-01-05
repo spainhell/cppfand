@@ -20,6 +20,7 @@
 #include "../Core/models/FrmlElem.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../Common/CommonVariables.h"
 
 
 const int TXTCOLS = 80;

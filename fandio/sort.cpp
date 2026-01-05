@@ -40,10 +40,10 @@ int32_t GetIndex(Instr_getindex* PD)
 		}
 		case 'r': {
 			if (link_exists) {
-				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
+				x.PackKF(ld->ToKey->KFlds, lv2->record);
 			}
 			else {
-				//x.PackKF(ld->ToFD, nullptr, lv2->record);
+				//x.PackKF(ld->ToFile, nullptr, lv2->record);
 				x.Clear();
 			}
 
@@ -51,19 +51,19 @@ int32_t GetIndex(Instr_getindex* PD)
 			break;
 		}
 		case 'F': {
-			lvFD = ld->ToFD;
-			md = ld->ToFD->NewLockMode(RdMode);
-			ld->ToFD->ReadRec(RunInt(ld->ToFD, (FrmlElem*)PD->loc_var2, record), record);
+			lvFD = ld->ToFile;
+			md = ld->ToFile->NewLockMode(RdMode);
+			ld->ToFile->ReadRec(RunInt(ld->ToFile, (FrmlElem*)PD->loc_var2, record), record);
 
 			if (link_exists) {
-				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
+				x.PackKF(ld->ToKey->KFlds, lv2->record);
 			}
 			else {
-				//x.PackKF(ld->ToFD, nullptr, lv2->record);
+				//x.PackKF(ld->ToFile, nullptr, lv2->record);
 				x.Clear();
 			}
 
-			ld->ToFD->OldLockMode(md);
+			ld->ToFile->OldLockMode(md);
 			Scan->ResetOwner(&x, cond);
 			break;
 		}
@@ -89,11 +89,11 @@ int32_t GetIndex(Instr_getindex* PD)
 	else {
 		int nr = RunInt(lvFD, PD->condition, record);
 
-		if ((nr > 0) && (nr <= lvFD->FF->NRecs)) {
+		if ((nr > 0) && (nr <= lvFD->GetNRecs())) {
 			lvFD->ReadRec(nr, record);
 			if (PD->mode == '+') {
 				if (!record->IsDeleted()) {
-					x.PackKF(lvFD, k->KFlds, record);
+					x.PackKF(k->KFlds, record);
 					if (!k->RecNrToPath(lvFD, x, nr, record)) {
 						k->InsertOnPath(lvFD, x, nr);
 						k->NR++;

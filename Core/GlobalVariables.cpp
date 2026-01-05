@@ -12,14 +12,11 @@ std::deque<FuncD*> FuncDRoot;
 XKey* CViewKey;
 std::string TopRdbDir, TopDataDir;
 std::string CatFDName;
-RdbD* CRdb;
-RdbD* TopRdb;
+Project* CRdb;
+Project* TopRdb;
 Catalog* catalog = nullptr;
 FileD* HelpFD;
 //size_t InpArrLen, CurrPos, OldErrPos;
-
-structXPath XPath[20];
-WORD XPathN;
 
 FandXFile XWork(nullptr);
 //FandTFile TWork(nullptr);

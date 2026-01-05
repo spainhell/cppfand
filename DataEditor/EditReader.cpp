@@ -553,7 +553,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, Record* rec)
 			}
 			case 'F': {
 				edit_->OwnerRecNo = RunInt(file_d, (FrmlElem*)EO->DownLV, record);
-				edit_->DownRecord = new Record(edit_->DownLD->ToFD);
+				edit_->DownRecord = new Record(edit_->DownLD->ToFile);
 				break;
 			}
 			default:;
@@ -881,9 +881,11 @@ void EditReader::RdImpl(FileD* file_d)
 		EditableField* D = FindEFld_E(F);
 
 		if (D != nullptr) {
+			// implicit for editable field
 			D->Impl = Z;
 		}
 		else {
+			// implicit for non-editable field
 			Implicit* ID = new Implicit(F, Z);
 			edit_->Impl.push_back(ID);
 		}
@@ -924,7 +926,7 @@ void EditReader::RdUDLI(FileD* file_d)
 
 void EditReader::RdAllUDLIs(FileD* FD)
 {
-	RdbD* r = nullptr;
+	Project* r = nullptr;
 	if (FD->OrigFD != nullptr) {
 		// this v_files was created as 'LIKE'
 		RdAllUDLIs(FD->OrigFD);

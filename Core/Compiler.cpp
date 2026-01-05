@@ -174,7 +174,7 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	}
 	InpRdbPos = *rdb_pos;
 
-	RdbD* rdb = rdb_pos->rdb;
+	Project* rdb = rdb_pos->rdb;
 	Record* rec = new Record(rdb->project_file);
 
 	rdb->project_file->ReadRec(rdb_pos->i_rec, rec);
@@ -194,7 +194,7 @@ void Compiler::SetInpTTxtPos(FileD* file_d)
 {
 	SetInpTT(&file_d->ChptPos, true);
 	const size_t pos = file_d->TxtPosUDLI;
-	//RdbD* r = file_d->ChptPos.rdb;
+	//Project* r = file_d->ChptPos.rdb;
 	processing_F = file_d;
 
 	if (pos >= input_string.length()) {
@@ -248,7 +248,7 @@ WORD Compiler::RdDirective(bool& b)
 	};
 	WORD i;
 	pstring s(12);
-	RdbD* r = nullptr;
+	Project* r = nullptr;
 	bool res = false;
 
 	ReadChar();
@@ -899,7 +899,7 @@ void Compiler::RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vec
 	AcceptKeyWord("OF");
 	FileD* f = RdFileName();
 	if (typ == 'i') {
-		if (f->FF->file_type != FandFileType::INDEX) {
+		if (!f->IsIndexFile()) {
 			OldError(108);
 		}
 		kf1.clear();
@@ -917,15 +917,6 @@ void Compiler::RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vec
 		}
 		/* frueher bei IsParList K = nullptr; warum? */
 		else {
-			//k = new XWKey(f);
-			//k->Duplic = true;
-			//k->InWork = true;
-			//k->KFlds = kf1;
-			//kf = kf1;
-			//while (kf != nullptr) {
-			//	k->IndexLen += kf->FldD->NBytes;
-			//	kf = kf->pChain;
-			//}
 			locvar->key = new XWKey(f, true, true, kf1);
 		}
 	}
@@ -1116,11 +1107,11 @@ bool Compiler::FindLocVar(LocVarBlock* LVB, LocVar** LV)
 bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 {
 	Record* record = new Record(Chpt);
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	bool result = false;
 	while (R != nullptr) {
 		FileD* f = R->project_file;
-		for (int32_t i = 1; i <= f->FF->NRecs; i++) {
+		for (int32_t i = 1; i <= f->GetNRecs(); i++) {
 			f->ReadRec(i, record);
 			//std::string chapterType = f->loadS(ChptTyp, record);
 			std::string chapterType = record->LoadS(ChptTyp);
@@ -1155,7 +1146,7 @@ std::string Compiler::RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 
 	if (TxtExpr && (Lexem == '[')) {
 		RdLex();
-		Pos->rdb = (RdbD*)RdStrFrml(nullptr);
+		Pos->rdb = (Project*)RdStrFrml(nullptr);
 		Pos->i_rec = 0;
 		Accept(']');
 	}
@@ -1385,7 +1376,7 @@ XKey* Compiler::RdViewKey(FileD* file_d)
 	}
 	Error(109);
 label1:
-	if (file_d->FF->file_type != FandFileType::INDEX)
+	if (!file_d->IsIndexFile())
 #ifdef FandSQL
 		if (file_d->typSQLFile) Error(24); else
 #endif
@@ -2357,7 +2348,7 @@ FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
 
-		if ((processing_F->FF->file_type != FandFileType::INDEX) || (CViewKey == nullptr)) {
+		if ((!processing_F->IsIndexFile()) || (CViewKey == nullptr)) {
 			OldError(118);
 		}
 
@@ -2480,7 +2471,7 @@ FileD* Compiler::FindFileD()
 		return LV->FD;
 	}
 
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	while (R != nullptr) {
 		for (FileD* f : R->data_files) {
 			if (EquUpCase(f->Name, LexWord)) {
@@ -2518,7 +2509,7 @@ LinkD* Compiler::FindLD(FileD* file_d, std::string RoleName)
 	// pro soubory 'LIKE' neexistuje zaznam v LinkDRoot, budeme tedy prochazet i predky (OrigFD)
 	while (file_d != nullptr) {
 		for (auto& L : LinkDRoot) {
-			if ((L->FromFD == file_d) && EquUpCase(L->RoleName, RoleName)) {
+			if ((L->FromFile == file_d) && EquUpCase(L->RoleName, RoleName)) {
 				return L;
 			}
 		}
@@ -2542,7 +2533,7 @@ bool Compiler::IsRoleName(bool both, FileD* file_d, FileD** up_file_d, LinkD** l
 		*link = FindLD(file_d, LexWord);
 		if (*link != nullptr) {
 			RdLex();
-			*up_file_d = (*link)->ToFD;
+			*up_file_d = (*link)->ToFile;
 			return result;
 		}
 	}
@@ -2600,8 +2591,8 @@ LinkD* Compiler::FindOwnLD(FileD* FD, std::string RoleName)
 	std::string lw = LexWord;
 	LinkD* result = nullptr;
 	for (auto& ld : LinkDRoot) {
-		if ((ld->ToFD == FD)
-			&& EquUpCase(ld->FromFD->Name, lw)
+		if ((ld->ToFile == FD)
+			&& EquUpCase(ld->FromFile->Name, lw)
 			&& (ld->IndexRoot != 0)
 			&& EquUpCase(ld->RoleName, RoleName))
 		{
@@ -2646,8 +2637,8 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 		}
 
 		FileD* previous_f = processing_F;
-		//CFile = result_owned->ownLD->FromFD;
-		processing_F = result_owned->ownLD->FromFD;
+		//CFile = result_owned->ownLD->FromFile;
+		processing_F = result_owned->ownLD->FromFile;
 
 		if (Lexem == '.') {
 			RdLex();

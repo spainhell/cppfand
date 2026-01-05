@@ -26,7 +26,7 @@ private:
 	void SortProc(FileD* FD, std::vector<KeyFldD*>& SK);
 	void MergeProc(Instr_merge_display* PD);
 	void WritelnProc(Instr_writeln* PD);
-	void DisplayProc(RdbD* R, WORD IRec);
+	void DisplayProc(Project* R, WORD IRec);
 	void ClrWwProc(Instr_clrww* PD);
 	void ExecPgm(Instr_exec* PD);
 	void CallRdbProc(Instr_call* PD);
@@ -38,7 +38,7 @@ private:
 	void DeleteRecProc(Instr_recs* PD);
 	void RecallRecProc(Instr_recs* PD);
 	void AppendRecProc(FileD* file_d);
-	void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data);
+	void UpdateRecord(FileD* file_d, int rec_nr, bool ad_upd, Record* new_data);
 	void ReadWriteRecProc(bool IsRead, Instr_recs* PD);
 	void LinkRecProc(Instr_assign* assign_instr);
 	void ForAllProc(Instr_forall* PD);

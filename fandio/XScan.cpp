@@ -76,7 +76,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, Record* record)
 	}
 	switch (Kind) {
 	case ScanMode::Sequential: {
-		NRecs = FD->FF->NRecs;
+		NRecs = FD->GetNRecs();
 		break;
 	}
 	case ScanMode::Index:
@@ -178,7 +178,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 #ifdef FandSQL
 	if (Kind = ScanMode::SQL) {           /* !on .SQL with Workindex */
 		KIRoot = GetZStore(sizeof(KIRoot^));
-		KIRoot->X1 =XX->S; KIRoot->X2 = XX->S;
+		KIRoot->X1 = XX->S; KIRoot->X2 = XX->S;
 		New(SQLStreamPtr(Strm), init); i_rec = 1
 	}
 	else
@@ -223,8 +223,8 @@ void XScan::ResetSQLTxt(FrmlPtr Z)
 
 void XScan::ResetLV(Record* aRP)
 {
-	Strm = aRP; 
-	Kind = ScanMode::LocalVariable; 
+	Strm = aRP;
+	Kind = ScanMode::LocalVariable;
 	NRecs = 1;
 }
 
@@ -305,7 +305,6 @@ void XScan::SeekOnPage(int pageNr, unsigned short i)
 		}
 		NOfKI -= items_on_page_;
 	}
-	//X = P->GetItem(I);
 	_item = i;
 }
 
@@ -353,7 +352,7 @@ void XScan::GetRec(Record* record)
 		repeat EOF = !SQLStreamPtr(Strm)->GetRec
 			until EOF || hasSQLFilter || RunBool(Bool);
 		inc(i_rec); return;
-}
+	}
 #endif
 
 	while (true) {
@@ -363,7 +362,7 @@ void XScan::GetRec(Record* record)
 			switch (Kind) {
 			case ScanMode::Sequential: {
 				RecNr = IRec;
-				FD->ReadRec(RecNr, record);
+				FD->ReadRec(RecNr, record, true);
 				if (record->IsDeleted()) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;
@@ -381,7 +380,7 @@ void XScan::GetRec(Record* record)
 				else if (page_->GreaterPage > 0) {
 					SeekOnPage(page_->GreaterPage, 1);
 				}
-				FD->ReadRec(RecNr, record);
+				FD->ReadRec(RecNr, record, true);
 				if (record->IsDeleted()) continue;
 				if (!RunBool(FD, Bool, record)) continue;
 				break;

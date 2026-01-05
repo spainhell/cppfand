@@ -38,7 +38,7 @@ public:
 	void Finish_EditExecRdb(bool wasGraph, int w);
 
 private:
-	RdbD* PrepareRdb(const std::string& name, std::string& name1);
+	Project* PrepareRdb(const std::string& name, std::string& name1);
 	FandFileType ExtToTyp(const std::string& ext);
 	bool NetFileTest(RdbRecVars* X);
 	void GetSplitChapterName(FileD* file_d, Record* record, std::string& name, std::string& ext);

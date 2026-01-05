@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
-#include "../Core/Rdb.h"
+#include "../Core/Project.h"
 #include "../fandio/FieldDescr.h"
+#include "../Common/RdbPos.h"
 
 
 enum class FandFileType;
@@ -29,7 +30,7 @@ private:
 	std::vector<FileD*> GetFileDescsInModule(std::string& module_name, FandFileType file_type);
 	std::vector<std::string> GetFilesWithStoredTexts(const std::vector<FileD*>& v_files_descs);
 	std::string ReadFromParamFile(FileD* file_d, FieldDescr* field_d);
-	void SaveToParamFile(FileD* file_d, FieldDescr* field_d, std::string value);
+	void SaveToParamFile(FileD* file_d, FieldDescr* field_d, const std::string& value);
 	std::vector<std::string> GetDbfDeclaration(FileD* file_d);
 	std::string ConvertStringsVectorToString(const std::vector<std::string>& vector);
 };

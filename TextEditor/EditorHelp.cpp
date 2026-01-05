@@ -16,17 +16,17 @@
 // ***********HELP**********  // r351
 const uint8_t maxStk = 15;
 WORD iStk = 0;
-struct structStk { RdbD* Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
+struct structStk { Project* Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
 
 
 void FandHelp(FileD* help_file, const std::string& name, bool InCWw)
 {
-	std::unique_ptr<RdbD> R = std::make_unique<RdbD>();
+	std::unique_ptr<Project> R = std::make_unique<Project>();
 	R->help_file = help_file;
 	Help(R.get(), name, InCWw);
 }
 
-void Help(RdbD* R, std::string name, bool InCWw)
+void Help(Project* R, std::string name, bool InCWw)
 {
 	uint8_t* p = nullptr;
 	FileD* fd = nullptr;

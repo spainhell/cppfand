@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Common/LongStr.h"
 #include <array>
 #include "../Common/pstring.h"
 #include "../fandio/FileEnums.h"
@@ -61,8 +60,6 @@ bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_m
 
 // ***  VIRTUAL HANDLES  ***
 bool IsNetCVol();
-bool CacheExist();
-bool SaveCache(WORD ErrH, HANDLE f);
 
 long SeekH(HANDLE handle, size_t pos);
 long FileSizeH(HANDLE handle);
@@ -94,9 +91,6 @@ void SetCurrPrinter(short NewPr);
 typedef std::array<uint8_t, 4> TPrTimeOut;
 
 void OpenWorkH();
-
-void NonameStartFunction();
-
 
 // UCTOxx methods
 int32_t RunFndFilesExe(std::string cmd_line);

@@ -33,7 +33,7 @@ public:
 	Instr_menu(PInstrCode Kind);
 	~Instr_menu() override;
 	FrmlElem* HdLine = nullptr;
-	RdbD* HelpRdb = nullptr;
+	Project* HelpRdb = nullptr;
 	bool WasESCBranch = false;
 	std::vector<Instr*> ESCInstr;
 	std::vector<ChoiceD*> Choices;
@@ -123,7 +123,7 @@ public:
 	~Instr_writeln() override;
 	WriteType LF = WriteType::write; /* 0-write, 1-writeln, 2-message, 3-message+help */
 	std::vector<WrLnD*> WD;
-	RdbD* mHlpRdb = nullptr;
+	Project* mHlpRdb = nullptr;
 	FrmlElem* mHlpFrml = nullptr;
 };
 
@@ -178,7 +178,7 @@ public:
 	Instr_help();
 	~Instr_help() override;
 	FrmlElem* Frml0 = nullptr;
-	RdbD* HelpRdb0 = nullptr;
+	Project* HelpRdb0 = nullptr;
 };
 
 class Instr_recs : public Instr

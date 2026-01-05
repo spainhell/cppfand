@@ -69,7 +69,7 @@
     <ClCompile Include="printtxt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Rdb.cpp">
+    <ClCompile Include="Project.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rdfildcl.cpp">
@@ -176,7 +176,7 @@
     <ClInclude Include="printtxt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rdb.h">
+    <ClInclude Include="Project.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ResFile.h">

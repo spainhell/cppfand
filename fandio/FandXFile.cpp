@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "../Common/FileD.h"
+#include "../Common/CommonVariables.h"
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
@@ -80,7 +81,7 @@ void FandXFile::SetNotValid(int recs, unsigned char keys)
 	NotValid = true;
 	MaxPage = 0;
 	WrPrefix(recs, keys);
-	SaveCache(0, _parent->Handle);
+	//SaveCache(0, _parent->Handle);
 }
 
 void FandXFile::TestErr()

@@ -1,6 +1,5 @@
 #include "Coding.h"
 
-#include "../Core/access.h"
 #include "textfunc.h"
 
 std::string Coding::Code(const std::string& data)
@@ -29,7 +28,7 @@ std::string Coding::CodingString(int32_t license_number, const std::string& S)
 	}
 }
 
-void Coding::SetPassword(FileD* file_d, WORD nr, std::string passwd)
+void Coding::SetPassword(FileD* file_d, uint16_t nr, std::string passwd)
 {
 	if (nr == 1) {
 		file_d->FF->TF->PwCode = passwd;
@@ -43,7 +42,7 @@ void Coding::SetPassword(FileD* file_d, WORD nr, std::string passwd)
 	}
 }
 
-bool Coding::HasPassword(FileD* file_d, WORD nr, const std::string& passwd)
+bool Coding::HasPassword(FileD* file_d, uint16_t nr, const std::string& passwd)
 {
 	std::string filePwd;
 	if (nr == 1) {
@@ -63,7 +62,7 @@ std::string Coding::XDecode(const std::string& coded_input)
 	output.reserve(coded_input.length());
 
 	// get last two characters (first byte in the string is lower!):
-	WORD offset = static_cast<WORD>(static_cast<uint8_t>(coded_input[coded_input.length() - 1]) << 8);
+	uint16_t offset = static_cast<uint16_t>(static_cast<uint8_t>(coded_input[coded_input.length() - 1]) << 8);
 	offset += static_cast<uint8_t>(coded_input[coded_input.length() - 2]);
 	offset = offset ^ 0xCCCC;
 
@@ -76,18 +75,18 @@ std::string Coding::XDecode(const std::string& coded_input)
 	rotateByteLeft(mask, rotate_count);
 
 	size_t index = offset;
-	WORD salt = static_cast<WORD>(0xFF00) + static_cast<uint8_t>(coded_input[index++]);
+	uint16_t salt = static_cast<uint16_t>(0xFF00) + static_cast<uint8_t>(coded_input[index++]);
 
 	while (index < coded_input.length() - 3) { // there is 2B offset on the end (0xCCCC)
 		if ((salt & 0b0000000100000000) == 0) {
 			// there is a new value for DX in the next position
-			salt = static_cast<WORD>(0xFF00) + static_cast<uint8_t>(coded_input[index++]);
+			salt = static_cast<uint16_t>(0xFF00) + static_cast<uint8_t>(coded_input[index++]);
 		}
 		else if ((salt & 0b0000000000000001) != 0) {
 			// a compression - repeat already decoded characters
 			const uint8_t repeats = coded_input[index++];
 			offset = static_cast<uint8_t>(coded_input[index++]);
-			offset += static_cast<WORD>(static_cast<uint8_t>(coded_input[index++]) << 8);
+			offset += static_cast<uint16_t>(static_cast<uint8_t>(coded_input[index++]) << 8);
 			for (uint8_t i = 0; i < repeats; i++) {
 				output += output[offset - 2];
 				offset++;
@@ -110,7 +109,7 @@ std::string Coding::XEncode(const std::string& input)
 {
 	std::string output;
 
-	WORD offset = 0;
+	uint16_t offset = 0;
 	uint8_t timer = 0xA3;
 	uint8_t mask = 0x9C;
 	const uint8_t rotate_count = timer & 0x03;
@@ -118,7 +117,7 @@ std::string Coding::XEncode(const std::string& input)
 	rotateByteLeft(mask, rotate_count);
 
 	// Initialize variables for encoding loop
-	WORD salt = 0xFF00;
+	uint16_t salt = 0xFF00;
 	output += static_cast<char>(salt & 0xFF);
 	size_t last_salt_index = output.size() - 1;
 
@@ -193,7 +192,7 @@ bool Coding::findCommonSubstr(const std::string& input, size_t index, size_t& of
 
 	if (proc_len == 0 || unproc_len == 0) return false;
 
-	size_t common = min(proc_len, unproc_len);
+	size_t common = std::min(proc_len, unproc_len);
 	size_t local_index = std::string::npos;
 
 	while (common > 2) {

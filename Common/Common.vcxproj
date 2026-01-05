@@ -32,6 +32,7 @@
     <ClInclude Include="OperationType.h" />
     <ClInclude Include="pstring.h" />
     <ClInclude Include="random.h" />
+    <ClInclude Include="RdbPos.h" />
     <ClInclude Include="realDouble.h" />
     <ClInclude Include="Record.h" />
     <ClInclude Include="textfunc.h" />

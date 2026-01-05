@@ -1,12 +1,8 @@
 #include "XWKey.h"
 #include <memory>
-#include "../Core/access.h"
-#include "../Core/base.h"
-#include "../fandio/FieldDescr.h"
-#include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
-#include "../Core/legacy.h"
 #include "XPage.h"
+#include "FandXFile.h"
 
 
 XWKey::XWKey(FileD* parent): XKey(parent)
@@ -88,7 +84,7 @@ void XWKey::OneRecIdx(FileD* file_d, const std::vector<KeyFldD*>& key_fields, in
 void XWKey::InsertAtNr(FileD* file_d, int I, int RecNr, Record* record)
 {
 	XString x;
-	x.PackKF(file_d, KFlds, record);
+	x.PackKF(KFlds, record);
 	NR++;
 	NrToPath(file_d, I);
 	InsertOnPath(file_d, x, RecNr);
@@ -96,8 +92,10 @@ void XWKey::InsertAtNr(FileD* file_d, int I, int RecNr, Record* record)
 
 int XWKey::InsertGetNr(FileD* file_d, int RecNr, Record* record)
 {
-	XString x; int n;
-	NR++; x.PackKF(file_d, KFlds, record);
+	XString x; 
+	int n;
+	NR++; 
+	x.PackKF(KFlds, record);
 	Search(file_d, x, true, n);
 	int result = PathToNr(file_d);
 	InsertOnPath(file_d, x, RecNr);

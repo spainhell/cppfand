@@ -4,6 +4,7 @@
 #include "GlobalVariables.h"
 #include "obaseww.h"
 #include "../Common/codePages.h"
+#include "../Common/CommonVariables.h"
 
 bool SFlag = false, QFlag = false, WFlag = false, BFlag = false, DFlag = false;
 bool EFlag = false, AFlag = false, XFlag = false, VFlag = false, TFlag = false;

@@ -1,6 +1,8 @@
 #include "FileD.h"
 
 #include "Coding.h"
+#include "CommonVariables.h"
+#include "Record.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
@@ -9,15 +11,15 @@
 #include "../Common/compare.h"
 #include "../Logging/Logging.h"
 #include "../Common/textfunc.h"
-#include "Record.h"
+#include "../Drivers/files.h"
 
 
-FileD::FileD(DataFileType f_type)
+FileD::FileD(DataFileType f_type, ProgressCallbacks callbacks)
 {
 	this->FileType = f_type;
 	switch (f_type) {
 	case DataFileType::FandFile: {
-		this->FF = new Fand0File(this);
+		this->FF = new Fand0File(this, callbacks);
 		break;
 	}
 	case DataFileType::DBF: {
@@ -123,9 +125,9 @@ long FileD::GetFileSize()
 	return result;
 }
 
-WORD FileD::GetNrKeys()
+uint16_t FileD::GetNrKeys()
 {
-	return static_cast<WORD>(Keys.size());
+	return static_cast<uint16_t>(Keys.size());
 }
 
 unsigned short FileD::GetFirstRecPos()
@@ -226,15 +228,15 @@ size_t FileD::GetRecordSize()
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-size_t FileD::ReadRec(size_t rec_nr, Record* record) const
+size_t FileD::ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields) const
 {
 	size_t result;
-	
+
 	record->Reset();
 
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		result = FF->ReadRec(rec_nr, record);
+		result = FF->ReadRec(rec_nr, record, ignore_T_fields);
 		break;
 	}
 	case DataFileType::DBF: {
@@ -250,7 +252,7 @@ size_t FileD::ReadRec(size_t rec_nr, Record* record) const
 	return result;
 }
 
-size_t FileD::WriteRec(size_t rec_nr, Record* record) const
+size_t FileD::UpdateRec(size_t rec_nr, Record* record) const
 {
 	size_t result;
 
@@ -269,6 +271,32 @@ size_t FileD::WriteRec(size_t rec_nr, Record* record) const
 	}
 	}
 
+	return result;
+}
+
+size_t FileD::UpdateRec(size_t rec_nr, Record* old_record, Record* new_record) const
+{
+	size_t result;
+	switch (FileType) {
+	case DataFileType::FandFile: {
+		if (old_record == nullptr) {
+			FF->WriteRec((int32_t)rec_nr, new_record);
+		}
+		else {
+			FF->UpdateRec((int32_t)rec_nr, old_record, new_record);
+		}
+		result = 1;
+		break;
+	}
+	case DataFileType::DBF: {
+		result = DbfF->WriteRec(rec_nr, new_record);
+		break;
+	}
+	default: {
+		result = 0;
+		break;
+	}
+	}
 	return result;
 }
 
@@ -352,6 +380,9 @@ void FileD::SetHandleT(HANDLE handle)
 	switch (FileType) {
 	case DataFileType::FandFile: {
 		FF->TF->Handle = handle;
+		if (FF->TF->Handle != nullptr) {
+			FF->TF->RdPrefix(false);
+		}
 		break;
 	}
 	case DataFileType::DBF: {
@@ -364,7 +395,7 @@ void FileD::SetHandleT(HANDLE handle)
 	}
 }
 
-void FileD::CheckT(int file_size)
+int32_t FileD::CheckT(int file_size)
 {
 	if (HasTextFile()) {
 		switch (FileType) {
@@ -378,9 +409,10 @@ void FileD::CheckT(int file_size)
 					&& !IsActiveRdb()
 					&& !Coding::HasPassword(this, 1, ""))
 				{
-					FileMsg(this, 616, ' ');
+					//FileMsg(this, 616, ' ');
 					Close();
-					GoExit(MsgLine);
+					//GoExit(MsgLine);
+					return 616;
 				}
 			}
 			break;
@@ -391,9 +423,10 @@ void FileD::CheckT(int file_size)
 			}
 			else {
 				DbfF->TF->RdPrefix(true);
-				FileMsg(this, 616, ' ');
+				//FileMsg(this, 616, ' ');
 				Close();
-				GoExit(MsgLine);
+				//GoExit(MsgLine);
+				return 616;
 			}
 			break;
 		}
@@ -403,9 +436,10 @@ void FileD::CheckT(int file_size)
 		}
 		}
 	}
+	return 0;
 }
 
-void FileD::CheckX(int file_size)
+int32_t FileD::CheckX(int file_size)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
@@ -414,7 +448,7 @@ void FileD::CheckX(int file_size)
 				FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
 			}
 			else {
-				WORD Signum = 0;
+				uint16_t Signum = 0;
 				FF->XF->ReadData(0, 2, &Signum);
 				FF->XF->RdPrefix();
 
@@ -425,17 +459,14 @@ void FileD::CheckX(int file_size)
 						|| ((FF->XF->MaxPage + 1) << XPageShft) > FileSizeH(FF->XF->Handle))
 					|| (FF->XF->NrKeys != 0) && (FF->XF->NrKeys != GetNrKeys()))
 				{
-
-					if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
-						FileMsg(this, 830, 'X');
-					}
-
 					if (FF->IsShared() && (FF->LMode < ExclMode)) {
 						ChangeLockMode(ExclMode, 0, false);
 					}
 
 					FF->LMode = ExclMode;
 					FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
+
+					return 830;
 				}
 			}
 		}
@@ -449,6 +480,7 @@ void FileD::CheckX(int file_size)
 		break;
 	}
 	}
+	return 0;
 }
 
 //uint8_t* FileD::GetRecSpace() const
@@ -638,7 +670,7 @@ void FileD::RecallRec(int recNr, Record* record)
 	}
 	case DataFileType::DBF: {
 		DbfF->ClearDeletedFlag(record);
-		WriteRec(recNr, record);
+		UpdateRec(recNr, record);
 		break;
 	}
 	default: break;
@@ -699,7 +731,7 @@ void FileD::AssignNRecs(bool Add, int N)
 	IncNRecs(N - OldNRecs);
 
 	for (int i = OldNRecs + 1; i <= N; i++) {
-		WriteRec(i, record);
+		UpdateRec(i, record);
 	}
 
 	delete record; record = nullptr;
@@ -707,10 +739,10 @@ void FileD::AssignNRecs(bool Add, int N)
 	OldLockMode(md);
 }
 
-void FileD::SortByKey(std::vector<KeyFldD*>& keys, void (*msgFuncOn)(int8_t, int32_t), void (*msgFuncUpdate)(int32_t), void (*msgFuncOff)()) const
+void FileD::SortByKey(std::vector<KeyFldD*>& keys) const
 {
 	if (FF != nullptr) {
-		FF->SortAndSubst(keys, msgFuncOn, msgFuncUpdate, msgFuncOff);
+		FF->SortAndSubst(keys);
 	}
 }
 
@@ -976,25 +1008,25 @@ FileUseMode FileD::GetUMode() const
 	return mode;
 }
 
-LockMode FileD::GetLMode() const
+LockMode FileD::GetLockMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->LMode;
 	else return NullMode;
 }
 
-LockMode FileD::GetExLMode() const
+LockMode FileD::GetExLockMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->ExLMode;
 	else return NullMode;
 }
 
-LockMode FileD::GetTaLMode() const
+LockMode FileD::GetTaLockMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->TaLMode;
 	else return NullMode;
 }
 
-void FileD::SetUMode(FileUseMode mode) const
+void FileD::SetUseMode(FileUseMode mode) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile:
@@ -1008,7 +1040,7 @@ void FileD::SetUMode(FileUseMode mode) const
 	}
 }
 
-void FileD::SetLMode(LockMode mode) const
+void FileD::SetLockMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->LMode = mode;
@@ -1018,7 +1050,7 @@ void FileD::SetLMode(LockMode mode) const
 	}
 }
 
-void FileD::SetExLMode(LockMode mode) const
+void FileD::SetExLockMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->ExLMode = mode;
@@ -1028,7 +1060,7 @@ void FileD::SetExLMode(LockMode mode) const
 	}
 }
 
-void FileD::SetTaLMode(LockMode mode) const
+void FileD::SetTaLockMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->TaLMode = mode;
@@ -1058,7 +1090,7 @@ LockMode FileD::NewLockMode(LockMode mode)
 	}
 }
 
-bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, WORD kind)
+bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind)
 {
 	if (FileType == DataFileType::FandFile) {
 		return TryLMode(this, CPath, mode, old_mode, kind, LANNode);
@@ -1068,7 +1100,7 @@ bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, WORD kind)
 	}
 }
 
-bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
+bool FileD::ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref)
 {
 	if (FileType == DataFileType::FandFile) {
 		return ChangeLMode(this, CPath, mode, kind, rd_pref, LANNode);
@@ -1078,10 +1110,10 @@ bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
 	}
 }
 
-bool FileD::Lock(int32_t n, WORD kind) const
+bool FileD::Lock(int32_t n, uint16_t kind) const
 {
 	if (FileType == DataFileType::FandFile) {
-		WORD m;
+		uint16_t m;
 		std::string XTxt = "CrX";
 		bool result = true;
 
@@ -1317,6 +1349,30 @@ void FileD::WrPrefixes() const
 	}
 }
 
+bool FileD::IsIndexFile() const
+{
+	bool result;
+
+	switch (FileType) {
+	case DataFileType::FandFile:
+		if (FF->file_type == FandFileType::INDEX) {
+			result = true;
+		}
+		else {
+			result = false;
+		}
+		break;
+	case DataFileType::DBF:
+		result = false;
+		break;
+	default:
+		result = true;
+		break;
+	}
+
+	return result;
+}
+
 bool FileD::HasIndexFile() const
 {
 	bool result;
@@ -1421,49 +1477,6 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 	MyDeleteFile(CPath);
 }
 
-//void FileD::ZeroAllFlds(Record* record, bool delTFields)
-//{
-//	switch (FileType) {
-//	case DataFileType::FandFile: {
-//		if (delTFields) {
-//			this->FF->DelAllTFlds(record->GetRecord());
-//		}
-//		memset(record->GetRecord(), 0, FF->RecLen);
-//		break;
-//	}
-//	case DataFileType::DBF: {
-//		if (delTFields) {
-//			this->DbfF->DelAllTFlds(record->GetRecord());
-//		}
-//		memset(record->GetRecord(), 0, DbfF->RecLen);
-//		break;
-//	}
-//	default:;
-//	}
-//
-//	for (FieldDescr* F : FldD) {
-//		if (F->isStored() && (F->field_type == FieldType::ALFANUM)) {
-//			saveS(F, "", record);
-//		}
-//	}
-//}
-
-//void FileD::DelAllDifTFlds(Record* record, Record* comp_record)
-//{
-//	switch (FileType) {
-//	case DataFileType::FandFile: {
-//		FF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
-//		break;
-//	}
-//	case DataFileType::DBF: {
-//		DbfF->DelAllDifTFlds(record->GetRecord(), comp_record->GetRecord());
-//		break;
-//	}
-//	default:
-//		break;
-//	}
-//}
-
 std::string FileD::CExtToT(const std::string& dir, const std::string& name, std::string ext)
 {
 	if (EquUpCase(ext, ".RDB")) {
@@ -1505,7 +1518,8 @@ std::string FileD::SetTempCExt(char typ, bool isNet)
 
 void FileD::SetHCatTyp(FandFileType fand_file_type)
 {
-	/// smaze Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat catalog
+	/// smaze Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() 
+	/// - musi existovat catalog
 	if (FileType == DataFileType::FandFile) {
 		FF->Handle = nullptr;
 		FF->file_type = fand_file_type;
@@ -1568,7 +1582,7 @@ int32_t FileD::GetXFileD()
 
 bool FileD::IsActiveRdb()
 {
-	RdbD* R = CRdb;
+	Project* R = CRdb;
 	while (R != nullptr) {
 		if (this == R->project_file) return true;
 		R = R->ChainBack;
@@ -1612,7 +1626,7 @@ bool FileD::NotCached()
 	if (GetUMode() == Shared) goto label1;
 	if (GetUMode() != RdShared) return false;
 label1:
-	if (GetLMode() == ExclMode) return false;
+	if (GetLockMode() == ExclMode) return false;
 	return true;
 }
 
@@ -1628,7 +1642,7 @@ bool FileD::OpenF(const std::string& path, FileUseMode UM, bool is_project_file)
 	if (OpenF1(path, UM, is_project_file)) {
 		if (IsShared()) {
 			ChangeLockMode(RdMode, 0, false);
-			SetLMode(RdMode);
+			SetLockMode(RdMode);
 		}
 		result = OpenF2(path, is_project_file);
 		OldLockMode(NullMode);
@@ -1641,9 +1655,9 @@ bool FileD::OpenF(const std::string& path, FileUseMode UM, bool is_project_file)
 
 bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file)
 {
-	WORD n;
+	uint16_t n;
 	bool result = true;
-	SetLMode(NullMode);
+	SetLockMode(NullMode);
 	SetPathMountVolumeSetNet(UM, is_project_file);
 	const bool b = is_project_file || (this == catalog->GetCatalogFile());
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
@@ -1660,7 +1674,7 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file
 			TestCFileError();
 		}
 		if ((HandleError == 5) && (GetUMode() == Exclusive)) {
-			SetUMode(RdOnly);
+			SetUseMode(RdOnly);
 			continue;
 		}
 		if (HandleError == 2) {
@@ -1766,8 +1780,18 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 			}
 			else {
 				if (catalog->OldToNewCat(file_size)) {
-					CheckT(file_size);
-					CheckX(file_size);
+					int32_t t_result = CheckT(file_size);
+					if (t_result == 616) {
+						FileMsg(this, 616, ' ');
+						GoExit(MsgLine);
+					}
+
+					int32_t x_result = CheckX(file_size);
+					if (x_result == 830) {
+						if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
+							FileMsg(this, 830, 'X');
+						}
+					}
 					SeekRec(0);
 					return true;
 				}
@@ -1805,8 +1829,18 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 		}
 	}
 
-	CheckT(file_size);
-	CheckX(file_size);
+	int32_t t_result = CheckT(file_size);
+	if (t_result == 616) {
+		FileMsg(this, 616, ' ');
+		GoExit(MsgLine);
+	}
+
+	int32_t x_result = CheckX(file_size);
+	if (x_result == 830) {
+		if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
+			FileMsg(this, 830, 'X');
+		}
+	}
 
 	SeekRec(0);
 	return true;
@@ -1844,7 +1878,7 @@ bool FileD::OpenCreateF(const std::string& path, FileUseMode UM, bool is_project
 			WrPrefixes();
 
 			if (FileType == DataFileType::FandFile) {
-				SaveCache(0, FF->Handle);
+				//SaveCache(0, FF->Handle);
 				CloseClearH(&FF->Handle);
 
 				if (FF->file_type == FandFileType::INDEX) {
@@ -1856,7 +1890,7 @@ bool FileD::OpenCreateF(const std::string& path, FileUseMode UM, bool is_project
 				}
 			}
 			else if (FileType == DataFileType::DBF) {
-				SaveCache(0, DbfF->Handle);
+				//SaveCache(0, DbfF->Handle);
 				CloseClearH(&DbfF->Handle);
 
 				if (DbfF->TF != nullptr) {
@@ -1901,19 +1935,19 @@ void FileD::TestCFileError()
 std::string FileD::SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file)
 {
 	std::string path = SetPathAndVolume();
-	SetUMode(UM);
+	SetUseMode(UM);
 	SetDrive((uint8_t)TestMountVol(path[0]));
 	if (!IsNetCVol() || is_project_file)
 		switch (UM) {
-		case RdShared: SetUMode(RdOnly); break;
-		case Shared: SetUMode(Exclusive); break;
+		case RdShared: SetUseMode(RdOnly); break;
+		case Shared: SetUseMode(Exclusive); break;
 
 		case Closed:
 		case RdOnly:
 		case Exclusive: break;
 		}
 	else if ((UM == Shared) && EquUpCase(CVol, "#R")) {
-		SetUMode(RdShared);
+		SetUseMode(RdShared);
 	}
 	CPath = path;
 	return path;
@@ -2055,7 +2089,7 @@ void FileD::CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<Fi
 
 void FileD::CopyH(HANDLE h1, HANDLE h2)
 {
-	const WORD BufSize = 32768;
+	const uint16_t BufSize = 32768;
 	uint8_t* p = new uint8_t[BufSize];
 	int sz = FileSizeH(h1);
 	SeekH(h1, 0);
@@ -2074,7 +2108,7 @@ void FileD::CopyH(HANDLE h1, HANDLE h2)
 
 std::string FileD::SetPathForH(HANDLE handle)
 {
-	RdbD* RD = CRdb;
+	Project* RD = CRdb;
 	while (RD != nullptr) {
 		if (RD->project_file != nullptr) {
 			if (RD->project_file->FF->Handle == handle) {
@@ -2121,26 +2155,18 @@ std::string FileD::SetPathForH(HANDLE handle)
 	return CPath;
 }
 
-Record* FileD::LinkLastRec(int& n)
+Record* FileD::LinkLastRec(int32_t& n)
 {
 	Record* result = nullptr;
 	LockMode md = NewLockMode(RdMode);
-#ifdef FandSQL
-	if (IsSQLFile) {
-		strm1->SelectXRec(nullptr, nullptr, _equ, withT);
+	// FandSQL condition removed
+	n = FF->NRecs;
+	if (n == 0) {
 		n = 1;
 	}
-	else
-#endif
-	{
-		n = FF->NRecs;
-		if (n == 0) {
-			n = 1;
-		}
-		else {
-			result = new Record(this);
-			ReadRec(n, result);
-		}
+	else {
+		result = new Record(this);
+		ReadRec(n, result);
 	}
 	OldLockMode(md);
 	return result;
@@ -2148,10 +2174,10 @@ Record* FileD::LinkLastRec(int& n)
 
 void FileD::lock_excl_and_write_prefix()
 {
-	if (IsShared() && (GetLMode() < ExclMode)) {
+	if (IsShared() && (GetLockMode() < ExclMode)) {
 		ChangeLockMode(ExclMode, 0, false);
 	}
-	SetLMode(ExclMode);
+	SetLockMode(ExclMode);
 	SetUpdateFlag();
 	WrPrefix();
 }
