@@ -7,7 +7,7 @@
 #include "realFix.h"
 #include "KeyFldD.h"
 
-#include "../Core/GlobalVariables.h"
+//#include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
 
 #include "../Common/Coding.h"
@@ -872,30 +872,6 @@ void Fand0File::Close()
 	}
 }
 
-//bool Fand0File::DeletedFlag(Record* record)
-//{
-//	if (file_type == FandFileType::INDEX) {
-//		if (record[0] == 0) return false;
-//		else return true;
-//	}
-//
-//	return false;
-//}
-//
-//void Fand0File::ClearDeletedFlag(Record* record)
-//{
-//	if (file_type == FandFileType::INDEX) {
-//		record[0] = 0;
-//	}
-//}
-//
-//void Fand0File::SetDeletedFlag(Record* record)
-//{
-//	if (file_type == FandFileType::INDEX) {
-//		record[0] = 1;
-//	}
-//}
-
 void Fand0File::ClearXFUpdLock()
 {
 	if (XF != nullptr) {
@@ -913,7 +889,7 @@ int Fand0File::XFNotValid()
 	}
 }
 
-int Fand0File::CreateIndexFile()
+int32_t Fand0File::CreateIndexFile()
 {
 	Logging* log = Logging::getInstance();
 
@@ -942,10 +918,6 @@ int Fand0File::CreateIndexFile()
 			XW->Main(OperationType::Index, record.get());
 			XF->NotValid = false;
 			XF->WrPrefix(NRecs, _parent->GetNrKeys());
-			//if (!SaveCache(0, Handle)) {
-			//	GoExit(MsgLine);
-			//}
-			/*FlushHandles; */
 		}
 		fail = false;
 	}
@@ -959,7 +931,10 @@ int Fand0File::CreateIndexFile()
 	}
 	_parent->Unlock(0);
 	_parent->OldLockMode(md);
-	if (fail) GoExit(MsgLine);
+	if (fail) {
+		//GoExit(MsgLine);
+		return -1;
+	}
 
 	return 0;
 }
@@ -968,7 +943,7 @@ int Fand0File::CreateIndexFile()
 /// Tests whether an index file (XF) exists and is valid, creating it if necessary.
 /// </summary>
 /// <returns>Returns 0 if the index file exists and is valid or was successfully created; otherwise returns an error code</returns>
-int Fand0File::TestXFExist()
+int32_t Fand0File::TestXFExist()
 {
 	if ((XF != nullptr) && XF->NotValid) {
 		if (XF->NoCreate) {
@@ -1191,7 +1166,7 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, Operatio
 	Scan->SubstWIndex(k2);
 }
 
-void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
+void Fand0File::SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK)
 {
 	std::vector<KeyInD*> empty;
 	XScan* scan = new XScan(_parent, nullptr, empty, false);
@@ -1206,7 +1181,7 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 	// write data to a file .100
 	subst_file->FF->GenerateNew000File(scan);
 
-	SubstDuplF(subst_file, false);
+	SubstDuplF(work_dir, subst_file, false);
 	scan->Close();
 
 	_msgs.runMsgOff();
@@ -1229,7 +1204,7 @@ void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
 	delete record; record = nullptr;
 }
 
-void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
+void Fand0File::SubstDuplF(std::string& work_dir, FileD* TempFD, bool DelTF)
 {
 	int result = XFNotValid();
 	if (result != 0) {
@@ -1240,7 +1215,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	std::string orig_path_T = _extToT(orig_path);
 
 	if (IsNetCVol()) {
-		CopyDuplF(TempFD, DelTF);
+		CopyDuplF(work_dir, TempFD, DelTF);
 		return;
 	}
 
@@ -1251,7 +1226,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	TestDelErr(orig_path);
 
 	// rename temp file to a regular one
-	std::string temp_path = SetTempCExt('0', false);
+	std::string temp_path = SetTempCExt(work_dir, '0', false);
 	//SaveCache(0, TempFD->FF->Handle);
 	CloseClearH(&TempFD->FF->Handle);
 	RenameFile56(temp_path, orig_path, true);
@@ -1264,7 +1239,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 		MyDeleteFile(orig_path_T);
 		TestDelErr(orig_path_T);
 		CloseClearH(&TempFD->FF->TF->Handle);
-		std::string temp_path_t = SetTempCExt('T', false);
+		std::string temp_path_t = SetTempCExt(work_dir, 'T', false);
 		RenameFile56(temp_path_t, orig_path_T, true);
 		TF->Handle = OpenH(orig_path_T, _isOldFile, UMode);
 		SetUpdateFlag();
@@ -1273,11 +1248,11 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	RdPrefixes();
 }
 
-void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
+void Fand0File::CopyDuplF(std::string& work_dir, FileD* TempFD, bool DelTF)
 {
 	TempFD->FF->WrPrefixes();
 	//SaveCache(0, Handle);
-	SetTempCExt('0', true);
+	SetTempCExt(work_dir, '0', true);
 	FileD::CopyH(TempFD->FF->Handle, Handle);
 
 	// TempFD has been deleted in CopyH -> set Handle to nullptr
@@ -1287,7 +1262,7 @@ void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 	if ((TF != nullptr) && DelTF) {
 		HANDLE h1 = TempFD->FF->TF->Handle;
 		HANDLE h2 = TF->Handle;
-		SetTempCExt('T', true);
+		SetTempCExt(work_dir, 'T', true);
 		*TF = *TempFD->FF->TF;
 		TF->Handle = h2;
 		FileD::CopyH(h1, h2);
@@ -1298,7 +1273,7 @@ void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 	}
 }
 
-void Fand0File::IndexFileProc(bool Compress)
+void Fand0File::IndexFileProc(std::string& work_dir, bool Compress)
 {
 	LockMode md = _parent->NewLockMode(ExclMode);
 
@@ -1319,7 +1294,7 @@ void Fand0File::IndexFileProc(bool Compress)
 		//if (!SaveCache(0, Handle)) {
 		//	GoExit(MsgLine);
 		//}
-		SubstDuplF(tmp_file, false);
+		SubstDuplF(work_dir, tmp_file, false);
 		NRecs = tmp_file->FF->NRecs;
 		int xf_res = XFNotValid();
 		if (xf_res != 0) {
@@ -1391,7 +1366,7 @@ label4:
 	TFD02->OldLockMode(md2);
 }
 
-std::string Fand0File::SetTempCExt(char typ, bool isNet) const
+std::string Fand0File::SetTempCExt(std::string& work_dir, char typ, bool isNet) const
 {
 	char Nr;
 	if (typ == 'T') {
@@ -1413,7 +1388,7 @@ std::string Fand0File::SetTempCExt(char typ, bool isNet) const
 	CExt[1] = Nr;
 
 	if (isNet) {
-		CPath = WrkDir + CName + CExt; /* work files are local */
+		CPath = work_dir + CName + CExt; /* work files are local */
 	}
 	else {
 		CPath = CDir + CName + CExt;

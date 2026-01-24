@@ -742,14 +742,14 @@ void FileD::AssignNRecs(bool Add, int N)
 void FileD::SortByKey(std::vector<KeyFldD*>& keys) const
 {
 	if (FF != nullptr) {
-		FF->SortAndSubst(keys);
+		FF->SortAndSubst(WrkDir, keys);
 	}
 }
 
 void FileD::IndexesMaintenance(bool remove_deleted)
 {
 	if (FF != nullptr) {
-		FF->IndexFileProc(remove_deleted);
+		FF->IndexFileProc(WrkDir, remove_deleted);
 	}
 }
 
@@ -1502,7 +1502,7 @@ std::string FileD::SetTempCExt(char typ, bool isNet)
 
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		result = FF->SetTempCExt(typ, isNet);
+		result = FF->SetTempCExt(WrkDir, typ, isNet);
 		break;
 	}
 	case DataFileType::DBF: {

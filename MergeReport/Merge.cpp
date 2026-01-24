@@ -981,7 +981,7 @@ void Merge::CloseInpOutp()
 			if (OD->InplFD != nullptr) {
 				fd = OD->InplFD;
 				OD->FD->Save();
-				fd->FF->SubstDuplF(OD->FD, true);
+				fd->FF->SubstDuplF(WrkDir, OD->FD, true);
 			}
 			else {
 				fd->OldLockMode(OD->Md);

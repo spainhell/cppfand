@@ -89,8 +89,8 @@ public:
 
 	void ClearXFUpdLock();
 	int XFNotValid();
-	int CreateIndexFile();
-	int TestXFExist();
+	int32_t CreateIndexFile();
+	int32_t TestXFExist();
 
 	FileD* GetFileD();
 
@@ -102,16 +102,16 @@ public:
 	void GenerateNew000File(XScan* x);
 	void CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type);
 	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type);
-	void SortAndSubst(std::vector<KeyFldD*>& SK);
+	void SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK);
 	void CopyIndex(XWKey* K, XKey* FromK);
 
-	void SubstDuplF(FileD* TempFD, bool DelTF);
-	void CopyDuplF(FileD* TempFD, bool DelTF);
-	void IndexFileProc(bool Compress);
+	void SubstDuplF(std::string& work_dir, FileD* TempFD, bool DelTF);
+	void CopyDuplF(std::string& work_dir, FileD* TempFD, bool DelTF);
+	void IndexFileProc(std::string& work_dir, bool Compress);
 
 	//static int CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos);
 	static void CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos);
-	std::string SetTempCExt(char typ, bool isNet) const;
+	std::string SetTempCExt(std::string& work_dir, char typ, bool isNet) const;
 
 	std::string loadTfromPos(FieldDescr* field, int32_t pos); // for lazy-loading of T fields in records
 
