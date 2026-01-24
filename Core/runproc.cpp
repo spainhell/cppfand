@@ -800,7 +800,7 @@ void RunProcedure::ForAllProc(Instr_forall* PD)
 	// TODO: FandSQL condition removed
 	if (Key != nullptr) {
 		if (PD->CWIdx) {
-			FD->FF->ScanSubstWIndex(xScan, Key->KFlds, OperationType::Work);
+			FD->FF->ScanSubstWIndex(xScan, Key->KFlds, OperationType::Work, WrLLF10Msg);
 		}
 		else {
 			FD->FF->XF->UpdLockCnt++;

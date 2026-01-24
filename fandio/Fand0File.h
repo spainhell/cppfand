@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <map>
 #include <memory>
 
@@ -24,6 +25,8 @@ enum class FandFileType
 	RDB,
 	CAT
 };
+
+using MsgCallback = std::function<void(int32_t)>;
 
 class Fand0File : public DataFileBase
 {
@@ -96,13 +99,13 @@ public:
 
 	bool SearchKey(XString& XX, XKey* Key, int& NN, Record* record);
 	int XNRecs(std::vector<XKey*>& K);
-	void TryInsertAllIndexes(int RecNr, Record* record);
+	void TryInsertAllIndexes(int RecNr, Record* record, MsgCallback msg_callback);
 	void RecallRec(int recNr, Record* record);
 
 	void GenerateNew000File(XScan* x);
 	void CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type);
-	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type);
-	void SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK);
+	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type, MsgCallback msg_callback);
+	void SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK, MsgCallback msg_callback);
 	void CopyIndex(XWKey* K, XKey* FromK);
 
 	void SubstDuplF(std::string& work_dir, FileD* TempFD, bool DelTF);

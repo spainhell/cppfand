@@ -288,7 +288,7 @@ void ImportTxt(CopyD* CD)
 			{
 				f->PutRec(rec);
 				if (CD->Append && f->IsIndexFile()) {
-					f->FF->TryInsertAllIndexes(f->IRec, rec);
+					f->FF->TryInsertAllIndexes(f->IRec, rec, WrLLF10Msg);
 				}
 			}
 		}

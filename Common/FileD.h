@@ -156,6 +156,7 @@ public:
 	std::string SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file);
 	std::string SetPathAndVolume(char pathDelim = '\\');
 	void CFileError(int N);
+	void FileMsg(int n, char Typ);
 
 	static void CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
 	static void CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files);

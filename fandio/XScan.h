@@ -27,7 +27,7 @@ public:
 	int NRecs = 0, IRec = 0, RecNr = 0;
 	bool hasSQLFilter = false, eof = false;
 	void Reset(FrmlElem* ABool, bool SQLFilter, Record* record);
-	void ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, Record* record);
+	void ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, Record* record, MsgCallback msg_callback);
 	void SubstWIndex(XWKey* WK);
 	void ResetOwner(XString* XX, FrmlElem* aBool);
 	[[nodiscard]] int32_t ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool);

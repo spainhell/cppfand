@@ -742,7 +742,7 @@ void FileD::AssignNRecs(bool Add, int N)
 void FileD::SortByKey(std::vector<KeyFldD*>& keys) const
 {
 	if (FF != nullptr) {
-		FF->SortAndSubst(WrkDir, keys);
+		FF->SortAndSubst(WrkDir, keys, WrLLF10Msg);
 	}
 }
 
@@ -1782,21 +1782,21 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 				if (catalog->OldToNewCat(file_size)) {
 					int32_t t_result = CheckT(file_size);
 					if (t_result == 616) {
-						FileMsg(this, 616, ' ');
+						FileMsg(616, ' ');
 						GoExit(MsgLine);
 					}
 
 					int32_t x_result = CheckX(file_size);
 					if (x_result == 830) {
 						if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
-							FileMsg(this, 830, 'X');
+							FileMsg(830, 'X');
 						}
 					}
 					SeekRec(0);
 					return true;
 				}
 
-				FileMsg(this, 883, ' ');
+				FileMsg(883, ' ');
 				int l = GetNRecs() * rLen + GetFirstRecPos();
 
 				if (l == file_size || !PromptYN(885)) {
@@ -1831,14 +1831,14 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 
 	int32_t t_result = CheckT(file_size);
 	if (t_result == 616) {
-		FileMsg(this, 616, ' ');
+		FileMsg(616, ' ');
 		GoExit(MsgLine);
 	}
 
 	int32_t x_result = CheckX(file_size);
 	if (x_result == 830) {
 		if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
-			FileMsg(this, 830, 'X');
+			FileMsg(830, 'X');
 		}
 	}
 
@@ -2042,9 +2042,24 @@ finish:
 
 void FileD::CFileError(int N)
 {
-	FileMsg(this, N, '0');
+	FileMsg(N, '0');
 	Close();
 	GoExit(MsgLine);
+}
+
+void FileD::FileMsg(int n, char Typ)
+{
+	SetPathAndVolume();
+	if (Typ == 'T') {
+		CPath = CExtToT(CDir, CName, CExt);
+	}
+	else if (Typ == 'X') {
+		CPath = CExtToX(CDir, CName, CExt);
+	}
+	std::string path = CPath;
+	ReplaceChar(path, '/', '\\');
+	SetMsgPar(path);
+	WrLLF10Msg(n);
 }
 
 void FileD::CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files)

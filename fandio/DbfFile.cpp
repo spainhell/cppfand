@@ -530,12 +530,12 @@ void DbfFile::TruncFile()
 
 	TruncF(Handle, HandleError, UsedFileSize());
 	if (HandleError != 0) {
-		FileMsg(_parent, 700 + HandleError, '0');
+		_parent->FileMsg(700 + HandleError, '0');
 	}
 	if (TF != nullptr) {
 		TruncF(TF->Handle, HandleError, TF->UsedFileSize());
 		if (HandleError != 0) {
-			FileMsg(GetFileD(), 700 + HandleError, 'T');
+			GetFileD()->FileMsg(700 + HandleError, 'T');
 			GetFileD()->Close();
 			GoExit(MsgLine);
 		}

@@ -1743,10 +1743,10 @@ bool DataEditor::OpenEditWw()
 	if (CNRecs() == 0)
 		if (params_->NoCreate) {
 			if (params_->Subset) {
-				FileMsg(file_d_, 107, '0');
+				file_d_->FileMsg(107, '0');
 			}
 			else {
-				FileMsg(file_d_, 115, '0');
+				file_d_->FileMsg(115, '0');
 			}
 
 			EdBreak = 13;
@@ -1926,7 +1926,7 @@ void DataEditor::UpdMemberRef(Record* old_record, Record* new_record)
 			Scan = new XScan(link_descr->FromFile, k, empty, true);
 			Scan->ResetOwner(&x_old, nullptr);
 			// TODO: FandSQL condition removed
-			link_descr->FromFile->FF->ScanSubstWIndex(Scan, k->KFlds, OperationType::Work);
+			link_descr->FromFile->FF->ScanSubstWIndex(Scan, k->KFlds, OperationType::Work, WrLLF10Msg);
 
 			Scan->GetRec(src_rec1);
 			while (!Scan->eof) {

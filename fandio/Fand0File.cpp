@@ -8,7 +8,7 @@
 #include "KeyFldD.h"
 
 //#include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+//#include "../Core/obaseww.h"
 
 #include "../Common/Coding.h"
 #include "../Common/CommonVariables.h"
@@ -21,6 +21,8 @@
 #include "../Drivers/files.h"
 
 const double FirstDate = 6.97248E+5;
+
+
 
 Fand0File::Fand0File(FileD* parent, ProgressCallbacks callbacks)
 {
@@ -736,7 +738,7 @@ void Fand0File::TruncFile()
 	LockMode md = _parent->NewLockMode(RdMode);
 	TruncF(Handle, HandleError, UsedFileSize());
 	if (HandleError != 0) {
-		FileMsg(_parent, 700 + HandleError, '0');
+		_parent->FileMsg(700 + HandleError, '0');
 	}
 	if (TF != nullptr) {
 		TruncF(TF->Handle, HandleError, TF->UsedFileSize());
@@ -1026,7 +1028,8 @@ int Fand0File::XNRecs(std::vector<XKey*>& K)
 	}
 }
 
-void Fand0File::TryInsertAllIndexes(int RecNr, Record* record)
+
+void Fand0File::TryInsertAllIndexes(int RecNr, Record* record, MsgCallback msg_callback)
 {
 	TestXFExist();
 	XKey* lastK = nullptr;
@@ -1051,7 +1054,7 @@ label1:
 
 	if (XF->FirstDupl) {
 		SetMsgPar(_parent->Name);
-		WrLLF10Msg(828);
+		msg_callback(828); //WrLLF10Msg(828);
 		XF->FirstDupl = false;
 	}
 }
@@ -1124,7 +1127,7 @@ void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type)
 	XW->Main(oper_type, record.get());
 }
 
-void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type)
+void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type, MsgCallback msg_callback)
 {
 	unsigned short n = 0;
 	XWKey* k2 = new XWKey(_parent);
@@ -1139,7 +1142,7 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, Operatio
 		}
 
 		if (n > 255) {
-			WrLLF10Msg(155);
+			msg_callback(155); //WrLLF10Msg(155);
 			delete k2; k2 = nullptr;
 			return;
 		}
@@ -1166,12 +1169,12 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, Operatio
 	Scan->SubstWIndex(k2);
 }
 
-void Fand0File::SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK)
+void Fand0File::SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK, MsgCallback msg_callback)
 {
 	std::vector<KeyInD*> empty;
 	XScan* scan = new XScan(_parent, nullptr, empty, false);
 	scan->Reset(nullptr, false, nullptr); // record not needed for sorting? previously there was a record allocated in this method
-	ScanSubstWIndex(scan, SK, OperationType::Sort);
+	ScanSubstWIndex(scan, SK, OperationType::Sort, msg_callback);
 	FileD* subst_file = _parent->OpenDuplicateF(false);
 
 	_msgs.runMsgOn('S', scan->NRecs);

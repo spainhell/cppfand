@@ -213,7 +213,7 @@ void FandXFile::Err(unsigned short N)
 	}
 	else {
 		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
-		FileMsg(_parent->GetFileD(), N, 'X');
+		_parent->GetFileD()->FileMsg(N, 'X');
 		_parent->Close();
 		GoExit(MsgLine);
 	}

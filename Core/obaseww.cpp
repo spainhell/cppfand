@@ -292,9 +292,9 @@ void WrLLF10MsgLine(std::string& message)
  * \brief Write F10 message in last line
  * \param msgNr Message number
  */
-void WrLLF10Msg(int msgNr)
+void WrLLF10Msg(int32_t msg_nr)
 {
-	std::string message = ReadMessage(msgNr);
+	std::string message = ReadMessage(msg_nr);
 	WrLLF10MsgLine(message);
 }
 
@@ -335,19 +335,4 @@ bool PromptYN(WORD NMsg)
 	F10SpecKey = 0;
 	PopW(w);
 	return cc == AbbrYes;
-}
-
-void FileMsg(FileD* file_d, int n, char Typ)
-{
-	file_d->SetPathAndVolume();
-	if (Typ == 'T') {
-		CPath = file_d->CExtToT(CDir, CName, CExt);
-	}
-	else if (Typ == 'X') {
-		CPath = CExtToX(CDir, CName, CExt);
-	}
-	std::string path = CPath;
-	ReplaceChar(path, '/', '\\');
-	SetMsgPar(path);
-	WrLLF10Msg(n);
 }

@@ -30,7 +30,7 @@ FandTFile::~FandTFile()
 
 void FandTFile::Err(unsigned short n, bool ex) const
 {
-	FileMsg(_parent->GetFileD(), n, 'T');
+	_parent->GetFileD()->FileMsg(n, 'T');
 	if (ex) {
 		_parent->GetFileD()->Close();
 		GoExit(MsgLine);
