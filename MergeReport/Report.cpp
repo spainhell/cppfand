@@ -1896,7 +1896,7 @@ void Report::OpenInp()
 		else {
 			IDA[i]->Md = file->NewLockMode(RdMode);
 			// TODO: next line has CRecPtr->nullptr
-			IDA[i]->Scan->ResetSort(IDA[i]->SK, IDA[i]->Bool, IDA[i]->Md, IDA[i]->SQLFilter, nullptr);
+			IDA[i]->Scan->ResetSort(IDA[i]->SK, IDA[i]->Bool, IDA[i]->Md, IDA[i]->SQLFilter, nullptr, WrLLF10Msg, RunError);
 		}
 		NRecsAll += IDA[i]->Scan->NRecs;
 	}

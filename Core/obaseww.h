@@ -31,5 +31,5 @@ void WrLLMsgTxt(std::string& message);
 void WrLLF10MsgLine(std::string& message); // stejna fce definovana v kbdww.cpp
 void WrLLF10Msg(int32_t msg_nr); // stejna fce definovana v kbdww.cpp
 bool PromptYN(WORD NMsg);
-extern WORD RunErrNr;
-void RunError(WORD N); // podobna fce definovana v kbdww.cpp
+extern int32_t RunErrNr;
+void RunError(int32_t N); // podobna fce definovana v kbdww.cpp

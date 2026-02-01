@@ -63,7 +63,7 @@ XScan::~XScan()
 	delete page_;
 }
 
-void XScan::Reset(FrmlElem* ABool, bool SQLFilter, Record* record)
+void XScan::Reset(FrmlElem* ABool, bool SQLFilter, Record* record, RunErrorCallback err_callback)
 {
 	KeyInD* k = nullptr;
 	int n = 0;
@@ -82,13 +82,13 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, Record* record)
 	case ScanMode::Index:
 	case ScanMode::WorkingIndex: {
 		if (Key != nullptr) {
-			if (!Key->InWork) FD->FF->TestXFExist();
+			if (!Key->InWork) FD->FF->TestXFExist(err_callback);
 			NRecs = Key->NRecs();
 		}
 		break;
 	}
 	case ScanMode::Interval: {
-		if (!Key->InWork) FD->FF->TestXFExist();
+		if (!Key->InWork) FD->FF->TestXFExist(err_callback);
 		CompKIFrml(FD, Key, KIRoot, true, record);
 		NRecs = 0;
 		//k = KIRoot;
@@ -112,27 +112,27 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, Record* record)
 	SeekRec(0);
 }
 
-void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, Record* record, MsgCallback msg_callback)
+void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, Record* record, MsgCallback msg_callback, RunErrorCallback err_callback)
 {
 	LockMode m;
 	if (Kind == ScanMode::SQL) {
 		SK = aSK;
 		if (SQLFilter) {
-			Reset(BoolZ, true, record);
+			Reset(BoolZ, true, record, err_callback);
 			BoolZ = nullptr;
 		}
 		else {
-			Reset(nullptr, false, record);
+			Reset(nullptr, false, record, err_callback);
 		}
 		return;
 	}
 	if (!aSK.empty()) {
-		Reset(BoolZ, false, record);
+		Reset(BoolZ, false, record, err_callback);
 		FD->FF->ScanSubstWIndex(this, aSK, OperationType::Sort, msg_callback);
 		BoolZ = nullptr;
 	}
 	else {
-		Reset(nullptr, false, record);
+		Reset(nullptr, false, record, err_callback);
 	}
 
 	if (FD->NotCached()) {
@@ -169,7 +169,7 @@ void XScan::SubstWIndex(XWKey* WK)
 	TempWX = true;
 }
 
-void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
+void XScan::ResetOwner(XString* XX, FrmlElem* aBool, RunErrorCallback err_callback)
 {
 	int n;
 	bool b;
@@ -184,7 +184,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	else
 #endif
 	{
-		FD->FF->TestXFExist();
+		FD->FF->TestXFExist(err_callback);
 		KeyInD* new_key_in = new KeyInD();
 		KIRoot.push_back(new_key_in);
 		Key->FindNr(FD, XX->S, new_key_in->XNrBeg);
@@ -197,9 +197,9 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	SeekRec(0);
 }
 
-int32_t XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
+int32_t XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool, RunErrorCallback err_callback)
 {
-	FD->FF->TestXFExist();
+	FD->FF->TestXFExist(err_callback);
 	Bool = aBool;
 	OwnerLV = LV;
 	Kind = ScanMode::Interval;

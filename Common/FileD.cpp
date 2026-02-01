@@ -283,7 +283,7 @@ size_t FileD::UpdateRec(size_t rec_nr, Record* old_record, Record* new_record) c
 			FF->WriteRec((int32_t)rec_nr, new_record);
 		}
 		else {
-			FF->UpdateRec((int32_t)rec_nr, old_record, new_record);
+			FF->UpdateRec((int32_t)rec_nr, old_record, new_record, RunError);
 		}
 		result = 1;
 		break;
@@ -650,7 +650,7 @@ void FileD::DeleteRec(int n, Record* record) const
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		FF->DeleteRec(n, record);
+		FF->DeleteRec(n, record, RunError);
 		break;
 	}
 	case DataFileType::DBF: {
@@ -665,7 +665,7 @@ void FileD::RecallRec(int recNr, Record* record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		FF->RecallRec(recNr, record);
+		FF->RecallRec(recNr, record, RunError);
 		break;
 	}
 	case DataFileType::DBF: {
@@ -742,14 +742,14 @@ void FileD::AssignNRecs(bool Add, int N)
 void FileD::SortByKey(std::vector<KeyFldD*>& keys) const
 {
 	if (FF != nullptr) {
-		FF->SortAndSubst(WrkDir, keys, WrLLF10Msg);
+		FF->SortAndSubst(WrkDir, keys, WrLLF10Msg, RunError);
 	}
 }
 
 void FileD::IndexesMaintenance(bool remove_deleted)
 {
 	if (FF != nullptr) {
-		FF->IndexFileProc(WrkDir, remove_deleted);
+		FF->IndexFileProc(WrkDir, remove_deleted, RunError);
 	}
 }
 
@@ -1414,7 +1414,7 @@ bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, Record* record) const
 bool FileD::SearchXKey(XKey* K, XString& X, int& N)
 {
 	if (FF->file_type == FandFileType::INDEX) {
-		FF->TestXFExist();
+		FF->TestXFExist(RunError);
 		return K->SearchInterval(this, X, false, N);
 	}
 	else {

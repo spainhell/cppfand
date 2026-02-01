@@ -9,7 +9,7 @@
 #include "../Drivers/constants.h"
 #include "../Common/CommonVariables.h"
 
-WORD RunErrNr = 0;
+int32_t RunErrNr = 0;
 
 WParam* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW)
 {
@@ -298,7 +298,7 @@ void WrLLF10Msg(int32_t msg_nr)
 	WrLLF10MsgLine(message);
 }
 
-void RunError(WORD N)
+void RunError(int32_t N)
 {
 	RunErrNr = N;
 	ClearKbdBuf();

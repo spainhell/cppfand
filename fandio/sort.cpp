@@ -9,7 +9,8 @@
 #include "../Common/Record.h"
 
 
-int32_t GetIndex(Instr_getindex* PD)
+
+int32_t GetIndex(Instr_getindex* PD, RunErrorCallback err_callback)
 {
 	XString x;
 	FileD* lvFD = PD->loc_var1->FD;
@@ -32,7 +33,7 @@ int32_t GetIndex(Instr_getindex* PD)
 
 		switch (PD->owner_type) {
 		case 'i': {
-			int32_t err_no = Scan->ResetOwnerIndex(ld, lv2, cond);
+			int32_t err_no = Scan->ResetOwnerIndex(ld, lv2, cond, err_callback);
 			if (err_no != 0) {
 				return err_no;
 			}
@@ -47,7 +48,7 @@ int32_t GetIndex(Instr_getindex* PD)
 				x.Clear();
 			}
 
-			Scan->ResetOwner(&x, cond);
+			Scan->ResetOwner(&x, cond, err_callback);
 			break;
 		}
 		case 'F': {
@@ -64,11 +65,11 @@ int32_t GetIndex(Instr_getindex* PD)
 			}
 
 			ld->ToFile->OldLockMode(md);
-			Scan->ResetOwner(&x, cond);
+			Scan->ResetOwner(&x, cond, err_callback);
 			break;
 		}
 		default: {
-			Scan->Reset(cond, PD->sql_filter, record);
+			Scan->Reset(cond, PD->sql_filter, record, err_callback);
 			break;
 		}
 		}

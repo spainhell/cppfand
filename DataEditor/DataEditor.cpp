@@ -30,11 +30,9 @@
 #include "../Logging/Logging.h"
 #include "../MergeReport/ReportGenerator.h"
 #include "../Common/textfunc.h"
-#include "../Common/exprcmp.h"
 #include "../Common/compare.h"
 #include "../Drivers/constants.h"
 #include "../Common/DateTime.h"
-#include "../Core/RunMessage.h"
 
 
 DataEditor::DataEditor()
@@ -773,7 +771,7 @@ int DataEditor::AbsRecNr(int N)
 	}
 	else if (HasIndex) {
 		LockMode md = file_d_->NewLockMode(RdMode);
-		file_d_->FF->TestXFExist();
+		file_d_->FF->TestXFExist(RunError);
 		N = VK->NrToRecNr(file_d_, N);
 		file_d_->OldLockMode(md);
 	}
@@ -794,7 +792,7 @@ int DataEditor::LogRecNo(int N)
 			result = WK->RecNrToNr(file_d_, N, current_rec_);
 		}
 		else if (HasIndex) {
-			file_d_->FF->TestXFExist();
+			file_d_->FF->TestXFExist(RunError);
 			result = VK->RecNrToNr(file_d_, N, current_rec_);
 		}
 		else {
@@ -1530,21 +1528,21 @@ void DataEditor::BuildWork()
 			std::vector<KeyInD*> empty;
 			Scan = new XScan(file_d_, edit_->DownKey, empty, false);
 			if (edit_->OwnerTyp == 'i') {
-				int32_t err_no = Scan->ResetOwnerIndex(edit_->DownLD, edit_->DownLV, boolP);
+				int32_t err_no = Scan->ResetOwnerIndex(edit_->DownLD, edit_->DownLV, boolP, RunError);
 				if (err_no != 0) {
 					RunError(err_no);
 				}
 			}
 			else {
 				xx.PackKF(edit_->DownLD->ToKey->KFlds, edit_->DownRecord);
-				Scan->ResetOwner(&xx, boolP);
+				Scan->ResetOwner(&xx, boolP, RunError);
 			}
 			if (!edit_->KIRoot.empty()) {
 				wk2 = new XWKey(file_d_);
 				wk2->Open(file_d_, *KF, true, false);
 				file_d_->FF->CreateWIndex(Scan, wk2, OperationType::Work);
 				XScan* Scan2 = new XScan(file_d_, wk2, edit_->KIRoot, false);
-				Scan2->Reset(nullptr, false, current_rec_);
+				Scan2->Reset(nullptr, false, current_rec_, RunError);
 				Scan = Scan2;
 			}
 		}
@@ -1561,7 +1559,7 @@ void DataEditor::BuildWork()
 				(boolP != nullptr))
 				if ((K != nullptr) && !K->InWork && (edit_->KIRoot.empty())) K = nullptr;
 			Scan = new XScan(file_d_, K, edit_->KIRoot, false);
-			Scan->Reset(boolP, edit_->SQLFilter, current_rec_);
+			Scan->Reset(boolP, edit_->SQLFilter, current_rec_, RunError);
 		}
 		file_d_->FF->CreateWIndex(Scan, WK, OperationType::Work);
 		Scan->Close();
@@ -1677,7 +1675,7 @@ bool DataEditor::OpenEditWw()
 #endif
 	{
 		if (HasIndex) {
-			file_d_->FF->TestXFExist();
+			file_d_->FF->TestXFExist(RunError);
 		}
 		md = NoDelMode;
 		if (params_->OnlyAppend || (edit_->Cond != nullptr) || (!edit_->KIRoot.empty()) || edit_->DownSet ||
@@ -1924,7 +1922,7 @@ void DataEditor::UpdMemberRef(Record* old_record, Record* new_record)
 			}
 			std::vector<KeyInD*> empty;
 			Scan = new XScan(link_descr->FromFile, k, empty, true);
-			Scan->ResetOwner(&x_old, nullptr);
+			Scan->ResetOwner(&x_old, nullptr, RunError);
 			// TODO: FandSQL condition removed
 			link_descr->FromFile->FF->ScanSubstWIndex(Scan, k->KFlds, OperationType::Work, WrLLF10Msg);
 
@@ -2139,7 +2137,7 @@ void DataEditor::UndoRecord()
 bool DataEditor::CleanUp()
 {
 	if (HasIndex && current_rec_->IsDeleted()) return false;
-	for (auto& X : edit_->ExD) {
+	for (EdExitD* X : edit_->ExD) {
 		if (X->AtWrRec) {
 			EdBreak = 17;
 			bool ok = EdOk;
@@ -2202,23 +2200,30 @@ bool DataEditor::DeleteRecProc()
 	bool Group = false, fail = false; LockMode OldMd;
 	bool b = false;
 	auto result = false; Group = false;
+	
 	if (params_->Select) {
 		F10SpecKey = VK_ESCAPE;
 		Group = PromptYN(116);
 		if (Event.Pressed.KeyCombination() == __ESC) return result;
 	}
+
 	if (!Group) {
 		if (params_->VerifyDelete && !PromptYN(109)) return result;
 	}
-	if (!LockWithDep(DelMode, DelMode, OldMd)) return result;
+
+	if (!LockWithDep(DelMode, DelMode, OldMd)) {
+		return result;
+	}
+
 	UndoRecord();
 	N = AbsRecNr(CRec());
 	RdRec(CRec(), current_rec_);
 	oIRec = IRec;
 	oBaseRec = BaseRec;    /* exit proc uses CRec for locking etc.*/
+	
 	if (HasIndex) {
 		//log->log(loglevel::DEBUG, "... from file with index ...");
-		file_d_->FF->TestXFExist();
+		file_d_->FF->TestXFExist(RunError);
 		if (Group) {
 			IRec = 1; BaseRec = 1;
 			while (BaseRec <= CNRecs()) {
@@ -2876,7 +2881,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		current_rec_->ClearDeleted();
 
 		if (HasIndex) {
-			file_d_->FF->TestXFExist();
+			file_d_->FF->TestXFExist(RunError);
 
 			if (IsNewRec) {
 				if (params_->AddSwitch
@@ -5149,10 +5154,10 @@ void DataEditor::ToggleSelectAll()
 		k->Release(file_d_);
 	}
 	else if (params_->Subset) {
-		file_d_->FF->CopyIndex(k, WK);
+		file_d_->FF->CopyIndex(k, WK, RunError);
 	}
 	else {
-		file_d_->FF->CopyIndex(k, VK);
+		file_d_->FF->CopyIndex(k, VK, RunError);
 	}
 	DisplAllWwRecs();
 }

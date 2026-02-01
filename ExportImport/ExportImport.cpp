@@ -274,7 +274,7 @@ void ImportTxt(CopyD* CD)
 		}
 		else
 #endif
-			md = f->FF->RewriteFile(CD->Append);
+			md = f->FF->RewriteFile(CD->Append, RunError);
 
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
 			rec->Reset(); //f->ZeroAllFlds(rec, false);
@@ -288,7 +288,7 @@ void ImportTxt(CopyD* CD)
 			{
 				f->PutRec(rec);
 				if (CD->Append && f->IsIndexFile()) {
-					f->FF->TryInsertAllIndexes(f->IRec, rec, WrLLF10Msg);
+					f->FF->TryInsertAllIndexes(f->IRec, rec, WrLLF10Msg, RunError);
 				}
 			}
 		}
@@ -347,7 +347,7 @@ void ExportTxt(CopyD* CD)
 		md = f->NewLockMode(RdMode);
 		std::vector<KeyInD*> empty;
 		Scan = new XScan(f, CD->ViewKey, empty, true);
-		Scan->Reset(nullptr, false, rec);
+		Scan->Reset(nullptr, false, rec, RunError);
 		RunMsgOn('C', Scan->NRecs);
 		while (true) {
 			Scan->GetRec(rec);
@@ -410,7 +410,7 @@ void ExportFD(CopyD* CD)
 		SaveFiles();
 		md = CD->FD1->NewLockMode(RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
-		int n = CD->FD1->FF->XNRecs(CD->FD1->Keys);
+		int n = CD->FD1->FF->XNRecs(CD->FD1->Keys, RunError);
 
 		if (n == 0) {
 			delete F2;

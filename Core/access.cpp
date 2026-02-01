@@ -76,7 +76,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 	const LockMode md = to_FD->NewLockMode(RdMode);
 	bool lu;
 	if (to_FD->FF->file_type == FandFileType::INDEX) {
-		to_FD->FF->TestXFExist();
+		to_FD->FF->TestXFExist(RunError);
 		lu = K->SearchInterval(to_FD, x, false, N);
 	}
 	else if (to_FD->GetNRecs() == 0) {

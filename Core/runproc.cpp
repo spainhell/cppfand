@@ -656,7 +656,7 @@ void RunProcedure::ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				label1:
 					lv->FD->NewLockMode(CrMode);
 					if (lv->FD->FileType == DataFileType::FandFile) {
-						lv->FD->FF->TestXFExist();
+						lv->FD->FF->TestXFExist(RunError);
 					}
 					lv->FD->IncNRecs(1);
 					app = true;
@@ -785,17 +785,17 @@ void RunProcedure::ForAllProc(Instr_forall* PD)
 	// TODO: FandSQL condition removed
 	if (LD != nullptr) {
 		if (PD->COwnerTyp == 'i') {
-			int32_t err_no = xScan->ResetOwnerIndex(LD, PD->CLV, Bool);
+			int32_t err_no = xScan->ResetOwnerIndex(LD, PD->CLV, Bool, RunError);
 			if (err_no != 0) {
 				RunError(err_no);
 			}
 		}
 		else {
-			xScan->ResetOwner(&xx, Bool);
+			xScan->ResetOwner(&xx, Bool, RunError);
 		}
 	}
 	else {
-		xScan->Reset(Bool, PD->CSQLFilter, cr);
+		xScan->Reset(Bool, PD->CSQLFilter, cr, RunError);
 	}
 	// TODO: FandSQL condition removed
 	if (Key != nullptr) {
@@ -1161,7 +1161,7 @@ void RunProcedure::RecallRecProc(Instr_recs* PD)
 	if ((N > 0) && (N <= f->GetNRecs())) {
 		f->ReadRec(N, rec);
 		if (rec->IsDeleted()) {
-			f->FF->RecallRec(N, rec);
+			f->FF->RecallRec(N, rec, RunError);
 			if (PD->AdUpd) {
 				LastExitCode = !RunAddUpdate(f, '+', nullptr, nullptr, rec);
 			}
@@ -1567,7 +1567,7 @@ void RunProcedure::RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_getindex: {
-			int32_t err_no = GetIndex((Instr_getindex*)instr);
+			int32_t err_no = GetIndex((Instr_getindex*)instr, RunError);
 			if (err_no != 0) {
 				RunError(err_no);
 			}

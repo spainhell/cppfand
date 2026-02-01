@@ -10,6 +10,7 @@
 #include "../fandio/KeyFldD.h"
 #include "../Core/RunMessage.h"
 #include "../Core/rdfildcl.h"
+#include "../Core/obaseww.h"
 #include "../Common/CommonVariables.h"
 #include "../Common/Record.h"
 
@@ -927,7 +928,7 @@ void Merge::WriteOutp(std::vector<OutpRD*>& v_outputs)
 				{
 					OD->FD->PutRec(OD->RecPtr);
 					if (OD->Append && (OD->FD->IsIndexFile())) {
-						OD->FD->FF->TryInsertAllIndexes(OD->FD->IRec, OD->RecPtr);
+						OD->FD->FF->TryInsertAllIndexes(OD->FD->IRec, OD->RecPtr, WrLLF10Msg, RunError);
 					}
 				}
 			}
@@ -947,7 +948,7 @@ void Merge::OpenInpM()
 			IDA[I]->Md = f->NewLockMode(RdMode);
 		}
 		// TODO: CRecPtr on the next line?
-		IDA[I]->Scan->ResetSort(IDA[I]->SK, IDA[I]->Bool, IDA[I]->Md, IDA[I]->SQLFilter, nullptr);
+		IDA[I]->Scan->ResetSort(IDA[I]->SK, IDA[I]->Bool, IDA[I]->Md, IDA[I]->SQLFilter, nullptr, WrLLF10Msg, RunError);
 		NRecsAll += IDA[I]->Scan->NRecs;
 	}
 }
@@ -961,7 +962,7 @@ void Merge::OpenOutp()
 			OD->FD = f->OpenDuplicateF(true);
 		}
 		else {
-			OD->Md = f->FF->RewriteFile(OD->Append);
+			OD->Md = f->FF->RewriteFile(OD->Append, RunError);
 		}
 	}
 }
@@ -981,7 +982,7 @@ void Merge::CloseInpOutp()
 			if (OD->InplFD != nullptr) {
 				fd = OD->InplFD;
 				OD->FD->Save();
-				fd->FF->SubstDuplF(WrkDir, OD->FD, true);
+				fd->FF->SubstDuplF(WrkDir, OD->FD, true, RunError);
 			}
 			else {
 				fd->OldLockMode(OD->Md);

@@ -39,7 +39,7 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record)
 
 	FileD* fromFD = LD->FromFile;
 	LockMode md = fromFD->NewLockMode(RdMode);
-	fromFD->FF->TestXFExist();
+	fromFD->FF->TestXFExist(RunError);
 	XKey* K = GetFromKey(LD);
 
 	if ((Bool == nullptr) && (Sum == nullptr) && !fromFD->IsSQLFile) {
@@ -56,7 +56,7 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, Record* record)
 		Record* newRecord = new Record(fromFD);
 		std::vector<KeyInD*> empty;
 		XScan* Scan = new XScan(fromFD, K, empty, true);
-		Scan->ResetOwner(&x, nullptr);
+		Scan->ResetOwner(&x, nullptr, RunError);
 		while (true) {
 			Scan->GetRec(newRecord);
 			if (!Scan->eof) {
@@ -330,7 +330,7 @@ int RecNoFun(FileD* file_d, FrmlElemRecNo* Z, Record* record)
 	if (funcFD->GetNRecs() > 0) {
 		bool b;
 		if (funcFD->IsIndexFile()) {
-			funcFD->FF->TestXFExist();
+			funcFD->FF->TestXFExist(RunError);
 			b = k->SearchInterval(funcFD, x, false, n);
 		}
 		else b = funcFD->SearchKey(x, k, n, newRecord);
@@ -362,7 +362,7 @@ int AbsLogRecNoFun(FileD* file_d, FrmlElemRecNo* Z, Record* record)
 		return result;
 	}
 	if (funcFD->IsIndexFile()) {
-		funcFD->FF->TestXFExist();
+		funcFD->FF->TestXFExist(RunError);
 		if (Z->Op == _recnolog) {
 			Record* newRecord = new Record(funcFD);
 			funcFD->ReadRec(N, newRecord);
@@ -1050,7 +1050,7 @@ label1:
 		FileD* fX = ((FrmlElem9*)X)->FD;
 		md = fX->NewLockMode(RdMode);
 		if (X->Op == _nrecs) {
-			RecNo = fX->FF->XNRecs(fX->Keys);
+			RecNo = fX->FF->XNRecs(fX->Keys, RunError);
 		}
 		else {
 			RecNo = fX->GetNRecs();

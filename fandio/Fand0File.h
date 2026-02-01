@@ -27,6 +27,7 @@ enum class FandFileType
 };
 
 using MsgCallback = std::function<void(int32_t)>;
+using RunErrorCallback = std::function<void(int32_t)>;
 
 class Fand0File : public DataFileBase
 {
@@ -60,10 +61,10 @@ public:
 	size_t ReadRec(size_t rec_nr, uint8_t* buffer);
 	size_t WriteRec(size_t rec_nr, Record* record);
 	void CreateRec(int n, Record* record);
-	void DeleteRec(int32_t rec_nr, Record* record);
+	void DeleteRec(int32_t rec_nr, Record* record, RunErrorCallback err_callback);
 	size_t PutRec(Record* record, int& i_rec);
 	size_t PutRec(uint8_t* record);
-	void UpdateRec(int RecNr, Record* old_rec, Record* new_rec);
+	void UpdateRec(int RecNr, Record* old_rec, Record* new_rec, RunErrorCallback err_callback);
 
 	void CompileRecLen();
 	int UsedFileSize() const;
@@ -79,7 +80,7 @@ public:
 	void WrPrefixes();
 
 	void TruncFile();
-	LockMode RewriteFile(bool append);
+	LockMode RewriteFile(bool append, RunErrorCallback err_callback);
 
 	void ClearUpdateFlag() override;
 	void SaveFile();
@@ -92,25 +93,25 @@ public:
 
 	void ClearXFUpdLock();
 	int XFNotValid();
-	int32_t CreateIndexFile();
-	int32_t TestXFExist();
+	int32_t CreateIndexFile(RunErrorCallback err_callback);
+	int32_t TestXFExist(RunErrorCallback err_callback);
 
 	FileD* GetFileD();
 
 	bool SearchKey(XString& XX, XKey* Key, int& NN, Record* record);
-	int XNRecs(std::vector<XKey*>& K);
-	void TryInsertAllIndexes(int RecNr, Record* record, MsgCallback msg_callback);
-	void RecallRec(int recNr, Record* record);
+	int XNRecs(std::vector<XKey*>& K, RunErrorCallback err_callback);
+	void TryInsertAllIndexes(int RecNr, Record* record, MsgCallback msg_callback, RunErrorCallback err_callback);
+	void RecallRec(int recNr, Record* record, RunErrorCallback err_callback);
 
 	void GenerateNew000File(XScan* x);
 	void CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type);
 	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type, MsgCallback msg_callback);
-	void SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK, MsgCallback msg_callback);
-	void CopyIndex(XWKey* K, XKey* FromK);
+	void SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK, MsgCallback msg_callback, RunErrorCallback err_callback);
+	void CopyIndex(XWKey* K, XKey* FromK, RunErrorCallback err_callback);
 
-	void SubstDuplF(std::string& work_dir, FileD* TempFD, bool DelTF);
+	void SubstDuplF(std::string& work_dir, FileD* TempFD, bool DelTF, RunErrorCallback err_callback);
 	void CopyDuplF(std::string& work_dir, FileD* TempFD, bool DelTF);
-	void IndexFileProc(std::string& work_dir, bool Compress);
+	void IndexFileProc(std::string& work_dir, bool Compress, RunErrorCallback err_callback);
 
 	//static int CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos);
 	static void CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos);
@@ -148,7 +149,7 @@ private:
 	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);
 
-	void TestDelErr(std::string& P);
+	void TestDelErr(std::string& P, RunErrorCallback err_callback);
 
 	void _getValuesFromRawData(uint8_t* buffer, Record* record, bool ignore_T_fields);
 	std::unique_ptr<uint8_t[]> _getRowDataFromRecord(Record* record, const std::map<FieldDescr*, int32_t>& unchanged_T_fields, bool ignore_T_fields = false);

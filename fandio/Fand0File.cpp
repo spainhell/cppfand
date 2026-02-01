@@ -127,12 +127,12 @@ void Fand0File::CreateRec(int n, Record* record)
 	WriteRec(n, record);
 }
 
-void Fand0File::DeleteRec(int32_t rec_nr, Record* record)
+void Fand0File::DeleteRec(int32_t rec_nr, Record* record, RunErrorCallback err_callback)
 {
 	if (file_type == FandFileType::INDEX) {
 		Logging* log = Logging::getInstance();
 		//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
-		TestXFExist();
+		TestXFExist(err_callback);
 		DeleteAllIndexes(rec_nr, record);
 		DelAllTFldsFromRecord(record); // T fields will be deleted during 
 		record->SetDeleted(); //SetDeletedFlag(record);
@@ -753,7 +753,7 @@ void Fand0File::TruncFile()
 	_parent->OldLockMode(md);
 }
 
-LockMode Fand0File::RewriteFile(bool append)
+LockMode Fand0File::RewriteFile(bool append, RunErrorCallback err_callback)
 {
 	LockMode result;
 	if (append) {
@@ -761,7 +761,7 @@ LockMode Fand0File::RewriteFile(bool append)
 		_parent->SeekRec(NRecs);
 		if (XF != nullptr) {
 			XF->FirstDupl = true;
-			TestXFExist();
+			TestXFExist(err_callback);
 		}
 		return result;
 	}
@@ -772,7 +772,8 @@ LockMode Fand0File::RewriteFile(bool append)
 
 	int notValid = XFNotValid();
 	if (notValid != 0) {
-		RunError(notValid);
+		//RunError(notValid);
+		err_callback(notValid);
 	}
 
 	if (file_type == FandFileType::INDEX) XF->NoCreate = true;
@@ -891,7 +892,7 @@ int Fand0File::XFNotValid()
 	}
 }
 
-int32_t Fand0File::CreateIndexFile()
+int32_t Fand0File::CreateIndexFile(RunErrorCallback err_callback)
 {
 	Logging* log = Logging::getInstance();
 
@@ -915,7 +916,7 @@ int32_t Fand0File::CreateIndexFile()
 			std::vector<KeyInD*> empty;
 			std::unique_ptr<XScan> scan = std::make_unique<XScan>(_parent, nullptr, empty, false);
 			std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
-			scan->Reset(nullptr, false, record.get());
+			scan->Reset(nullptr, false, record.get(), err_callback);
 			std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, scan.get(), _parent->Keys, _msgs);
 			XW->Main(OperationType::Index, record.get());
 			XF->NotValid = false;
@@ -945,16 +946,17 @@ int32_t Fand0File::CreateIndexFile()
 /// Tests whether an index file (XF) exists and is valid, creating it if necessary.
 /// </summary>
 /// <returns>Returns 0 if the index file exists and is valid or was successfully created; otherwise returns an error code</returns>
-int32_t Fand0File::TestXFExist()
+int32_t Fand0File::TestXFExist(RunErrorCallback err_callback)
 {
 	if ((XF != nullptr) && XF->NotValid) {
 		if (XF->NoCreate) {
 			_parent->CFileError(819);
 			return 819;
 		}
-		int a = CreateIndexFile();
+		int a = CreateIndexFile(err_callback);
 		if (a != 0) {
-			RunError(a);
+			//RunError(a);
+			err_callback(a);
 			return a;
 		}
 	}
@@ -1017,10 +1019,10 @@ bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, Record* record)
 	return bResult;
 }
 
-int Fand0File::XNRecs(std::vector<XKey*>& K)
+int Fand0File::XNRecs(std::vector<XKey*>& K, RunErrorCallback err_callback)
 {
 	if (file_type == FandFileType::INDEX && !K.empty()) {
-		TestXFExist();
+		TestXFExist(err_callback);
 		return XF->NRecs;
 	}
 	else {
@@ -1029,9 +1031,9 @@ int Fand0File::XNRecs(std::vector<XKey*>& K)
 }
 
 
-void Fand0File::TryInsertAllIndexes(int RecNr, Record* record, MsgCallback msg_callback)
+void Fand0File::TryInsertAllIndexes(int RecNr, Record* record, MsgCallback msg_callback, RunErrorCallback err_callback)
 {
-	TestXFExist();
+	TestXFExist(err_callback);
 	XKey* lastK = nullptr;
 	for (auto& K : _parent->Keys) {
 		lastK = K;
@@ -1069,15 +1071,15 @@ void Fand0File::DeleteAllIndexes(int RecNr, Record* record)
 	}
 }
 
-void Fand0File::UpdateRec(int RecNr, Record* old_rec, Record* new_rec)
+void Fand0File::UpdateRec(int RecNr, Record* old_rec, Record* new_rec, RunErrorCallback err_callback)
 {
 	XString x, x2;
 
 	if (old_rec->IsDeleted()) {
-		RecallRec(RecNr, new_rec);
+		RecallRec(RecNr, new_rec, err_callback);
 		return;
 	}
-	TestXFExist();
+	TestXFExist(err_callback);
 
 	for (XKey* K : _parent->Keys) {
 		x.PackKF(K->KFlds, new_rec);
@@ -1091,9 +1093,9 @@ void Fand0File::UpdateRec(int RecNr, Record* old_rec, Record* new_rec)
 	WriteRec(RecNr, new_rec);
 }
 
-void Fand0File::RecallRec(int recNr, Record* record)
+void Fand0File::RecallRec(int recNr, Record* record, RunErrorCallback err_callback)
 {
-	TestXFExist();
+	TestXFExist(err_callback);
 	XF->NRecs++;
 	for (XKey* K : _parent->Keys) {
 		K->Insert(_parent, recNr, false, record);
@@ -1169,11 +1171,11 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, Operatio
 	Scan->SubstWIndex(k2);
 }
 
-void Fand0File::SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK, MsgCallback msg_callback)
+void Fand0File::SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK, MsgCallback msg_callback, RunErrorCallback err_callback)
 {
 	std::vector<KeyInD*> empty;
 	XScan* scan = new XScan(_parent, nullptr, empty, false);
-	scan->Reset(nullptr, false, nullptr); // record not needed for sorting? previously there was a record allocated in this method
+	scan->Reset(nullptr, false, nullptr, err_callback); // record not needed for sorting? previously there was a record allocated in this method
 	ScanSubstWIndex(scan, SK, OperationType::Sort, msg_callback);
 	FileD* subst_file = _parent->OpenDuplicateF(false);
 
@@ -1184,7 +1186,7 @@ void Fand0File::SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK, M
 	// write data to a file .100
 	subst_file->FF->GenerateNew000File(scan);
 
-	SubstDuplF(work_dir, subst_file, false);
+	SubstDuplF(work_dir, subst_file, false, err_callback);
 	scan->Close();
 
 	_msgs.runMsgOff();
@@ -1192,7 +1194,7 @@ void Fand0File::SortAndSubst(std::string& work_dir, std::vector<KeyFldD*>& SK, M
 	delete subst_file; subst_file = nullptr;
 }
 
-void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
+void Fand0File::CopyIndex(XWKey* K, XKey* FromK, RunErrorCallback err_callback)
 {
 	Record* record = new Record(_parent);
 
@@ -1200,18 +1202,19 @@ void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
 	LockMode md = _parent->NewLockMode(RdMode);
 	std::vector<KeyInD*> empty;
 	XScan* Scan = new XScan(_parent, FromK, empty, false);
-	Scan->Reset(nullptr, false, record);
+	Scan->Reset(nullptr, false, record, err_callback);
 	CreateWIndex(Scan, K, OperationType::Work);
 	_parent->OldLockMode(md);
 
 	delete record; record = nullptr;
 }
 
-void Fand0File::SubstDuplF(std::string& work_dir, FileD* TempFD, bool DelTF)
+void Fand0File::SubstDuplF(std::string& work_dir, FileD* TempFD, bool DelTF, RunErrorCallback err_callback)
 {
 	int result = XFNotValid();
 	if (result != 0) {
-		RunError(result);
+		//RunError(result);
+		err_callback(result);
 	}
 
 	std::string orig_path = _parent->SetPathAndVolume();
@@ -1226,7 +1229,7 @@ void Fand0File::SubstDuplF(std::string& work_dir, FileD* TempFD, bool DelTF)
 	//SaveCache(0, Handle);
 	CloseClearH(&Handle);
 	MyDeleteFile(orig_path);
-	TestDelErr(orig_path);
+	TestDelErr(orig_path, err_callback);
 
 	// rename temp file to a regular one
 	std::string temp_path = SetTempCExt(work_dir, '0', false);
@@ -1240,7 +1243,7 @@ void Fand0File::SubstDuplF(std::string& work_dir, FileD* TempFD, bool DelTF)
 	if ((TempFD->FF->TF != nullptr) && DelTF) {
 		CloseClearH(&TF->Handle);
 		MyDeleteFile(orig_path_T);
-		TestDelErr(orig_path_T);
+		TestDelErr(orig_path_T, err_callback);
 		CloseClearH(&TempFD->FF->TF->Handle);
 		std::string temp_path_t = SetTempCExt(work_dir, 'T', false);
 		RenameFile56(temp_path_t, orig_path_T, true);
@@ -1276,13 +1279,14 @@ void Fand0File::CopyDuplF(std::string& work_dir, FileD* TempFD, bool DelTF)
 	}
 }
 
-void Fand0File::IndexFileProc(std::string& work_dir, bool Compress)
+void Fand0File::IndexFileProc(std::string& work_dir, bool Compress, RunErrorCallback err_callback)
 {
 	LockMode md = _parent->NewLockMode(ExclMode);
 
 	int result = XFNotValid();
 	if (result != 0) {
-		RunError(result);
+		//RunError(result);
+		err_callback(result);
 	}
 
 	if (Compress) {
@@ -1297,17 +1301,18 @@ void Fand0File::IndexFileProc(std::string& work_dir, bool Compress)
 		//if (!SaveCache(0, Handle)) {
 		//	GoExit(MsgLine);
 		//}
-		SubstDuplF(work_dir, tmp_file, false);
+		SubstDuplF(work_dir, tmp_file, false, err_callback);
 		NRecs = tmp_file->FF->NRecs;
 		int xf_res = XFNotValid();
 		if (xf_res != 0) {
-			RunError(xf_res);
+			//RunError(xf_res);
+			err_callback(xf_res);
 		}
 		delete tmp_file; tmp_file = nullptr;
 	}
 
 	XF->NoCreate = false;
-	TestXFExist();
+	TestXFExist(err_callback);
 	_parent->OldLockMode(md);
 }
 
@@ -1456,11 +1461,12 @@ std::string Fand0File::_extToX(const std::string& dir, const std::string& name, 
 	return dir + name + ext;
 }
 
-void Fand0File::TestDelErr(std::string& P)
+void Fand0File::TestDelErr(std::string& P, RunErrorCallback err_callback)
 {
 	if (HandleError != 0) {
 		SetMsgPar(P);
-		RunError(827);
+		//RunError(827);
+		err_callback(827);
 	}
 }
 
