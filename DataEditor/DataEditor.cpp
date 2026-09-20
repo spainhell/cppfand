@@ -19,6 +19,7 @@
 #include "../Common/LinkD.h"
 #include "../Core/oaccess.h"
 #include "../Core/obase.h"
+#include "../Drivers/host.h"
 #include "../Core/obaseww.h"
 #include "../Core/rdfildcl.h"
 #include "../Core/rdrun.h"
@@ -194,6 +195,42 @@ WORD DataEditor::EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol,
 	WriteStr(pos, base, maxlen, maxcol, text.length(), text, star, cx, cy, cx1, cy1);
 	WORD KbdChar;
 label1:
+	if (upd && FandHost::FieldEditEnabled() && Event.What == evNothing && keyboard.Empty()) {
+		// (rozpracovana udalost a klavesy cekajici ve fronte se nejdrive zpracuji puvodni cestou; hostitel dostane az cisty stav)
+		// Hostitel (WPF) prevezme editaci: zobrazi vlastni vstupni prvek nad polem,
+		// vrati upraveny text, pozici kurzoru a klavesu, kterou editaci ukoncil.
+		// Tu klavesu vlozime do fronty a nechame ji zpracovat puvodni logikou nize,
+		// takze Enter/Esc/navigace/F-klavesy se chovaji stejne jako v konzoli.
+		FandHost::FieldEditRequest req;
+		req.X = cx1 - 1;
+		req.Y = cy1 - 1;
+		req.Width = maxcol;
+		req.MaxLen = maxlen;
+		req.FieldType = (int)typ;
+		req.Pos = pos;
+		req.InsertMode = InsMode ? 1 : 0;
+		req.Star = star ? 1 : 0;
+		req.DelOnFirstKey = del ? 1 : 0;
+		req.TimeoutMs = (int)Delta;
+		req.Attr = (char)screen.AttrAt(cx1, cy1);
+		strncpy_s(req.Text, text.c_str(), sizeof(req.Text) - 1);
+		strncpy_s(req.Mask, HostEditMask.c_str(), sizeof(req.Mask) - 1);
+		FandHost::FieldEditResult res;
+		if (FandHost::RunFieldEdit(req, res)) {
+			text = std::string(res.Text);
+			if (text.length() > maxlen) text = text.substr(0, maxlen);
+			pos = (WORD)res.Pos;
+			if (pos < 1) pos = 1;
+			if (pos > maxlen + 1) pos = maxlen + 1;
+			if (pos > text.length() + 1) pos = (WORD)(text.length() + 1);
+			InsMode = res.InsertMode != 0;
+			del = false;
+			delPreviousState = false;
+			WriteStr(pos, base, maxlen, maxcol, text.length(), text, star, cx, cy, cx1, cy1);
+			ClrEvent();
+			keyboard.AddToFrontKeyBuf(res.Key);
+		}
+	}
 	switch (WaitEvent(Delta)) {
 	case 1/*flags*/: {
 		goto label1;
@@ -542,8 +579,10 @@ WORD DataEditor::FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, s
 		Msk = "";      /*!!!!*/
 	}
 label2:
+	HostEditMask = Mask;
 	iPos = EditTxt(Txt, iPos, L, LWw, F->field_type, del, false, upd, (F->frml_type == 'S')
 		&& ret, Delta);
+	HostEditMask.clear();
 	result = iPos;
 	if (iPos != 0) return result;
 	if ((KbdChar == VK_ESCAPE) || !upd) return result;
@@ -1224,11 +1263,16 @@ void DataEditor::SetFldAttr(EditableField* D, WORD I, WORD Attr)
 void DataEditor::HighLightOff()
 {
 	SetFldAttr(*CFld, IRec, RecAttr(IRec, current_rec_));
+	FandHost::ClearCurrentField();
 }
 
 void DataEditor::HighLightOn()
 {
 	screen.ScrColor((*CFld)->Col - 1, FldRow(*CFld, IRec) - 1, (*CFld)->L, edit_->dHiLi);
+	// hostiteli predame i celou hodnotu pole (na obrazovce muze byt jen cast)
+	FieldDescr* hf = (*CFld)->FldD;
+	std::string hostText = hf->field_type == FieldType::TEXT ? std::string() : decodeField(hf, hf->L, current_rec_);
+	FandHost::SetCurrentField((*CFld)->Col - 1, FldRow(*CFld, IRec) - 1, (*CFld)->L, hostText);
 }
 
 void DataEditor::SetRecAttr(WORD I)

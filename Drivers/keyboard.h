@@ -1,6 +1,9 @@
 #pragma once
+#include <deque>
+#include <mutex>
 #include <queue>
 #include <string>
+#include <vector>
 #include <Windows.h>
 
 class Keyboard
@@ -25,13 +28,17 @@ public:
 	void AddToFrontKeyBuf(std::string input); // add items to the front of Prior Key Buffer
 	void AddToFrontKeyBuf(unsigned short c); // add items to the front of Prior Key Buffer
 	short GetState(int nVirtKey); // get state of the Virtual key
-	
+	// hostitelsky rezim: udalost vlozena hostitelem (jine vlakno)
+	void PushEvent(const INPUT_RECORD& record);
+
 private:
 	HANDLE _handle;
 	PINPUT_RECORD _kbdBuf;
 	size_t _actualIndex;
 	DWORD _inBuffer;
 	std::deque<KEY_EVENT_RECORD> _priorBuffer; // used by SetKeyBuf() method
+	std::deque<INPUT_RECORD> _hostQueue; // hostitelsky rezim
+	std::mutex _hostMutex;
 	void _read();
 };
 

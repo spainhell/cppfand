@@ -1,6 +1,7 @@
 #include "ResFile.h"
 
 #include "constants.h"
+#include "../Drivers/host.h"
 
 ResFile::ResFile()
 = default;
@@ -15,9 +16,7 @@ void ResFile::Open(std::string path)
 	Handle = OpenF(path, error, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	FullName = path;
 	if (error != 0) {
-		printf("can't open %s\n", path.c_str());
-		system("pause");
-		exit(-1);
+		FandHost::Fatal("can't open " + path, -1);
 	}
 }
 
@@ -106,9 +105,7 @@ void ResFile::ReadInfo()
 	WORD version;
 	ReadF(Handle, &version, 2, error);
 	if (version != ResVersion) {
-		printf("FAND.RES incorr. version\n");
-		system("pause");
-		exit(-1);
+		FandHost::Fatal("FAND.RES incorr. version", -1);
 	}
 
 	for (int i = 0; i < FandFace; i++) {

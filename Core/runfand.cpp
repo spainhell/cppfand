@@ -239,6 +239,9 @@ void SelectEditTxt(const std::string& ext, bool OnFace)
 
 void InitRunFand()
 {
+	// napojeni obrazovky na konzoli (v hostitelskem rezimu se nic nedela)
+	screen.InitConsole();
+
 	WORD n = 0, l = 0, err = 0, hourmin = 0;
 	FILE* h = nullptr;
 	std::string s;

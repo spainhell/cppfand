@@ -1,6 +1,8 @@
 #pragma once
+#include <mutex>
 #include <stack>
 #include <string>
+#include <vector>
 #include <Windows.h>
 
 const uint8_t bigCrsSize = 50;
@@ -55,18 +57,23 @@ struct Colors
 	uint8_t DesktopColor = 0;
 };
 
+/// Stav obrazovky drzi Screen sam v poli bunek (znak CP852 + atribut).
+/// V konzolovem rezimu se zmeny hned promitaji do konzole, v hostitelskem rezimu
+/// si je hostitel vyzvedava pres Snapshot() (viz FandHost).
 class Screen
 {
 public:
 	Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs);
 	~Screen();
+	/// Napojeni na konzoli (jen konzolovy rezim); volat pred prvnim vypisem.
+	void InitConsole();
 	void ReInit(short TxtCols, short TxtRows);
 	size_t BufSize();
 
 	void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, uint8_t Color);
 	void ScrWrChar(WORD X, WORD Y, char C, uint8_t Color);
 	void ScrWrStr(const std::string& s, uint8_t Color);
-	void ScrWrStr(WORD X, WORD Y, const std::string& s, uint8_t Color) const;
+	void ScrWrStr(WORD X, WORD Y, const std::string& s, uint8_t Color);
 	void ScrWrFrameLn(WORD X, WORD Y, uint8_t Typ, uint8_t Width, uint8_t Color);
 	void ScrWrText(WORD X, WORD Y, const char* S);
 	void ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...);
@@ -107,6 +114,17 @@ public:
 	WParam* LoadScreen(bool draw);
 	Colors colors;
 
+	// --- pro hostitele -----------------------------------------------------
+	short Cols() const { return TxtCols; }
+	short Rows() const { return TxtRows; }
+	/// Cislo verze roste s kazdou zmenou obsahu nebo kurzoru.
+	uint64_t Version();
+	/// Zkopiruje bunky (dolni byte znak CP852, horni byte atribut) a stav kurzoru (0-based).
+	/// Vraci aktualni verzi.
+	uint64_t Snapshot(uint16_t* cells, size_t capacity, int& crsX, int& crsY, bool& crsVisible, int& crsSize);
+	/// Atribut bunky na absolutni pozici (1-based).
+	uint8_t AttrAt(WORD X, WORD Y);
+
 private:
 	short TxtCols;
 	short TxtRows;
@@ -120,8 +138,22 @@ private:
 
 	std::stack<storeWindow> _windowStack;
 
-	HANDLE _handle;
-	size_t _actualIndex;
-	DWORD _inBuffer;
-};
+	// model obrazovky
+	std::vector<CHAR_INFO> _cells;
+	short _crsX = 1; // absolutni pozice kurzoru, 1-based
+	short _crsY = 1;
+	uint64_t _version = 1;
+	std::recursive_mutex _mutex;
 
+	// konzole (jen konzolovy rezim)
+	HANDLE _handle = nullptr;
+	bool _console = false;
+
+	CHAR_INFO& cell(int x0, int y0) { return _cells[(size_t)y0 * TxtCols + x0]; }
+	bool inside(int x0, int y0) const { return x0 >= 0 && y0 >= 0 && x0 < TxtCols && y0 < TxtRows; }
+	/// promitne obdelnik (0-based, sirka x vyska) do konzole, resp. zvedne verzi
+	void flush(int x0, int y0, int w, int h);
+	void applyCursorPos();
+	void applyCursorInfo();
+	void resizeCells();
+};

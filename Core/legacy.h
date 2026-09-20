@@ -2,6 +2,7 @@
 
 #include "../Common/pstring.h"
 #include "../Common/typeDef.h"
+#include "../Drivers/host.h"
 #include <vector>
 
 extern std::vector<std::string> paramstr;
@@ -55,7 +56,7 @@ WORD ParamCount(); // vrací počet parametrů příkazové řádky
 inline void Exit() { return; }
 
 //inline void RunError(WORD code) { exit(code); }
-inline void Halt(WORD code) { exit(code); }
+inline void Halt(WORD code) { if (FandHost::IsEnabled()) throw FandHost::HaltException(code); exit(code); }
 
 void FillChar(void* cil, int delka, size_t vypln);
 uint8_t Hi(WORD cislo);

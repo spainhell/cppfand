@@ -1,18 +1,21 @@
 #include "keyboard.h"
+#include "host.h"
 #include <exception>
 
 const int buff_size = 128;
 
 Keyboard::Keyboard()
 {
-	_handle = GetStdHandle(STD_INPUT_HANDLE);
-	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console input handle."); }
 	_kbdBuf = new _INPUT_RECORD[buff_size];
 	_actualIndex = 0;
 	_inBuffer = 0;
-	DWORD fdwMode = ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
-	bool scm = SetConsoleMode(_handle, fdwMode);
-	if (!scm) { throw std::exception("Cannot set console input mode."); }
+	// Konzole nemusi existovat (hostitelsky rezim, DLL v GUI procesu) - pak se cte jen z fronty hostitele.
+	_handle = GetStdHandle(STD_INPUT_HANDLE);
+	if (_handle == INVALID_HANDLE_VALUE) _handle = nullptr;
+	if (_handle != nullptr) {
+		DWORD fdwMode = ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
+		if (!SetConsoleMode(_handle, fdwMode)) _handle = nullptr;
+	}
 }
 
 Keyboard::~Keyboard()
@@ -309,14 +312,27 @@ std::string Keyboard::GetKeyBufAsString()
 	return std::string();
 }
 
+void Keyboard::PushEvent(const INPUT_RECORD& record)
+{
+	std::lock_guard<std::mutex> lock(_hostMutex);
+	_hostQueue.push_back(record);
+}
+
 void Keyboard::_read()
 {
-	//DWORD waitResult = WaitForSingleObject(_handle, 50/*INFINITE*/);
-	//if (waitResult == WAIT_OBJECT_0) {
-	//	ReadConsoleInput(_handle, _kbdBuf, buff_size, &_inBuffer);
-	//	_actualIndex = 0;
-	//}
-	
+	if (FandHost::IsEnabled() || _handle == nullptr) {
+		// hostitelsky rezim: udalosti chodi z fronty hostitele
+		if (FandHost::StopRequested()) throw FandHost::HaltException(0);
+		std::lock_guard<std::mutex> lock(_hostMutex);
+		_inBuffer = 0;
+		_actualIndex = 0;
+		while (!_hostQueue.empty() && _inBuffer < (DWORD)buff_size) {
+			_kbdBuf[_inBuffer++] = _hostQueue.front();
+			_hostQueue.pop_front();
+		}
+		return;
+	}
+
 	DWORD events_count;
 	GetNumberOfConsoleInputEvents(_handle, &events_count);
 	if (events_count > 0) {
