@@ -34,8 +34,10 @@ Ctrl+Shift+C zkopíruje celou obrazovku, Ctrl+kolečko mění velikost písma.
 ## Sestavení a nasazení
 
 - Projekt cílí na **.NET Framework 4.8** (`net48`) i **.NET 10**
-  (`net10.0-windows`). Výstup je v `x64\Release\wpf\net48\` a
-  `x64\Release\wpf\net10.0-windows\`. Pro klienty stačí složka `net48`:
+  (`net10.0-windows`), v platformách **x64** i **x86**. Výstup leží vedle
+  nativních binárek: `x64\Release\wpf\<TFM>\` pro x64 a `Release\wpf\<TFM>\`
+  pro 32bit, která používá 32bitovou `cppfand_dll.dll` z konfigurace Win32.
+  Pro klienty stačí složka `net48`:
   .NET Framework 4.8 je součástí Windows 10 (od 1903) a 11, nic dalšího
   se neinstaluje. Nativní `cppfand_dll.dll` i `cppfand.exe` jsou linkované
   se statickou runtime knihovnou (`/MT`), takže nepotřebují Visual C++
