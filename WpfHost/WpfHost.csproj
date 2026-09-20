@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!-- WpfHost: okenni hostitel interpretu cppfand.
-       Interpret bezi v cppfand_dll.dll na vlastnim vlakne, tato aplikace
+       Interpret bezi v cppfandlib.dll na vlastnim vlakne, tato aplikace
        kresli jeho obrazovku 80x25 jako mrizku znaku, posila mu klavesy
        a editaci jednoradkovych poli prebira do bezneho WPF TextBoxu
        (schranka, oznaceni mysi, maskovane datum). Viz Drivers/host.h.
 
        Stavi se pro .NET Framework 4.8 (soucast Windows 10/11, klient nic
-       neinstaluje) i pro .NET 10, a to v x64 i x86 (32bit cppfand_dll.dll).
+       neinstaluje) i pro .NET 10, a to v x64 i x86 (32bit cppfandlib.dll).
        Vystup: <nativni OutDir>\wpf\<TFM>\ -->
 
   <PropertyGroup>
@@ -50,7 +50,7 @@
 
   <!-- nativni DLL ze stejne konfigurace a platformy solution -->
   <ItemGroup>
-    <None Include="$(NativeOutDir)cppfand_dll.dll" Link="cppfand_dll.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    <None Include="$(NativeOutDir)cppfandlib.dll" Link="cppfandlib.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
 </Project>

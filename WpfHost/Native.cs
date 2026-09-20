@@ -3,10 +3,10 @@ using System.Text;
 
 namespace WpfHost;
 
-/// <summary>P/Invoke na exporty cppfand_dll.dll (viz DynamicLibrary/dllmain.cpp a Drivers/host.h).</summary>
+/// <summary>P/Invoke na exporty cppfandlib.dll (viz DynamicLibrary/dllmain.cpp a Drivers/host.h).</summary>
 public static class Native
 {
-    private const string Dll = "cppfand_dll.dll";
+    private const string Dll = "cppfandlib.dll";
 
     [StructLayout(LayoutKind.Sequential)]
     public struct ScreenInfo

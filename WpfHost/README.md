@@ -1,7 +1,7 @@
 # WpfHost – okenní hostitel cppfandu
 
 Interpret FANDu (projekty Core, DataEditor, …) běží beze změny logiky uvnitř
-`cppfand_dll.dll` na vlastním vlákně. Tato WPF aplikace (`cppfand-wpf.exe`)
+`cppfandlib.dll` na vlastním vlákně. Tato WPF aplikace (`cppfand-wpf.exe`)
 mu dělá obrazovku a klávesnici:
 
 - **Obrazovka 80×25** se kreslí z bufferu, který si drží `Drivers/screen.cpp`
@@ -36,17 +36,17 @@ Ctrl+Shift+C zkopíruje celou obrazovku, Ctrl+kolečko mění velikost písma.
 - Projekt cílí na **.NET Framework 4.8** (`net48`) i **.NET 10**
   (`net10.0-windows`), v platformách **x64** i **x86**. Výstup leží vedle
   nativních binárek: `x64\Release\wpf\<TFM>\` pro x64 a `Release\wpf\<TFM>\`
-  pro 32bit, která používá 32bitovou `cppfand_dll.dll` z konfigurace Win32.
+  pro 32bit, která používá 32bitovou `cppfandlib.dll` z konfigurace Win32.
   Pro klienty stačí složka `net48`:
   .NET Framework 4.8 je součástí Windows 10 (od 1903) a 11, nic dalšího
-  se neinstaluje. Nativní `cppfand_dll.dll` i `cppfand.exe` jsou linkované
+  se neinstaluje. Nativní `cppfandlib.dll` i `cppfand.exe` jsou linkované
   se statickou runtime knihovnou (`/MT`), takže nepotřebují Visual C++
   Redistributable; závisí jen na kernel32, user32 a comdlg32.
 - V kódu proto nesmí být API novější než 4.8 (žádné `Math.Clamp`,
   rozsahy `[..]`, `char.IsAsciiDigit`, `System.Text.Json`,
   `OpenFolderDialog`); rozdíly řeší `#if NETFRAMEWORK` / `#if NETCOREAPP`.
 - `dotnet build WpfHost -c Release -p:Platform=x64` přeloží obě verze,
-  nativní `cppfand_dll.dll` se do výstupu kopíruje ze stejné konfigurace
+  nativní `cppfandlib.dll` se do výstupu kopíruje ze stejné konfigurace
   solution (nejdřív přeložit `2_DynamicLibrary`).
 - Ve Visual Studiu je projekt v `cppfand.sln` jako `3_WpfHost` se závislostí
   na `2_DynamicLibrary`. Aby ho VS umělo načíst a přeložit, musí být
