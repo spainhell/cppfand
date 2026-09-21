@@ -1283,8 +1283,7 @@ bool ProjectRunner::MergeOldNew(FileD* new_file, FileD* old_file)
 
 bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 {
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "starting CompileRdb()");
+	SPDLOG_DEBUG("starting CompileRdb()");
 	CHAR_INFO Buf[40];
 	int w = 0;
 	int I = 0, J = 0, OldTxt = 0;
@@ -1531,13 +1530,13 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 #ifdef FandSQL
 		if (top && (Strm1 != nullptr)) Strm1->Login(UserName, UserPassWORD);
 #endif
-		log->log(loglevel::DEBUG, "finish CompileRdb()");
+		SPDLOG_DEBUG("finish CompileRdb()");
 
 		delete edit; edit = nullptr;
 		delete reader; reader = nullptr;
 	}
 	catch (std::exception& e) {
-		log->log(loglevel::EXCEPTION, "CompileRdb() exception: ", e.what());
+		SPDLOG_CRITICAL("CompileRdb() exception: {}", e.what());
 		result = false;
 		CompileMsgOff(Buf, w);
 		ReleaseFilesAndLinksAfterChapter(edit);
@@ -1617,8 +1616,7 @@ void ProjectRunner::Finish_EditExecRdb(bool wasGraph, int w)
 
 bool ProjectRunner::EditExecRdb(const std::string& name, const std::string& proc_name, Instr_proc* proc_call, wwmix* ww)
 {
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "starting EditExecRdb()");
+	SPDLOG_DEBUG("starting EditExecRdb()");
 	WORD Brk = 0, cc = 0;
 	uint8_t* p = nullptr;
 	pstring passw(20);
@@ -1843,7 +1841,7 @@ bool ProjectRunner::EditExecRdb(const std::string& name, const std::string& proc
 	}
 	catch (std::exception& e)
 	{
-		log->log(loglevel::EXCEPTION, "EditExecRdb() exception: ", e.what());
+		SPDLOG_CRITICAL("EditExecRdb() exception: {}", e.what());
 	}
 
 	Finish_EditExecRdb(wasGraph, w);

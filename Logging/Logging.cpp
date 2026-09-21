@@ -1,85 +1,72 @@
 #include "Logging.h"
 
-#include <cstdarg>
-#include <ctime>
+#include <spdlog/cfg/env.h>
+#include <spdlog/sinks/null_sink.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+
+#include <cstdlib>
+#include <filesystem>
 #include <memory>
+#include <string>
 
-
-Logging* Logging::_instance = nullptr;
-FILE* Logging::_file = nullptr;
-loglevel Logging::_level = loglevel::DEBUG;
-
-Logging* Logging::getInstance()
+namespace
 {
-	if (_instance == nullptr) _instance = new Logging();
-	return _instance;
-}
+	constexpr const char* kLoggerName = "fand";
+	constexpr const char* kFileName = "fand.log";
+	constexpr std::size_t kMaxFileSize = 5 * 1024 * 1024;
+	constexpr std::size_t kMaxFiles = 3;
 
-void Logging::log(loglevel level, char const* const _Format, ...)
-{
-	// 2020-10-07 15:00:39.775 [8064] :INFO:
-	char buffer[1024];
-	std::time_t t = std::time(0);   // get time now
-	struct tm lt;
-	errno_t err = localtime_s(&lt, &t);
-	strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &lt);
-	std::string str(buffer);
+	bool initialized = false;
 
-	switch (level) {
-	case loglevel::DEBUG: str += " :DEBUG: "; break;
-	case loglevel::INFO: str += " :INFO: "; break;
-	case loglevel::WARN: str += " :WARNING: "; break;
-	case loglevel::ERR: str += " :ERROR: "; break;
-	case loglevel::EXCEPTION: str += " :EXCEPTION: "; break;
-	}
-
-	va_list args;
-	va_start(args, _Format);
-	vsnprintf(buffer, sizeof(buffer), _Format, args);
-	va_end(args);
-
-	str += buffer;
-	str += '\n';
-		
-	fprintf_s(_file, str.c_str());
-}
-
-void Logging::finish()
-{
-	fflush(_file);
-	fclose(_file);
-}
-
-Logging::Logging()
-{
-	std::string path = GetEnv("FANDWORK");
-	if (path.empty() || path.ends_with("\\"))
+	std::string GetEnv(const char* name)
 	{
-		path += "fand.log";
-	}
-	else
-	{
-		path += "\\";
-		path += "fand.log";
-	}
+		size_t requiredSize = 0;
+		getenv_s(&requiredSize, nullptr, 0, name);
+		if (requiredSize == 0) return {};
 
-	static loglevel _level = loglevel::DEBUG;
-	auto err = fopen_s(&_file, path.c_str(), "a");
-	fprintf_s(_file, "\n");
-}
-
-std::string Logging::GetEnv(const char* name)
-{
-	std::string result;
-	size_t requiredSize = 0;
-	getenv_s(&requiredSize, NULL, 0, name);
-	if (requiredSize == 0) {
-		result = "";
-	}
-	else {
-		std::unique_ptr<char[]> buffer = std::make_unique<char[]>(requiredSize * sizeof(char));
+		std::unique_ptr<char[]> buffer = std::make_unique<char[]>(requiredSize);
 		getenv_s(&requiredSize, buffer.get(), requiredSize, name);
-		result = std::string(buffer.get());
+		return std::string(buffer.get());
 	}
-	return result;
+
+	// FANDWORK\fand.log; kdyz promenna neni nastavena, tak fand.log v aktualnim adresari.
+	std::string LogFilePath()
+	{
+		const std::string work = GetEnv("FANDWORK");
+		if (work.empty()) return kFileName;
+		return (std::filesystem::path(work) / kFileName).string();
+	}
+}
+
+void Log::Init()
+{
+	if (initialized) return;
+	initialized = true;
+
+	try {
+		auto logger = spdlog::rotating_logger_mt(kLoggerName, LogFilePath(), kMaxFileSize, kMaxFiles);
+		// 2020-10-07 15:00:39.775 [8064] [info] [base.cpp:413] zprava
+		logger->set_pattern("%Y-%m-%d %H:%M:%S.%e [%t] [%l] [%s:%#] %v");
+		logger->set_level(spdlog::level::debug);
+		logger->flush_on(spdlog::level::warn);
+		spdlog::set_default_logger(logger);
+	}
+	catch (const spdlog::spdlog_ex&) {
+		// Log se nepodarilo otevrit (chybejici adresar, prava, zamceny soubor).
+		// Aplikace musi bezet dal, takze zahazujeme vsechny zpravy.
+		spdlog::set_default_logger(spdlog::null_logger_mt(kLoggerName));
+	}
+
+	// Dovoli prepsat uroven za behu, napr. SPDLOG_LEVEL=warn nebo SPDLOG_LEVEL=fand=trace.
+	spdlog::cfg::load_env_levels();
+}
+
+void Log::Shutdown()
+{
+	spdlog::shutdown();
+	// spdlog::shutdown() vynuluje vychozi logger, takze by SPDLOG_* makra sahala
+	// na nullptr. Podstrcime zahazovaci logger, aby pozdni zapis byl no-op, ne pad.
+	spdlog::set_default_logger(
+		std::make_shared<spdlog::logger>("discard", std::make_shared<spdlog::sinks::null_sink_mt>()));
+	initialized = false;
 }

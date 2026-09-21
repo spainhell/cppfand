@@ -5,8 +5,8 @@
 
 int main(int argc, char* argv[])
 {
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::INFO, "*** *** *** *** *** *** APPLICATION STARTED *** *** *** *** *** ***");
+	Log::Init();
+	SPDLOG_INFO("*** *** *** *** *** *** APPLICATION STARTED *** *** *** *** *** ***");
 
 	//system("pause");
 
@@ -29,12 +29,12 @@ int main(int argc, char* argv[])
 	}
 	catch (std::exception& ex)
 	{
-		log->log(loglevel::EXCEPTION, "%s", ex.what());
+		SPDLOG_CRITICAL("{}", ex.what());
 	}
 
 	// finish
 	DeleteFandFiles();
-	log->log(loglevel::INFO, "*** *** *** *** *** ***  APPLICATION ENDED   *** *** *** *** *** ***");
-	Logging::finish();
+	SPDLOG_INFO("*** *** *** *** *** ***  APPLICATION ENDED   *** *** *** *** *** ***");
+	Log::Shutdown();
 	system("cls");
 }

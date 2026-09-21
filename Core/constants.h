@@ -89,7 +89,7 @@ enum instr_type
 	// *** 0-ary instructions ***
 	_const = 0x10, //{float/string/boolean},
 	_field = 0x11, _getlocvar = 0x12, // {fieldD}, {BPOfs},
-	_access = 0x13, // {fieldD or nil for exist,newfileD,linkD or nil},
+	_accessop = 0x13, // {fieldD or nil for exist,newfileD,linkD or nil},
 	_recvarfld = 0x14, // {fieldD,fileD,recptr}
 	_today = 0x18, _currtime = 0x19, _pi = 0x1A, _random = 0x1B,
 	_exitcode = 0x1d, _edrecno = 0x1e, _getWORDvar = 0x1f, // {n:0..}

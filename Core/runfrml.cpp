@@ -709,7 +709,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, Record* record)
 		result = record->LoadB(x7->Field); //file_d->loadB(x7->Field, record);
 		break;
 	}
-	case _access: {
+	case _accessop: {
 		// nacita hodnotu ze souboru
 		auto iX = (FrmlElemAccess*)X;
 		int RecNo;
@@ -949,7 +949,7 @@ label1:
 		result = RunReal(file_d, iX0->P1, record) * RunReal(file_d, iX0->P2, record);
 		break;
 	}
-	case _access: {
+	case _accessop: {
 		auto iX = (FrmlElemAccess*)X;
 
 		if (iX->Link != nullptr) {
@@ -1278,7 +1278,7 @@ int RunInt(FileD* file_d, FrmlElem* X, Record* record)
 //		//TF02Pos = (int)((FrmlElemLocVar*)Z)->locvar->rdb;
 //		//break;
 //	}
-//	case _access: {
+//	case _accessop: {
 //		int n;
 //		FrmlElemAccess* iZ = (FrmlElemAccess*)Z;
 //		LockMode md = iZ->File->NewLockMode(RdMode);
@@ -1555,7 +1555,7 @@ label1:
 	case _getlocvar: {
 		return ((FrmlElemLocVar*)X)->locvar->S;
 	}
-	case _access: {
+	case _accessop: {
 		FrmlElemAccess* iX7 = (FrmlElemAccess*)X;
 		LockMode lm = iX7->File->NewLockMode(RdMode);
 

@@ -9,7 +9,6 @@
 #include "../Core/runfrml.h"
 #include "../fandio/XKey.h"
 #include "../Common/compare.h"
-#include "../Logging/Logging.h"
 #include "../Common/textfunc.h"
 #include "../Drivers/files.h"
 

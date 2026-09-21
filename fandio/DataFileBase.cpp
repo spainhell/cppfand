@@ -2,6 +2,7 @@
 #include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
+#include "../Logging/Logging.h"
 
 
 DataFileBase::DataFileBase()
@@ -41,7 +42,6 @@ bool DataFileBase::HasUpdateFlag() const
 
 size_t DataFileBase::read_write_data(FileOperation operation, size_t position, size_t count, void* buf) const
 {
-	Logging* log = Logging::getInstance();
 	size_t result = 0;
 
 	WORD err = 0;
@@ -65,10 +65,10 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 	}
 	else {
 		if (operation == READ) {
-			log->log(loglevel::DEBUG, "RdWrCache(READ) non cached file 0x%p operation error: %i.", Handle, HandleError);
+			SPDLOG_DEBUG("RdWrCache(READ) non cached file {} operation error: {}.", Handle, HandleError);
 		}
 		else {
-			log->log(loglevel::DEBUG, "RdWrCache(WRITE) non cached file 0x%p operation error: %i.", Handle, HandleError);
+			SPDLOG_DEBUG("RdWrCache(WRITE) non cached file {} operation error: {}.", Handle, HandleError);
 		}
 
 		err = HandleError;

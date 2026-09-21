@@ -90,7 +90,7 @@ public:
 	FieldDescr* Field = nullptr; // 7 {_field}
 	FrmlElem* Frml = nullptr;
 	FileD* File = nullptr;
-	LinkD* Link = nullptr; // 7  {Link=nil for param} {_access} {Link=RecPtr} {_recvarfld}
+	LinkD* Link = nullptr; // 7  {Link=nil for param} {_accessop} {Link=RecPtr} {_recvarfld}
 };
 
 class FrmlElemRecVarField : public FrmlElem
@@ -100,7 +100,7 @@ public:
 	FieldDescr* Field = nullptr; // 7 {_field}
 	FrmlElem* Frml = nullptr;
 	FileD* File = nullptr;
-	Record* record = nullptr; // 7  {Link=nil for param} {_access} {Link=RecPtr} {_recvarfld}
+	Record* record = nullptr; // 7  {Link=nil for param} {_accessop} {Link=RecPtr} {_recvarfld}
 };
 
 class FrmlElemNewFile : public FrmlElem
