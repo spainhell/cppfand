@@ -783,8 +783,7 @@ int DataEditor::CNRecs() const
 /// <returns>Cislo polozky v datovem souboru (poradi)</returns>
 int DataEditor::AbsRecNr(int N)
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "AbsRecNr(%i), file_d_ 0x%p", N, file_d_->Handle);
+	//SPDLOG_DEBUG("AbsRecNr({}), file_d_ {}", N, file_d_->Handle);
 	int result = 0;
 
 	if (params_->EdRecVar
@@ -2238,8 +2237,7 @@ bool DataEditor::DelIndRec(int I, int N)
 
 bool DataEditor::DeleteRecProc()
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "DeleteRecProc() deleting item (file_d_ '%c')", file_d_->Name.c_str());
+	//SPDLOG_DEBUG("DeleteRecProc() deleting item (file_d_ '{}')", file_d_->Name);
 
 	int I = 0, J = 0, N = 0, oBaseRec = 0;
 	WORD oIRec = 0;
@@ -2261,7 +2259,7 @@ bool DataEditor::DeleteRecProc()
 	oIRec = IRec;
 	oBaseRec = BaseRec;    /* exit proc uses CRec for locking etc.*/
 	if (HasIndex) {
-		//log->log(loglevel::DEBUG, "... from file with index ...");
+		//SPDLOG_DEBUG("... from file with index ...");
 		file_d_->FF->TestXFExist();
 		if (Group) {
 			IRec = 1; BaseRec = 1;
@@ -2381,7 +2379,7 @@ void DataEditor::FindExistTest(FrmlElem* Z, LinkD** LD)
 		if ((iZ->Field->Flg & f_Stored) == 0) FindExistTest(iZ->Field->Frml, LD);
 		break;
 	}
-	case _access: {
+	case _accessop: {
 		auto iZ = (FrmlElemAccess*)Z;
 		if (iZ->Frml == nullptr) *LD = iZ->Link; /*file.exist*/
 		break;

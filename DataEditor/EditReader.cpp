@@ -737,7 +737,7 @@ void EditReader::SetFrmlFlags(FrmlElem* Z)
 		SetFlag(iZ7->Field);
 		break;
 	}
-	case _access: {
+	case _accessop: {
 		if (iZ7->Link != nullptr) {
 			//KeyFldD* Arg = iZ7->Link->Args;
 			//while (Arg != nullptr) {

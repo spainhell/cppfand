@@ -1,24 +1,18 @@
 #pragma once
-#include <cstdio>
-#include <string>
 
-enum class loglevel
+// spdlog se includuje primo, takze volajici muze pouzivat SPDLOG_DEBUG(...) &spol.
+// Uroven se resi na dvou mistech:
+//   - SPDLOG_ACTIVE_LEVEL (preklad) -- nastaveno v spdlog.props, viz koren repozitare
+//   - logger->set_level()  (beh)    -- vychozi debug, prepsatelne promennou SPDLOG_LEVEL
+#include <spdlog/spdlog.h>
+
+namespace Log
 {
-	DEBUG, INFO, WARN, ERR, EXCEPTION
-};
+	// Zalozi rotujici log 'fand.log' v adresari FANDWORK (jinak v aktualnim adresari)
+	// a nastavi ho jako vychozi spdlog logger. Opakovane volani nic nedela.
+	// Kdyz soubor nejde otevrit, logovani se potichu vypne a aplikace bezi dal.
+	void Init();
 
-class Logging
-{
-public:
-	static Logging* getInstance();
-	void log(loglevel level, char const* const _Format, ...);
-	static void finish();
-	Logging();
-	
-private:
-	static Logging* _instance;
-	static FILE* _file;
-	static loglevel _level;
-	std::string GetEnv(const char* name);
-};
-
+	// Dopise buffery a uvolni loggery. Po zavolani jsou dalsi zapisy no-op.
+	void Shutdown();
+}

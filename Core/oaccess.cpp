@@ -11,6 +11,7 @@
 #include "../Common/compare.h"
 #include "../Drivers/constants.h"
 #include "../Common/CommonVariables.h"
+#include "../Logging/Logging.h"
 
 void OpenXWorkH()
 {
@@ -41,14 +42,12 @@ void OpenTWorkH()
 
 void SaveFiles()
 {
-	Logging* log = Logging::getInstance();
-
 	// save catalog
 	FileD* catalog_file = catalog->GetCatalogFile();
-	log->log(loglevel::DEBUG, "SaveFiles() Catalog: 0x%p, %s ", catalog_file->FF->Handle, catalog_file->Name.c_str());
+	SPDLOG_DEBUG("SaveFiles() Catalog: {}, {} ", catalog_file->FF->Handle, catalog_file->Name);
 	catalog_file->FF->WrPrefixes();
 
-	log->log(loglevel::DEBUG, "SaveFiles() calling ForAllFDs(::save)");
+	SPDLOG_DEBUG("SaveFiles() calling ForAllFDs(::save)");
 	ForAllFDs(ForAllFilesOperation::save);
 
 	//bool b = SaveCache(0, catalog_file->FF->Handle);

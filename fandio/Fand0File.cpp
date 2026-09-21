@@ -17,6 +17,7 @@
 #include "../Common/realDouble.h"
 #include "../Common/textfunc.h"
 #include "../Common/Record.h"
+#include "../Logging/Logging.h"
 
 #include "../Drivers/files.h"
 
@@ -79,8 +80,7 @@ size_t Fand0File::ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields)
 	//{
 	//	printf("");
 	//}
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
+	//SPDLOG_DEBUG("ReadRec(), file {}, RecNr {}", fmt::ptr(this), rec_nr);
 	std::unique_ptr buffer = GetRecSpaceUnique();
 	size_t result = ReadRec(rec_nr, buffer.get());
 	_getValuesFromRawData(buffer.get(), record, ignore_T_fields);
@@ -89,16 +89,14 @@ size_t Fand0File::ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields)
 
 size_t Fand0File::ReadRec(size_t rec_nr, uint8_t* buffer)
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
+	//SPDLOG_DEBUG("ReadRec(), file {}, RecNr {}", fmt::ptr(this), rec_nr);
 	size_t result = ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer);
 	return result;
 }
 
 size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
+	//SPDLOG_DEBUG("WriteRec({}), CFile {}", rec_nr, Handle);
 
 	//DelAllTFlds(rec_nr); // delete all 'T' fields from orig. record first
 	WasWrRec = true;
@@ -128,8 +126,7 @@ void Fand0File::CreateRec(int n, Record* record)
 void Fand0File::DeleteRec(int32_t rec_nr, Record* record)
 {
 	if (file_type == FandFileType::INDEX) {
-		Logging* log = Logging::getInstance();
-		//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
+		//SPDLOG_DEBUG("DeleteXRec({})", rec_nr);
 		TestXFExist();
 		DeleteAllIndexes(rec_nr, record);
 		DelAllTFldsFromRecord(record); // T fields will be deleted during 
@@ -915,8 +912,6 @@ int Fand0File::XFNotValid()
 
 int Fand0File::CreateIndexFile()
 {
-	Logging* log = Logging::getInstance();
-
 	LockMode md = NullMode;
 	bool fail = false;
 
@@ -930,7 +925,7 @@ int Fand0File::CreateIndexFile()
 			//RunError(903);
 			return 903;
 		}
-		log->log(loglevel::DEBUG, "CreateIndexFile() file 0x%p name '%s'", XF->Handle, _parent->Name.c_str());
+		SPDLOG_DEBUG("CreateIndexFile() file {} name '{}'", XF->Handle, _parent->Name);
 		XF->RdPrefix();
 		if (XF->NotValid) {
 			XF->SetEmpty(NRecs, _parent->GetNrKeys());
@@ -1083,8 +1078,7 @@ label1:
 
 void Fand0File::DeleteAllIndexes(int RecNr, Record* record)
 {
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
+	SPDLOG_DEBUG("DeleteAllIndexes({})", RecNr);
 
 	for (auto& K : _parent->Keys) {
 		K->Delete(_parent, RecNr, record);

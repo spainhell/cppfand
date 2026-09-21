@@ -201,8 +201,7 @@ int XKey::PathToNr(FileD* file_d)
 
 void XKey::NrToPath(FileD* file_d, int I)
 {
-	auto log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "XKey::NrToPath(%i)", I);
+	//SPDLOG_DEBUG("XKey::NrToPath({})", I);
 
 	auto p = std::make_unique<XPage>();
 	int page = IndexRoot;
@@ -354,8 +353,7 @@ label2:
 
 int XKey::NrToRecNr(FileD* file_d, int I)
 {
-	auto log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "XKey::NrToRecNr(%i)", I);
+	//SPDLOG_DEBUG("XKey::NrToRecNr({})", I);
 	NrToPath(file_d, I);
 	return PathToRecNr(file_d);
 }

@@ -1413,7 +1413,7 @@ label1:
 		result = SrchF(F1, iZ7->Field);
 		break;
 	}
-	case _access: {
+	case _accessop: {
 		FrmlElemAccess* iZ7 = static_cast<FrmlElemAccess*>(Z);
 		if (iZ7->Link != nullptr) {
 			for (KeyFldD* KF : iZ7->Link->Args) {
@@ -2203,7 +2203,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 					return nullptr;
 				}
 
-				if ((Z->Op != _access) || (((FrmlElemAccess*)Z)->Link != nullptr)) {
+				if ((Z->Op != _accessop) || (((FrmlElemAccess*)Z)->Link != nullptr)) {
 					FrstSumVar = false;
 				}
 			}
@@ -2544,7 +2544,7 @@ bool Compiler::IsRoleName(bool both, FileD* file_d, FileD** up_file_d, LinkD** l
 FrmlElem* Compiler::RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 {
 	TestIdentif();
-	auto Z = new FrmlElemAccess(_access, 12);
+	auto Z = new FrmlElemAccess(_accessop, 12);
 	Z->File = FD;
 	Z->Link = LD;
 	if ((LD != nullptr) && EquUpCase("EXIST", LexWord)) {

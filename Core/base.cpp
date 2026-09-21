@@ -409,8 +409,7 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 		break;
 	}
 
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "opening file 0x%p '%s', error %i", handle, path.c_str(), HandleError);
+	SPDLOG_DEBUG("opening file {} '{}', error {}", handle, path, HandleError);
 
 #ifdef _DEBUG
 	if (handle != nullptr) {
@@ -452,7 +451,6 @@ long FileSizeH(HANDLE handle)
 void CloseH(HANDLE* handle)
 {
 	HANDLE h = *handle;
-	Logging* log = Logging::getInstance();
 
 #ifdef _DEBUG
 	DataFile* fileForClose = nullptr;
@@ -462,7 +460,7 @@ void CloseH(HANDLE* handle)
 
 	// uzavre soubor
 	bool res = CloseF(*handle, HandleError);
-	log->log(loglevel::DEBUG, "closing file 0x%p, error %i", h, HandleError);
+	SPDLOG_DEBUG("closing file {}, error {}", h, HandleError);
 
 	if (!res) {
 		throw std::exception("Cannot close file!");
@@ -480,14 +478,13 @@ void CloseH(HANDLE* handle)
 
 	if (fileForClose == nullptr) {
 		// soubor ve filesMap nebyl
-		log->log(loglevel::WARN, "closing file 0x%p, but file wasn't in filesMap!", h);
+		SPDLOG_WARN("closing file {}, but file wasn't in filesMap!", h);
 	}
 #endif
 }
 
 void CloseClearH(HANDLE* h)
 {
-	Logging* log = Logging::getInstance();
 	if (h == nullptr) return;
 	CloseH(h);
 }
@@ -612,13 +609,12 @@ int MemoryAvailable()
 
 [[noreturn]] void GoExit(const std::string& message)
 {
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::WARN, "GoExit(): '%s'", message.c_str());
+	SPDLOG_WARN("GoExit(): '{}'", message);
 #ifdef _DEBUG
 	screen.ScrWrText(1, 1, message.c_str());
 #endif
 	BreakP = true;
-	log->log(loglevel::WARN, "GoExit(): Setting 'BreakP = true'", message.c_str());
+	SPDLOG_WARN("GoExit(): Setting 'BreakP = true'");
 	throw std::exception(message.c_str());
 }
 
@@ -628,13 +624,11 @@ bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_m
 		LastExitCode = RunFndFilesExe(cmd_line);
 	}
 	else {
-		Logging* log = Logging::getInstance();
-
 		char psBuffer[128];
 		FILE* pPipe;
 
 		std::string cmd = path.empty() ? cmd_line : path + " " + cmd_line;
-		log->log(loglevel::INFO, "OSshell() calling command '%s'", cmd.c_str());
+		SPDLOG_INFO("OSshell() calling command '{}'", cmd);
 
 		if ((pPipe = _popen(cmd.c_str(), "rt")) == nullptr)
 			return false;

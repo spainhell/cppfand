@@ -247,9 +247,9 @@ extern "C" int FAND_API FandStart(const char* fandDir, const char* workDir, cons
 	g_lastError.clear();
 
 	g_thread = std::thread([dir, wrk, rdb]() {
-		Logging* log = Logging::getInstance();
-		log->log(loglevel::INFO, "*** *** *** *** *** *** HOSTED FAND STARTED *** *** *** *** *** ***");
 		if (!wrk.empty()) SetCurrentDirectoryA(wrk.c_str());
+		Log::Init();
+		SPDLOG_INFO("*** *** *** *** *** *** HOSTED FAND STARTED *** *** *** *** *** ***");
 		paramstr.clear();
 		std::string exe = dir;
 		if (!exe.empty() && exe.back() != '\\') exe += '\\';
@@ -265,14 +265,15 @@ extern "C" int FAND_API FandStart(const char* fandDir, const char* workDir, cons
 		catch (std::exception& ex) {
 			g_lastError = ex.what();
 			g_exitCode = -2;
-			log->log(loglevel::EXCEPTION, "%s", ex.what());
+			SPDLOG_CRITICAL("{}", ex.what());
 		}
 		catch (...) {
 			g_lastError = "unknown exception";
 			g_exitCode = -3;
 		}
 		try { DeleteFandFiles(); } catch (...) {}
-		log->log(loglevel::INFO, "*** *** *** *** *** ***  HOSTED FAND ENDED   *** *** *** *** *** ***");
+		SPDLOG_INFO("*** *** *** *** *** ***  HOSTED FAND ENDED   *** *** *** *** *** ***");
+		Log::Shutdown(); // dopsat buffery; dalsi FandStart si log otevre znovu
 		g_running = false;
 	});
 	return 0;

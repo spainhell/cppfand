@@ -7,6 +7,7 @@
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
+#include "../Logging/Logging.h"
 
 
 FandXFile::FandXFile(Fand0File* parent)
@@ -68,8 +69,7 @@ void FandXFile::SetEmpty(int recs, unsigned char keys)
 
 void FandXFile::RdPrefix()
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "FandXFile::RdPrefix() 0x%p reading 18 Bytes", Handle);
+	//SPDLOG_DEBUG("FandXFile::RdPrefix() {} reading 18 Bytes", Handle);
 	ReadData(2, 4, &FreeRoot);
 	ReadData(6, 4, &MaxPage);
 	ReadData(10, 4, &NRecs);
@@ -80,9 +80,8 @@ void FandXFile::RdPrefix()
 
 void FandXFile::WrPrefix(int recs, unsigned char keys)
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "FandXFile::WrPrefix() 0x%p writing 20 Bytes, NRecsAbs = %i, NrKeys = %i",
-	//	Handle, CFile->NRecs, CFile->GetNrKeys());
+	//SPDLOG_DEBUG("FandXFile::WrPrefix() {} writing 20 Bytes, NRecsAbs = {}, NrKeys = {}",
+	//	Handle, recs, keys);
 	unsigned short Signum = 0x04FF;
 	WriteData(0, 2, &Signum);
 	NRecsAbs = recs;

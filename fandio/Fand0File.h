@@ -7,7 +7,6 @@
 #include "../Core/switches.h"
 #include "FieldDescr.h"
 #include "ProgressCallbacks.h"
-#include "../Logging/Logging.h"
 #include "../Common/OperationType.h"
 
 class Record;

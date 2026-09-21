@@ -23,6 +23,7 @@
 #include "wwmix.h"
 #include "../TextEditor/TextEditor.h"
 #include "../fandio/directory.h"
+#include "../Logging/Logging.h"
 #include "../Common/textfunc.h"
 
 
@@ -291,8 +292,7 @@ void InitRunFand()
 	}
 	printf("LANNODE: %i\n", LANNode);
 
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::INFO, "LANNODE: %i", LANNode);
+	SPDLOG_INFO("LANNODE: {}", LANNode);
 
 	//h = ResFile.Handle;
 	//ReadH(h, 2, &n);

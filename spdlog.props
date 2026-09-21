@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Spolecne nastaveni pro spdlog (verzovany header-only v Logging/include).
+  Importuje se v kazdem C++ projektu hned za Microsoft.Cpp.props.
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <IncludePath>$(MSBuildThisFileDirectory)Logging\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <!--
+        SPDLOG_ACTIVE_LEVEL: pod touto urovni se SPDLOG_* makra vubec neprelozi.
+        Uroven za behu nastavuje Log::Init() a jde prepsat promennou SPDLOG_LEVEL.
+
+        FMT_UNICODE=0: fmt jinak vyzaduje preklad s /utf-8. Projekt je MultiByte
+        a casti zdrojaku nesou ceske literaly v CP1250 bez BOM, takze /utf-8 by
+        je prelozil spatne. S FMT_UNICODE=0 fmt zapisuje bajty tak, jak prisly,
+        tedy stejne, jako to delal puvodni logger pres fprintf.
+      -->
+      <PreprocessorDefinitions>SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG;FMT_UNICODE=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>
