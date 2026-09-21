@@ -54,7 +54,6 @@ extern uint8_t GrBytesPerChar;
 extern WORD GrBytesPerLine;
 
 const uint8_t MaxTxtCols = 132; // r132 {the best adapter}
-const uint8_t EventQSize = 16;
 const bool BGIReload = true;
 extern TPoint LastWhere, LastWhereG, DownWhere;
 extern Wind WindMin, WindMax; // r137
@@ -62,28 +61,18 @@ extern uint8_t TextAttr, StartAttr, StartMode; // r138
 extern WORD LastMode;
 extern void* FontArr; extern void* BGIDriver; extern void* BGILittFont; extern void* BGITripFont;
 extern uint8_t ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
-extern WORD EventCount, EventQHead, EventQTail;
-struct stEventQueue { WORD Time, Buttons, X, Y, GX, GY; };
-extern stEventQueue EventQueue[EventQSize - 1];
 extern Screen screen;
 extern TCrs Crs;
-const bool MausExist = false;
-const WORD ofsTicks = 0x6C; // ř. 199
-const TPoint MouseWhere;
-const TPoint MouseWhereG;
-const bool MausVisible = true;
-const bool MausRefresh = false;
+extern bool MausExist;      // je mys k dispozici?
+extern TPoint MouseWhere;   // posledni poloha mysi ve znacich, 0-based
+extern TPoint MouseWhereG;  // posledni poloha mysi v pixelech
+extern bool MausVisible;    // je ukazatel mysi zobrazen?
 
 extern int trialInterval;
 // priznaky klavesnice - původně 0:$417 (is used to make control to keys(Num, Caps, Scroll, Alt, ShR, ShL, CtrlL, CtrlR)
 //extern void* OldIntr08;
 
-/*EventQueue:array[0..EventQSize-1] of record
-	Time,Buttons,
-	X,Y,
-	GX,GY :word {pixel}
-	end;
- EventQLast:record end;*/
+// Frontu udalosti mysi (puvodne EventQueue plnena obsluhou int 33H) drzi Mouse, viz Drivers/mouse.h.
 
 void ClearKbdBuf();
 bool KbdPressed(); // { buffer + Bios }
@@ -101,13 +90,12 @@ WORD WaitEvent(uint64_t Delta);
 void GetEvent();
 void ClrEvent();
 void AssignCrt(pstring* filepath);
-extern WORD AutoTicks, DownTicks, AutoDelay;
+extern uint64_t AutoTicks, DownTicks, AutoDelay; // v ms
 extern void* OldBreakIntr;
 extern void* OldKbdIntr;
 
 void GetMonoColor();
 void CrsDraw();
-void HideMausIn();
 
 short WrOutput(TextFile* F);
 short DummyCrt(TextFile* F);
@@ -120,10 +108,16 @@ bool KbdTimer(int cpu_delta, uint8_t kind);
 bool TestEvent();
 WORD AddCtrlAltShift(uint8_t Flgs);
 void AddToKbdBuf(WORD KeyCode);
-void ShowMouse();
-void GetMouseEvent();
 bool KeyPressed();
 WORD ReadKey();
-void SetMouse(WORD X, WORD Y, bool Visible);
 void ClearKeyBuf();
+
+// *** MYS ***
 void InitMouseEvents();
+void DoneMouseEvents();
+void ShowMouse();
+void HideMouse();
+void ResetMouse();
+void SetMouse(WORD X, WORD Y, bool Visible);
+void GetMouseEvent();
+void GetMouseKeyEvent();

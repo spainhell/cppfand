@@ -215,6 +215,7 @@ void TMenu::HandleEvent()
 				Event.Pressed.UpdateKey(__ESC);
 				return;
 			}
+			break;
 		}
 		case evKeyDown: {
 			if (Event.Pressed.Char == '\0') {
@@ -290,10 +291,13 @@ void TMenu::LeadIn(TPoint* T)
 {
 	WORD i, j;
 	TRect r{ {0,0},{0,0} };
+	// GetItemRect vraci souradnice 1-based (pouziva je vypis na obrazovku),
+	// Event.Where je 0-based jako v puvodnim PC-FANDu
+	TPoint p{ (WORD)(T->X + 1), (WORD)(T->Y + 1) };
 	i = iTxt;
 	for (j = 1; j <= nTxt; j++) {
 		GetItemRect(j, &r);
-		if (r.Contains(T) && Enabled(j) && (GetText(j) != ""))
+		if (r.Contains(&p) && Enabled(j) && (GetText(j) != ""))
 		{
 			iTxt = j;
 			WrText(i); WrText(j);

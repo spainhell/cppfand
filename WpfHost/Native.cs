@@ -73,6 +73,9 @@ public static class Native
     public static extern void FandPushKey(ushort virtualKey, ushort scanCode, ushort unicodeChar, uint controlKeyState, int keyDown);
 
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void FandPushMouse(int x, int y, uint buttonState, uint eventFlags, uint controlKeyState);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
     public static extern void FandSetFieldEditHost(int enabled);
 
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
@@ -98,4 +101,9 @@ public static class Native
     public const uint LeftCtrlPressed = 0x0008;
     public const uint ShiftPressed = 0x0010;
     public const uint EnhancedKey = 0x0100;
+
+    // dwButtonState / dwEventFlags (MOUSE_EVENT_RECORD)
+    public const uint FromLeft1stButtonPressed = 0x0001;
+    public const uint RightmostButtonPressed = 0x0002;
+    public const uint MouseMoved = 0x0001;
 }

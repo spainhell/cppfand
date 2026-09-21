@@ -5151,7 +5151,7 @@ void DataEditor::MouseProc()
 				if ((i != IRec) && (IsNewRec || !WriteCRec(true, Displ))) goto label1;
 				GotoRecFld(n, D);
 				if ((Event.Buttons & mbDoubleClick) != 0) {
-					if (params_->MouseEnter) Event.Pressed.UpdateKey('M');
+					if (params_->MouseEnter) Event.Pressed.UpdateKey(__ENTER);
 					else Event.Pressed.UpdateKey(__INSERT);
 					Event.What = evKeyDown;
 					return;

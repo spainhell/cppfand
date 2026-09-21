@@ -669,7 +669,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, Record* record)
 			result = false;
 		}
 		else {
-			if ((Event.What && iX1->W01) == 0) {
+			if ((Event.What & iX1->W01) == 0) {
 				goto label2;
 			}
 			result = true;
@@ -679,21 +679,18 @@ bool RunBool(FileD* file_d, FrmlElem* X, Record* record)
 	case _ismouse: {
 		auto iX1 = (FrmlElem1*)X;
 		result = false;
-		if (((Event.What && iX1->W01) != 0) && ((Event.Buttons && iX1->W02) == iX1->W02))
+		if (((Event.What & iX1->W01) != 0) && ((Event.Buttons & iX1->W02) == iX1->W02))
 			result = true;
 		break;
 	}
 	case _mousein: {
 		auto iX0 = (FrmlElemFunction*)X;
 
-		int RecNo;
-		LongStr* S = nullptr;
-		WORD* w1 = (WORD*)&RecNo;
-		WORD* w2 = (WORD*)S;
-
-		*w1 = RunInt(file_d, iX0->P1, record);
-		*w2 = RunInt(file_d, iX0->P2, record);
-		result = MouseInRectProc(*w1, *w2, RunInt(file_d, iX0->P3, record) - *w1 + 1, RunInt(file_d, iX0->P4, record) - *w2 + 1);
+		WORD w1 = (WORD)RunInt(file_d, iX0->P1, record);
+		WORD w2 = (WORD)RunInt(file_d, iX0->P2, record);
+		result = MouseInRectProc(w1, w2,
+			(WORD)(RunInt(file_d, iX0->P3, record) - w1 + 1),
+			(WORD)(RunInt(file_d, iX0->P4, record) - w2 + 1));
 		break;
 	}
 	case _getlocvar: {

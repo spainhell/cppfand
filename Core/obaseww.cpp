@@ -253,7 +253,7 @@ void WrLLF10MsgLine(std::string& message)
 		GetEvent();
 		unsigned short key = Event.Pressed.KeyCombination();
 		switch (Event.What) {
-		case evMouse:
+		case evMouseDown:
 			if (MouseInRect(0, row, 3, 1)) {
 				Event.Pressed.UpdateKey(__F10);
 				end = true;

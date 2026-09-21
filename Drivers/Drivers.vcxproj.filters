@@ -18,6 +18,9 @@
     <ClCompile Include="keyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mouse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -27,6 +30,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="keyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="screen.h">

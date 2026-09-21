@@ -51,6 +51,12 @@ public sealed class TerminalControl : FrameworkElement
     public Func<Key, ModifierKeys, bool>? RedirectKey { get; set; }
     public Func<string, bool>? RedirectText { get; set; }
 
+    /// <summary>
+    /// Vrátí false, když myš interpretu posílat nemáme – typicky když hostitel
+    /// právě převzal editaci pole a kliknutí patří jeho editoru.
+    /// </summary>
+    public Func<bool>? MouseAllowed { get; set; }
+
     public TerminalControl()
     {
         Focusable = true;
@@ -289,13 +295,74 @@ public sealed class TerminalControl : FrameworkElement
         }
     }
 
-    // --- klávesnice -------------------------------------------------------------
+    // --- myš --------------------------------------------------------------------
+
+    private int _mouseCellX = -1, _mouseCellY = -1;
+
+    /// <summary>Pozice myši v buňkách mřížky (0-based, oříznutá na obrazovku).</summary>
+    private (int X, int Y) CellAt(Point p)
+    {
+        int x = _cellWidth > 0 ? (int)(p.X / _cellWidth) : 0;
+        int y = _cellHeight > 0 ? (int)(p.Y / _cellHeight) : 0;
+        return (Math.Max(0, Math.Min(_cols - 1, x)), Math.Max(0, Math.Min(_rows - 1, y)));
+    }
+
+    private static uint ButtonState(MouseDevice m)
+    {
+        uint state = 0;
+        if (m.LeftButton == MouseButtonState.Pressed) state |= Native.FromLeft1stButtonPressed;
+        if (m.RightButton == MouseButtonState.Pressed) state |= Native.RightmostButtonPressed;
+        return state;
+    }
+
+    /// <summary>Pošle interpretu stav myši ve tvaru MOUSE_EVENT_RECORD konzole.</summary>
+    private void PushMouse(MouseEventArgs e, bool moved)
+    {
+        if (MouseAllowed?.Invoke() == false) return;
+        var (x, y) = CellAt(e.GetPosition(this));
+        if (moved && x == _mouseCellX && y == _mouseCellY) return; // pohyb v rámci jedné buňky FAND nezajímá
+        _mouseCellX = x; _mouseCellY = y;
+        uint mods = 0;
+        if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0) mods |= Native.ShiftPressed;
+        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0) mods |= Native.LeftCtrlPressed;
+        if ((Keyboard.Modifiers & ModifierKeys.Alt) != 0) mods |= Native.LeftAltPressed;
+        Native.FandPushMouse(x, y, ButtonState(e.MouseDevice), moved ? Native.MouseMoved : 0, mods);
+    }
 
     protected override void OnMouseDown(MouseButtonEventArgs e)
     {
         Focus();
+        if (e.ChangedButton == MouseButton.Left || e.ChangedButton == MouseButton.Right)
+        {
+            CaptureMouse();
+            PushMouse(e, false);
+            e.Handled = true;
+        }
         base.OnMouseDown(e);
     }
+
+    protected override void OnMouseUp(MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Left || e.ChangedButton == MouseButton.Right)
+        {
+            PushMouse(e, false);
+            if (e.MouseDevice.LeftButton != MouseButtonState.Pressed
+                && e.MouseDevice.RightButton != MouseButtonState.Pressed)
+            {
+                ReleaseMouseCapture();
+            }
+            e.Handled = true;
+        }
+        base.OnMouseUp(e);
+    }
+
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+        PushMouse(e, true);
+        base.OnMouseMove(e);
+    }
+
+    // --- klávesnice -------------------------------------------------------------
 
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {

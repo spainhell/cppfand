@@ -130,7 +130,7 @@ bool TextEditorEvents::HelpEvent(std::vector<WORD>& breakKeys)
 		case __DOWN:
 		case __PAGEDOWN:
 		case __PAGEUP:
-		case 'M': {
+		case __ENTER: {
 			result = true;
 			break;
 		}
@@ -1463,7 +1463,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, EditorMode& mode, bool& I
 				editor->WordFind(editor->WordNo(I + 1), I1, I2, W1);
 				if ((I1 <= I) && (I2 >= I)) {
 					editor->SetWord(I1, I2);
-					Event.Pressed.UpdateKey('M');
+					Event.Pressed.UpdateKey(__ENTER);
 					Konec = true;
 				}
 				else if (editor->WordExistsOnActualScreen()) {
