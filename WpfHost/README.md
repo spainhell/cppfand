@@ -20,13 +20,29 @@ mu dělá obrazovku a klávesnici:
 
 ## Spuštění
 
+Obvyklé nasazení je zkopírovat obsah složky `net48` přímo do adresáře úlohy.
+Pak stačí `cppfand-wpf.exe` spustit dvojklikem: `FAND.CFG` a `FAND.RES` leží
+vedle programu, takže se na cesty neptá, a je-li v adresáři jediná `.RDB`,
+předvyplní i název úlohy — zbývá potvrdit.
+
 ```
+cppfand-wpf.exe <úloha>                    ... obě cesty = složka s FAND.CFG
+cppfand-wpf.exe <složka FANDu> <úloha>     ... složka je zároveň pracovní adresář
 cppfand-wpf.exe <složka s FAND.CFG a FAND.RES> <pracovní adresář> <úloha>
+
+cppfand-wpf.exe UCTO2024
 cppfand-wpf.exe C:\ucto C:\ucto UCTO2024
 ```
 
-Bez parametrů se zobrazí dialog; hodnoty se pamatují v
-`%AppData%\cppfand\wpfhost.json`. Úloha je identifikátor bez cesty a přípony.
+Úloha je identifikátor bez cesty a přípony. Když ve složce z parametru
+`FAND.CFG` a `FAND.RES` nejsou, program to ohlásí a skončí.
+
+Bez parametrů se ptá jen na to, co samo nezjistí:
+
+- `FAND.CFG` a `FAND.RES` se hledají nejdřív vedle `cppfand-wpf.exe`, potom
+  v aktuálním adresáři. Když se najdou, dialog ukáže jen pole pro úlohu.
+- Když se nenajdou, dialog nabídne i obě cesty; hodnoty se pamatují
+  v `%AppData%\cppfand\wpfhost.txt`.
 
 Klávesy hostitele: Shift+Insert vloží text ze schránky jako psaní,
 Ctrl+Shift+C zkopíruje celou obrazovku, Ctrl+kolečko mění velikost písma.
