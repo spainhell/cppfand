@@ -3,6 +3,7 @@
 #include "../Common/realDouble.h"
 #include "../Common/codePages.h"
 #include "../Drivers/files.h"
+#include "../Drivers/host.h"
 
 void CfgFile::Open(std::string path)
 {
@@ -10,17 +11,13 @@ void CfgFile::Open(std::string path)
 	Handle = OpenF(path, error, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	FullName = path;
 	if (error != 0) {
-		printf("can't open %s\n", path.c_str());
-		system("pause");
-		exit(-1);
+		FandHost::Fatal("can't open " + path, -1);
 	}
 
 	char ver[5] = { 0,0,0,0,0 };
 	ReadF(Handle, ver, 4, error);
 	if (strcmp(ver, CfgVersion) != 0) {
-		printf("Invalid version of FAND.CFG");
-		system("pause");
-		exit(-1);
+		FandHost::Fatal("Invalid version of FAND.CFG", -1);
 	}
 }
 
@@ -130,9 +127,7 @@ void CfgFile::RdPrinter(short& prMax, Printer printer[10])
 		ReadF(Handle, &L, 1, error);
 		if (L != 255) {
 		label1:
-			printf("Invalid FAND.CFG");
-			system("pause");
-			exit(-1);
+			FandHost::Fatal("Invalid FAND.CFG", -1);
 		}
 		printer[j].Strg = std::string((char*)A, n);
 		ReadF(Handle, &printer[j].Typ, 1, error);

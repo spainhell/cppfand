@@ -1,4 +1,5 @@
 #include "screen.h"
+#include "host.h"
 #include <exception>
 #include <stdarg.h>
 #include <vector>
@@ -19,10 +20,36 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	WindMax->X = (uint8_t)MaxColsIndex;
 	WindMax->Y = (uint8_t)MaxRowsIndex;
 
+	resizeCells();
+}
+
+Screen::~Screen()
+{
+}
+
+void Screen::resizeCells()
+{
+	CHAR_INFO blank;
+	blank.Char.AsciiChar = ' ';
+	blank.Attributes = 7;
+	_cells.assign((size_t)TxtCols * TxtRows, blank);
+	_crsX = 1;
+	_crsY = 1;
+	_version++;
+}
+
+void Screen::InitConsole()
+{
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	if (FandHost::IsEnabled()) {
+		_console = false;
+		return;
+	}
 	_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (_handle == INVALID_HANDLE_VALUE) {
+	if (_handle == INVALID_HANDLE_VALUE || _handle == nullptr) {
 		throw std::exception("Cannot open console output handle.");
 	}
+	_console = true;
 
 	SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
 	SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
@@ -34,21 +61,19 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 
 	// avoid console window size changes
 	HWND consoleWindow = GetConsoleWindow();
-	SetWindowLong(consoleWindow, GWL_STYLE, GetWindowLong(consoleWindow, GWL_STYLE) & ~WS_MAXIMIZEBOX & ~WS_SIZEBOX);
+	if (consoleWindow != nullptr) {
+		SetWindowLong(consoleWindow, GWL_STYLE, GetWindowLong(consoleWindow, GWL_STYLE) & ~WS_MAXIMIZEBOX & ~WS_SIZEBOX);
+	}
 
-	//DWORD consoleMode = ENABLE_VIRTUAL_TERMINAL_PROCESSING; // | ENABLE_LVB_GRID_WORLDWIDE;
-	//bool scm = SetConsoleMode(_handle, 0);
-	_actualIndex = 0;
-	_inBuffer = 0;
-}
-
-Screen::~Screen()
-{
-	//delete[] _scrBuf;
+	// pocatecni stav promitneme cely
+	flush(0, 0, TxtCols, TxtRows);
+	applyCursorPos();
+	applyCursorInfo();
 }
 
 void Screen::ReInit(short TxtCols, short TxtRows)
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	if (this->TxtCols != TxtCols || this->TxtRows != TxtRows) {
 		// cfg changed -> reinitialize
 		this->TxtCols = TxtCols;
@@ -59,15 +84,14 @@ void Screen::ReInit(short TxtCols, short TxtRows)
 		this->WindMax->X = (uint8_t)this->MaxColsIndex;
 		this->WindMax->Y = (uint8_t)this->MaxRowsIndex;
 
-		SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
-		SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
-		SetConsoleWindowInfo(_handle, true, &rect);
+		resizeCells();
 
-		_actualIndex = 0;
-		_inBuffer = 0;
-	}
-	else {
-		// do nothing
+		if (_console) {
+			SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
+			SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
+			SetConsoleWindowInfo(_handle, true, &rect);
+			flush(0, 0, TxtCols, TxtRows);
+		}
 	}
 }
 
@@ -76,28 +100,100 @@ size_t Screen::BufSize()
 	return BUFFSIZE;
 }
 
+// ---------------------------------------------------------------------------
+// interni pomocne metody
+// ---------------------------------------------------------------------------
+
+void Screen::flush(int x0, int y0, int w, int h)
+{
+	_version++;
+	if (!_console) return;
+	// oriznuti na obrazovku
+	if (x0 < 0) { w += x0; x0 = 0; }
+	if (y0 < 0) { h += y0; y0 = 0; }
+	if (x0 + w > TxtCols) w = TxtCols - x0;
+	if (y0 + h > TxtRows) h = TxtRows - y0;
+	if (w <= 0 || h <= 0) return;
+
+	std::vector<CHAR_INFO> buf((size_t)w * h);
+	for (int r = 0; r < h; r++) {
+		memcpy(&buf[(size_t)r * w], &cell(x0, y0 + r), sizeof(CHAR_INFO) * w);
+	}
+	SMALL_RECT rect{ (short)x0, (short)y0, (short)(x0 + w - 1), (short)(y0 + h - 1) };
+	WriteConsoleOutputA(_handle, buf.data(), { (short)w, (short)h }, { 0, 0 }, &rect);
+}
+
+void Screen::applyCursorPos()
+{
+	_version++;
+	if (!_console) return;
+	bool succ = SetConsoleCursorPosition(_handle, { (short)(_crsX - 1), (short)(_crsY - 1) });
+	if (Crs->Enabled && !succ) {
+		printf("GotoXY() fail");
+	}
+}
+
+void Screen::applyCursorInfo()
+{
+	_version++;
+	if (!_console) return;
+	CONSOLE_CURSOR_INFO info{ Crs->Enabled ? Crs->Size : 1, Crs->Enabled };
+	SetConsoleCursorInfo(_handle, &info);
+}
+
+uint64_t Screen::Version()
+{
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	return _version;
+}
+
+uint64_t Screen::Snapshot(uint16_t* cells, size_t capacity, int& crsX, int& crsY, bool& crsVisible, int& crsSize)
+{
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	size_t n = min(capacity, _cells.size());
+	for (size_t i = 0; i < n; i++) {
+		cells[i] = (uint16_t)((uint8_t)_cells[i].Char.AsciiChar | ((_cells[i].Attributes & 0xFF) << 8));
+	}
+	crsX = _crsX - 1;
+	crsY = _crsY - 1;
+	crsVisible = Crs->Enabled;
+	crsSize = (int)Crs->Size;
+	return _version;
+}
+
+uint8_t Screen::AttrAt(WORD X, WORD Y)
+{
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	if (!inside(X - 1, Y - 1)) return 7;
+	return (uint8_t)cell(X - 1, Y - 1).Attributes;
+}
+
+// ---------------------------------------------------------------------------
+// vypis
+// ---------------------------------------------------------------------------
+
 void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, uint8_t Color)
 {
 	// cislovani radku a sloupcu prichazi od 1 .. X
 	if (X < 1 || Y < 1) { throw std::exception("Bad ScrClr index."); }
-
-	DWORD written = 0;
-	CHAR_INFO* _buf = new CHAR_INFO[SizeX * SizeY];
-	COORD BufferSize = { (short)SizeX, (short)SizeY };
-	SMALL_RECT rect = { (short)(X - 1), (short)(Y - 1), (short)(X + SizeX), (short)(Y + SizeY) };
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
-	for (int i = 0; i < SizeX * SizeY; i++) { _buf[i] = ci; }
-	WriteConsoleOutput(_handle, _buf, BufferSize, { 0, 0 }, &rect);
-
-	delete[] _buf;
+	for (int r = 0; r < SizeY; r++) {
+		for (int c = 0; c < SizeX; c++) {
+			if (inside(X - 1 + c, Y - 1 + r)) cell(X - 1 + c, Y - 1 + r) = ci;
+		}
+	}
+	flush(X - 1, Y - 1, SizeX, SizeY);
 }
 
 void Screen::ScrWrChar(WORD X, WORD Y, char C, uint8_t Color)
 {
-	SMALL_RECT rect = { (short)(X - 1), (short)(Y - 1), (short)X, (short)Y };
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	if (!inside(X - 1, Y - 1)) return;
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
-	WriteConsoleOutput(_handle, &ci, { 1, 1 }, { 0, 0 }, &rect);
+	cell(X - 1, Y - 1) = ci;
+	flush(X - 1, Y - 1, 1, 1);
 }
 
 void Screen::ScrWrStr(const std::string& s, uint8_t Color)
@@ -105,24 +201,20 @@ void Screen::ScrWrStr(const std::string& s, uint8_t Color)
 	ScrWrStr(WhereXabs(), WhereYabs(), s, Color);
 }
 
-
-void Screen::ScrWrStr(WORD X, WORD Y, const std::string& s, uint8_t Color) const
+void Screen::ScrWrStr(WORD X, WORD Y, const std::string& s, uint8_t Color)
 {
 	// TODO: doresit zobrazeni znaku jako '\r' nebo '\n'
-
-	short len = s.length();
-	CHAR_INFO* _buf = new CHAR_INFO[len];
-	COORD BufferSize = { len, 1 };
-	SMALL_RECT rect = { (short)(X - 1), (short)(Y - 1), (short)(X + len - 1), (short)(Y - 1) };
-
-	CHAR_INFO ci;
-	ci.Attributes = Color;
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	short len = (short)s.length();
+	int written = 0;
 	for (int i = 0; i < len; i++) {
+		if (!inside(X - 1 + i, Y - 1)) break;
+		CHAR_INFO& ci = cell(X - 1 + i, Y - 1);
 		ci.Char.AsciiChar = s[i];
-		_buf[i] = ci;
+		ci.Attributes = Color;
+		written++;
 	}
-	WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
-	delete[] _buf;
+	flush(X - 1, Y - 1, written, 1);
 }
 
 void Screen::ScrWrFrameLn(WORD X, WORD Y, uint8_t Typ, uint8_t Width, uint8_t Color)
@@ -139,34 +231,28 @@ void Screen::ScrWrFrameLn(WORD X, WORD Y, uint8_t Typ, uint8_t Width, uint8_t Co
 
 void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 {
-	// tady se spatne tisknuly "systemove" znaky v metode "WriteConsoleOutputCharacterA"
-	// proto se vyctou udaje o radku (barva pozadi a textu), doplni se do nich novy text
-	// pak se poslou metodou "WriteConsoleOutputA" na konzoli
+	// zapise jen znaky, barvy (atributy) na radku zustanou zachovane
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	X += WindMin->X - 1;
 	Y += WindMin->Y - 1;
-	DWORD written = 0;
 
 	// budeme predpokladat, ze se muze zobrazit jen 1 radek
 	// jeho delka bude dle nastaveneho okna:
-	size_t len = min(WindMax->X - WindMin->X + 1, strlen(S));
+	size_t len = min((size_t)(WindMax->X - WindMin->X + 1), strlen(S));
 
-	// vycteme oblast do bufferu
-	auto buff = new CHAR_INFO[len];
-	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + len - 2), (short)(Y - 1) };
-	ReadConsoleOutput(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
-	// vezme jednotlive znaky a "opravime je" ve vyctenem bufferu
+	int written = 0;
 	for (size_t i = 0; i < len; i++) {
-		buff[i].Char.AsciiChar = S[i];
+		if (!inside((int)(X - 1 + i), Y - 1)) break;
+		cell((int)(X - 1 + i), Y - 1).Char.AsciiChar = S[i];
+		written++;
 	}
-	// vypisem buffer na obrazovku
-	WriteConsoleOutputA(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
-	//WriteConsoleOutputCharacterA(_handle, S, len, { (short)X - 1, (short)Y - 1 }, &written);
-	delete[] buff;
-	if (X + len > TxtCols) {
+	flush(X - 1, Y - 1, written, 1);
+
+	if (X + len > (size_t)TxtCols) {
 		GotoXY(1, Y + 1, absolute);
 	}
 	else {
-		GotoXY(X + len, Y, absolute);
+		GotoXY((WORD)(X + len), Y, absolute);
 	}
 }
 
@@ -182,6 +268,7 @@ void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)
 
 void Screen::ScrFormatWrStyledText(WORD X, WORD Y, uint8_t Color, char const* const _Format, ...)
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	// souradnice jsou relativni, tiskneme do aktualniho okna
 	X += WindMin->X - 1;
 	Y += WindMin->Y - 1;
@@ -190,87 +277,99 @@ void Screen::ScrFormatWrStyledText(WORD X, WORD Y, uint8_t Color, char const* co
 	va_start(args, _Format);
 	char buffer[255];
 	vsnprintf(buffer, sizeof(buffer), _Format, args);
+	va_end(args);
 	size_t len = strlen(buffer);
-	auto buff = new CHAR_INFO[len];
-	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + len - 1), (short)(Y - 1) };
 
+	int written = 0;
 	for (size_t i = 0; i < len; i++) {
-		buff[i].Attributes = Color;
-		buff[i].Char.AsciiChar = buffer[i];
+		if (!inside((int)(X - 1 + i), Y - 1)) break;
+		CHAR_INFO& ci = cell((int)(X - 1 + i), Y - 1);
+		ci.Attributes = Color;
+		ci.Char.AsciiChar = buffer[i];
+		written++;
 	}
-	WriteConsoleOutputA(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
+	flush(X - 1, Y - 1, written, 1);
 	// posuneme souradnici X o vytistene znaky
 	GotoXY(WhereXabs() + (WORD)len, WhereYabs(), absolute);
-	delete[] buff;
-	va_end(args);
 }
 
-// vypise pole WORDu (Attr + Znak)
+// vypise pole WORDu (Attr + Znak); souradnice jsou 0-based
 void Screen::ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 {
-	//X++; // v Pacalu to bylo od 1
-	//Y++; // --""--
-	SMALL_RECT XY = { (short)X, (short)Y, (short)(X + L), (short)(Y + 1) };
-	COORD BufferSize = { (short)L, 1 };
-
-	// zkonvertujeme WORD do CHAR_INFO
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	WORD* pBuf = (WORD*)Buf;
-	CHAR_INFO* ci = new CHAR_INFO[L];
-	for (int i = 0; i < L; i++)
-	{
-		ci[i].Attributes = pBuf[i] >> 8;
-		ci[i].Char.AsciiChar = pBuf[i] & 0x00FF;
+	int written = 0;
+	for (int i = 0; i < L; i++) {
+		if (!inside(X + i, Y)) break;
+		CHAR_INFO& ci = cell(X + i, Y);
+		ci.Attributes = pBuf[i] >> 8;
+		ci.Char.AsciiChar = pBuf[i] & 0x00FF;
+		written++;
 	}
-	WriteConsoleOutputA(_handle, ci, BufferSize, { 0, 0 }, &XY);
-	delete[] ci;
+	flush(X, Y, written, 1);
 }
 
-// vypise pole CHAR_INFO
+// vypise pole CHAR_INFO; souradnice jsou 1-based
 void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
 {
-	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + L), (short)(Y - 1) };
-	COORD BufferSize = { (short)L, 1 };
-	WriteConsoleOutputA(_handle, Buf, BufferSize, { 0, 0 }, &XY);
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	int written = 0;
+	for (int i = 0; i < L; i++) {
+		if (!inside(X - 1 + i, Y - 1)) break;
+		cell(X - 1 + i, Y - 1) = Buf[i];
+		written++;
+	}
+	flush(X - 1, Y - 1, written, 1);
 }
 
+// precte L bunek radku; souradnice jsou 1-based
 bool Screen::ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L)
 {
-	SMALL_RECT rect{ (short)(X - 1), (short)(Y - 1), (short)(X - 1 + L - 1), (short)(Y - 1) };
-	COORD bufSize{ (short)(L), 1 };
-	bool result = ReadConsoleOutput(_handle, Buf, bufSize, { 0, 0 }, &rect);
-	return result;
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	if (!inside(X - 1, Y - 1)) return false;
+	for (int i = 0; i < L; i++) {
+		if (!inside(X - 1 + i, Y - 1)) return false;
+		Buf[i] = cell(X - 1 + i, Y - 1);
+	}
+	return true;
 }
 
 void Screen::ScrMove(short X, short Y, short ToX, short ToY, short L)
 {
 	// souradnice chodi kupodivu od 0 ..
 	if (L < 1) return;
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	// ulozime obsah obrazovky a "pretiskneme" na jine misto
 	CrsHide();
-	// cislovani radku a sloupcu prichazi od 1 .. X
 	if ((X < 0) || (X > MaxColsIndex) || (Y < 0) || (Y > MaxRowsIndex))
 		throw std::exception("Bad ScrMove index.");
 	if ((ToX < 0) || (ToX > MaxColsIndex) || (ToY < 0) || (ToY > MaxRowsIndex))
 		throw std::exception("Bad ScrMove index.");
-	SMALL_RECT rectFrom{ (short)X, (short)Y, (short)(X + L), (short)Y };
-	SMALL_RECT rectTo{ (short)ToX, (short)ToY, (short)(ToX + L), (short)ToY };
-	COORD bufSize{ (short)L, 1 };
-	CHAR_INFO* buf = new CHAR_INFO[L * 1];
-	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rectFrom);
-	WriteConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rectTo);
+	std::vector<CHAR_INFO> buf(L);
+	int n = 0;
+	for (int i = 0; i < L && inside(X + i, Y); i++) { buf[i] = cell(X + i, Y); n = i + 1; }
+	int written = 0;
+	for (int i = 0; i < n && inside(ToX + i, ToY); i++) { cell(ToX + i, ToY) = buf[i]; written++; }
+	flush(ToX, ToY, written, 1);
 	CrsShow();
 }
 
+// obarvi L bunek od pozice (0-based), linearne pres konce radku (jako FillConsoleOutputAttribute)
 void Screen::ScrColor(WORD X, WORD Y, WORD L, uint8_t Color)
 {
-	DWORD written = 0;
-	FillConsoleOutputAttribute(_handle, Color, L, { (short)X, (short)Y }, &written);
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	size_t start = (size_t)Y * TxtCols + X;
+	for (size_t i = 0; i < L && start + i < _cells.size(); i++) {
+		_cells[start + i].Attributes = Color;
+	}
+	int rows = (int)((X + L + TxtCols - 1) / TxtCols);
+	flush(0, Y, TxtCols, rows);
 }
 
 // vypise na zadanou pozici 1 znak v zadane barve
 void Screen::WriteChar(short X, short Y, char C, uint8_t attr, ScrPosition pos)
 {
-	DWORD written = 0;
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	switch (pos) {
 	case relative: {
 		X += WindMin->X - 1;
@@ -287,9 +386,12 @@ void Screen::WriteChar(short X, short Y, char C, uint8_t attr, ScrPosition pos)
 	}
 	default:;
 	}
-	WORD color = attr;
-	auto resatr = WriteConsoleOutputAttribute(_handle, &color, 1, { (short)(X - 1), (short)(Y - 1) }, &written);
-	auto result = WriteConsoleOutputCharacterA(_handle, &C, 1, { (short)(X - 1), (short)(Y - 1) }, &written);
+	if (inside(X - 1, Y - 1)) {
+		CHAR_INFO& ci = cell(X - 1, Y - 1);
+		ci.Attributes = attr;
+		ci.Char.AsciiChar = C;
+		flush(X - 1, Y - 1, 1, 1);
+	}
 	GotoXY(WhereXabs() + 1, WhereYabs(), absolute); // po zapisu poseneme kurzor
 }
 
@@ -297,6 +399,7 @@ void Screen::WriteChar(short X, short Y, char C, uint8_t attr, ScrPosition pos)
 size_t Screen::WriteStyledStringToWindow(const std::string& text, uint8_t Attr)
 {
 	if (text.length() == 0) return 0;
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	std::string CStyle;
 	std::string CColor;
@@ -314,40 +417,37 @@ size_t Screen::WriteStyledStringToWindow(const std::string& text, uint8_t Attr)
 	auto vStr = GetAllLines(text, cols);
 
 	// buffer bude mit delku jednoho radku okna
-	CHAR_INFO* _buf = new CHAR_INFO[cols];
+	std::vector<CHAR_INFO> _buf(cols);
 
 	// prevezmeme aktualni pozici kurzoru:
 	actualWindowCol = WhereX();
 	actualWindowRow = WhereY();
 
 	// pocet radku je mensi hodnota z poctu textu nebo radku okna
-	short rowsToPrint = min(rows, vStr.size());
-	for (size_t i = 0; i < rowsToPrint; i++)
+	short rowsToPrint = (short)min((size_t)rows, vStr.size());
+	for (size_t i = 0; i < (size_t)rowsToPrint; i++)
 	{
 		auto str = vStr[i];
 		auto strLen = str.length();
-		// okenko bude mit jen 1 radek
-		SMALL_RECT rect = {
-			(short)(WindMin->X + actualWindowCol - 2),			// oba parametry jsou cislovane od 1
-			(short)(WindMin->Y + actualWindowRow - 2),			// oba parametry jsou cislovane od 1
-			(short)(WindMax->X - 1),								// prava strana zustava stejna
-			(short)(WindMin->Y + actualWindowRow - 2)			// dolni strana stejna jako horni (jen 1 radek)
-		};
+		// oblast: od aktualniho sloupce okna po pravy okraj okna, 1 radek (0-based)
+		int col0 = WindMin->X + actualWindowCol - 2;
+		int row0 = WindMin->Y + actualWindowRow - 2;
+		int maxRight = WindMax->X - 1;
 
 		size_t ctrlCharsCount = 0;
 
-		for (size_t i = 0; i < strLen; i++)
+		for (size_t j = 0; j < strLen; j++)
 		{
-			char c = str[i];
+			char c = str[j];
 			uint8_t a = 0;
 			if (SetStyleAttr(c, a))
 			{
 				ctrlCharsCount++;
-				size_t i = CStyle.find_first_of(c);
-				if (i != std::string::npos)
+				size_t k = CStyle.find_first_of(c);
+				if (k != std::string::npos)
 				{
-					CStyle.erase(i, 1);
-					CColor.erase(i, 1);
+					CStyle.erase(k, 1);
+					CColor.erase(k, 1);
 				}
 				else {
 					CStyle = c + CStyle;
@@ -362,52 +462,60 @@ size_t Screen::WriteStyledStringToWindow(const std::string& text, uint8_t Attr)
 			}
 			ci.Attributes = Attr;
 			ci.Char.AsciiChar = c;
-			size_t position = i - ctrlCharsCount;
-			if (position > cols - 1) {
+			size_t position = j - ctrlCharsCount;
+			if (position > (size_t)(cols - 1)) {
 				// retezec se do radku nevleze, ale budeme pokracovat kvuli nastaveni barev
 				continue;
 			}
 			_buf[position] = ci;
 		}
-		COORD BufferSize = { (short)(strLen - ctrlCharsCount), 1 }; // pocet tisknutelnych znaku, 1 radek
-		WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
-		totalChars += strLen - ctrlCharsCount;
+		short printable = (short)(strLen - ctrlCharsCount); // pocet tisknutelnych znaku
+		int written = 0;
+		for (int k = 0; k < printable && col0 + k <= maxRight; k++) {
+			if (!inside(col0 + k, row0)) break;
+			cell(col0 + k, row0) = _buf[k];
+			written++;
+		}
+		flush(col0, row0, written, 1);
+		totalChars += printable;
 		// nastavime zacatek dalsiho radku, pokud se nejedna o posledni radek
-		if (i < rowsToPrint - 1) {
+		if (i < (size_t)(rowsToPrint - 1)) {
 			actualWindowRow++;
 			actualWindowCol = 1;
 		}
 		// pokud se jedna o posledni radek, nastavime korektne RELATIVNI souradnice
 		else {
 			// pokud jsme na konci radku, prejdeme na zacatek
-			if (BufferSize.X + 1 > WindMax->X) {
+			if (printable + 1 > WindMax->X) {
 				GotoXY(1, actualWindowRow);
 			}
 			else {
-				GotoXY(BufferSize.X + 1, actualWindowRow);
+				GotoXY(printable + 1, actualWindowRow);
 			}
 		}
 	}
-	delete[] _buf;
 	return totalChars;
 }
 
 void Screen::LF()
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	if (WindMax->Y - WindMin->Y + 1 == actualWindowRow) {
 		// cursor is on a last row in the window -> move everything up
 		short cols = WindMax->X - WindMin->X + 1;
 		short rows = WindMax->Y - WindMin->Y + 1;
-
-		SMALL_RECT src_rect{ (short)(WindMin->X - 1), (short)(WindMin->Y), (short)(WindMax->X - 1), (short)(WindMax->Y - 1) };
-		SMALL_RECT dst_rect{ (short)(WindMin->X - 1), (short)(WindMin->Y - 1), (short)(WindMax->X - 1), (short)(WindMax->Y - 2) };
-		COORD bufSize{ cols, (short)(rows - 1) };
-		CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
-		ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &src_rect);
-		WriteConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &dst_rect);
-		char* spaces = new char[cols + 1]{ '\0' };
-		size_t len = snprintf(spaces, cols, "%*c", cols, ' ');
-		ScrWrText(1, actualWindowRow, spaces);
+		int x0 = WindMin->X - 1;
+		int y0 = WindMin->Y - 1;
+		for (int r = 0; r < rows - 1; r++) {
+			for (int c = 0; c < cols; c++) {
+				if (inside(x0 + c, y0 + r) && inside(x0 + c, y0 + r + 1)) {
+					cell(x0 + c, y0 + r) = cell(x0 + c, y0 + r + 1);
+				}
+			}
+		}
+		flush(x0, y0, cols, rows - 1);
+		std::string spaces(cols, ' ');
+		ScrWrText(1, actualWindowRow, spaces.c_str());
 	}
 	else {
 		actualWindowRow++;
@@ -430,8 +538,13 @@ bool Screen::SetStyleAttr(char C, uint8_t& a)
 	return result;
 }
 
+// ---------------------------------------------------------------------------
+// kurzor
+// ---------------------------------------------------------------------------
+
 TCrs Screen::CrsGet()
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	TCrs crs;
 	crs.X = WhereXabs();
 	crs.Y = WhereYabs();
@@ -443,6 +556,7 @@ TCrs Screen::CrsGet()
 
 void Screen::CrsSet(TCrs S)
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	CrsHide();
 	Crs->X = S.X;
 	Crs->Y = S.Y;
@@ -454,29 +568,37 @@ void Screen::CrsSet(TCrs S)
 
 void Screen::CrsShow()
 {
-	const CONSOLE_CURSOR_INFO visible{ Crs->Size, true };
-	SetConsoleCursorInfo(_handle, &visible);
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	Crs->Enabled = true;
+	applyCursorInfo();
 }
 
 void Screen::CrsHide()
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 #ifndef _DEBUG
-	CONSOLE_CURSOR_INFO invisible{ 1, false };
-	SetConsoleCursorInfo(_handle, &invisible);
 	Crs->Enabled = false;
+	applyCursorInfo();
 #else
-	CrsShow();
+	if (FandHost::IsEnabled()) {
+		Crs->Enabled = false;
+		applyCursorInfo();
+	}
+	else {
+		CrsShow();
+	}
 #endif
 }
 
 void Screen::CrsBig()
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	if (Crs->Size == 1) { CrsHide(); Crs->Size = bigCrsSize; } CrsShow();
 }
 
 void Screen::CrsNorm()
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	if (Crs->Size == bigCrsSize) { CrsHide(); Crs->Size = 1; } CrsShow();
 }
 
@@ -488,6 +610,7 @@ void Screen::CrsNorm()
  */
 void Screen::GotoXY(WORD X, WORD Y, ScrPosition pos)
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	switch (pos)
 	{
 	case relative: {
@@ -499,47 +622,43 @@ void Screen::GotoXY(WORD X, WORD Y, ScrPosition pos)
 	case actual: return;
 	default: return;
 	}
-	bool succ = SetConsoleCursorPosition(_handle, { (short)(X - 1), (short)(Y - 1) });
-	if (Crs->Enabled && !succ) {
-		printf("GotoXY() fail");
-	}
+	_crsX = (short)X;
+	_crsY = (short)Y;
+	applyCursorPos();
 }
 
 short Screen::WhereX()
 {
-	// vrací relativní pozici (k aktuálnímu oknu) èíslovanou od 1
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return (sbi.dwCursorPosition.X + 1) - WindMin->X + 1;
+	// vraci relativni pozici (k aktualnimu oknu) cislovanou od 1
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	return _crsX - WindMin->X + 1;
 }
 
 short Screen::WhereY()
 {
-	// vrací relativní pozici (k aktuálnímu oknu) èíslovanou od 1
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return (sbi.dwCursorPosition.Y + 1) - WindMin->Y + 1;
+	// vraci relativni pozici (k aktualnimu oknu) cislovanou od 1
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	return _crsY - WindMin->Y + 1;
 }
 
 short Screen::WhereXabs()
 {
-	// vrací absolutní pozici èíslovanou od 1
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return sbi.dwCursorPosition.X + 1;
+	// vraci absolutni pozici cislovanou od 1
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	return _crsX;
 }
 
 short Screen::WhereYabs()
 {
-	// vrací absolutní pozici èíslovanou od 1
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return sbi.dwCursorPosition.Y + 1;
+	// vraci absolutni pozici cislovanou od 1
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	return _crsY;
 }
 
 void Screen::Window(uint8_t X1, uint8_t Y1, uint8_t X2, uint8_t Y2)
 {
-	// pùvodní kód z ASM
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	// puvodni kod z ASM
 	if (X2 < X1) return;
 	if (Y2 < Y1) return;
 	if (X2 > TxtCols) return;
@@ -568,21 +687,33 @@ void Screen::CrsBlink()
 	throw std::exception("Screen::CrsBlink() not implemented");
 }
 
+// souradnice jsou 0-based
 void Screen::CrsGotoXY(WORD aX, WORD aY)
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	Crs->X = aX;
 	Crs->Y = aY;
-	bool succ = SetConsoleCursorPosition(_handle, { (short)Crs->X, (short)Crs->Y });
-	if (!succ) {
-		printf("GotoXY() fail");
-	}
+	_crsX = (short)(aX + 1);
+	_crsY = (short)(aY + 1);
+	applyCursorPos();
 }
 
+// ---------------------------------------------------------------------------
+// ukladani a obnova casti obrazovky
+// ---------------------------------------------------------------------------
+
+// souradnice jsou 0-based; do P ulozi SizeX x SizeY bunek
 int Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 {
-	SMALL_RECT rect{ (short)X, (short)Y, (short)(X + SizeX), (short)(Y + SizeY) };
-	// do ukazatele zøejmì uloží obsah videopamìti ...
-	ReadConsoleOutput(_handle, (CHAR_INFO*)P, { (short)SizeX, (short)SizeY }, { 0, 0 }, &rect);
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	CHAR_INFO* dst = (CHAR_INFO*)P;
+	for (int r = 0; r < SizeY; r++) {
+		for (int c = 0; c < SizeX; c++) {
+			CHAR_INFO ci; ci.Char.AsciiChar = ' '; ci.Attributes = 7;
+			if (inside(X + c, Y + r)) ci = cell(X + c, Y + r);
+			dst[r * SizeX + c] = ci;
+		}
+	}
 	return SizeX * SizeY;
 }
 
@@ -605,22 +736,28 @@ storeWindow Screen::popScreen()
 
 int Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	// cislovani radku a sloupcu prichazi od 1 .. X
-	//if (c1 < 1 || c2 > 80 || r1 < 1 || r2 > 25) { throw std::exception("Bad SaveScreen index."); }
-
 	c1--; c2--;
 	r1--; r2--;
 
 	SMALL_RECT rect{ c1, r1, c2, r2 };
 	COORD bufSize{ (short)(c2 - c1 + 1), (short)(r2 - r1 + 1) };
-	CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
-	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rect);
+	CHAR_INFO* buf = new CHAR_INFO[(size_t)bufSize.X * bufSize.Y];
+	for (int r = 0; r < bufSize.Y; r++) {
+		for (int c = 0; c < bufSize.X; c++) {
+			CHAR_INFO ci; ci.Char.AsciiChar = ' '; ci.Attributes = 7;
+			if (inside(c1 + c, r1 + r)) ci = cell(c1 + c, r1 + r);
+			buf[r * bufSize.X + c] = ci;
+		}
+	}
 	_windowStack.push({ wp, bufSize, rect, buf });
-	return _windowStack.size();
+	return (int)_windowStack.size();
 }
 
 WParam* Screen::LoadScreen(bool draw)
 {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	if (_windowStack.empty()) {
 		printf("Screen::LoadScreen() zasobnik je prazdny!!!\n");
 		return nullptr;
@@ -628,7 +765,14 @@ WParam* Screen::LoadScreen(bool draw)
 	auto scr = _windowStack.top();
 	_windowStack.pop();
 	if (draw) {
-		WriteConsoleOutput(_handle, scr.content, scr.coord, { 0, 0 }, &scr.rect);
+		for (int r = 0; r < scr.coord.Y; r++) {
+			for (int c = 0; c < scr.coord.X; c++) {
+				if (inside(scr.rect.Left + c, scr.rect.Top + r)) {
+					cell(scr.rect.Left + c, scr.rect.Top + r) = scr.content[r * scr.coord.X + c];
+				}
+			}
+		}
+		flush(scr.rect.Left, scr.rect.Top, scr.coord.X, scr.coord.Y);
 	}
 	delete[] scr.content;
 	return scr.wp;

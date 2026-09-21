@@ -55,6 +55,7 @@ public:
 
     bool TxtEdCtrlUBrk = false;
     bool TxtEdCtrlF4Brk = false;
+    std::string HostEditMask; // maska pole predana hostiteli pri editaci (viz FandHost)
     std::vector<EditableField*>::iterator CFld;
 
 private:

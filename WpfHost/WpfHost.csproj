@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- WpfHost: okenni hostitel interpretu cppfand.
+       Interpret bezi v cppfandlib.dll na vlastnim vlakne, tato aplikace
+       kresli jeho obrazovku 80x25 jako mrizku znaku, posila mu klavesy
+       a editaci jednoradkovych poli prebira do bezneho WPF TextBoxu
+       (schranka, oznaceni mysi, maskovane datum). Viz Drivers/host.h.
+
+       Stavi se pro .NET Framework 4.8 (soucast Windows 10/11, klient nic
+       neinstaluje) i pro .NET 10, a to v x64 i x86 (32bit cppfandlib.dll).
+       Vystup: <nativni OutDir>\wpf\<TFM>\ -->
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFrameworks>net48;net10.0-windows</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <Platforms>x64;x86</Platforms>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <AssemblyName>cppfand-wpf</AssemblyName>
+    <RootNamespace>WpfHost</RootNamespace>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+
+  <!-- vystupy C++ projektu (vychozi OutDir Visual Studia): x64 -> x64\<cfg>\, Win32 -> <cfg>\ -->
+  <PropertyGroup Condition="'$(Platform)' == 'x86'">
+    <NativeOutDir>..\$(Configuration)\</NativeOutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)' != 'x86'">
+    <NativeOutDir>..\x64\$(Configuration)\</NativeOutDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputPath>$(NativeOutDir)wpf\</OutputPath>
+  </PropertyGroup>
+
+  <!-- .NET Framework: dialog pro vyber slozky je jen ve Windows Forms -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net48'">
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Net.Http" />
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <!-- nativni DLL ze stejne konfigurace a platformy solution -->
+  <ItemGroup>
+    <None Include="$(NativeOutDir)cppfandlib.dll" Link="cppfandlib.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+</Project>

@@ -24,10 +24,13 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
 #ifdef _DEBUG
-		printf("WAITING FOR DEBUGGER !!!");
-		while (!::IsDebuggerPresent())
-			::Sleep(1000);
-		printf(" ... DONE\n");
+		// cekani na debugger jen na vyzadani (jinak by hostitel v Debug konfiguraci zamrzl)
+		if (GetEnvironmentVariableA("FAND_WAIT_DEBUGGER", nullptr, 0) > 0) {
+			printf("WAITING FOR DEBUGGER !!!");
+			while (!::IsDebuggerPresent())
+				::Sleep(1000);
+			printf(" ... DONE\n");
+		}
 #endif
 		break;
 	case DLL_THREAD_ATTACH:
@@ -191,4 +194,225 @@ extern "C" int FAND_API CloseRdb()
 	rdbFile->FF->CloseFile();
 	rdb = nullptr;
 	return result;
+}
+// ===========================================================================
+// Hostitelsky rezim: interpret FANDu bezi na vlastnim vlakne, hostitel (napr. WPF)
+// si vyzvedava obrazovku a posila klavesy. Viz Drivers/host.h.
+// ===========================================================================
+#include <atomic>
+#include <thread>
+#include "../Core/OldDrivers.h"
+#include "../Core/legacy.h"
+#include "../Drivers/host.h"
+#include "../Logging/Logging.h"
+
+namespace
+{
+	std::atomic<bool> g_running{ false };
+	std::atomic<int> g_exitCode{ 0 };
+	std::thread g_thread;
+	std::string g_lastError;
+}
+
+struct FandScreenInfo
+{
+	int32_t Cols;
+	int32_t Rows;
+	int32_t CursorX;      // 0-based
+	int32_t CursorY;      // 0-based
+	int32_t CursorVisible;
+	int32_t CursorSize;   // 1 = normalni, 50 = velky (rezim prepisu)
+	int32_t Running;
+	int32_t FieldX;       // zvyraznene pole v prohlizecim rezimu, 0-based; -1 = zadne
+	int32_t FieldY;
+	int32_t FieldLen;
+};
+
+/// Spusti interpret na pozadi. fandDir = slozka s FAND.CFG a FAND.RES,
+/// workDir = pracovni adresar (odtud se hleda uloha), rdbName = nazev ulohy (identifikator).
+/// Vraci 0, nebo -1 pokud uz bezi.
+extern "C" int FAND_API FandStart(const char* fandDir, const char* workDir, const char* rdbName)
+{
+	if (g_running) return -1;
+	FandHost::Enable();
+	FandHost::SetFieldEditEnabled(true);
+
+	std::string dir = fandDir != nullptr ? fandDir : "";
+	std::string wrk = workDir != nullptr ? workDir : "";
+	std::string rdb = rdbName != nullptr ? rdbName : "";
+
+	if (g_thread.joinable()) g_thread.join();
+	g_running = true;
+	g_exitCode = 0;
+	g_lastError.clear();
+
+	g_thread = std::thread([dir, wrk, rdb]() {
+		Logging* log = Logging::getInstance();
+		log->log(loglevel::INFO, "*** *** *** *** *** *** HOSTED FAND STARTED *** *** *** *** *** ***");
+		if (!wrk.empty()) SetCurrentDirectoryA(wrk.c_str());
+		paramstr.clear();
+		std::string exe = dir;
+		if (!exe.empty() && exe.back() != '\\') exe += '\\';
+		exe += "cppfand.exe"; // FandDir se odvozuje z cesty k programu
+		paramstr.push_back(exe);
+		if (!rdb.empty()) paramstr.push_back(rdb);
+		try {
+			InitRunFand();
+		}
+		catch (FandHost::HaltException& h) {
+			g_exitCode = h.Code;
+		}
+		catch (std::exception& ex) {
+			g_lastError = ex.what();
+			g_exitCode = -2;
+			log->log(loglevel::EXCEPTION, "%s", ex.what());
+		}
+		catch (...) {
+			g_lastError = "unknown exception";
+			g_exitCode = -3;
+		}
+		try { DeleteFandFiles(); } catch (...) {}
+		log->log(loglevel::INFO, "*** *** *** *** *** ***  HOSTED FAND ENDED   *** *** *** *** *** ***");
+		g_running = false;
+	});
+	return 0;
+}
+
+extern "C" int FAND_API FandIsRunning()
+{
+	return g_running ? 1 : 0;
+}
+
+extern "C" int FAND_API FandExitCode()
+{
+	return g_exitCode;
+}
+
+/// Posledni chybova hlaska (UTF-8 neni, je to ASCII/CP852). Vraci delku.
+extern "C" int FAND_API FandLastError(char* buffer, int capacity)
+{
+	if (buffer == nullptr || capacity <= 0) return (int)g_lastError.length();
+	strncpy_s(buffer, capacity, g_lastError.c_str(), _TRUNCATE);
+	return (int)g_lastError.length();
+}
+
+/// Pozada o zastaveni interpretu (dokonci se pri dalsim cteni klavesnice).
+extern "C" void FAND_API FandStop()
+{
+	FandHost::RequestStop();
+}
+
+/// Pocka na ukonceni vlakna interpretu (max. timeoutMs). Vraci 1 = skoncil.
+extern "C" int FAND_API FandWait(int timeoutMs)
+{
+	int waited = 0;
+	while (g_running && waited < timeoutMs) { Sleep(20); waited += 20; }
+	if (!g_running && g_thread.joinable()) g_thread.join();
+	return g_running ? 0 : 1;
+}
+
+/// Zkopiruje obrazovku: cells[i] = znak CP852 | (atribut << 8), po radcich.
+/// Vraci cislo verze (roste s kazdou zmenou), 0 pri chybe.
+extern "C" uint64_t FAND_API FandGetScreen(uint16_t* cells, int capacity, FandScreenInfo* info)
+{
+	if (cells == nullptr || info == nullptr) return 0;
+	int crsX = 0, crsY = 0, crsSize = 1;
+	bool visible = false;
+	uint64_t version = screen.Snapshot(cells, (size_t)capacity, crsX, crsY, visible, crsSize);
+	info->Cols = screen.Cols();
+	info->Rows = screen.Rows();
+	info->CursorX = crsX;
+	info->CursorY = crsY;
+	info->CursorVisible = visible ? 1 : 0;
+	info->CursorSize = crsSize;
+	info->Running = g_running ? 1 : 0;
+	int fx = -1, fy = -1, fl = 0;
+	FandHost::GetCurrentField(fx, fy, fl);
+	info->FieldX = fx;
+	info->FieldY = fy;
+	info->FieldLen = fl;
+	return version;
+}
+
+extern "C" uint64_t FAND_API FandScreenVersion()
+{
+	return screen.Version();
+}
+
+/// Vlozi udalost klavesnice ve tvaru KEY_EVENT_RECORD konzole.
+/// unicodeChar = znak (Unicode), prevede se do CP852; 0 = bez znaku.
+extern "C" void FAND_API FandPushKey(uint16_t virtualKey, uint16_t scanCode, uint16_t unicodeChar, uint32_t controlKeyState, int keyDown)
+{
+	INPUT_RECORD rec{};
+	rec.EventType = KEY_EVENT;
+	rec.Event.KeyEvent.bKeyDown = keyDown != 0;
+	rec.Event.KeyEvent.wRepeatCount = 1;
+	rec.Event.KeyEvent.wVirtualKeyCode = virtualKey;
+	rec.Event.KeyEvent.wVirtualScanCode = scanCode;
+	rec.Event.KeyEvent.dwControlKeyState = controlKeyState;
+	if (unicodeChar != 0) {
+		wchar_t wc = (wchar_t)unicodeChar;
+		char mb[4] = { 0 };
+		BOOL unsupported = FALSE;
+		int n = WideCharToMultiByte(852, 0, &wc, 1, mb, sizeof(mb), NULL, &unsupported);
+		rec.Event.KeyEvent.uChar.AsciiChar = (n > 0 && !unsupported) ? mb[0] : '?';
+	}
+	else {
+		rec.Event.KeyEvent.uChar.AsciiChar = 0;
+	}
+	keyboard.PushEvent(rec);
+}
+
+/// Vlozi udalost mysi (souradnice v bunkach, 0-based).
+extern "C" void FAND_API FandPushMouse(int x, int y, uint32_t buttonState, uint32_t eventFlags, uint32_t controlKeyState)
+{
+	INPUT_RECORD rec{};
+	rec.EventType = MOUSE_EVENT;
+	rec.Event.MouseEvent.dwMousePosition = { (short)x, (short)y };
+	rec.Event.MouseEvent.dwButtonState = buttonState;
+	rec.Event.MouseEvent.dwEventFlags = eventFlags;
+	rec.Event.MouseEvent.dwControlKeyState = controlKeyState;
+	keyboard.PushEvent(rec);
+}
+
+// --- editace pole v hostiteli ----------------------------------------------
+
+extern "C" void FAND_API FandSetFieldEditHost(int enabled)
+{
+	FandHost::SetFieldEditEnabled(enabled != 0);
+}
+
+/// Vyzvedne cekajici pozadavek na editaci pole. Vraci 1, pokud byl.
+extern "C" int FAND_API FandPollFieldEdit(FandHost::FieldEditRequest* request)
+{
+	if (request == nullptr) return 0;
+	return FandHost::PollFieldEdit(*request) ? 1 : 0;
+}
+
+/// Preda vysledek editace: text (CP852), pozice kurzoru (1-based), rezim vkladani,
+/// ukoncovaci klavesa v kodovani KeyCombination (0x8000 = neznakova, 0x0400 Alt, 0x0200 Ctrl, 0x0100 Shift).
+extern "C" void FAND_API FandCompleteFieldEdit(const char* text, int pos, int insertMode, uint16_t key)
+{
+	FandHost::FieldEditResult res;
+	if (text != nullptr) strncpy_s(res.Text, text, sizeof(res.Text) - 1);
+	res.Pos = pos;
+	res.InsertMode = insertMode;
+	res.Key = key;
+	FandHost::CompleteFieldEdit(res);
+}
+
+/// Cela hodnota zvyrazneneho pole v prohlizecim rezimu (CP852, s nulou na konci).
+/// Vraci 1, kdyz nejake pole je; x/y/len jsou souradnice na obrazovce (0-based).
+extern "C" int FAND_API FandGetCurrentField(int* x, int* y, int* len, char* text, int capacity)
+{
+	int fx = -1, fy = -1, fl = 0;
+	bool has = FandHost::GetCurrentField(fx, fy, fl);
+	if (x) *x = fx;
+	if (y) *y = fy;
+	if (len) *len = fl;
+	if (text && capacity > 0) {
+		std::string t = FandHost::GetCurrentFieldText();
+		strncpy_s(text, capacity, t.c_str(), _TRUNCATE);
+	}
+	return has ? 1 : 0;
 }

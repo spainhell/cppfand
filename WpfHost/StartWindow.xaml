@@ -1,0 +1,39 @@
+<Window x:Class="WpfHost.StartWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="C++ FAND – spuštění úlohy" SizeToContent="Height" Width="640" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Složka FAND.CFG a FAND.RES:" Margin="0,0,8,6" VerticalAlignment="Center"/>
+        <TextBox x:Name="FandDirBox" Grid.Row="0" Grid.Column="1" Margin="0,0,0,6"/>
+        <Button Grid.Row="0" Grid.Column="2" Content="…" Width="28" Margin="6,0,0,6" Click="BrowseFandDir"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Pracovní adresář (úloha):" Margin="0,0,8,6" VerticalAlignment="Center"/>
+        <TextBox x:Name="WorkDirBox" Grid.Row="1" Grid.Column="1" Margin="0,0,0,6"/>
+        <Button Grid.Row="1" Grid.Column="2" Content="…" Width="28" Margin="6,0,0,6" Click="BrowseWorkDir"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Název úlohy (RDB):" Margin="0,0,8,6" VerticalAlignment="Center"/>
+        <TextBox x:Name="RdbBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="1" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,10"
+                   Text="Název úlohy je identifikátor bez cesty (např. UCTO2024). Parametry lze zadat i na příkazové řádce: cppfand-wpf.exe &lt;složka FAND&gt; &lt;pracovní adresář&gt; &lt;úloha&gt;"/>
+
+        <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Spustit" Width="90" IsDefault="True" Click="Start"/>
+            <Button Content="Zavřít" Width="90" Margin="8,0,0,0" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
