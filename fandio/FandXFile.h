@@ -25,6 +25,11 @@ public:
 	int32_t MaxPage = 0;
 	uint16_t UpdLockCnt = 0;
 
+	/// Vrati objekt do stavu po konstrukci (pouziva se pro globalni XWork pri startu).
+	/// Nahrazuje puvodni FillChar(&XWork, sizeof(XWork), 0), ktere nulovalo i ukazatel
+	/// na tabulku virtualnich metod a soukromy _parent.
+	void Reset();
+
 	void SetEmpty(int recs, unsigned char keys);
 	void RdPrefix();
 	void WrPrefix(int recs, unsigned char keys);

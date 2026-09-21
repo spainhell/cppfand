@@ -826,7 +826,7 @@ std::string wwmix::PassWord(bool TwoTimes)
 		TextAttr = screen.colors.pNorm | 0x80;
 		ClrEol(TextAttr);
 		ReadMessage(MsgNr);
-		screen.ScrFormatWrText(1, 1, "%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
+		screen.ScrFormatWrText(1, 1, "%*s", (int)((MsgLine.length() + 22) / 2), MsgLine.c_str());
 		WORD pressed_key = ReadKbd(); // wait for 1st char
 		keyboard.AddToFrontKeyBuf(pressed_key);
 		TextAttr = screen.colors.pNorm;

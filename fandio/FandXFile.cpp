@@ -32,6 +32,25 @@ FandXFile::~FandXFile()
 	}
 }
 
+void FandXFile::Reset()
+{
+	if (Handle != nullptr) {
+		CloseH(&Handle);
+	}
+	Handle = nullptr;
+	ClearUpdateFlag();
+
+	NRecs = 0;
+	NRecsAbs = 0;
+	NotValid = false;
+	NrKeys = 0;
+	NoCreate = false;
+	FirstDupl = false;
+	FreeRoot = 0;
+	MaxPage = 0;
+	UpdLockCnt = 0;
+}
+
 void FandXFile::SetEmpty(int recs, unsigned char keys)
 {
 	auto p = std::make_unique<XPage>();

@@ -9,14 +9,11 @@ KeyFldD::KeyFldD(const KeyFldD& orig, bool copyFlds)
 	Descend = orig.Descend;
 }
 
-KeyFldD::KeyFldD(uint8_t* inputStr)
-{
-	size_t index = 0;
-	// TODO: pChain = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
-	FldD = reinterpret_cast<FieldDescr*>(*(unsigned int*)&inputStr[index]); index += 4;
-	CompLex = *(bool*)&inputStr[index]; index++;
-	Descend = *(bool*)&inputStr[index]; index++;
-}
+// Odstraneno: KeyFldD(uint8_t* inputStr) cetl z bufferu 4 bajty a delal z nich
+// ukazatel FldD (rozvrzeni 32bitoveho Pascalu). Na x64 by z ukazatele zustala jen
+// dolni polovina a dalsi polozky by se cetly o 4 bajty vedle. Konstruktor nikdo
+// nevolal, vsechna mista pouzivaji KeyFldD(). Pokud by nekdy bylo potreba nacitat
+// KeyFldD z bajtu, musi se ukladat identifikace pole, ne adresa.
 
 bool KeyFldD::EquKFlds(std::vector<KeyFldD*>& KF1, std::vector<KeyFldD*>& KF2)
 {

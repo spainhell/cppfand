@@ -1364,7 +1364,7 @@ label1:
 					Y.I += 2;
 				label2:
 					if (Skip) {
-						snprintf(buffer, sizeof(buffer), "%*c", mask.length(), ' ');
+						snprintf(buffer, sizeof(buffer), "%*c", (int)mask.length(), ' ');
 						//printf("%s%*c", Rprt.c_str(), Mask.length(), ' ');
 						text += buffer;
 					}
