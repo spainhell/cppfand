@@ -1027,7 +1027,13 @@ ColorOrd TextEditor::SetColorOrd(size_t last_line) const
 			while (index < line.length()) {
 				size_t pp = co.find(line[index]);
 				if (pp != std::string::npos) {
-					co.erase(pp);
+					// Odebrat jen ten jeden prepinac, ne vse za nim. Original
+					// (EDGLOBAL.PAS, SetColorOrd) dela
+					//   CO := copy(CO,1,pp-1) + copy(CO,pp+1,len-pp)
+					// stejne jako ScrollWrline v TextEditorScreen.cpp. Puvodni
+					// co.erase(pp) zahodilo cely zbytek retezce, takze se u vnorenych
+					// atributu stav rozchazel s tim, co pocita vykreslovani.
+					co.erase(pp, 1);
 				}
 				else {
 					co += line[index];
