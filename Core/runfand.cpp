@@ -107,7 +107,10 @@ void InitAccess()
 {
 	gc->ResetCompilePars();
 	SpecFDNameAllowed = false;
-	FillChar(&XWork, sizeof(XWork), 0);
+	// Drive zde bylo FillChar(&XWork, sizeof(XWork), 0). XWork je objekt s virtualnim
+	// destruktorem, takze se nulovala i tabulka virtualnich metod a soukromy ukazatel
+	// na rodice. Reset() nastavi tytez polozky, ale korektne.
+	XWork.Reset();
 }
 
 void RdCFG()
@@ -595,14 +598,14 @@ void OpenFileDialog()
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = NULL;
-	ofn.lpstrFilter = "úloha RDB\0*.RDB\0všechny soubory\0*.*\0\0";
+	ofn.lpstrFilter = "ï¿½loha RDB\0*.RDB\0vï¿½echny soubory\0*.*\0\0";
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrTitle = "Vyberte úlohu";
+	ofn.lpstrTitle = "Vyberte ï¿½lohu";
 	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 	if (GetOpenFileName(&ofn))
 	{
-		printf("Dobøe to dopadlo :-)");
+		printf("Dobï¿½e to dopadlo :-)");
 	}
 	else
 	{
