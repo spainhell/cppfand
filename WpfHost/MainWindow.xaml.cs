@@ -31,6 +31,7 @@ public partial class MainWindow : Window
             _fieldEdit.InjectText(text);
             return true;
         };
+        Terminal.MouseAllowed = () => !_fieldEdit.IsEditing;
         Terminal.PendingPaste = text => { _pendingPaste = text; _pendingPasteAt = DateTime.UtcNow; };
         Title = $"C++ FAND – {options.RdbName}";
 

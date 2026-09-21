@@ -1,8 +1,11 @@
 #include "keyboard.h"
 #include "host.h"
+#include "mouse.h"
 #include <exception>
 
 const int buff_size = 128;
+// horni mez fronty hostitele (viz PushEvent)
+const size_t hostQueueLimit = 256;
 
 Keyboard::Keyboard()
 {
@@ -74,35 +77,14 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 		if (_inBuffer == 0) return false;
 	}
 
-	// pokud udalost neni z klavesnice, jdeme na dalsi
-	//while (_kbdBuf[_actualIndex].EventType != KEY_EVENT && _actualIndex < _inBuffer) {
-	//	_actualIndex++;
-	//}
+	// udalosti, ktere nejsou z klavesnice, preskocime; udalosti mysi pritom predame
+	// jejimu ovladaci - nahrada za obsluhu preruseni int 33H v puvodnim PC-FANDu
 	while (_actualIndex < _inBuffer) {
-		bool key_or_mouse = false;
-
-		switch (_kbdBuf[_actualIndex].EventType) {
-		case KEY_EVENT:
-			key_or_mouse = true;
-			break;
-		case MOUSE_EVENT:
-			key_or_mouse = true;
-			break;
-		case WINDOW_BUFFER_SIZE_EVENT:
-			break;
-		case MENU_EVENT:
-			break;
-		case FOCUS_EVENT:
-			break;
-		default:;
+		if (_kbdBuf[_actualIndex].EventType == KEY_EVENT) break;
+		if (_kbdBuf[_actualIndex].EventType == MOUSE_EVENT) {
+			mouse.Push(_kbdBuf[_actualIndex].Event.MouseEvent);
 		}
-
-		if (key_or_mouse) {
-			break;
-		}
-		else {
-			_actualIndex++;
-		}
+		_actualIndex++;
 	}
 	// narazili jsme na udalost z klavesnice, nebo tam zadna takova neni a jsme na konci?
 	if (_actualIndex == _inBuffer) {
@@ -114,22 +96,23 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 		_actualIndex++;
 	}
 
-	if (event->EventType == MOUSE_EVENT) {
-		return false;
-	}
-	else {
-		key = event->Event.KeyEvent;
+	key = event->Event.KeyEvent;
 
 #if _DEBUG
-		auto a = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC);
-		auto b = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK);
-		auto c = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
-		auto d = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK_EX);
-		auto e = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC_EX);
+	auto a = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC);
+	auto b = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK);
+	auto c = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
+	auto d = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK_EX);
+	auto e = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC_EX);
 #endif
 
-		return true;
-	}
+	return true;
+}
+
+void Keyboard::PumpInput()
+{
+	KEY_EVENT_RECORD key;
+	Get(key, true);
 }
 
 void Keyboard::DeleteKeyBuf()
@@ -245,6 +228,8 @@ void Keyboard::AddToKeyBuf(std::string input)
 void Keyboard::AddToKeyBuf(unsigned short c)
 {
 	KEY_EVENT_RECORD key = KEY_EVENT_RECORD();
+	// set key down
+	key.bKeyDown = true;
 
 	// reverse function to KeyCombination
 	if (c & 0x0400) { key.dwControlKeyState += 0x0002; } // left Alt
@@ -315,6 +300,9 @@ std::string Keyboard::GetKeyBufAsString()
 void Keyboard::PushEvent(const INPUT_RECORD& record)
 {
 	std::lock_guard<std::mutex> lock(_hostMutex);
+	// kdyz interpret dlouho necte (tisk sestavy), zahazujeme pohyby mysi,
+	// aby fronta nerostla; klavesy se nezahazuji nikdy
+	if (record.EventType == MOUSE_EVENT && _hostQueue.size() >= hostQueueLimit) return;
 	_hostQueue.push_back(record);
 }
 

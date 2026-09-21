@@ -22,6 +22,7 @@
     <ClCompile Include="files.cpp" />
     <ClCompile Include="host.cpp" />
     <ClCompile Include="keyboard.cpp" />
+    <ClCompile Include="mouse.cpp" />
     <ClCompile Include="screen.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -29,6 +30,7 @@
     <ClInclude Include="files.h" />
     <ClInclude Include="host.h" />
     <ClInclude Include="keyboard.h" />
+    <ClInclude Include="mouse.h" />
     <ClInclude Include="screen.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

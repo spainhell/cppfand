@@ -269,9 +269,13 @@ void wait()
 {
 }
 
+/// Je mys v obdelniku? Souradnice jsou znakove a 0-based, stejne jako Event.Where.
+/// COMMON.PAS r175
 bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size)
 {
-	return false;
+	if (Event.Where.X < X || Event.Where.X >= X + XSize) return false;
+	if (Event.Where.Y < Y || Event.Where.Y >= Y + Size) return false;
+	return true;
 }
 
 bool IsLetter(char C)
@@ -579,9 +583,20 @@ void ReleaseAfterLongStr(void** pointer)
 	delete[] * pointer; *pointer = nullptr;
 }
 
+/// Varianta pro funkci MOUSEIN jazyka FANDu: v textovem rezimu jsou souradnice
+/// 1-based, v grafickem uz v pixelech. COMMON.PAS r182
 bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size)
 {
-	return false;
+	if (IsGraphMode) {
+		if (Event.WhereG.X < X || Event.WhereG.X >= X + XSize) return false;
+		if (Event.WhereG.Y < Y || Event.WhereG.Y >= Y + Size) return false;
+		return true;
+	}
+	const WORD x = X > 0 ? X - 1 : 0;
+	const WORD y = Y > 0 ? Y - 1 : 0;
+	if (Event.Where.X < x || Event.Where.X >= x + XSize) return false;
+	if (Event.Where.Y < y || Event.Where.Y >= y + Size) return false;
+	return true;
 }
 
 bool EqualsMask(void* p, WORD l, pstring Mask)
@@ -723,7 +738,7 @@ void MyExit()
 	// TODO? CloseXMS();
 label1:
 	if (WasInitDrivers) {
-		// TODO? DoneMouseEvents();
+		DoneMouseEvents();
 		// CrsIntrDone();
 		if (IsGraphMode) {
 			CloseGraph();

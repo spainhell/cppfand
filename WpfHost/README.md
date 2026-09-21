@@ -10,6 +10,11 @@ mu dělá obrazovku a klávesnici:
   se kreslí jako obdélníky, ostatní znaky písmem Cascadia Mono / Consolas.
 - **Klávesy** se posílají přes `FandPushKey` ve tvaru `KEY_EVENT_RECORD`
   konzole, takže `PressedKey` a všechny klávesové zkratky FANDu zůstávají.
+- **Myš** se posílá přes `FandPushMouse` ve tvaru `MOUSE_EVENT_RECORD`
+  konzole (souřadnice v buňkách mřížky). Interpret z ní dělá události
+  `evMouseDown`/`Up`/`Move`/`Auto` stejně jako původní PC-FAND, takže
+  funguje výběr položky v menu, klik na klávesu v posledním řádku,
+  pravé tlačítko jako Esc i dvojklik v editoru dat.
 - **Editace jednořádkového pole** (`DataEditor::EditTxt`) se předává
   hostiteli (`Drivers/host.h`, `FandPollFieldEdit` / `FandCompleteFieldEdit`).
   Nad polem se objeví běžný `TextBox`: schránka (Ctrl+C/V/X), označení myší,
@@ -57,5 +62,6 @@ Ctrl+Shift+C zkopíruje celou obrazovku, Ctrl+kolečko mění velikost písma.
 ## Známá omezení
 
 - Jedna relace FANDu na proces (globální stav interpretu).
-- Myš se interpretu neposílá (konzolová verze ji také zahazuje).
+- Kolečko myši původní PC-FAND neznal, interpretu se neposílá
+  (Ctrl+kolečko mění velikost písma).
 - Heslo (`star`) se v překryvném editoru jen skrývá barvou.
