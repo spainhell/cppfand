@@ -9,6 +9,35 @@ public sealed class StartOptions
     public string WorkDir { get; set; } = "";
     public string RdbName { get; set; } = "";
 
+    // Ma slozka to, co FAND potrebuje ke startu?
+    public static bool HasFandFiles(string dir) =>
+        dir.Length > 0 && File.Exists(Path.Combine(dir, "FAND.CFG")) && File.Exists(Path.Combine(dir, "FAND.RES"));
+
+    // Uloha se obvykle nasazuje tak, ze hostitel lezi primo v jejim adresari,
+    // takze FAND.CFG a FAND.RES hledame vedle exe a teprve potom v aktualnim
+    // adresari. Kdyz nejsou ani tam, nevime a musime se zeptat.
+    public static string? FindFandDir()
+    {
+        string exeDir = AppContext.BaseDirectory.TrimEnd('\\');
+        if (HasFandFiles(exeDir)) return exeDir;
+        string cwd = Environment.CurrentDirectory.TrimEnd('\\');
+        if (HasFandFiles(cwd)) return cwd;
+        return null;
+    }
+
+    // Ulozena uloha plati jen tehdy, kdyz v teto slozce opravdu je; jinak vezmeme
+    // jedinou .RDB, kterou tam najdeme (vic jich byva jen vyjimecne).
+    public static string ResolveRdbName(string dir, string saved)
+    {
+        try
+        {
+            if (saved.Length > 0 && File.Exists(Path.Combine(dir, saved + ".RDB"))) return saved;
+            string[] found = Directory.GetFiles(dir, "*.RDB");
+            return found.Length == 1 ? Path.GetFileNameWithoutExtension(found[0]) : saved;
+        }
+        catch { return saved; }
+    }
+
     // prosty textovy soubor klic=hodnota (bez zavislosti na JSON knihovne, aby vedle exe nic nebylo)
     private static string SettingsPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "cppfand", "wpfhost.txt");
@@ -52,7 +81,8 @@ public partial class StartWindow : Window
 {
     public StartOptions? Result { get; private set; }
 
-    public StartWindow(StartOptions defaults)
+    // askForDirs == false: FAND.CFG a FAND.RES uz nekdo nasel, ptame se jen na ulohu
+    public StartWindow(StartOptions defaults, bool askForDirs)
     {
         InitializeComponent();
         FandDirBox.Text = defaults.FandDir;
@@ -60,6 +90,16 @@ public partial class StartWindow : Window
         RdbBox.Text = defaults.RdbName;
         if (FandDirBox.Text.Length == 0) FandDirBox.Text = AppContext.BaseDirectory.TrimEnd('\\');
         if (WorkDirBox.Text.Length == 0) WorkDirBox.Text = FandDirBox.Text;
+
+        if (!askForDirs)
+        {
+            Title = "C++ FAND – výběr úlohy";
+            foreach (UIElement row in new UIElement[] { FandDirLabel, FandDirBox, FandDirBrowse, WorkDirLabel, WorkDirBox, WorkDirBrowse })
+                row.Visibility = Visibility.Collapsed;
+            HintText.Text = $"Úloha se hledá v {FandDirBox.Text}. Zadat ji lze i na příkazové řádce: cppfand-wpf.exe <úloha>";
+        }
+
+        Loaded += (_, _) => { RdbBox.Focus(); RdbBox.SelectAll(); };
     }
 
     private void BrowseFandDir(object sender, RoutedEventArgs e) => Browse(FandDirBox);
@@ -86,7 +126,7 @@ public partial class StartWindow : Window
             WorkDir = WorkDirBox.Text.Trim().TrimEnd('\\'),
             RdbName = RdbBox.Text.Trim(),
         };
-        if (!File.Exists(Path.Combine(opt.FandDir, "FAND.CFG")) || !File.Exists(Path.Combine(opt.FandDir, "FAND.RES")))
+        if (!StartOptions.HasFandFiles(opt.FandDir))
         {
             MessageBox.Show(this, "Ve složce musí být FAND.CFG a FAND.RES.", "C++ FAND", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
