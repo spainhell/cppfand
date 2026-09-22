@@ -170,19 +170,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="HelpViewer.cpp" />
-    <ClCompile Include="TextEditorEvents.cpp" />
     <ClCompile Include="EditorHelp.cpp" />
-    <ClCompile Include="TextEditorScreen.cpp" />
     <ClCompile Include="TextEditor.cpp" />
-    <ClCompile Include="TextEditorSpecialModes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HelpViewer.h" />
-    <ClInclude Include="TextEditorEvents.h" />
     <ClInclude Include="EditorHelp.h" />
-    <ClInclude Include="TextEditorScreen.h" />
     <ClInclude Include="TextEditor.h" />
-    <ClInclude Include="TextEditorSpecialModes.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Drivers\Drivers.vcxproj">

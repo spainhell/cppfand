@@ -21,16 +21,7 @@
     <ClCompile Include="EditorHelp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextEditorEvents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextEditorScreen.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HelpViewer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextEditorSpecialModes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,16 +32,7 @@
     <ClInclude Include="EditorHelp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextEditorEvents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextEditorScreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HelpViewer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextEditorSpecialModes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

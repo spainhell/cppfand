@@ -23,11 +23,7 @@ struct MsgStr
 
 bool ModPage(int RLine);
 int NewL(int RLine);
-bool MyPromptLL(WORD n, std::string& s);
 
-void SetPartLine(int Ln);
-void MyWrLLMsg(std::string s);
-void HMsgExit(std::string s);
 void SimplePrintHead();
 
 const int SuccLineSize = 256;
@@ -84,8 +80,6 @@ const WORD _KF_ = 0x0B06;
 
 const uint8_t CountC = 7;
 
-class TextEditorEvents;
-class TextEditorScreen;
 
 enum class EditorMode {	Unknown, Normal, Text, Help, View, Edit, FrameSingle, FrameDouble, DeleteFrame, NotFrame };
 enum class TextType { Unknown, File, Local, Memo };
@@ -93,8 +87,6 @@ enum class TextType { Unknown, File, Local, Memo };
 class TextEditor
 {
 public:
-	friend class TextEditorEvents;
-	friend class TextEditorScreen;
 
 	TextEditor(EditorMode e_mode, TextType text_type);
 	virtual ~TextEditor();
@@ -109,41 +101,17 @@ public:
 		int Txtxy, WRect* V, WORD Atr, std::string Hd, uint8_t WFlags, MsgStr* MsgS);
 	void ViewPrinterTxt();
 	void SetEditTxt(Instr_setedittxt* PD);
-	void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg,
-	                short& pRightMarg);
 
 	void InitTxtEditor();
-	void InitHelpViewEditor();
 
 	uint8_t ColKey[CountC + 1]{ 0 };
 	std::string InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
 
 protected:
-	virtual void Background();
-	virtual void UpdStatLine(int Row, int Col);
-	void UpdScreen();
-	void WriteMargins();
-	size_t FindCharPosition(char c, size_t from, size_t n = 1);
-	size_t CountChar(char C, size_t first, size_t last);
-	WORD SetInd(WORD Ind, WORD Pos);
 	size_t GetLine(size_t idx);
-	size_t GetLineNumber(size_t Ind);
-	WORD Column(WORD p);
-	WORD Position(WORD n);
-	void DekFindLine(int Num);
 	void NextLine(bool WrScr);
-	void RollNext();
-	void RollPred();
-	int NewRL(int Line);
-	size_t LineAbs(int Ln);
 
 	// *** methods for HELP viewer ***
-	virtual void ClrWord();
-	virtual void ProcessHelpMode();
-	virtual WORD WordNo2();
-	virtual size_t WordNo(size_t I);
-	virtual bool WordExistsOnActualScreen();
-	virtual void ProcessHelpMove(uint16_t pressed_key);
 	// ***
 
 	std::vector<std::string> _lines;
@@ -158,77 +126,23 @@ private:
 	EditorMode _mode = EditorMode::Unknown;
 	TextType _text_type = TextType::Unknown;
 
-	TextEditorEvents* _events = nullptr;
-	TextEditorScreen* _screen = nullptr;
 
-	void FindReplaceString(int First, int Last);
-	void ScrollPress();
 	void DisplLL(WORD Flags);
-	void WrStatusLine();
-	void WrLLMargMsg(std::string& s, WORD n);
-	void InitScr();
-	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
-	void SetBlockBound(int& BBPos, int& EBPos);
-	void ResetPrint(TextEditor* editor, char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p);
-	bool BlockHandle(int& fs, HANDLE W1, char Oper);
-	void BlockCopyMove(char Oper, uint8_t* P1, LongStr* sp);
-	bool BlockGrasp(char Oper, uint8_t* P1, LongStr* sp);
-	bool BlockCGrasp(char Oper, uint8_t* P1, LongStr* sp);
-	void BlockDrop(char Oper, uint8_t* P1, LongStr* sp);
-	void BlockCDrop(char Oper, uint8_t* P1, LongStr* sp);
 	void TestUpdFile();
-	void KodLine();
 	void DekodLine();
-	void FrameStep(uint8_t& odir, PressedKey EvKeyC);
-	void Format(WORD& i, int First, int Last, WORD Posit, bool Rep);
 	void NewLine(char Mode);
-	WORD SetPredI();
-	void MyWriteln();
 	void PreviousLine();
-	void FillBlank();
-	void DeleteLine();
-	bool TestOptStr(char c);
-	size_t GetLineStartIndex(size_t lineNr);
 
-	void SetWord(size_t word_begin, size_t word_end);
-	bool WordFind(WORD i, size_t& word_begin, size_t& word_end, size_t& line_nr);
 
-	void CopyCurrentLineToArr(size_t Ind);
-	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
-	void WrEndL(bool Hard, int Row);
-	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
-	void Edit(std::string& text, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
-	void UpdateLine();
-	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
-	WORD CurrentLineFirstCharIndex(WORD index);
-	void NextPartDek();
 	ColorOrd SetColorOrd(size_t last_line) const;
-	void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last);
-	bool FindString(WORD& I, WORD Len);
 	bool ReadTextFile();
 	//void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count);
 	void UpdateFile();
-	bool TestLastPos(WORD F, WORD T);
-	void MoveB(WORD& B, WORD& F, WORD& T);
-	void DelChar();
-	void WrCharE(char Ch);
-	void Calculate();
-	void BlockLRShift(WORD I1);
-	void BlockUDShift(int L1);
-	bool BlockExist();
-	bool ColBlockExist();
-	void NewBlock1(WORD& I1, int& L2);
-	void NewBlock2(int& L1, int& L2);
-	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
 	std::string CursorWord();
-	WORD GetArrLineLength();
 	void direction(uint8_t x, uint8_t& zn2);
 	void OpenTxtFh(EditorMode mode);
-	size_t StrIndexToScrPos(const std::string& line, size_t string_index);
 	size_t ScrPosToStrIndex(const std::string& line, size_t screen_pos);
 
-	bool LineInBlock(int Ln);
-	bool LineBndBlock(int Ln);
 	WORD BegBLn = 0;
 	WORD EndBLn = 0;
 	WORD BegBPos = 0;
