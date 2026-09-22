@@ -1,0 +1,24 @@
+<Window x:Class="WpfHost.TextEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
+        Title="Text" Height="700" Width="1000"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <DockPanel>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem><TextBlock x:Name="PosText" Text="–"/></StatusBarItem>
+            <Separator/>
+            <StatusBarItem><TextBlock x:Name="AttrText" Text="–"/></StatusBarItem>
+            <Separator/>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Foreground="#666" Text="F12 řídicí znaky · F2 uložit a zavřít · Esc zavřít"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <avalon:TextEditor x:Name="Editor"
+                           FontFamily="Consolas" FontSize="16"
+                           ShowLineNumbers="True"
+                           HorizontalScrollBarVisibility="Auto"
+                           VerticalScrollBarVisibility="Auto"/>
+    </DockPanel>
+</Window>

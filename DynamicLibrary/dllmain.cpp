@@ -390,6 +390,92 @@ extern "C" int FAND_API FandPollFieldEdit(FandHost::FieldEditRequest* request)
 	return FandHost::PollFieldEdit(*request) ? 1 : 0;
 }
 
+// --- editace celeho textu -------------------------------------------------
+// Text byva velky, takze se nepreleva pres strukturu: Poll oznami jeho delku
+// a hostitel si ho vyzvedne zvlast pres FandGetTextEditText.
+
+/// Skalarni cast pozadavku na editaci textu; rozlozeni musi sedet s Native.cs.
+struct FandTextEditInfo
+{
+	int Mode;
+	int TextType;
+	int Pos;
+	int Scroll;
+	int Scrolling;
+	int ReadOnly;
+	int TextLength;      // v bajtech CP852, bez ukoncujici nuly
+	int BreakKeyCount;
+	unsigned char ColKey[8];
+	unsigned char TxtColor;
+	unsigned char BlockColor;
+	char Name[128];
+};
+
+namespace
+{
+	// pozadavek drzime mezi Poll a Complete, aby si hostitel mohl text vyzvednout
+	FandHost::TextEditRequest g_pendingTextEdit;
+}
+
+extern "C" void FAND_API FandSetTextEditHost(int enabled)
+{
+	FandHost::SetTextEditEnabled(enabled != 0);
+}
+
+/// Vyzvedne cekajici pozadavek na editaci textu. Vraci 1, pokud byl.
+extern "C" int FAND_API FandPollTextEdit(FandTextEditInfo* info)
+{
+	if (info == nullptr) return 0;
+	if (!FandHost::PollTextEdit(g_pendingTextEdit)) return 0;
+
+	info->Mode = g_pendingTextEdit.Mode;
+	info->TextType = g_pendingTextEdit.TextType;
+	info->Pos = g_pendingTextEdit.Pos;
+	info->Scroll = g_pendingTextEdit.Scroll;
+	info->Scrolling = g_pendingTextEdit.Scrolling;
+	info->ReadOnly = g_pendingTextEdit.ReadOnly;
+	info->TextLength = static_cast<int>(g_pendingTextEdit.Text.size());
+	info->BreakKeyCount = static_cast<int>(g_pendingTextEdit.BreakKeys.size());
+	memcpy(info->ColKey, g_pendingTextEdit.ColKey, sizeof(info->ColKey));
+	info->TxtColor = g_pendingTextEdit.TxtColor;
+	info->BlockColor = g_pendingTextEdit.BlockColor;
+	memcpy(info->Name, g_pendingTextEdit.Name, sizeof(info->Name));
+	return 1;
+}
+
+/// Zkopiruje text vyzvednuteho pozadavku (CP852, bez ukoncujici nuly).
+/// Vraci pocet zapsanych bajtu.
+extern "C" int FAND_API FandGetTextEditText(char* buffer, int capacity)
+{
+	if (buffer == nullptr || capacity <= 0) return 0;
+	int len = static_cast<int>(g_pendingTextEdit.Text.size());
+	if (len > capacity) len = capacity;
+	memcpy(buffer, g_pendingTextEdit.Text.data(), len);
+	return len;
+}
+
+/// Zkopiruje klavesy, ktere maji editaci ukoncit. Vraci jejich pocet.
+extern "C" int FAND_API FandGetTextEditBreakKeys(uint16_t* buffer, int capacity)
+{
+	if (buffer == nullptr || capacity <= 0) return 0;
+	int count = static_cast<int>(g_pendingTextEdit.BreakKeys.size());
+	if (count > capacity) count = capacity;
+	memcpy(buffer, g_pendingTextEdit.BreakKeys.data(), count * sizeof(uint16_t));
+	return count;
+}
+
+/// Preda vysledek editace textu a probudi interpret.
+extern "C" void FAND_API FandCompleteTextEdit(const char* text, int textLength, int pos, int scroll, int updated, uint16_t key)
+{
+	FandHost::TextEditResult res;
+	if (text != nullptr && textLength > 0) res.Text.assign(text, textLength);
+	res.Pos = pos;
+	res.Scroll = scroll;
+	res.Updated = updated;
+	res.Key = key;
+	FandHost::CompleteTextEdit(res);
+}
+
 /// Preda vysledek editace: text (CP852), pozice kurzoru (1-based), rezim vkladani,
 /// ukoncovaci klavesa v kodovani KeyCombination (0x8000 = neznakova, 0x0400 Alt, 0x0200 Ctrl, 0x0100 Shift).
 extern "C" void FAND_API FandCompleteFieldEdit(const char* text, int pos, int insertMode, uint16_t key)

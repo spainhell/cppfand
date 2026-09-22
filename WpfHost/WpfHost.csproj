@@ -42,6 +42,11 @@
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
+  <!-- editor textu FANDu; TextBox neumi obarvit jednotlive znaky -->
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Remove="System.Net.Http" />
     <Using Remove="System.Windows.Forms" />

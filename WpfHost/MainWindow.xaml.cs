@@ -68,6 +68,7 @@ public partial class MainWindow : Window
         }
 
         TryBeginPendingEdit();
+        TryBeginPendingTextEdit();
 
         if (_started && info.Running == 0 && !_endedReported)
         {
@@ -79,6 +80,38 @@ public partial class MainWindow : Window
             StatusText.Text = err.Length > 0 ? $"interpret skončil: {err}" : $"interpret skončil (kód {code})";
             // řádné ukončení programu zavře i okno; při chybě zůstane, aby bylo vidět hlášení
             if (err.Length == 0 && code == 0) Close();
+        }
+    }
+
+    private bool _textEditOpen;
+
+    /// <summary>
+    /// Interpret čeká v RunTextEdit (Drivers/host.h) na editaci celého textu.
+    /// Text se nevejde do struktury, takže se vyzvedává zvlášť podle TextLength.
+    /// </summary>
+    private void TryBeginPendingTextEdit()
+    {
+        if (_textEditOpen || !_started) return;
+        if (Native.FandPollTextEdit(out var info) == 0) return;
+
+        _textEditOpen = true;
+        try
+        {
+            var bytes = new byte[Math.Max(info.TextLength, 1)];
+            int len = Native.FandGetTextEditText(bytes, info.TextLength);
+            string text = FandAttr.Decode(bytes, len);
+
+            var dlg = new TextEditWindow(info, text) { Owner = this };
+            dlg.ShowDialog();
+
+            byte[] result = FandAttr.Encode(dlg.ResultText);
+            Native.FandCompleteTextEdit(result, result.Length, dlg.ResultPos,
+                info.Scroll, dlg.ResultUpdated ? 1 : 0, dlg.ResultKey);
+        }
+        finally
+        {
+            _textEditOpen = false;
+            Terminal.Focus();
         }
     }
 
