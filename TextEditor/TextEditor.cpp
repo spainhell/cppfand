@@ -2962,6 +2962,11 @@ bool TextEditor::EditText(EditorMode e_mode, TextType text_type, std::string pNa
 			pScr = res.Scroll;
 			pUpdat = res.Updated != 0;
 			pSrch = false;
+			// Volajici ukoncovaci klavesu necte z navratove hodnoty, ale
+			// z globalniho Event.Pressed -- viz DataEditor.cpp:3989
+			// (c = Event.Pressed.KeyCombination()) nebo EditorHelp.cpp:143.
+			// UpdateKey je inverzni funkce ke KeyCombination (keyboard.cpp:419).
+			if (res.Key != 0) Event.Pressed.UpdateKey(res.Key);
 			EdOk = oldEdOK;
 			return true;
 		}
