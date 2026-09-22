@@ -77,8 +77,9 @@ public partial class TextEditWindow : Window
         Editor.Options.ConvertTabsToSpaces = false;
         Editor.WordWrap = false;
         Editor.IsReadOnly = info.ReadOnly != 0 || _isHelp;
+        // TxtColor je celý atribut, proto se rozpadá na písmo a pozadí
         Editor.Background = new SolidColorBrush(_colors.Color(_colors.Background));
-        Editor.Foreground = new SolidColorBrush(_colors.Color(_colors.TxtColor));
+        Editor.Foreground = new SolidColorBrush(_colors.Color(FandColors.Fg(_colors.TxtColor)));
         Editor.TextArea.TextView.LineTransformers.Add(_colorizer);
         Editor.TextArea.TextView.ElementGenerators.Add(_generator);
 

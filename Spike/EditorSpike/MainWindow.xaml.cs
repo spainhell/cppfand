@@ -107,14 +107,46 @@ public partial class MainWindow : Window
 
     private void BuildColorControls()
     {
-        AddColorRow("text bez atributu (tNorm)", () => _colors.TxtColor, v => _colors.TxtColor = v);
-        AddColorRow("pozadí", () => _colors.Background, v => _colors.Background = v);
-        AddColorRow("ostatní řídicí znaky (tCtrl)", () => _colors.ColKey[0], v => _colors.ColKey[0] = v);
+        AddAttrRow("text bez atributu (tNorm)", () => _colors.TxtColor, v => _colors.TxtColor = v);
+        AddAttrRow("ostatní řídicí znaky (tCtrl)", () => _colors.ColKey[0], v => _colors.ColKey[0] = v);
         foreach (var a in FandText.Attributes)
         {
             int idx = a.ColKeyIndex;
-            AddColorRow(a.Name, () => _colors.ColKey[idx], v => _colors.ColKey[idx] = v);
+            AddAttrRow(a.Name, () => _colors.ColKey[idx], v => _colors.ColKey[idx] = v);
         }
+    }
+
+    /// <summary>
+    /// Jeden atribut FANDu = jeden bajt: dolní nibble písmo, horní pozadí.
+    /// Proto dvě rozbalovací pole, ne jedno.
+    /// </summary>
+    private void AddAttrRow(string label, Func<int> get, Action<int> set)
+    {
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 12, 2) };
+        panel.Children.Add(new TextBlock { Text = label, Width = 175, VerticalAlignment = VerticalAlignment.Center });
+        panel.Children.Add(MakeCombo(() => FandColors.Fg(get()),
+            v => set((get() & 0xF0) | v)));
+        panel.Children.Add(new TextBlock { Text = " na ", VerticalAlignment = VerticalAlignment.Center });
+        panel.Children.Add(MakeCombo(() => FandColors.Bg(get()),
+            v => set((get() & 0x0F) | (v << 4))));
+        ColorGrid.Children.Add(panel);
+    }
+
+    private ComboBox MakeCombo(Func<int> get, Action<int> set)
+    {
+        var combo = new ComboBox { Width = 125 };
+        for (int i = 0; i < FandText.PaletteNames.Length; i++)
+        {
+            combo.Items.Add(new ComboBoxItem
+            {
+                Content = FandText.PaletteNames[i],
+                Background = new SolidColorBrush(FandText.Palette[i]),
+                Foreground = new SolidColorBrush(i < 8 ? Colors.White : Colors.Black),
+            });
+        }
+        combo.SelectedIndex = get();
+        combo.SelectionChanged += (_, _) => { set(combo.SelectedIndex); ApplyColors(); };
+        return combo;
     }
 
     private void AddColorRow(string label, Func<int> get, Action<int> set)
@@ -141,7 +173,7 @@ public partial class MainWindow : Window
     private void ApplyColors()
     {
         Editor.Background = new SolidColorBrush(FandText.Palette[_colors.Background]);
-        Editor.Foreground = new SolidColorBrush(FandText.Palette[_colors.TxtColor]);
+        Editor.Foreground = new SolidColorBrush(FandText.Palette[FandColors.Fg(_colors.TxtColor)]);
         Editor.TextArea.TextView.Redraw();
     }
 
