@@ -84,6 +84,8 @@ void CfgFile::ReadVideoAndColors(Video& video, uint8_t start_mode, enVideoCard v
 	if (video.address < 0xFF) {
 		TxtCols = video.address;
 	}
+	// rozmer zadany hostitelem (cppfand-wpf.exe.config) ma prednost
+	FandHost::ApplyScreenSize(TxtCols, TxtRows);
 }
 
 void CfgFile::ReadFonts(Fonts& fonts)

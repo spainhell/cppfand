@@ -279,6 +279,13 @@ extern "C" int FAND_API FandStart(const char* fandDir, const char* workDir, cons
 	return 0;
 }
 
+/// Rozmer obrazovky ve znacich; vola se pred FandStart. Ma prednost pred FAND.CFG,
+/// 0 = ponechat hodnotu z FAND.CFG. Sirka 40..132, vyska 25..100.
+extern "C" void FAND_API FandSetScreenSize(int cols, int rows)
+{
+	FandHost::SetScreenSize(cols, rows);
+}
+
 extern "C" int FAND_API FandIsRunning()
 {
 	return g_running ? 1 : 0;

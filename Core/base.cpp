@@ -633,10 +633,58 @@ int MemoryAvailable()
 	throw std::exception(message.c_str());
 }
 
+/// Spusti prikaz pres cmd.exe /c bez konzoloveho okna (CREATE_NO_WINDOW) a pocka na jeho konec.
+/// Vstup i vystup jde do NUL, takze prikaz cekajici na klavesu (pause) nezustane viset.
+static bool RunHiddenCommand(const std::string& cmd, int& exit_code)
+{
+	char comspec[MAX_PATH];
+	DWORD len = GetEnvironmentVariableA("COMSPEC", comspec, sizeof(comspec));
+	std::string shell = (len > 0 && len < sizeof(comspec)) ? comspec : "cmd.exe";
+	std::string command_line = "\"" + shell + "\" /c " + cmd;
+
+	SECURITY_ATTRIBUTES sa{ sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
+	HANDLE nul_in = CreateFileA("NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, OPEN_EXISTING, 0, nullptr);
+	HANDLE nul_out = CreateFileA("NUL", GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, OPEN_EXISTING, 0, nullptr);
+
+	STARTUPINFOA si{};
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESTDHANDLES;
+	si.hStdInput = nul_in;
+	si.hStdOutput = nul_out;
+	si.hStdError = nul_out;
+
+	PROCESS_INFORMATION pi{};
+	std::vector<char> buf(command_line.begin(), command_line.end());
+	buf.push_back('\0');
+	BOOL ok = CreateProcessA(nullptr, buf.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi);
+
+	if (nul_in != INVALID_HANDLE_VALUE) CloseHandle(nul_in);
+	if (nul_out != INVALID_HANDLE_VALUE) CloseHandle(nul_out);
+
+	if (!ok) {
+		SPDLOG_ERROR("RunHiddenCommand(): CreateProcess failed, error {}", GetLastError());
+		return false;
+	}
+
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	DWORD code = 0;
+	GetExitCodeProcess(pi.hProcess, &code);
+	CloseHandle(pi.hThread);
+	CloseHandle(pi.hProcess);
+	exit_code = (int)code;
+	return true;
+}
+
 bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_memory, bool load_font, bool text_mode)
 {
 	if (path == "FNDFILES.EXE") {
 		LastExitCode = RunFndFilesExe(cmd_line);
+	}
+	else if (FandHost::IsEnabled()) {
+		// okenni hostitel nema konzoli: _popen by pro cmd.exe otevrel nove konzolove okno
+		std::string cmd = path.empty() ? cmd_line : path + " " + cmd_line;
+		SPDLOG_INFO("OSshell() calling hidden command '{}'", cmd);
+		if (!RunHiddenCommand(cmd, LastExitCode)) return false;
 	}
 	else {
 		char psBuffer[128];

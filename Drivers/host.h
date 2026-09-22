@@ -17,6 +17,11 @@ namespace FandHost
 	void RequestStop();
 	bool StopRequested();
 
+	// Rozmer obrazovky zadany hostitelem (napr. v cppfand-wpf.exe.config).
+	// Ma prednost pred FAND.CFG; 0 = pouzit hodnotu z FAND.CFG.
+	void SetScreenSize(int cols, int rows);
+	void ApplyScreenSize(uint16_t& cols, uint16_t& rows);
+
 	// Vyjimka, kterou v hostitelskem rezimu nahrazujeme exit()/Halt().
 	class HaltException : public std::runtime_error
 	{

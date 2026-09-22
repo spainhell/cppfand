@@ -40,6 +40,7 @@ public partial class MainWindow : Window
 
         Loaded += (_, _) =>
         {
+            Native.FandSetScreenSize(HostSettings.ScreenCols, HostSettings.ScreenRows);
             int rc = Native.FandStart(options.FandDir, options.WorkDir, options.RdbName);
             if (rc != 0)
             {

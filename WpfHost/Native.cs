@@ -77,6 +77,9 @@ public static class Native
     public static extern int FandStart(string fandDir, string workDir, string rdbName);
 
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void FandSetScreenSize(int cols, int rows);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
     public static extern int FandIsRunning();
 
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
