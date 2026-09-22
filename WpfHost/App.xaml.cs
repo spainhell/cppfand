@@ -54,17 +54,45 @@ public partial class App : Application
     // <uloha>                                 -- obe cesty jsou slozka s FAND.CFG (jako 'ufand ucto2024')
     // <slozka> <uloha>                        -- slozka je i pracovni adresar
     // <slozka FANDu> <pracovni adresar> <uloha>
+    // za tim volitelne D nebo T jako v PC-FANDu, viz ParseMode
     // bez parametru -> null, tedy dialog
     private static StartOptions? FromArgs(string[] args)
     {
+        string mode = ParseMode(ref args);
+
         string dir = StartOptions.FindFandDir() ?? Environment.CurrentDirectory.TrimEnd('\\');
+        StartOptions? options;
         switch (args.Length)
         {
-            case 0: return null;
-            case 1: return Make(dir, dir, args[0]);
-            case 2: return Make(args[0], args[0], args[1]);
-            default: return Make(args[0], args[1], args[2]);
+            case 0: options = null; break;
+            case 1: options = Make(dir, dir, args[0]); break;
+            case 2: options = Make(args[0], args[0], args[1]); break;
+            default: options = Make(args[0], args[1], args[2]); break;
         }
+
+        if (options != null) options.Mode = mode;
+        return options;
+    }
+
+    /// <summary>
+    /// Odřízne z konce poslední parametr, je-li to režim PC-FANDu: D ladicí běh
+    /// nebo T editace textového souboru. Rozhoduje se podle přesné shody, takže
+    /// úloha jménem "D" by se musela zadat i s cestou; jiný způsob to nemá,
+    /// protože původní FAND bral režim prostě jako druhý parametr.
+    /// </summary>
+    private static string ParseMode(ref string[] args)
+    {
+        if (args.Length < 2) return "";
+
+        string last = args[args.Length - 1];
+        if (!last.Equals(StartOptions.ModeDebug, StringComparison.OrdinalIgnoreCase) &&
+            !last.Equals(StartOptions.ModeText, StringComparison.OrdinalIgnoreCase))
+            return "";
+
+        var rest = new string[args.Length - 1];
+        Array.Copy(args, rest, rest.Length);
+        args = rest;
+        return last.ToUpperInvariant();
     }
 
     private static StartOptions Make(string fandDir, string workDir, string rdbName) => new StartOptions

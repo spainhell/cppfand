@@ -42,6 +42,27 @@ cppfand-wpf.exe C:\ucto C:\ucto UCTO2024
 Úloha je identifikátor bez cesty a přípony. Když ve složce z parametru
 `FAND.CFG` a `FAND.RES` nejsou, program to ohlásí a skončí.
 
+Za tím může stát ještě **režim**, stejně jako v PC-FANDu (`paramstr[2]`,
+větví se podle něj `runfand.cpp:389` jako originál v `RUNFAND.PAS:364`):
+
+```
+cppfand-wpf.exe <úloha> D            ... ladicí běh
+cppfand-wpf.exe <soubor> T           ... editace textového souboru
+cppfand-wpf.exe *.TXT T              ... nejdřív nabídne výběr souboru
+cppfand-wpf.exe C:\ucto UCTO2024 D
+```
+
+- **`D`** zapne `IsTestRun`. Úloha se spustí a po jejím konci program neskončí,
+  ale zůstane ve vývojovém prostředí FANDu.
+- **`T`** bere první parametr jako cestu k textovému souboru a rovnou ho otevře
+  v editoru; po zavření program skončí. Začíná-li `*.`, nabídne se nejdřív výběr
+  souboru s danou příponou.
+
+Režim se pozná podle přesné shody posledního parametru s `D` nebo `T` (na
+velikosti nezáleží). Úloha pojmenovaná `D` nebo `T` by se proto musela zadat
+i s cestou — původní FAND měl stejné omezení, režim u něj byl prostě druhý
+parametr.
+
 Bez parametrů se ptá jen na to, co samo nezjistí:
 
 - `FAND.CFG` a `FAND.RES` se hledají nejdřív vedle `cppfand-wpf.exe`, potom
