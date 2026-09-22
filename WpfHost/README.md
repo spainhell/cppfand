@@ -26,9 +26,12 @@ mu dělá obrazovku a klávesnici:
 ## Spuštění
 
 Obvyklé nasazení je zkopírovat obsah složky `net48` přímo do adresáře úlohy.
-Pak stačí `cppfand-wpf.exe` spustit dvojklikem: `FAND.CFG` a `FAND.RES` leží
-vedle programu, takže se na cesty neptá, a je-li v adresáři jediná `.RDB`,
-předvyplní i název úlohy — zbývá potvrdit.
+
+**Bez parametrů naskočí hlavní menu FANDu** (Ladit úlohu, Provést úlohu,
+Instalace úlohy, Editace textu, Dos, Konec), stejně jako to dělal PC-FAND —
+`runfand.cpp:389` přeskočí větvení a vykreslí plochu s menu. `FAND.CFG`
+a `FAND.RES` se hledají vedle `cppfand-wpf.exe` a potom v aktuálním adresáři;
+teprve když nejsou ani tam, zeptá se dialog na cesty.
 
 ```
 cppfand-wpf.exe <úloha>                    ... obě cesty = složka s FAND.CFG
@@ -42,12 +45,30 @@ cppfand-wpf.exe C:\ucto C:\ucto UCTO2024
 Úloha je identifikátor bez cesty a přípony. Když ve složce z parametru
 `FAND.CFG` a `FAND.RES` nejsou, program to ohlásí a skončí.
 
-Bez parametrů se ptá jen na to, co samo nezjistí:
+Za tím může stát ještě **režim**, stejně jako v PC-FANDu (`paramstr[2]`,
+větví se podle něj `runfand.cpp:389` jako originál v `RUNFAND.PAS:364`):
 
-- `FAND.CFG` a `FAND.RES` se hledají nejdřív vedle `cppfand-wpf.exe`, potom
-  v aktuálním adresáři. Když se najdou, dialog ukáže jen pole pro úlohu.
-- Když se nenajdou, dialog nabídne i obě cesty; hodnoty se pamatují
-  v `%AppData%\cppfand\wpfhost.txt`.
+```
+cppfand-wpf.exe <úloha> D            ... ladicí běh
+cppfand-wpf.exe <soubor> T           ... editace textového souboru
+cppfand-wpf.exe *.TXT T              ... nejdřív nabídne výběr souboru
+cppfand-wpf.exe C:\ucto UCTO2024 D
+```
+
+- **`D`** zapne `IsTestRun`. Úloha se spustí a po jejím konci program neskončí,
+  ale zůstane ve vývojovém prostředí FANDu.
+- **`T`** bere první parametr jako cestu k textovému souboru a rovnou ho otevře
+  v editoru; po zavření program skončí. Začíná-li `*.`, nabídne se nejdřív výběr
+  souboru s danou příponou.
+
+Režim se pozná podle přesné shody posledního parametru s `D` nebo `T` (na
+velikosti nezáleží). Úloha pojmenovaná `D` nebo `T` by se proto musela zadat
+i s cestou — původní FAND měl stejné omezení, režim u něj byl prostě druhý
+parametr.
+
+Dialog se objeví jen tehdy, když se `FAND.CFG` a `FAND.RES` nenajdou — zeptá se
+na obě cesty a hodnoty si zapamatuje v `%AppData%\cppfand\wpfhost.txt`. Pole pro
+úlohu v něm smí zůstat prázdné, pak se jde taky do hlavního menu.
 
 Rozměr obrazovky jde nastavit v `cppfand-wpf.exe.config` (u .NET 10
 `cppfand-wpf.dll.config`), např. pro 80×34 jako v PC-FANDu:

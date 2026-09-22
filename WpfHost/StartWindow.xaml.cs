@@ -7,7 +7,18 @@ public sealed class StartOptions
 {
     public string FandDir { get; set; } = "";
     public string WorkDir { get; set; } = "";
+
+    /// <summary>Úloha; v režimu <see cref="ModeText"/> cesta k textovému souboru.</summary>
     public string RdbName { get; set; } = "";
+
+    /// <summary>
+    /// Třetí parametr PC-FANDu (paramstr[2]). Větví se podle něj runfand.cpp:389
+    /// stejně jako originál v RUNFAND.PAS:364.
+    /// </summary>
+    public string Mode { get; set; } = "";
+
+    public const string ModeDebug = "D";
+    public const string ModeText = "T";
 
     // Ma slozka to, co FAND potrebuje ke startu?
     public static bool HasFandFiles(string dir) =>
@@ -136,7 +147,8 @@ public partial class StartWindow : Window
             MessageBox.Show(this, "Pracovní adresář neexistuje.", "C++ FAND", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
-        if (opt.RdbName.Length == 0 || opt.RdbName.IndexOfAny(new[] { '\\', '/', ':', '.' }) >= 0)
+        // prazdna uloha je v poradku: FAND naskoci do hlavniho menu
+        if (opt.RdbName.Length > 0 && opt.RdbName.IndexOfAny(new[] { '\\', '/', ':', '.' }) >= 0)
         {
             MessageBox.Show(this, "Název úlohy musí být identifikátor bez cesty a přípony.", "C++ FAND", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;

@@ -74,7 +74,8 @@ public static class Native
     public enum TextKind { Unknown = 0, File = 1, Local = 2, Memo = 3 }
 
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    public static extern int FandStart(string fandDir, string workDir, string rdbName);
+    /// <summary>mode = "D" ladicí běh, "T" editace textového souboru, "" běžné spuštění.</summary>
+    public static extern int FandStart(string fandDir, string workDir, string rdbName, string mode);
 
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
     public static extern void FandSetScreenSize(int cols, int rows);

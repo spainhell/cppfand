@@ -231,7 +231,10 @@ struct FandScreenInfo
 /// Spusti interpret na pozadi. fandDir = slozka s FAND.CFG a FAND.RES,
 /// workDir = pracovni adresar (odtud se hleda uloha), rdbName = nazev ulohy (identifikator).
 /// Vraci 0, nebo -1 pokud uz bezi.
-extern "C" int FAND_API FandStart(const char* fandDir, const char* workDir, const char* rdbName)
+/// mode = tretí parametr PC-FANDu (paramstr[2]): "D" ladici beh, "T" editace
+/// textoveho souboru, prazdne = obycejne spusteni ulohy. Vetveni je
+/// v runfand.cpp:389 a chova se stejne jako original (RUNFAND.PAS:364).
+extern "C" int FAND_API FandStart(const char* fandDir, const char* workDir, const char* rdbName, const char* mode)
 {
 	if (g_running) return -1;
 	FandHost::Enable();
@@ -240,13 +243,14 @@ extern "C" int FAND_API FandStart(const char* fandDir, const char* workDir, cons
 	std::string dir = fandDir != nullptr ? fandDir : "";
 	std::string wrk = workDir != nullptr ? workDir : "";
 	std::string rdb = rdbName != nullptr ? rdbName : "";
+	std::string mod = mode != nullptr ? mode : "";
 
 	if (g_thread.joinable()) g_thread.join();
 	g_running = true;
 	g_exitCode = 0;
 	g_lastError.clear();
 
-	g_thread = std::thread([dir, wrk, rdb]() {
+	g_thread = std::thread([dir, wrk, rdb, mod]() {
 		if (!wrk.empty()) SetCurrentDirectoryA(wrk.c_str());
 		Log::Init();
 		SPDLOG_INFO("*** *** *** *** *** *** HOSTED FAND STARTED *** *** *** *** *** ***");
@@ -255,7 +259,12 @@ extern "C" int FAND_API FandStart(const char* fandDir, const char* workDir, cons
 		if (!exe.empty() && exe.back() != '\\') exe += '\\';
 		exe += "cppfand.exe"; // FandDir se odvozuje z cesty k programu
 		paramstr.push_back(exe);
-		if (!rdb.empty()) paramstr.push_back(rdb);
+		// paramstr[1] je uloha, u rezimu T cesta k textovemu souboru;
+		// paramstr[2] rezim. Bez prvniho nema druhy smysl, runfand.cpp ho necte.
+		if (!rdb.empty()) {
+			paramstr.push_back(rdb);
+			if (!mod.empty()) paramstr.push_back(mod);
+		}
 		try {
 			InitRunFand();
 		}

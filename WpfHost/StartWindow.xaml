@@ -30,7 +30,7 @@
         <TextBox x:Name="RdbBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,6"/>
 
         <TextBlock x:Name="HintText" Grid.Row="3" Grid.Column="1" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,10"
-                   Text="Název úlohy je identifikátor bez cesty (např. UCTO2024). Parametry lze zadat i na příkazové řádce: cppfand-wpf.exe &lt;složka FAND&gt; &lt;pracovní adresář&gt; &lt;úloha&gt;"/>
+                   Text="Název úlohy je identifikátor bez cesty (např. UCTO2024); prázdné pole spustí hlavní menu FANDu. Parametry lze zadat i na příkazové řádce: cppfand-wpf.exe &lt;složka FAND&gt; &lt;pracovní adresář&gt; &lt;úloha&gt;"/>
 
         <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Spustit" Width="90" IsDefault="True" Click="Start"/>
