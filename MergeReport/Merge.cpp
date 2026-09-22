@@ -864,8 +864,8 @@ void Merge::RunAssign(FileD* file_d, Record* record, const std::vector<AssignD*>
 					break;
 				}
 				}
-				break;
 			}
+			break;
 		}
 		case MInstrCode::_zero: {
 			switch (assign->outputField->frml_type) {
@@ -915,11 +915,11 @@ void Merge::WriteOutp(std::vector<OutpRD*>& v_outputs)
 		if (RunBool(nullptr, RD->Bool, nullptr)) {
 			OutpFD* OD = RD->OD;
 			if (OD == nullptr /*dummy */) {
-				RunAssign(RD->OD->FD, RD->OD->RecPtr, RD->Ass);
+				RunAssign(nullptr, nullptr, RD->Ass);
 			}
 			else {
 				OD->RecPtr->ClearDeleted();
-				RunAssign(RD->OD->FD, RD->OD->RecPtr, RD->Ass);
+				RunAssign(OD->FD, OD->RecPtr, RD->Ass);
 #ifdef FandSQL
 				if (OD->FD->IsSQLFile) OD->Strm->PutRec;
 				else
@@ -1062,13 +1062,13 @@ void Merge::MergeProc(FileD* file_d, Record* record)
 		if (ID->Exist)
 			do {
 				MoveForwToRecM(ID);
-				SumUp(file_d, ID->Sum, record);
+				SumUp(ID->Scan->FD, ID->Sum, ID->RecPtr);
 				WriteOutp(ID->RD);
 				ReadInpFileM(ID);
 				if (ID->Scan->eof) res = _gt;
 				else {
-					res = CompMFlds(record, ID->MFld);
-					if (res == _lt) file_d->CFileError(607);
+					res = CompMFlds(ID->ForwRecPtr, ID->MFld);
+					if (res == _lt) ID->Scan->FD->CFileError(607);
 				}
 			} while (res != _gt);
 		else {
@@ -1105,10 +1105,10 @@ void Merge::JoinProc(FileD* file_d, Record* record, WORD Ii, bool& EmptyGroup)
 					res = _gt;
 				}
 				else {
-					res = CompMFlds(record, ID->MFld);
-					if (res == _lt) file_d->CFileError(607);
+					res = CompMFlds(ID->ForwRecPtr, ID->MFld);
+					if (res == _lt) ID->Scan->FD->CFileError(607);
 				}
-			} while (res == _gt);
+			} while (res != _gt);
 		}
 		else {
 			EmptyGroup = true;
