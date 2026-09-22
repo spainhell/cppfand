@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string>
 #include <stdexcept>
+#include <vector>
 
 namespace FandHost
 {
@@ -76,4 +77,47 @@ namespace FandHost
 	bool PollFieldEdit(FieldEditRequest& request);
 	// Vlakno hostitele: preda vysledek a probudi interpret.
 	void CompleteFieldEdit(const FieldEditResult& result);
+
+	// --- editace celeho textu v hostiteli ------------------------------------
+	// Totez pro TextEditor::EditText. Text muze mit stovky kilobajtu, takze se
+	// nevejde do pevneho pole jako u jednoradkovych poli a nese ho std::string.
+	//
+	// Hranice je cista: ExitD ani break_keys nejsou zpetna volani, slouzi jen
+	// k rozhodnuti, ktera klavesa editaci ukonci (TextEditorEvents.cpp,
+	// ScrollEvent). Akci po ukonceni provede az interpret, kdyz se editor vrati.
+	struct TextEditRequest
+	{
+		int Mode = 0;          // EditorMode
+		int TextType = 0;      // TextType
+		int Pos = 0;           // index kurzoru v textu, 0-based
+		int Scroll = 0;        // pozice rolovani tak, jak ji predava EditText (pScr)
+		int Scrolling = 0;     // 1 = zacit v prohlizecim rezimu (ScrollLock, v hostiteli F12)
+		int ReadOnly = 0;      // 1 = jen prohlizeni, bez zmen
+		uint8_t ColKey[8] = { 0 };   // barvy atributu, viz TextEditor::ColKey
+		uint8_t TxtColor = 0;
+		uint8_t BlockColor = 0;
+		char Name[128] = { 0 };      // hlavicka (CP852)
+		std::string Text;            // cely obsah (CP852)
+		std::vector<uint16_t> BreakKeys;  // klavesy, ktere editaci ukonci
+	};
+
+	struct TextEditResult
+	{
+		std::string Text;      // CP852
+		int Pos = 0;
+		int Scroll = 0;
+		int Updated = 0;       // 1 = text se zmenil
+		uint16_t Key = 0;      // ukoncovaci klavesa (PressedKey::KeyCombination)
+	};
+
+	bool TextEditEnabled();
+	void SetTextEditEnabled(bool enabled);
+
+	// Vlakno interpretu: zapise pozadavek a blokuje do prijeti vysledku.
+	// Vraci false, kdyz hostitel editaci neprevzal (interpret jede puvodni cestou).
+	bool RunTextEdit(const TextEditRequest& request, TextEditResult& result);
+
+	// Vlakno hostitele.
+	bool PollTextEdit(TextEditRequest& request);
+	void CompleteTextEdit(const TextEditResult& result);
 }

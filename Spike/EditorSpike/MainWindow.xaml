@@ -1,0 +1,62 @@
+<Window x:Class="EditorSpike.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
+        Title="Spike – textový editor PC-FANDu ve WPF" Height="760" Width="1150"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+    <DockPanel>
+
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button x:Name="OpenBtn" Content="Otevřít…" Click="Open" Padding="8,2"/>
+                <Separator/>
+                <TextBlock Text="Režim (F12):" VerticalAlignment="Center" Margin="4,0"/>
+                <ComboBox x:Name="ModeBox" Width="230" SelectionChanged="ModeChanged"
+                          ToolTip="F12 zastupuje ScrollLock, kterým se režim přepínal v původním PC-FANDu">
+                    <ComboBoxItem Content="Editace – řídicí znaky vidět (EditWrline)" IsSelected="True"/>
+                    <ComboBoxItem Content="Prohlížení – barví text (ScrollWrline)"/>
+                </ComboBox>
+                <Separator/>
+                <TextBlock Text="Písmo:" VerticalAlignment="Center" Margin="4,0"/>
+                <ComboBox x:Name="FontBox" Width="60" SelectionChanged="FontChanged">
+                    <ComboBoxItem Content="12"/>
+                    <ComboBoxItem Content="14"/>
+                    <ComboBoxItem Content="16" IsSelected="True"/>
+                    <ComboBoxItem Content="18"/>
+                    <ComboBoxItem Content="20"/>
+                </ComboBox>
+                <Separator/>
+                <ToggleButton x:Name="ColorsBtn" Content="Barvy atributů" Padding="8,2"/>
+            </ToolBar>
+        </ToolBarTray>
+
+        <Border x:Name="ColorPanel" DockPanel.Dock="Top"
+                Visibility="{Binding IsChecked, ElementName=ColorsBtn, Converter={StaticResource BoolToVis}}"
+                Background="#F3F3F3" BorderBrush="#CCC" BorderThickness="0,0,0,1" Padding="8">
+            <StackPanel>
+                <TextBlock TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,6"
+                           Text="Hodnoty odpovídají ColKey[] z TextEditor.cpp:3192. Ve FANDu je plní FAND.CFG; tady je přepínáte ručně z palety 16 barev, aby šlo ověřit vykreslení."/>
+                <UniformGrid x:Name="ColorGrid" Columns="3"/>
+            </StackPanel>
+        </Border>
+
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem><TextBlock x:Name="PosText" Text="–"/></StatusBarItem>
+            <Separator/>
+            <StatusBarItem><TextBlock x:Name="AttrText" Text="–"/></StatusBarItem>
+            <Separator/>
+            <StatusBarItem><TextBlock x:Name="LineText" Text="–"/></StatusBarItem>
+            <Separator/>
+            <StatusBarItem HorizontalAlignment="Right"><TextBlock x:Name="FileText" Text="–" Foreground="#666"/></StatusBarItem>
+        </StatusBar>
+
+        <avalon:TextEditor x:Name="Editor"
+                           FontFamily="Consolas" FontSize="16"
+                           ShowLineNumbers="True"
+                           HorizontalScrollBarVisibility="Auto"
+                           VerticalScrollBarVisibility="Auto"/>
+    </DockPanel>
+</Window>

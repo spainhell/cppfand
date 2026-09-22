@@ -21,6 +21,16 @@ namespace FandHost
 		bool g_resultReady = false;      // hostitel dodal vysledek
 		FieldEditRequest g_request;
 		FieldEditResult g_result;
+
+		// totez pro editaci celeho textu; vlastni zamek, aby se obe cesty nemichaly
+		std::atomic<bool> g_textEditEnabled{ true };
+		std::mutex g_textMutex;
+		std::condition_variable g_textCv;
+		bool g_textPending = false;
+		bool g_textTaken = false;
+		bool g_textReady = false;
+		TextEditRequest g_textRequest;
+		TextEditResult g_textResult;
 	}
 
 	bool IsEnabled() { return g_enabled; }
@@ -38,6 +48,16 @@ namespace FandHost
 			g_requestPending = false;
 			g_requestTaken = false;
 			g_editCv.notify_all();
+		}
+		// a totez, kdyz ceka na editaci celeho textu
+		std::lock_guard<std::mutex> textLock(g_textMutex);
+		if (g_textPending || g_textTaken) {
+			g_textResult = TextEditResult();
+			g_textResult.Key = 27; // Esc
+			g_textReady = true;
+			g_textPending = false;
+			g_textTaken = false;
+			g_textCv.notify_all();
 		}
 	}
 
@@ -125,5 +145,44 @@ namespace FandHost
 		g_requestTaken = false;
 		g_resultReady = true;
 		g_editCv.notify_all();
+	}
+
+	bool TextEditEnabled() { return g_enabled && g_textEditEnabled; }
+	void SetTextEditEnabled(bool enabled) { g_textEditEnabled = enabled; }
+
+	bool RunTextEdit(const TextEditRequest& request, TextEditResult& result)
+	{
+		if (!TextEditEnabled() || g_stop) return false;
+
+		std::unique_lock<std::mutex> lock(g_textMutex);
+		g_textRequest = request;
+		g_textResult = TextEditResult();
+		g_textPending = true;
+		g_textTaken = false;
+		g_textReady = false;
+		g_textCv.wait(lock, [] { return g_textReady; });
+		result = g_textResult;
+		g_textReady = false;
+		return true;
+	}
+
+	bool PollTextEdit(TextEditRequest& request)
+	{
+		std::lock_guard<std::mutex> lock(g_textMutex);
+		if (!g_textPending) return false;
+		request = g_textRequest;
+		g_textPending = false;
+		g_textTaken = true;
+		return true;
+	}
+
+	void CompleteTextEdit(const TextEditResult& result)
+	{
+		std::lock_guard<std::mutex> lock(g_textMutex);
+		if (!g_textTaken) return;
+		g_textResult = result;
+		g_textTaken = false;
+		g_textReady = true;
+		g_textCv.notify_all();
 	}
 }

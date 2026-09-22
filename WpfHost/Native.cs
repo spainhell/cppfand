@@ -45,6 +45,34 @@ public static class Native
     /// <summary>Hodnoty FieldType z fandio/FieldDescr.h.</summary>
     public enum FieldType { Unknown = 0, Fixed = 1, Alfanum = 2, Numeric = 3, Date = 4, Text = 5, Bool = 6, Real = 7 }
 
+    /// <summary>Musí odpovídat struct FandTextEditInfo v DynamicLibrary/dllmain.cpp.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TextEditInfo
+    {
+        public int Mode;
+        public int TextType;
+        public int Pos;
+        public int Scroll;
+        public int Scrolling;
+        public int ReadOnly;
+        public int TextLength;      // bajty CP852
+        public int BreakKeyCount;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)] public byte[] ColKey;
+        public byte TxtColor;
+        public byte BlockColor;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)] public byte[] Name;
+    }
+
+    /// <summary>Hodnoty EditorMode z TextEditor/TextEditor.h.</summary>
+    public enum EditorMode
+    {
+        Unknown = 0, Normal = 1, Text = 2, Help = 3, View = 4, Edit = 5,
+        FrameSingle = 6, FrameDouble = 7, DeleteFrame = 8, NotFrame = 9,
+    }
+
+    /// <summary>Hodnoty TextType z TextEditor/TextEditor.h.</summary>
+    public enum TextKind { Unknown = 0, File = 1, Local = 2, Memo = 3 }
+
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern int FandStart(string fandDir, string workDir, string rdbName);
 
@@ -86,6 +114,21 @@ public static class Native
 
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
     public static extern void FandCompleteFieldEdit(byte[] textCp852, int pos, int insertMode, ushort key);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void FandSetTextEditHost(int enabled);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int FandPollTextEdit(out TextEditInfo info);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int FandGetTextEditText([Out] byte[] buffer, int capacity);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int FandGetTextEditBreakKeys([Out] ushort[] buffer, int capacity);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void FandCompleteTextEdit(byte[] textCp852, int textLength, int pos, int scroll, int updated, ushort key);
 
     public static string LastError()
     {

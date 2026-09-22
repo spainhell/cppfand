@@ -9,6 +9,7 @@
 #include "../Core/Compiler.h"
 #include "EditorHelp.h"
 #include "../Drivers/constants.h"
+#include "../Drivers/host.h"
 #include "../Core/GlobalVariables.h"
 #include "../Drivers/keyboard.h"
 #include "../Core/oaccess.h"
@@ -1027,7 +1028,13 @@ ColorOrd TextEditor::SetColorOrd(size_t last_line) const
 			while (index < line.length()) {
 				size_t pp = co.find(line[index]);
 				if (pp != std::string::npos) {
-					co.erase(pp);
+					// Odebrat jen ten jeden prepinac, ne vse za nim. Original
+					// (EDGLOBAL.PAS, SetColorOrd) dela
+					//   CO := copy(CO,1,pp-1) + copy(CO,pp+1,len-pp)
+					// stejne jako ScrollWrline v TextEditorScreen.cpp. Puvodni
+					// co.erase(pp) zahodilo cely zbytek retezce, takze se u vnorenych
+					// atributu stav rozchazel s tim, co pocita vykreslovani.
+					co.erase(pp, 1);
 				}
 				else {
 					co += line[index];
@@ -2930,6 +2937,36 @@ bool TextEditor::EditText(EditorMode e_mode, TextType text_type, std::string pNa
 		LastS = ""; CtrlLastS = ""; ShiftLastS = ""; AltLastS = ""; HeadS = "";
 	}
 	if (_mode != EditorMode::Help) TxtColor = TextAttr;
+
+	// Hostitelsky rezim: celou editaci muze prevzit okno hostitele. Napovedu
+	// zatim ne -- ta si rizeni (kapitoly, odkazy) drzi HelpViewer.
+	if (_mode != EditorMode::Help && FandHost::TextEditEnabled()) {
+		FandHost::TextEditRequest req;
+		req.Mode = static_cast<int>(e_mode);
+		req.TextType = static_cast<int>(text_type);
+		req.Pos = static_cast<int>(IndexT);
+		req.Scroll = pScr;
+		req.Scrolling = (_mode == EditorMode::View) ? 1 : 0;
+		req.ReadOnly = (_mode == EditorMode::View) ? 1 : 0;
+		memcpy(req.ColKey, ColKey, sizeof(req.ColKey));
+		req.TxtColor = TxtColor;
+		req.BlockColor = BlockColor;
+		strncpy_s(req.Name, NameT.c_str(), sizeof(req.Name) - 1);
+		req.Text = text;
+		req.BreakKeys = break_keys;
+
+		FandHost::TextEditResult res;
+		if (FandHost::RunTextEdit(req, res)) {
+			text = res.Text;
+			pInd = res.Pos;
+			pScr = res.Scroll;
+			pUpdat = res.Updated != 0;
+			pSrch = false;
+			EdOk = oldEdOK;
+			return true;
+		}
+	}
+
 	FirstEvent = !SrchT;
 	if (SrchT) {
 		SrchT = false;
