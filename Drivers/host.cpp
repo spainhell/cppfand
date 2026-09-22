@@ -63,6 +63,25 @@ namespace FandHost
 
 	bool StopRequested() { return g_stop; }
 
+	namespace
+	{
+		std::atomic<int> g_screenCols{ 0 };
+		std::atomic<int> g_screenRows{ 0 };
+	}
+
+	void SetScreenSize(int cols, int rows)
+	{
+		// sirka je omezena buffery radku (MaxTxtCols = 132), souradnice okna jsou uint8_t
+		g_screenCols = cols <= 0 ? 0 : (cols < 40 ? 40 : (cols > 132 ? 132 : cols));
+		g_screenRows = rows <= 0 ? 0 : (rows < 25 ? 25 : (rows > 100 ? 100 : rows));
+	}
+
+	void ApplyScreenSize(uint16_t& cols, uint16_t& rows)
+	{
+		if (g_screenCols > 0) cols = (uint16_t)g_screenCols;
+		if (g_screenRows > 0) rows = (uint16_t)g_screenRows;
+	}
+
 	void Fatal(const std::string& message, int exitCode)
 	{
 		if (g_enabled) {

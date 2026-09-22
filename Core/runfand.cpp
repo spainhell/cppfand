@@ -371,10 +371,6 @@ void InitRunFand()
 
 	ProcAttr = screen.colors.uNorm;
 
-	if (video.TxtRows != 0) {
-		TxtRows = video.TxtRows;
-	}
-
 	CRdb = nullptr;
 
 	for (int i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }

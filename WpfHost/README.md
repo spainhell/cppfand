@@ -49,6 +49,22 @@ Bez parametrů se ptá jen na to, co samo nezjistí:
 - Když se nenajdou, dialog nabídne i obě cesty; hodnoty se pamatují
   v `%AppData%\cppfand\wpfhost.txt`.
 
+Rozměr obrazovky jde nastavit v `cppfand-wpf.exe.config` (u .NET 10
+`cppfand-wpf.dll.config`), např. pro 80×34 jako v PC-FANDu:
+
+```xml
+<appSettings>
+  <add key="ScreenCols" value="80" />
+  <add key="ScreenRows" value="34" />
+</appSettings>
+```
+
+Prázdná hodnota znamená rozměr z `FAND.CFG` (obvykle 80×25). Šířka se
+omezuje na 40..132, výška na 25..100.
+
+Příkazy `EXEC` (a tisk přes externí program) se pouštějí přes `cmd.exe /c`
+bez konzolového okna, se vstupem i výstupem do `NUL`.
+
 Klávesy hostitele: Shift+Insert vloží text ze schránky jako psaní,
 Ctrl+Shift+C zkopíruje celou obrazovku, Ctrl+kolečko mění velikost písma.
 
