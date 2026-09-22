@@ -7,9 +7,9 @@
 
 extern std::vector<std::string> paramstr;
 
-extern int ExitCode; // exit kÃ³d -> OS
+extern int ExitCode; // exit kód -> OS
 extern void* ErrorAddr; // adresa chyby
-extern void (*ExitProc)(); // ukonÄovacÃ­ procedura
+extern void (*ExitProc)(); // ukonèovací procedura
 
 void val(pstring s, uint8_t& b, WORD& err);
 void val(pstring s, WORD& b, WORD& err);
@@ -51,7 +51,7 @@ void CloseGraph(); // IGNORE
 //double Random();
 //WORD Random(WORD rozsah);
 
-WORD ParamCount(); // vracÃ­ poÄet parametrÅ¯ pÅ™Ã­kazovÃ© Å™Ã¡dky
+WORD ParamCount(); // vrací poèet parametrù pøíkazové øádky
 
 inline void Exit() { return; }
 

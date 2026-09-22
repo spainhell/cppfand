@@ -1,4 +1,4 @@
-ï»¿#pragma once
+#pragma once
 
 #include "Cfg.h"
 
@@ -69,7 +69,7 @@ extern TPoint MouseWhereG;  // posledni poloha mysi v pixelech
 extern bool MausVisible;    // je ukazatel mysi zobrazen?
 
 extern int trialInterval;
-// priznaky klavesnice - pÅ¯vodnÄ› 0:$417 (is used to make control to keys(Num, Caps, Scroll, Alt, ShR, ShL, CtrlL, CtrlR)
+// priznaky klavesnice - pùvodnì 0:$417 (is used to make control to keys(Num, Caps, Scroll, Alt, ShR, ShL, CtrlL, CtrlR)
 //extern void* OldIntr08;
 
 // Frontu udalosti mysi (puvodne EventQueue plnena obsluhou int 33H) drzi Mouse, viz Drivers/mouse.h.

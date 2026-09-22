@@ -15,9 +15,9 @@
 #include "../fandio/directory.h"
 
 std::vector<std::string> paramstr;
-int ExitCode = 0; // exit k√≥d -> OS
+int ExitCode = 0; // exit kÛd -> OS
 void* ErrorAddr = nullptr; // adresa chyby
-void (*ExitProc)() { }; // ukonƒçovac√≠ procedura
+void (*ExitProc)() { }; // ukonËovacÌ procedura
 
 
 void val(pstring s, uint8_t& b, WORD& err)

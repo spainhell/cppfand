@@ -1,4 +1,4 @@
-﻿#include <vector>
+#include <vector>
 #include "../Core/OldDrivers.h"
 #include "../Core/runfand.h"
 #include "../Logging/Logging.h"
