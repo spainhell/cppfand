@@ -3011,28 +3011,6 @@ void TextEditor::SimpleEditText(EditorMode editor_mode, std::string pErrMsg, std
 		emptyBreakKeys, emptyExitD, Srch, Updat, 0, 0, nullptr);
 }
 
-WORD TextEditor::FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
-{
-	return 0;
-	//auto* origT = _textT;
-	//_textT = (char*)PTxtPtr;
-	//pstring f = FindStr;
-	//pstring o = OptionStr;
-	//bool r = Replace;
-	//FindStr = Pstr;
-	//OptionStr = Popt;
-	//Replace = false;
-	//WORD I = 1;
-	//WORD result;
-	//if (FindString(I, PLen + 1)) result = I;
-	//else result = 0;
-	//FindStr = f;
-	//OptionStr = o;
-	//Replace = r;
-	//_textT = origT;
-	//return result;
-}
-
 void TextEditor::EditTxtFile(std::string* locVar, EditorMode e_mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD,
 	int TxtPos, int Txtxy, WRect* V, WORD Atr, const std::string Hd, uint8_t WFlags, MsgStr* MsgS)
 {

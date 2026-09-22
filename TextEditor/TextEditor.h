@@ -219,7 +219,6 @@ private:
 	bool ColBlockExist();
 	void NewBlock1(WORD& I1, int& L2);
 	void NewBlock2(int& L1, int& L2);
-	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
 	std::string CursorWord();
 	WORD GetArrLineLength();
 	void direction(uint8_t x, uint8_t& zn2);
