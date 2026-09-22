@@ -14,22 +14,36 @@ internal enum FandMode
     Prohlizeni,
 }
 
-/// <summary>Barvy ColKey[0..7] + barva bezneho textu, indexy do palety 0..15.</summary>
+/// <summary>
+/// Barvy pro editor. Atribut FANDu je celý bajt: dolní nibble je barva písma,
+/// horní barva pozadí -- stejně jako je čte TerminalControl u obrazovky. Držíme
+/// tedy celé bajty, ne jen indexy do palety, jinak by se pozadí jednotlivých
+/// znaků ztratilo. Hodnoty plní interpret z FAND.CFG (ColKey[] nastavuje
+/// TextEditor.cpp:3192), výchozí jsou jen pojistka pro požadavek s nulami.
+/// </summary>
 internal sealed class FandColors
 {
-    // vychozi hodnoty odpovidaji beznemu nastaveni FAND.CFG; v UI se daji prepnout
-    public int[] ColKey = { 12, 11, 13, 14, 10, 9, 15, 6 };
-    public int TxtColor = 7;
-    public int BlockColor = 1;
-    public int Background = 0;
+    public int[] ColKey = { 0x0C, 0x0B, 0x0D, 0x0E, 0x0A, 0x09, 0x0F, 0x06 };
+    public int TxtColor = 0x07;
+    public int BlockColor = 0x17;
+
+    public static int Fg(int attr) => attr & 0x0F;
+    public static int Bg(int attr) => (attr >> 4) & 0x0F;
+
+    /// <summary>Pozadí celého okna, tedy pozadí běžného textu.</summary>
+    public int Background => Bg(TxtColor);
 
     public Color Color(int paletteIndex) => FandText.Palette[paletteIndex & 0x0F];
+
     public Brush Brush(int paletteIndex)
     {
         var b = new SolidColorBrush(Color(paletteIndex));
         b.Freeze();
         return b;
     }
+
+    public Brush Foreground(int attr) => Brush(Fg(attr));
+    public Brush BackgroundOf(int attr) => Brush(Bg(attr));
 }
 
 /// <summary>
@@ -63,7 +77,8 @@ internal sealed class AttributeState
         return pos < 0 ? co + c : co.Remove(pos, 1);
     }
 
-    public static int ColorIndexOf(string co, FandColors colors) =>
+    /// <summary>Atribut (písmo i pozadí) platný pro daný stav ColorOrd.</summary>
+    public static int AttrOf(string co, FandColors colors) =>
         co.Length == 0 ? colors.TxtColor : colors.ColKey[FandText.ColKeyIndexOf(co[co.Length - 1])];
 
     private void Rebuild()
@@ -126,6 +141,16 @@ internal sealed class FandColorizer : DocumentColorizingTransformer
 
     public FandMode Mode { get; set; } = FandMode.Editace;
 
+    /// <summary>
+    /// Rozsah prave zvoleneho odkazu napovedy (offsety obou oddelovacu 0x13),
+    /// jinak -1. Puvodni HelpViewer::SetWord je v textu prepisuje na 0x11, cimz
+    /// odkaz prebarvi na hHili. Delame totez, jen bez sahani do dokumentu:
+    /// rozsah se na zaver prebarvi na ColKey[3]. Prepsani v toggle by u odkazu
+    /// pres vic radku rozhodilo stav atributu na navazujicich radcich.
+    /// </summary>
+    public int SelectedLinkStart { get; set; } = -1;
+    public int SelectedLinkEnd { get; set; } = -1;
+
     public FandColorizer(AttributeState state, FandColors colors)
     {
         _state = state;
@@ -146,33 +171,50 @@ internal sealed class FandColorizer : DocumentColorizingTransformer
             {
                 char c = text[i];
                 if (c >= 32) continue;
-                Brush brush = _colors.Brush(_colors.ColKey[FandText.ColKeyIndexOf(c)]);
-                int start = line.Offset + i;
-                ChangeLinePart(start, start + 1, el => el.TextRunProperties.SetForegroundBrush(brush));
+                Paint(line, i, i + 1, _colors.ColKey[FandText.ColKeyIndexOf(c)]);
             }
             return;
         }
 
         // prohlizeni: barvu drzi ColorOrd a plati az do dalsiho prepinace
         int segStart = 0;
-        int colorIndex = AttributeState.ColorIndexOf(co, _colors);
+        int attr = AttributeState.AttrOf(co, _colors);
         for (int i = 0; i < text.Length; i++)
         {
             if (!FandText.IsAttr(text[i])) continue;
-            Paint(line, segStart, i, colorIndex);
+            Paint(line, segStart, i, attr);
             co = AttributeState.Toggle(co, text[i]);
-            colorIndex = AttributeState.ColorIndexOf(co, _colors);
+            attr = AttributeState.AttrOf(co, _colors);
             segStart = i;   // samotny prepinac je skryty, barvu uz ma novou
         }
-        Paint(line, segStart, text.Length, colorIndex);
+        Paint(line, segStart, text.Length, attr);
+
+        // zvoleny odkaz napovedy prebarvime na hHili, i kdyz jde pres vic radku
+        if (SelectedLinkStart >= 0 && SelectedLinkEnd > SelectedLinkStart)
+        {
+            int from = Math.Max(SelectedLinkStart, line.Offset) - line.Offset;
+            int to = Math.Min(SelectedLinkEnd + 1, line.EndOffset) - line.Offset;
+            Paint(line, Math.Max(from, 0), Math.Min(to, text.Length), _colors.ColKey[3]);
+        }
     }
 
-    private void Paint(DocumentLine line, int from, int to, int colorIndex)
+    /// <summary>
+    /// Obarví úsek řádku atributem FANDu, tedy písmo i pozadí. Pozadí se nastavuje
+    /// jen tehdy, když se liší od pozadí celého okna -- kdybychom ho malovali všude,
+    /// překreslilo by se i zvýraznění výběru a nebylo by vidět, co je označené.
+    /// </summary>
+    private void Paint(DocumentLine line, int from, int to, int attr)
     {
         if (to <= from) return;
-        Brush brush = _colors.Brush(colorIndex);
-        ChangeLinePart(line.Offset + from, line.Offset + to,
-            el => el.TextRunProperties.SetForegroundBrush(brush));
+
+        Brush foreground = _colors.Foreground(attr);
+        Brush? background = FandColors.Bg(attr) != _colors.Background ? _colors.BackgroundOf(attr) : null;
+
+        ChangeLinePart(line.Offset + from, line.Offset + to, el =>
+        {
+            el.TextRunProperties.SetForegroundBrush(foreground);
+            if (background != null) el.TextRunProperties.SetBackgroundBrush(background);
+        });
     }
 }
 

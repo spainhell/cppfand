@@ -108,6 +108,11 @@ namespace FandHost
 		int Scroll = 0;
 		int Updated = 0;       // 1 = text se zmenil
 		uint16_t Key = 0;      // ukoncovaci klavesa (PressedKey::KeyCombination)
+
+		// Slovo pod kurzorem, v napovede zvoleny odkaz. Interpret ho ulozi do
+		// gc->LexWord, odkud si ho bere EditorHelp.cpp:195 jako nazev dalsi
+		// kapitoly a DataEditor.cpp:3986 jako heslo. Prazdne = nechat beze zmeny.
+		std::string Word;
 	};
 
 	bool TextEditEnabled();

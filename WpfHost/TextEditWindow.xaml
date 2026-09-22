@@ -11,7 +11,8 @@
             <StatusBarItem><TextBlock x:Name="AttrText" Text="–"/></StatusBarItem>
             <Separator/>
             <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Foreground="#666" Text="F12 řídicí znaky · F2 uložit a zavřít · Esc zavřít"/>
+                <TextBlock x:Name="HintText" Foreground="#666"
+                           Text="F12 řídicí znaky · F2 uložit a zavřít · Esc zavřít"/>
             </StatusBarItem>
         </StatusBar>
 
