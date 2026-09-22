@@ -105,8 +105,9 @@ public partial class MainWindow : Window
             dlg.ShowDialog();
 
             byte[] result = FandAttr.Encode(dlg.ResultText);
+            byte[] word = FandAttr.Encode(dlg.ResultWord);
             Native.FandCompleteTextEdit(result, result.Length, dlg.ResultPos,
-                info.Scroll, dlg.ResultUpdated ? 1 : 0, dlg.ResultKey);
+                info.Scroll, dlg.ResultUpdated ? 1 : 0, dlg.ResultKey, word, word.Length);
         }
         finally
         {

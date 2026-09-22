@@ -2938,9 +2938,8 @@ bool TextEditor::EditText(EditorMode e_mode, TextType text_type, std::string pNa
 	}
 	if (_mode != EditorMode::Help) TxtColor = TextAttr;
 
-	// Hostitelsky rezim: celou editaci muze prevzit okno hostitele. Napovedu
-	// zatim ne -- ta si rizeni (kapitoly, odkazy) drzi HelpViewer.
-	if (_mode != EditorMode::Help && FandHost::TextEditEnabled()) {
+	// Hostitelsky rezim: celou editaci vcetne napovedy muze prevzit okno hostitele.
+	if (FandHost::TextEditEnabled()) {
 		FandHost::TextEditRequest req;
 		req.Mode = static_cast<int>(e_mode);
 		req.TextType = static_cast<int>(text_type);
@@ -2967,6 +2966,12 @@ bool TextEditor::EditText(EditorMode e_mode, TextType text_type, std::string pNa
 			// (c = Event.Pressed.KeyCombination()) nebo EditorHelp.cpp:143.
 			// UpdateKey je inverzni funkce ke KeyCombination (keyboard.cpp:419).
 			if (res.Key != 0) Event.Pressed.UpdateKey(res.Key);
+
+			// Puvodni editor tady dela gc->LexWord = CursorWord(). V napovede je
+			// to zvoleny odkaz, ze ktereho EditorHelp.cpp:195 udela nazev dalsi
+			// kapitoly; jinde slovo pod kurzorem (DataEditor.cpp:3986).
+			if (!res.Word.empty()) gc->LexWord = res.Word;
+
 			EdOk = oldEdOK;
 			return true;
 		}

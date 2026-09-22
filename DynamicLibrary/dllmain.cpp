@@ -465,10 +465,13 @@ extern "C" int FAND_API FandGetTextEditBreakKeys(uint16_t* buffer, int capacity)
 }
 
 /// Preda vysledek editace textu a probudi interpret.
-extern "C" void FAND_API FandCompleteTextEdit(const char* text, int textLength, int pos, int scroll, int updated, uint16_t key)
+/// word = slovo pod kurzorem, v napovede zvoleny odkaz (CP852, muze byt nullptr).
+extern "C" void FAND_API FandCompleteTextEdit(const char* text, int textLength, int pos, int scroll, int updated,
+	uint16_t key, const char* word, int wordLength)
 {
 	FandHost::TextEditResult res;
 	if (text != nullptr && textLength > 0) res.Text.assign(text, textLength);
+	if (word != nullptr && wordLength > 0) res.Word.assign(word, wordLength);
 	res.Pos = pos;
 	res.Scroll = scroll;
 	res.Updated = updated;

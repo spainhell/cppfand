@@ -145,6 +145,16 @@ internal sealed class FandColorizer : DocumentColorizingTransformer
 
     public FandMode Mode { get; set; } = FandMode.Editace;
 
+    /// <summary>
+    /// Rozsah prave zvoleneho odkazu napovedy (offsety obou oddelovacu 0x13),
+    /// jinak -1. Puvodni HelpViewer::SetWord je v textu prepisuje na 0x11, cimz
+    /// odkaz prebarvi na hHili. Delame totez, jen bez sahani do dokumentu:
+    /// rozsah se na zaver prebarvi na ColKey[3]. Prepsani v toggle by u odkazu
+    /// pres vic radku rozhodilo stav atributu na navazujicich radcich.
+    /// </summary>
+    public int SelectedLinkStart { get; set; } = -1;
+    public int SelectedLinkEnd { get; set; } = -1;
+
     public FandColorizer(AttributeState state, FandColors colors)
     {
         _state = state;
@@ -184,6 +194,14 @@ internal sealed class FandColorizer : DocumentColorizingTransformer
             segStart = i;   // samotny prepinac je skryty, barvu uz ma novou
         }
         Paint(line, segStart, text.Length, colorIndex);
+
+        // zvoleny odkaz napovedy prebarvime na hHili, i kdyz jde pres vic radku
+        if (SelectedLinkStart >= 0 && SelectedLinkEnd > SelectedLinkStart)
+        {
+            int from = Math.Max(SelectedLinkStart, line.Offset) - line.Offset;
+            int to = Math.Min(SelectedLinkEnd + 1, line.EndOffset) - line.Offset;
+            Paint(line, Math.Max(from, 0), Math.Min(to, text.Length), _colors.ColKey[3]);
+        }
     }
 
     private void Paint(DocumentLine line, int from, int to, int colorIndex)

@@ -128,7 +128,8 @@ public static class Native
     public static extern int FandGetTextEditBreakKeys([Out] ushort[] buffer, int capacity);
 
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void FandCompleteTextEdit(byte[] textCp852, int textLength, int pos, int scroll, int updated, ushort key);
+    public static extern void FandCompleteTextEdit(byte[] textCp852, int textLength, int pos, int scroll, int updated,
+        ushort key, byte[]? wordCp852, int wordLength);
 
     public static string LastError()
     {
