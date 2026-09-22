@@ -147,7 +147,8 @@ public partial class StartWindow : Window
             MessageBox.Show(this, "Pracovní adresář neexistuje.", "C++ FAND", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
-        if (opt.RdbName.Length == 0 || opt.RdbName.IndexOfAny(new[] { '\\', '/', ':', '.' }) >= 0)
+        // prazdna uloha je v poradku: FAND naskoci do hlavniho menu
+        if (opt.RdbName.Length > 0 && opt.RdbName.IndexOfAny(new[] { '\\', '/', ':', '.' }) >= 0)
         {
             MessageBox.Show(this, "Název úlohy musí být identifikátor bez cesty a přípony.", "C++ FAND", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;

@@ -26,23 +26,25 @@ public partial class App : Application
             // aplikaci jeste driv, nez staci vzniknout MainWindow.
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            var defaults = StartOptions.Load();
             string? fandDir = StartOptions.FindFandDir();
             if (fandDir != null)
             {
-                // cesty jsou jasne, na ty uz se neptame; zbyva jen uloha
-                defaults.FandDir = fandDir;
-                defaults.WorkDir = fandDir;
-                defaults.RdbName = StartOptions.ResolveRdbName(fandDir, defaults.RdbName);
+                // Bez parametru se jde rovnou do hlavniho menu FANDu, jako to delal
+                // PC-FAND: runfand.cpp:389 preskoci vetveni a vykresli plochu s menu.
+                // Ulohu si uzivatel vybere tam, ptat se na ni predem netreba.
+                options = new StartOptions { FandDir = fandDir, WorkDir = fandDir };
             }
-
-            var dlg = new StartWindow(defaults, askForDirs: fandDir == null);
-            if (dlg.ShowDialog() != true || dlg.Result == null)
+            else
             {
-                Shutdown();
-                return;
+                // Slozku s FAND.CFG a FAND.RES jsme nenasli, bez ni se spustit neda
+                var dlg = new StartWindow(StartOptions.Load(), askForDirs: true);
+                if (dlg.ShowDialog() != true || dlg.Result == null)
+                {
+                    Shutdown();
+                    return;
+                }
+                options = dlg.Result;
             }
-            options = dlg.Result;
         }
 
         var main = new MainWindow(options);

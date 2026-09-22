@@ -26,9 +26,12 @@ mu dělá obrazovku a klávesnici:
 ## Spuštění
 
 Obvyklé nasazení je zkopírovat obsah složky `net48` přímo do adresáře úlohy.
-Pak stačí `cppfand-wpf.exe` spustit dvojklikem: `FAND.CFG` a `FAND.RES` leží
-vedle programu, takže se na cesty neptá, a je-li v adresáři jediná `.RDB`,
-předvyplní i název úlohy — zbývá potvrdit.
+
+**Bez parametrů naskočí hlavní menu FANDu** (Ladit úlohu, Provést úlohu,
+Instalace úlohy, Editace textu, Dos, Konec), stejně jako to dělal PC-FAND —
+`runfand.cpp:389` přeskočí větvení a vykreslí plochu s menu. `FAND.CFG`
+a `FAND.RES` se hledají vedle `cppfand-wpf.exe` a potom v aktuálním adresáři;
+teprve když nejsou ani tam, zeptá se dialog na cesty.
 
 ```
 cppfand-wpf.exe <úloha>                    ... obě cesty = složka s FAND.CFG
@@ -63,12 +66,9 @@ velikosti nezáleží). Úloha pojmenovaná `D` nebo `T` by se proto musela zada
 i s cestou — původní FAND měl stejné omezení, režim u něj byl prostě druhý
 parametr.
 
-Bez parametrů se ptá jen na to, co samo nezjistí:
-
-- `FAND.CFG` a `FAND.RES` se hledají nejdřív vedle `cppfand-wpf.exe`, potom
-  v aktuálním adresáři. Když se najdou, dialog ukáže jen pole pro úlohu.
-- Když se nenajdou, dialog nabídne i obě cesty; hodnoty se pamatují
-  v `%AppData%\cppfand\wpfhost.txt`.
+Dialog se objeví jen tehdy, když se `FAND.CFG` a `FAND.RES` nenajdou — zeptá se
+na obě cesty a hodnoty si zapamatuje v `%AppData%\cppfand\wpfhost.txt`. Pole pro
+úlohu v něm smí zůstat prázdné, pak se jde taky do hlavního menu.
 
 Rozměr obrazovky jde nastavit v `cppfand-wpf.exe.config` (u .NET 10
 `cppfand-wpf.dll.config`), např. pro 80×34 jako v PC-FANDu:

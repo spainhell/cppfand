@@ -33,7 +33,8 @@ public partial class MainWindow : Window
         };
         Terminal.MouseAllowed = () => !_fieldEdit.IsEditing;
         Terminal.PendingPaste = text => { _pendingPaste = text; _pendingPasteAt = DateTime.UtcNow; };
-        Title = $"C++ FAND – {options.RdbName}";
+        // bez úlohy jedeme do hlavního menu FANDu, není co psát do titulku
+        Title = options.RdbName.Length > 0 ? $"C++ FAND – {options.RdbName}" : "C++ FAND";
 
         _poll = new DispatcherTimer(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(33) };
         _poll.Tick += (_, _) => Poll();
@@ -48,7 +49,9 @@ public partial class MainWindow : Window
                 return;
             }
             _started = true;
-            StatusText.Text = $"{options.RdbName} · {options.WorkDir}";
+            StatusText.Text = options.RdbName.Length > 0
+                ? $"{options.RdbName} · {options.WorkDir}"
+                : options.WorkDir;
             Terminal.Focus();
             _poll.Start();
         };
