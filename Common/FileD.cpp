@@ -8,6 +8,7 @@
 #include "../Core/obaseww.h"
 #include "../Core/runfrml.h"
 #include "../fandio/XKey.h"
+#include "../fandio/Messages.h"
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../Drivers/files.h"
@@ -1112,8 +1113,6 @@ bool FileD::ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref)
 bool FileD::Lock(int32_t n, uint16_t kind) const
 {
 	if (FileType == DataFileType::FandFile) {
-		uint16_t m;
-		std::string XTxt = "CrX";
 		bool result = true;
 
 #ifdef FandSQL
@@ -1122,33 +1121,20 @@ bool FileD::Lock(int32_t n, uint16_t kind) const
 
 #ifdef FandNetV
 		if (!FF->IsShared()) return result;
-		int w = 0;
+		fandio::LockWait wait{ .mode = "CrX", .record = n, .cancellable = kind == 1 };
 		while (true) {
 			if (!TryLockH(FF->Handle, RecLock + n, 1)) {
 				if (kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
-					m = 826;
 					if (n == 0) {
-						FF->GetFileD()->SetPathAndVolume();
-						SetMsgPar(CPath, XTxt);
-						m = 825;
+						wait.path = FF->GetFileD()->SetPathAndVolume();
 					}
-					int w1 = PushWrLLMsg(m, kind == 1);
-					if (w == 0) {
-						w = w1;
-					}
-					else {
-						PopW(w1, false);
-					}
-					/*beep; don't disturb*/
-					if (KbdTimer(spec.NetDelay, kind)) {
+					if (fandio::WaitForLock(wait)) {
 						continue;
 					}
 				}
 				result = false;
 			}
-			if (w != 0) {
-				PopW(w);
-			}
+			fandio::EndLockWait(wait);
 			break;
 		}
 #endif

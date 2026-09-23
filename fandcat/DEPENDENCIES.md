@@ -6,15 +6,15 @@ fandcat links `fandio.lib` with `/WHOLEARCHIVE` and only `Logging.lib`.
 Each symbol below is used by fandio but defined elsewhere in CppFand.
 The goal is an empty list.
 
-- unresolved symbols: **110**
-- headers included from outside fandio: **23**
+- unresolved symbols: **104**
+- headers included from outside fandio: **22**
 
 ## Summary by defining file
 
 | Defined in | Symbols | Used from fandio |
 |---|---:|---|
 | Common/FileD | 22 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, sort, XKey, XScan, XXPage |
-| Core/base | 17 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XScan, XWorkFile |
+| Core/base | 15 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XScan, XWorkFile |
 | Common/pstring | 13 | DbfFile, Fand0File, sort, WPage, WRec, XKey, XPage, XScan, XString, XWKey, XWorkFile, XXPage |
 | Common/Record | 12 | Fand0File, sort, XScan, XString, XWorkFile, XXPage |
 | Common/textfunc | 6 | DbfFile, directory, Fand0File, FandTFile |
@@ -28,8 +28,6 @@ The goal is an empty list.
 | Common/CommonVariables | 2 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XString, XWorkFile |
 | Common/random | 2 | FandTFile |
 | Common/realDouble | 2 | Fand0File, FandTFilePrefix, XString |
-| Core/obaseww | 2 | locks |
-| Core/OldDrivers | 2 | locks |
 | Common/exprcmp | 1 | directory |
 | Core/access | 1 | XString |
 
@@ -50,7 +48,7 @@ The goal is an empty list.
 - `static std::string FileD::SetPathForH(void *)` - DataFileBase
 - `static void FileD::CopyH(void *,void *,std::string const &)` - Fand0File
 - `std::string FileD::CExtToT(std::string const &,std::string const &,std::string)` - DbfFile, Fand0File, FandTFile
-- `std::string FileD::SetPathAndVolume(char)` - Fand0File, locks
+- `std::string FileD::SetPathAndVolume(char)` - Fand0File
 - `unsigned __int64 FileD::ReadRec(unsigned __int64,Record *,bool)const` - sort, XScan, XXPage
 - `unsigned __int64 FileD::UpdateRec(unsigned __int64,Record *)const` - XXPage
 - `unsigned short FileD::GetNrKeys(void)` - Fand0File, FandXFile
@@ -65,7 +63,6 @@ The goal is an empty list.
 - `int MaxWSize` - XWorkFile
 - `long FileSizeH(void *)` - FandTFile
 - `long SeekH(void *,unsigned __int64)` - DataFileBase, XWorkFile
-- `Spec spec` - locks
 - `std::string FandWorkName` - XWorkFile
 - `std::string FandWorkXName` - FandXFile
 - `unsigned __int64 ReadH(void *,unsigned __int64,void *)` - DataFileBase, DbfFile, XWorkFile
@@ -78,7 +75,6 @@ The goal is an empty list.
 - `void CloseH(void * *)` - DbfFile, Fand0File, FandTFile, FandXFile
 - `void MyDeleteFile(std::string const &)` - Fand0File, FandTFile, FandXFile
 - `void RenameFile56(std::string const &,std::string const &,bool)` - Fand0File
-- `void SetMsgPar(std::string const &,std::string const &)` - locks
 
 ### Common/pstring
 
@@ -184,16 +180,6 @@ The goal is an empty list.
 - `double Real48ToDouble(unsigned char *)` - Fand0File, FandTFilePrefix
 - `std::array<unsigned char,6> DoubleToReal48(double)` - Fand0File, FandTFilePrefix, XString
 
-### Core/obaseww
-
-- `int PushWrLLMsg(unsigned short,bool)` - locks
-- `void PopW(int,bool)` - locks
-
-### Core/OldDrivers
-
-- `bool KbdTimer(int,unsigned char)` - locks
-- `void LockBeep(void)` - locks
-
 ### Common/exprcmp
 
 - `bool CmpStringWithMask(std::string const &,std::string)` - directory
@@ -211,7 +197,7 @@ The goal is an empty list.
 | Common/compare.h | Fand0File.cpp, FandTFile.cpp |
 | Common/DateTime.h | DbfFile.cpp, Fand0File.cpp |
 | Common/exprcmp.h | directory.cpp |
-| Common/FileD.h | FandTFile.cpp, FandXFile.cpp, XKey.cpp, XScan.cpp, XXPage.cpp |
+| Common/FileD.h | FandTFile.cpp, FandXFile.cpp, locks.cpp, XKey.cpp, XScan.cpp, XXPage.cpp |
 | Common/LinkD.h | sort.cpp, XScan.h |
 | Common/LocVar.h | XScan.h |
 | Common/OperationType.h | Fand0File.h |
@@ -221,10 +207,9 @@ The goal is an empty list.
 | Common/Record.h | Fand0File.cpp, sort.cpp, XScan.cpp, XString.cpp, XWorkFile.cpp, XXPage.cpp |
 | Common/textfunc.h | DbfFile.cpp, directory.cpp, Fand0File.cpp, FandTFile.cpp |
 | Core/access.h | DbfTFile.cpp, XString.cpp |
-| Core/base.h | FandXFile.cpp, locks.cpp |
+| Core/base.h | FandXFile.cpp |
 | Core/GlobalVariables.h | DataFileBase.cpp, DbfFile.cpp, DbfTFile.cpp, Fand0File.cpp, FandTFile.cpp, FandXFile.cpp, XKey.cpp, XScan.cpp, XString.cpp, XWorkFile.cpp, XXPage.cpp |
 | Core/models/Instr.h | sort.cpp |
-| Core/obaseww.h | locks.cpp |
 | Core/runfrml.h | sort.cpp, XScan.cpp, XString.cpp |
 | Core/switches.h | Fand0File.h, FilePath.cpp, locks.h |
 | Drivers/files.h | Fand0File.cpp |

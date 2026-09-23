@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <functional>
 #include <stdexcept>
 #include <string>
@@ -38,6 +39,17 @@ namespace fandio
 	// How fandio reports errors and talks to the user. The host application
 	// installs its own handlers with SetMessageHandlers(); an empty handler
 	// means the default behavior described below.
+	// A lock that is held by another user; fandio retries until the handler gives up
+	struct LockWait
+	{
+		std::string path;		// file being locked
+		std::string mode;		// requested lock mode (RD, WR, CR, ...)
+		int32_t record = -1;	// record lock: record number (0 = whole file); -1 = lock mode change
+		bool cancellable = false;	// the user may give up (e.g. by ESC)
+		int attempt = 0;		// number of failed attempts so far (1, 2, ...)
+		int token = 0;			// free for the handler (e.g. id of a message window)
+	};
+
 	struct MessageHandlers
 	{
 		// Fatal error, the operation cannot continue. Must not return.
@@ -61,6 +73,16 @@ namespace fandio
 		// Yes/no question.
 		// Default: writes a warning to the log and answers "no".
 		std::function<bool(const Message&)> confirm;
+
+		// Called after each failed attempt to get a lock. Waits before the next
+		// attempt and returns true to try again, false to give up (honored only
+		// when wait.cancellable).
+		// Default: waits 0.5 s; a cancellable wait gives up after 20 attempts.
+		std::function<bool(LockWait& wait)> lockWait;
+
+		// Called when waiting for a lock is over (the lock was acquired or the
+		// wait was given up), only if lockWait has been called.
+		std::function<void(LockWait& wait)> lockWaitEnd;
 	};
 
 	void SetMessageHandlers(MessageHandlers handlers);
@@ -70,4 +92,9 @@ namespace fandio
 	void ShowMessage(int code, std::vector<std::string> params = {});
 	void ShowFileMessage(FileD* file, FilePart part, int code);
 	bool Confirm(int code, std::vector<std::string> params = {});
+
+	// Records a failed attempt in wait and lets the handler wait; false = give up
+	bool WaitForLock(LockWait& wait);
+	// Ends the wait started by WaitForLock (no-op when there has been no failed attempt)
+	void EndLockWait(LockWait& wait);
 }

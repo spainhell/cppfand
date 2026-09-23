@@ -1,5 +1,7 @@
 #include "Messages.h"
 
+#include <chrono>
+#include <thread>
 #include <utility>
 
 #include "../Logging/Logging.h"
@@ -87,5 +89,29 @@ namespace fandio
 		}
 		SPDLOG_WARN("{} - answered 'no'", describe(message));
 		return false;
+	}
+
+	bool WaitForLock(LockWait& wait)
+	{
+		wait.attempt++;
+		bool result;
+		if (handlers_.lockWait) {
+			result = handlers_.lockWait(wait);
+		}
+		else {
+			if (wait.attempt == 1) {
+				SPDLOG_WARN("fandio: waiting for lock {} on '{}'", wait.mode, wait.path);
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			result = wait.attempt < 20;
+		}
+		return result || !wait.cancellable;
+	}
+
+	void EndLockWait(LockWait& wait)
+	{
+		if (wait.attempt > 0 && handlers_.lockWaitEnd) {
+			handlers_.lockWaitEnd(wait);
+		}
 	}
 }

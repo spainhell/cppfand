@@ -1,9 +1,11 @@
 #include "locks.h"
 
+#include <windows.h>
+
 //#include "../Core/GlobalVariables.h"
 //#include "../Core/access.h"
-#include "../Core/base.h"
-#include "../Core/obaseww.h"
+#include "../Common/FileD.h"
+#include "Messages.h"
 
 //void RunErrorM(FileD* file_d, LockMode Md, WORD N)
 //{
@@ -81,7 +83,7 @@ void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len, uint16_t lan_node)
 
 bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, WORD Kind, bool RdPref, uint16_t lan_node)
 {
-	int oldpos; WORD oldlen, d;
+	int oldpos; WORD oldlen;
 	bool result = false;
 	if (!fileD->FF->IsShared()) {         /*neu!!*/
 		result = true;
@@ -103,34 +105,16 @@ bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, WORD Kind, bool
 			fileD->FF->ClearUpdateFlag();
 		}
 	}
-	int w = 0;
-	WORD count = 0;
+	fandio::LockWait wait{ .path = path, .mode = LockModeTxt[Mode], .cancellable = Kind == 1 };
 label1:
 	if (Mode != NullMode)
 		if (!TryLockH(h, TransLock, 1)) {
 		label2:
 			if (Kind == 2) return result; /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
-			count++;
-			if (count <= spec.LockRetries) {
-				d = spec.LockDelay;
-			}
-			else {
-				d = spec.NetDelay;
-				fileD->SetPathAndVolume();
-				SetMsgPar(path, LockModeTxt[Mode]);
-				int w1 = PushWrLLMsg(825, Kind == 1);
-				if (w == 0) {
-					w = w1;
-				}
-				else {
-					PopW(w1, false);
-				}
-				LockBeep();
-			}
-			if (KbdTimer(spec.NetDelay, Kind)) {
+			if (fandio::WaitForLock(wait)) {
 				goto label1;
 			}
-			if (w != 0) PopW(w);
+			fandio::EndLockWait(wait);
 			return result;
 		}
 	if (oldmode != NullMode) {
@@ -150,9 +134,7 @@ label1:
 		}
 		UnLockH(h, TransLock, 1);
 	}
-	if (w != 0) {
-		PopW(w);
-	}
+	fandio::EndLockWait(wait);
 	fileD->FF->LMode = Mode;
 	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) {
 		int rp = fileD->FF->RdPrefixes();

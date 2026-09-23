@@ -2,6 +2,7 @@
 #include "base.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
+#include "OldDrivers.h"
 #include "../fandio/Messages.h"
 #include "../fandio/Settings.h"
 
@@ -47,6 +48,34 @@ void InstallFandioMessageHandlers()
 		.confirm = [](const fandio::Message& message) {
 			set_msg_par(message);
 			return PromptYN(static_cast<WORD>(message.code));
+		},
+		.lockWait = [](fandio::LockWait& wait) {
+			// lock mode change: message after spec.LockRetries attempts, with a beep;
+			// record lock: message right away, without a beep
+			const bool mode_lock = wait.record < 0;
+			if (!mode_lock || wait.attempt > spec.LockRetries) {
+				WORD msg = 826;
+				if (mode_lock || wait.record == 0) {
+					SetMsgPar(wait.path, wait.mode);
+					msg = 825;
+				}
+				int w = PushWrLLMsg(msg, wait.cancellable);
+				if (wait.token == 0) {
+					wait.token = w;
+				}
+				else {
+					PopW(w, false);
+				}
+				if (mode_lock) {
+					LockBeep();
+				}
+			}
+			return KbdTimer(spec.NetDelay, wait.cancellable ? 1 : 0);
+		},
+		.lockWaitEnd = [](fandio::LockWait& wait) {
+			if (wait.token != 0) {
+				PopW(wait.token);
+			}
 		},
 	});
 }
