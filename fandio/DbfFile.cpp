@@ -7,6 +7,7 @@
 #include "../Common/Coding.h"
 #include "../Common/DateTime.h"
 #include "Messages.h"
+#include "Settings.h"
 #include "../Common/CommonVariables.h"
 
 
@@ -420,35 +421,32 @@ void DbfFile::WriteHeader()
 	dbf_header = nullptr;
 }
 
-int DbfFile::MakeDbfDcl(std::string& name)
+std::string DbfFile::MakeDbfDcl(const std::string& path)
 {
-	DBaseHeader dbf_header;
-	DBaseField dbf_field;
 	char c = '\0';
 
-	CPath = FExpand(name + ".DBF"); CVol = "";
-	int i = catalog->GetCatalogIRec(name, true);
-
-	if (i != 0) {
-		CVol = catalog->GetVolume(i);
-		CPath = FExpand(catalog->GetPathName(i));
-		FSplit(CPath, CDir, CName, CExt);
-	}
-
-	HANDLE h = OpenH(CPath, _isOldFile, RdOnly);
+	HANDLE h = OpenH(path, _isOldFile, RdOnly);
 	if (HandleError != 0) {
-		fandio::RaiseError(700 + HandleError, { CPath });
+		fandio::RaiseError(700 + HandleError, { path });
 	}
-	ReadH(h, 32, &dbf_header);
-	WORD n = (dbf_header.HdLen - 1) / 32 - 1;
+
+	uint8_t header[DBaseHeaderSize]{};
+	ReadH(h, sizeof(header), header);
+	const uint16_t hd_len = static_cast<uint16_t>(header[8] | (header[9] << 8));
+	const int n = (hd_len - 1) / 32 - 1; // header, field descriptors, terminator 0x0D
 
 	std::string result;
 
-	for (i = 1; i <= n; i++) {
-		ReadH(h, 32, &dbf_field);
-		result += dbf_field.name;
+	for (int i = 1; i <= n; i++) {
+		// name: up to 11 characters padded with zeros; type: [11]; length: [16]; decimals: [17]
+		uint8_t field[32]{};
+		ReadH(h, sizeof(field), field);
+		const char* name = reinterpret_cast<const char*>(field);
+		result += std::string(name, strnlen(name, 11));
+		int len = field[16];
+		const int dec = field[17];
 
-		switch (dbf_field.typ) {
+		switch (field[11]) {
 		case 'C': c = 'A'; break;
 		case 'D': c = 'D'; break;
 		case 'L': c = 'B'; break;
@@ -459,32 +457,25 @@ int DbfFile::MakeDbfDcl(std::string& name)
 		result += ':';
 		result += c;
 
-		std::string s1;
-
 		switch (c) {
 		case 'A': {
-			str(dbf_field.len, s1);
-			result += ',' + s1;
+			result += ',' + std::to_string(len);
 			break;
 		}
 		case 'F': {
-			dbf_field.len -= dbf_field.dec;
-			if (dbf_field.dec != 0) {
-				dbf_field.len--;
+			len -= dec;
+			if (dec != 0) {
+				len--;
 			}
-			str(dbf_field.len, s1);
-			result += ',' + s1;
-			str(dbf_field.dec, s1);
-			result += '.' + s1;
+			result += ',' + std::to_string(len) + '.' + std::to_string(dec);
 			break;
 		}
 		}
 		result += ";\x0D\x0A"; // ^M + ^J
 	}
 
-	saveS(ChptTxt, result, nullptr);
 	CloseH(&h);
-	return 0;
+	return result;
 }
 
 void DbfFile::CompileRecLen()
@@ -572,11 +563,13 @@ void DbfFile::CloseFile()
 
 	if (WasRdOnly) {
 		WasRdOnly = false;
-		std::string path = _parent->SetPathAndVolume();
-		SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
+		fandio::FilePath path = _parent->GetPath();
+		const std::string main_path = path.Full();
+		SetFileAttr(main_path, HandleError, (GetFileAttr(main_path, HandleError) & 0x27) | 0x01); // {RdOnly; }
 		if (TF != nullptr) {
-			path = _parent->CExtToT(CDir, CName, CExt);
-			SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
+			// attributes are taken from the main file
+			const std::string text_path = _parent->CExtToT(path.dir, path.name, path.ext);
+			SetFileAttr(text_path, HandleError, (GetFileAttr(main_path, HandleError) & 0x27) | 0x01); //  {RdOnly; }
 		}
 	}
 }
@@ -612,29 +605,26 @@ FileD* DbfFile::GetFileD()
 	return _parent;
 }
 
-std::string DbfFile::SetTempCExt(char typ, bool isNet) const
+std::string DbfFile::TempFilePath(char typ, bool isNet) const
 {
+	fandio::FilePath path = _parent->GetPath();
 	char Nr;
 	if (typ == 'T') {
 		Nr = '2';
-		CExt = ".DBT";
+		path.ext = ".DBT";
 	}
 	else {
 		Nr = '1';
-		CExt = ".DBF";
+		path.ext = ".DBF";
 	}
 
-	if (CExt.length() < 2) CExt = ".0";
-	CExt[1] = Nr;
+	path.ext[1] = Nr;
 
 	if (isNet) {
-		CPath = WrkDir + CName + CExt; /* work files are local */
-	}
-	else {
-		CPath = CDir + CName + CExt;
+		path.dir = fandio::GetSettings().workDir; /* work files are local */
 	}
 
-	return CPath;
+	return path.Full();
 }
 
 double DbfFile::DBF_RforD(FieldDescr* field_d, uint8_t* source)

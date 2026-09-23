@@ -11,7 +11,7 @@
 #include "OldDrivers.h"
 #include "access.h"
 #include "CfgFile.h"
-#include "FandioMessages.h"
+#include "FandioHost.h"
 #include "Compiler.h"
 #include "../Common/FileD.h"
 #include "GlobalVariables.h"
@@ -280,6 +280,7 @@ void InitRunFand()
 	WrkDir = GetEnv("FANDWORK");
 	if (WrkDir.empty()) WrkDir = FandDir;
 	AddBackSlash(WrkDir);
+	ApplyFandioSettings();
 	s = WrkDir + "FANDWORK";
 	printf("FANDWORK DIR: %s\n", s.c_str());
 	FandWorkName = s + ".$$$";

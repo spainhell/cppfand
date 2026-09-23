@@ -71,7 +71,7 @@
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
     <ClCompile Include="ResFile.cpp" />
-    <ClCompile Include="FandioMessages.cpp" />
+    <ClCompile Include="FandioHost.cpp" />
     <ClCompile Include="RunMessage.cpp" />
     <ClCompile Include="runproj.cpp" />
     <ClCompile Include="rdproc.cpp" />
@@ -108,7 +108,7 @@
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="ResFile.h" />
-    <ClInclude Include="FandioMessages.h" />
+    <ClInclude Include="FandioHost.h" />
     <ClInclude Include="RunMessage.h" />
     <ClInclude Include="runproj.h" />
     <ClInclude Include="rdfildcl.h" />

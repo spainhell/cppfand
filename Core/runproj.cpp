@@ -1371,8 +1371,13 @@ bool ProjectRunner::CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_
 							record->SaveS(ChptOldTxt, "");
 							OldTxt = 0;
 
-							std::unique_ptr<DbfFile> dbf_file = std::make_unique<DbfFile>(nullptr);
-							dbf_file->MakeDbfDcl(nm);
+							// .DBF file is looked up in the catalog, otherwise in the current directory
+							std::string dbf_path = FExpand(nm + ".DBF");
+							int cat_rec = catalog->GetCatalogIRec(nm, true);
+							if (cat_rec != 0) {
+								dbf_path = FExpand(catalog->GetPathName(cat_rec));
+							}
+							record->SaveS(ChptTxt, DbfFile::MakeDbfDcl(dbf_path));
 
 							Txt = record->LoadS(ChptTxt);
 							rdb_file->UpdateRec(I, record);

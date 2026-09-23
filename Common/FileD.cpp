@@ -1429,7 +1429,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	bool net = IsNetCVol();
 	FileD* newFile = new FileD(*this);
 
-	std::string path = SetTempCExt('0', net);
+	std::string path = TempFilePath('0', net);
 	CVol = "";
 	newFile->FullPath = path;
 	newFile->FF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
@@ -1457,7 +1457,8 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	if (createTextFile && (newFile->FF->TF != nullptr)) {
 		newFile->FF->TF = new FandTFile(newFile->FF);
 		//*newFile->FF->TF = *FF->TF;
-		std::string path_t = SetTempCExt('T', net);
+		std::string path_t = TempFilePath('T', net);
+		CVol = ""; // TempFilePath() sets it again
 		//newFile->FF->TF->Handle = OpenH(path_t, _isOverwriteFile, Exclusive);
 		newFile->FF->TF->Create(path_t);
 		newFile->FF->TF->TestErr();
@@ -1471,9 +1472,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 void FileD::DeleteDuplicateF(FileD* TempFD)
 {
 	CloseClearH(&TempFD->FF->Handle);
-	SetPathAndVolume();
-	SetTempCExt('0', FF->IsShared());
-	MyDeleteFile(CPath);
+	MyDeleteFile(TempFilePath('0', FF->IsShared()));
 }
 
 std::string FileD::CExtToT(const std::string& dir, const std::string& name, std::string ext)
@@ -1495,17 +1494,17 @@ std::string FileD::CExtToT(const std::string& dir, const std::string& name, std:
 	return dir + name + ext;
 }
 
-std::string FileD::SetTempCExt(char typ, bool isNet)
+std::string FileD::TempFilePath(char typ, bool isNet)
 {
 	std::string result;
 
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		result = FF->SetTempCExt(typ, isNet);
+		result = FF->TempFilePath(typ, isNet);
 		break;
 	}
 	case DataFileType::DBF: {
-		result = DbfF->SetTempCExt(typ, isNet);
+		result = DbfF->TempFilePath(typ, isNet);
 		break;
 	}
 	default: break;
@@ -2039,6 +2038,12 @@ finish:
 	return CPath;
 }
 
+fandio::FilePath FileD::GetPath()
+{
+	SetPathAndVolume();
+	return { CDir, CName, CExt, CVol };
+}
+
 void FileD::CFileError(int N)
 {
 	FileMsg(this, N, '0');
@@ -2086,7 +2091,7 @@ void FileD::CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<Fi
 	v_files.erase(v_files.begin() + static_cast<int>(first_index_for_remove), v_files.end());
 }
 
-void FileD::CopyH(HANDLE h1, HANDLE h2)
+void FileD::CopyH(HANDLE h1, HANDLE h2, const std::string& h1_path)
 {
 	const uint16_t BufSize = 32768;
 	uint8_t* p = new uint8_t[BufSize];
@@ -2101,7 +2106,7 @@ void FileD::CopyH(HANDLE h1, HANDLE h2)
 	ReadH(h1, sz, p);
 	WriteH(h2, sz, p);
 	CloseH(&h1);
-	MyDeleteFile(CPath);
+	MyDeleteFile(h1_path);
 	ReleaseStore(&p);
 }
 

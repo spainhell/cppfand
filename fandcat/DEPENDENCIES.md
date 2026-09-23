@@ -6,33 +6,32 @@ fandcat links `fandio.lib` with `/WHOLEARCHIVE` and only `Logging.lib`.
 Each symbol below is used by fandio but defined elsewhere in CppFand.
 The goal is an empty list.
 
-- unresolved symbols: **124**
+- unresolved symbols: **110**
 - headers included from outside fandio: **23**
 
 ## Summary by defining file
 
 | Defined in | Symbols | Used from fandio |
 |---|---:|---|
-| Common/FileD | 21 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, sort, XKey, XScan, XXPage |
-| Core/base | 19 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XScan, XWorkFile |
+| Common/FileD | 22 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, sort, XKey, XScan, XXPage |
+| Core/base | 17 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XScan, XWorkFile |
 | Common/pstring | 13 | DbfFile, Fand0File, sort, WPage, WRec, XKey, XPage, XScan, XString, XWKey, XWorkFile, XXPage |
 | Common/Record | 12 | Fand0File, sort, XScan, XString, XWorkFile, XXPage |
-| Core/legacy | 8 | DbfFile, DbfTFile, Fand0File |
-| Common/CommonVariables | 7 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XString, XWorkFile |
 | Common/textfunc | 6 | DbfFile, directory, Fand0File, FandTFile |
-| Core/GlobalVariables | 6 | DbfFile, FandTFile, FandXFile, XKey, XXPage |
+| Core/legacy | 6 | DbfFile, DbfTFile, Fand0File |
 | Core/runfrml | 5 | sort, XScan, XString |
 | Common/DateTime | 4 | DbfFile |
+| Core/GlobalVariables | 4 | FandTFile, FandXFile, XKey, XXPage |
 | Drivers/files | 4 | DbfFile, Fand0File, XWorkFile |
 | Common/compare | 3 | Fand0File, FandTFile |
-| Core/Catalog | 3 | DbfFile |
 | Common/Coding | 2 | DbfFile, Fand0File, FandTFile |
+| Common/CommonVariables | 2 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XString, XWorkFile |
 | Common/random | 2 | FandTFile |
 | Common/realDouble | 2 | Fand0File, FandTFilePrefix, XString |
-| Core/access | 2 | FandXFile, XString |
 | Core/obaseww | 2 | locks |
 | Core/OldDrivers | 2 | locks |
 | Common/exprcmp | 1 | directory |
+| Core/access | 1 | XString |
 
 ## Symbols
 
@@ -43,14 +42,15 @@ The goal is an empty list.
 - `bool FileD::Lock(int,unsigned short)const` - Fand0File
 - `bool FileD::NotCached(void)` - FandTFile, FandXFile, XScan
 - `bool FileD::OpenCreateF(std::string const &,FileUseMode,bool)` - locks
+- `fandio::FilePath FileD::GetPath(void)` - DbfFile, Fand0File, FandTFile, FandXFile
 - `FileD * FileD::OpenDuplicateF(bool)` - Fand0File
 - `FileD::~FileD(void)` - Fand0File
 - `int FileD::GetNRecs(void)` - sort, XKey, XScan
 - `LockMode FileD::NewLockMode(LockMode)` - Fand0File, sort
 - `static std::string FileD::SetPathForH(void *)` - DataFileBase
-- `static void FileD::CopyH(void *,void *)` - Fand0File
+- `static void FileD::CopyH(void *,void *,std::string const &)` - Fand0File
 - `std::string FileD::CExtToT(std::string const &,std::string const &,std::string)` - DbfFile, Fand0File, FandTFile
-- `std::string FileD::SetPathAndVolume(char)` - DbfFile, Fand0File, FandTFile, FandXFile, locks
+- `std::string FileD::SetPathAndVolume(char)` - Fand0File, locks
 - `unsigned __int64 FileD::ReadRec(unsigned __int64,Record *,bool)const` - sort, XScan, XXPage
 - `unsigned __int64 FileD::UpdateRec(unsigned __int64,Record *)const` - XXPage
 - `unsigned short FileD::GetNrKeys(void)` - Fand0File, FandXFile
@@ -62,14 +62,12 @@ The goal is an empty list.
 
 ### Core/base
 
-- `bool IsNetCVol(void)` - Fand0File
 - `int MaxWSize` - XWorkFile
 - `long FileSizeH(void *)` - FandTFile
 - `long SeekH(void *,unsigned __int64)` - DataFileBase, XWorkFile
 - `Spec spec` - locks
 - `std::string FandWorkName` - XWorkFile
 - `std::string FandWorkXName` - FandXFile
-- `std::string WrkDir` - DbfFile, Fand0File
 - `unsigned __int64 ReadH(void *,unsigned __int64,void *)` - DataFileBase, DbfFile, XWorkFile
 - `unsigned __int64 WriteH(void *,unsigned __int64,void const *)` - DataFileBase, Fand0File, XWorkFile
 - `unsigned short MaxW(unsigned short,unsigned short)` - XScan
@@ -113,27 +111,6 @@ The goal is an empty list.
 - `void Record::SaveS(FieldDescr *,std::string const &)` - Fand0File
 - `void Record::SetDeleted(bool)` - Fand0File, XXPage
 
-### Core/legacy
-
-- `std::string FExpand(std::string,char)` - DbfFile
-- `unsigned short Swap(unsigned short)` - DbfTFile
-- `void FillChar(void *,int,unsigned __int64)` - DbfFile, DbfTFile
-- `void FSplit(std::string const &,std::string &,std::string &,std::string &,char)` - DbfFile, Fand0File
-- `void str(double,int,int,std::string &)` - DbfFile
-- `void str(double,std::string &)` - DbfFile
-- `void str(int,pstring &)` - DbfFile
-- `void val(pstring,double &,short &)` - DbfFile
-
-### Common/CommonVariables
-
-- `double * Power10` - DbfFile, Fand0File, XString
-- `std::string CDir` - DbfFile, Fand0File, FandTFile, FandXFile
-- `std::string CExt` - DbfFile, Fand0File, FandTFile, FandXFile
-- `std::string CName` - DbfFile, Fand0File, FandTFile, FandXFile
-- `std::string CPath` - DataFileBase, DbfFile, Fand0File, FandTFile, FandXFile
-- `std::string CVol` - DbfFile
-- `unsigned long HandleError` - DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XWorkFile
-
 ### Common/textfunc
 
 - `std::string AddTrailChars(std::string &,char,unsigned __int64)` - FandTFile
@@ -143,14 +120,14 @@ The goal is an empty list.
 - `std::string upperCaseString(std::string)` - DbfFile
 - `unsigned __int64 ReplaceChar(std::string &,char,char)` - DbfFile, directory
 
-### Core/GlobalVariables
+### Core/legacy
 
-- `bool IsTestRun` - XXPage
-- `Catalog * catalog` - DbfFile
-- `FandXFile XWork` - FandXFile, XKey
-- `FieldDescr * ChptTxt` - DbfFile
-- `FileD * Chpt` - FandTFile
-- `char * Version` - FandTFile
+- `unsigned short Swap(unsigned short)` - DbfTFile
+- `void FillChar(void *,int,unsigned __int64)` - DbfFile, DbfTFile
+- `void FSplit(std::string const &,std::string &,std::string &,std::string &,char)` - DbfFile, Fand0File
+- `void str(double,int,int,std::string &)` - DbfFile
+- `void str(int,pstring &)` - DbfFile
+- `void val(pstring,double &,short &)` - DbfFile
 
 ### Core/runfrml
 
@@ -167,6 +144,13 @@ The goal is an empty list.
 - `std::string StrDate(double,std::string)` - DbfFile
 - `void SplitDate(double,unsigned short &,unsigned short &,unsigned short &)` - DbfFile
 
+### Core/GlobalVariables
+
+- `bool IsTestRun` - XXPage
+- `FandXFile XWork` - FandXFile, XKey
+- `FileD * Chpt` - FandTFile
+- `char * Version` - FandTFile
+
 ### Drivers/files
 
 - `bool FlushF(void *,unsigned long &)` - XWorkFile
@@ -180,16 +164,15 @@ The goal is an empty list.
 - `short CompArea(void *,void *,unsigned __int64)` - FandTFile
 - `short CompStr(pstring &,pstring &)` - Fand0File
 
-### Core/Catalog
-
-- `int Catalog::GetCatalogIRec(std::string const &,bool)` - DbfFile
-- `std::string Catalog::GetPathName(unsigned __int64)` - DbfFile
-- `std::string Catalog::GetVolume(unsigned __int64)` - DbfFile
-
 ### Common/Coding
 
 - `static std::string Coding::Code(std::string const &)` - DbfFile, Fand0File, FandTFile
 - `static void Coding::Code(unsigned char *,unsigned __int64)` - DbfFile, Fand0File
+
+### Common/CommonVariables
+
+- `double * Power10` - DbfFile, Fand0File, XString
+- `unsigned long HandleError` - DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XWorkFile
 
 ### Common/random
 
@@ -200,11 +183,6 @@ The goal is an empty list.
 
 - `double Real48ToDouble(unsigned char *)` - Fand0File, FandTFilePrefix
 - `std::array<unsigned char,6> DoubleToReal48(double)` - Fand0File, FandTFilePrefix, XString
-
-### Core/access
-
-- `std::string CExtToX(std::string,std::string,std::string)` - FandXFile
-- `std::string TranslateOrd(std::string)` - XString
 
 ### Core/obaseww
 
@@ -219,6 +197,10 @@ The goal is an empty list.
 ### Common/exprcmp
 
 - `bool CmpStringWithMask(std::string const &,std::string)` - directory
+
+### Core/access
+
+- `std::string TranslateOrd(std::string)` - XString
 
 ## Headers from outside fandio
 
@@ -244,6 +226,6 @@ The goal is an empty list.
 | Core/models/Instr.h | sort.cpp |
 | Core/obaseww.h | locks.cpp |
 | Core/runfrml.h | sort.cpp, XScan.cpp, XString.cpp |
-| Core/switches.h | Fand0File.h, locks.h |
+| Core/switches.h | Fand0File.h, FilePath.cpp, locks.h |
 | Drivers/files.h | Fand0File.cpp |
 | Logging/Logging.h | DataFileBase.cpp, Fand0File.cpp, FandXFile.cpp, Messages.cpp, XKey.cpp |

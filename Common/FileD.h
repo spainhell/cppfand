@@ -4,6 +4,7 @@
 #include "../Common/rdbPos.h"
 #include "../fandio/Fand0File.h"
 #include "../fandio/DbfFile.h"
+#include "../fandio/FilePath.h"
 #include "../fandio/locks.h" // to be visible in other parts of code
 
 class Record;
@@ -132,7 +133,7 @@ public:
 	void DeleteDuplicateF(FileD* TempFD);
 
 	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
-	std::string SetTempCExt(char typ, bool isNet);
+	std::string TempFilePath(char typ, bool isNet);
 	void SetHCatTyp(FandFileType fand_file_type);
 	void GetTFileD(bool has_tt);
 	int32_t GetXFileD();
@@ -155,13 +156,16 @@ public:
 	void TestCFileError();
 	std::string SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file);
 	std::string SetPathAndVolume(char pathDelim = '\\');
+	// same as SetPathAndVolume(), but returns the path split into parts
+	fandio::FilePath GetPath();
 	void CFileError(int N);
 
 	static void CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
 	static void CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files);
 	static void CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<FileD*>& v_files);
 
-	static void CopyH(HANDLE h1, HANDLE h2);
+	// copies h1 to h2, closes h1 and deletes its file h1_path
+	static void CopyH(HANDLE h1, HANDLE h2, const std::string& h1_path);
 	static std::string SetPathForH(HANDLE handle);
 
 	Record* LinkLastRec(int32_t& n);

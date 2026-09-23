@@ -491,9 +491,8 @@ void FandTFile::CloseFile()
 			ClearUpdateFlag();
 		}
 		if ((!_parent->IsShared()) && (_parent->NRecs == 0)) {
-			_parent->GetFileD()->SetPathAndVolume();
-			CPath = _parent->GetFileD()->CExtToT(CDir, CName, CExt);
-			MyDeleteFile(CPath);
+			const fandio::FilePath path = _parent->GetFileD()->GetPath();
+			MyDeleteFile(_parent->GetFileD()->CExtToT(path.dir, path.name, path.ext));
 		}
 	}
 }

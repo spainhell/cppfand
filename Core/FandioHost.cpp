@@ -1,8 +1,9 @@
-#include "FandioMessages.h"
+#include "FandioHost.h"
 #include "base.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
 #include "../fandio/Messages.h"
+#include "../fandio/Settings.h"
 
 static void set_msg_par(const fandio::Message& message)
 {
@@ -47,5 +48,12 @@ void InstallFandioMessageHandlers()
 			set_msg_par(message);
 			return PromptYN(static_cast<WORD>(message.code));
 		},
+	});
+}
+
+void ApplyFandioSettings()
+{
+	fandio::SetSettings({
+		.workDir = WrkDir,
 	});
 }

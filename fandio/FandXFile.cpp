@@ -6,6 +6,7 @@
 #include "../Common/CommonVariables.h"
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
+#include "FilePath.h"
 #include "Messages.h"
 #include "../Logging/Logging.h"
 
@@ -148,15 +149,11 @@ void FandXFile::CloseFile()
 		ClearUpdateFlag();
 		if (!_parent->IsShared()) {
 			if (NotValid) {
-				_parent->GetFileD()->SetPathAndVolume();
-				CPath = CExtToX(CDir, CName, CExt);
-				MyDeleteFile(CPath);
+				MyDeleteFile(fandio::IndexFilePath(_parent->GetFileD()->GetPath()));
 			}
 			else if ((NRecs == 0) || _parent->NRecs == 0) {
 				NRecs = 0;
-				_parent->GetFileD()->SetPathAndVolume();
-				CPath = CExtToX(CDir, CName, CExt);
-				MyDeleteFile(CPath);
+				MyDeleteFile(fandio::IndexFilePath(_parent->GetFileD()->GetPath()));
 			}
 		}
 	}

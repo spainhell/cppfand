@@ -9,6 +9,7 @@
 
 #include "../Core/GlobalVariables.h"
 #include "Messages.h"
+#include "Settings.h"
 
 #include "../Common/Coding.h"
 #include "../Common/CommonVariables.h"
@@ -846,11 +847,13 @@ void Fand0File::CloseFile()
 
 	if (WasRdOnly) {
 		WasRdOnly = false;
-		std::string path = _parent->SetPathAndVolume();
-		SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
+		fandio::FilePath path = _parent->GetPath();
+		const std::string main_path = path.Full();
+		SetFileAttr(main_path, HandleError, (GetFileAttr(main_path, HandleError) & 0x27) | 0x01); // {RdOnly; }
 		if (TF != nullptr) {
-			path = _parent->CExtToT(CDir, CName, CExt);
-			SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
+			// attributes are taken from the main file
+			const std::string text_path = _parent->CExtToT(path.dir, path.name, path.ext);
+			SetFileAttr(text_path, HandleError, (GetFileAttr(main_path, HandleError) & 0x27) | 0x01); //  {RdOnly; }
 		}
 	}
 }
@@ -1231,10 +1234,11 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 		fandio::RaiseError(result);
 	}
 
-	std::string orig_path = _parent->SetPathAndVolume();
+	fandio::FilePath path = _parent->GetPath();
+	std::string orig_path = path.Full();
 	std::string orig_path_T = _extToT(orig_path);
 
-	if (IsNetCVol()) {
+	if (fandio::IsNetVolume(path.volume)) {
 		CopyDuplF(TempFD, DelTF);
 		return;
 	}
@@ -1246,7 +1250,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 	TestDelErr(orig_path);
 
 	// rename temp file to a regular one
-	std::string temp_path = SetTempCExt('0', false);
+	std::string temp_path = TempFilePath('0', false);
 	//SaveCache(0, TempFD->FF->Handle);
 	CloseClearH(&TempFD->FF->Handle);
 	RenameFile56(temp_path, orig_path, true);
@@ -1259,7 +1263,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 		MyDeleteFile(orig_path_T);
 		TestDelErr(orig_path_T);
 		CloseClearH(&TempFD->FF->TF->Handle);
-		std::string temp_path_t = SetTempCExt('T', false);
+		std::string temp_path_t = TempFilePath('T', false);
 		RenameFile56(temp_path_t, orig_path_T, true);
 		TF->Handle = OpenH(orig_path_T, _isOldFile, UMode);
 		SetUpdateFlag();
@@ -1272,8 +1276,8 @@ void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 {
 	TempFD->FF->WrPrefixes();
 	//SaveCache(0, Handle);
-	SetTempCExt('0', true);
-	FileD::CopyH(TempFD->FF->Handle, Handle);
+	std::string temp_path = TempFilePath('0', true);
+	FileD::CopyH(TempFD->FF->Handle, Handle, temp_path);
 
 	// TempFD has been deleted in CopyH -> set Handle to nullptr
 	TempFD->FF->Handle = nullptr;
@@ -1282,10 +1286,10 @@ void Fand0File::CopyDuplF(FileD* TempFD, bool DelTF)
 	if ((TF != nullptr) && DelTF) {
 		HANDLE h1 = TempFD->FF->TF->Handle;
 		HANDLE h2 = TF->Handle;
-		SetTempCExt('T', true);
+		std::string temp_path_t = TempFilePath('T', true);
 		*TF = *TempFD->FF->TF;
 		TF->Handle = h2;
-		FileD::CopyH(h1, h2);
+		FileD::CopyH(h1, h2, temp_path_t);
 	}
 	int rp = RdPrefixes();
 	if (rp != 0) {
@@ -1386,35 +1390,33 @@ label4:
 	TFD02->OldLockMode(md2);
 }
 
-std::string Fand0File::SetTempCExt(char typ, bool isNet) const
+std::string Fand0File::TempFilePath(char typ, bool isNet) const
 {
+	fandio::FilePath path = _parent->GetPath();
 	char Nr;
 	if (typ == 'T') {
 		Nr = '2';
 		switch (file_type) {
-		case FandFileType::RDB: CExt = ".TTT"; break;
+		case FandFileType::RDB: path.ext = ".TTT"; break;
 		default:;
 		}
 	}
 	else {
 		Nr = '1';
 		switch (file_type) {
-		case FandFileType::RDB: CExt = ".RDB"; break;
+		case FandFileType::RDB: path.ext = ".RDB"; break;
 		default:;
 		}
 	}
 
-	if (CExt.length() < 2) CExt = ".0";
-	CExt[1] = Nr;
+	if (path.ext.length() < 2) path.ext = ".0";
+	path.ext[1] = Nr;
 
 	if (isNet) {
-		CPath = WrkDir + CName + CExt; /* work files are local */
-	}
-	else {
-		CPath = CDir + CName + CExt;
+		path.dir = fandio::GetSettings().workDir; /* work files are local */
 	}
 
-	return CPath;
+	return path.Full();
 }
 
 bool Fand0File::is_null_value(FieldDescr* field_d, uint8_t* record)

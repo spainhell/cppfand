@@ -72,8 +72,7 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 		}
 
 		err = HandleError;
-		FileD::SetPathForH(Handle);
-		fandio::RaiseError(700 + err, { CPath });
+		fandio::RaiseError(700 + err, { FileD::SetPathForH(Handle) });
 	}
 
 	return result;

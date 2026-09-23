@@ -102,7 +102,7 @@
     <ClCompile Include="wwmix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FandioMessages.cpp">
+    <ClCompile Include="FandioHost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RunMessage.cpp">
@@ -221,7 +221,7 @@
     <ClInclude Include="wwmix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FandioMessages.h">
+    <ClInclude Include="FandioHost.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RunMessage.h">

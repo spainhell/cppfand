@@ -40,7 +40,8 @@ public:
 	void WrPrefix();
 	void WrPrefixes();
 	void WriteHeader();
-	int MakeDbfDcl(std::string& name);
+	// reads the header of a .DBF file and returns its fields declared in FAND syntax
+	static std::string MakeDbfDcl(const std::string& path);
 
 	void CompileRecLen();
 	int UsedFileSize() const;
@@ -55,7 +56,7 @@ public:
 	void SetDeletedFlag(Record* record);
 	FileD* GetFileD();
 
-	std::string SetTempCExt(char typ, bool isNet) const;
+	std::string TempFilePath(char typ, bool isNet) const;
 
 private:
 	FileD* _parent;
