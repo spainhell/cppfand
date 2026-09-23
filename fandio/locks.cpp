@@ -105,12 +105,14 @@ bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, WORD Kind, bool
 			fileD->FF->ClearUpdateFlag();
 		}
 	}
-	fandio::LockWait wait{ .path = path, .mode = LockModeTxt[Mode], .cancellable = Kind == 1 };
+	fandio::LockWait wait{ .mode = LockModeTxt[Mode], .cancellable = Kind == 1 };
 label1:
 	if (Mode != NullMode)
 		if (!TryLockH(h, TransLock, 1)) {
 		label2:
 			if (Kind == 2) return result; /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
+			// 'path' may be an alias of the global CPath and need not belong to this file
+			wait.path = fileD->SetPathAndVolume();
 			if (fandio::WaitForLock(wait)) {
 				goto label1;
 			}
