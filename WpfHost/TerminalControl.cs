@@ -388,7 +388,7 @@ public sealed class TerminalControl : FrameworkElement
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        Key key = e.Key == Key.System ? e.SystemKey : e.Key;
+        Key key = KeyCodes.MapInsert(e.Key == Key.System ? e.SystemKey : e.Key);
         if (key == Key.None || KeyCodes.IsModifierKey(key)) { base.OnKeyDown(e); return; }
 
         var mods = Keyboard.Modifiers;

@@ -215,6 +215,18 @@ internal sealed class FieldEditOverlay
     {
         Key key = e.Key == Key.System ? e.SystemKey : e.Key;
         if (key == Key.None || KeyCodes.IsModifierKey(key)) return;
+        if (key == Key.F11)
+        {
+            // F11 zastupuje Insert; TextBox o F11 neví, proto Shift+Insert (vložení)
+            // a Ctrl+Insert (kopie) je potřeba obsloužit tady
+            var mods = Keyboard.Modifiers;
+            if (mods == ModifierKeys.Shift) PasteClipboard();
+            else if (mods == ModifierKeys.Control) CopyToClipboard();
+            else if (mods == ModifierKeys.None) _insertMode = !_insertMode;
+            else HandleKey(Key.Insert, mods);
+            e.Handled = true;
+            return;
+        }
         e.Handled = HandleKey(key, Keyboard.Modifiers);
     }
 

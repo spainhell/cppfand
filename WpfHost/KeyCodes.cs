@@ -29,6 +29,9 @@ internal static class KeyCodes
         _ => 0,
     };
 
+    /// <summary>Mac nemá klávesu Insert, zastupuje ji F11 (i s modifikátory).</summary>
+    public static Key MapInsert(Key key) => key == Key.F11 ? Key.Insert : key;
+
     public static bool IsNavigationOrFunction(Key key) => key is
         Key.F1 or Key.F2 or Key.F3 or Key.F4 or Key.F5 or Key.F6 or Key.F7 or Key.F8 or Key.F9 or Key.F10 or Key.F11 or Key.F12
         or Key.Left or Key.Right or Key.Up or Key.Down or Key.Home or Key.End or Key.PageUp or Key.PageDown

@@ -335,6 +335,12 @@ void Keyboard::_read()
 PressedKey::PressedKey(KEY_EVENT_RECORD& key)
 {
 	_key = key;
+	// Mac nema klavesu Insert, zastupuje ji F11 (i s modifikatory)
+	if (_key.wVirtualKeyCode == VK_F11) {
+		_key.wVirtualKeyCode = VK_INSERT;
+		_key.wVirtualScanCode = 0x52;
+		_key.dwControlKeyState |= ENHANCED_KEY;
+	}
 	if (_key.wVirtualKeyCode == VK_DECIMAL) {
 		_key.uChar.AsciiChar = '.';
 		_key.uChar.UnicodeChar = '.';
