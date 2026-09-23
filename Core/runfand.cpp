@@ -11,6 +11,7 @@
 #include "OldDrivers.h"
 #include "access.h"
 #include "CfgFile.h"
+#include "FandioMessages.h"
 #include "Compiler.h"
 #include "../Common/FileD.h"
 #include "GlobalVariables.h"
@@ -257,6 +258,7 @@ void InitRunFand()
 	std::string txt;
 	double r = 0.0;
 
+	InstallFandioMessageHandlers();
 	ClrEvent();
 	InitAccess();
 

@@ -2,7 +2,7 @@
 
 #include "../Common/CommonVariables.h"
 #include "../Core/access.h"
-#include "../Core/obaseww.h"
+#include "Messages.h"
 #include "../Core/GlobalVariables.h"
 
 DbfTFile::DbfTFile(DbfFile* parent)
@@ -16,10 +16,10 @@ DbfTFile::~DbfTFile()
 
 void DbfTFile::Err(unsigned short n, bool ex) const
 {
-	FileMsg(_parent->GetFileD(), n, 'T');
+	fandio::ShowFileMessage(_parent->GetFileD(), fandio::FilePart::Text, n);
 	if (ex) {
 		_parent->GetFileD()->Close();
-		GoExit(MsgLine);
+		fandio::Abort(n);
 	}
 }
 

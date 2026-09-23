@@ -1,7 +1,7 @@
 #include "DataFileBase.h"
 #include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+#include "Messages.h"
 #include "../Logging/Logging.h"
 
 
@@ -47,7 +47,7 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 	WORD err = 0;
 
 	if (Handle == nullptr) {
-		RunError(706);
+		fandio::RaiseError(706);
 		return result;
 	}
 
@@ -73,8 +73,7 @@ size_t DataFileBase::read_write_data(FileOperation operation, size_t position, s
 
 		err = HandleError;
 		FileD::SetPathForH(Handle);
-		SetMsgPar(CPath);
-		RunError(700 + err);
+		fandio::RaiseError(700 + err, { CPath });
 	}
 
 	return result;

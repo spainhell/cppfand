@@ -8,7 +8,7 @@
 #include "KeyFldD.h"
 
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+#include "Messages.h"
 
 #include "../Common/Coding.h"
 #include "../Common/CommonVariables.h"
@@ -205,7 +205,7 @@ void Fand0File::Reset()
 void Fand0File::IncNRecs(int n)
 {
 #ifdef FandDemo
-	if (NRecs > 100) RunError(884);
+	if (NRecs > 100) fandio::RaiseError(884);
 #endif
 	NRecs += n;
 	SetUpdateFlag(); //SetUpdHandle(Handle);
@@ -733,7 +733,7 @@ void Fand0File::TruncFile()
 	LockMode md = _parent->NewLockMode(RdMode);
 	TruncF(Handle, HandleError, UsedFileSize());
 	if (HandleError != 0) {
-		FileMsg(_parent, 700 + HandleError, '0');
+		fandio::ShowFileMessage(_parent, fandio::FilePart::Data, 700 + HandleError);
 	}
 	if (TF != nullptr) {
 		TruncF(TF->Handle, HandleError, TF->UsedFileSize());
@@ -767,7 +767,7 @@ LockMode Fand0File::RewriteFile(bool append)
 
 	int notValid = XFNotValid();
 	if (notValid != 0) {
-		RunError(notValid);
+		fandio::RaiseError(notValid);
 	}
 
 	if (file_type == FandFileType::INDEX) XF->NoCreate = true;
@@ -914,6 +914,7 @@ int Fand0File::CreateIndexFile()
 {
 	LockMode md = NullMode;
 	bool fail = false;
+	std::exception_ptr error;
 
 	try {
 		fail = true;
@@ -944,8 +945,9 @@ int Fand0File::CreateIndexFile()
 		}
 		fail = false;
 	}
-	catch (std::exception& e) {
-		// TODO: log error
+	catch (std::exception&) {
+		// the error has already been reported; clean up and pass it on
+		error = std::current_exception();
 	}
 
 	if (fail) {
@@ -954,7 +956,7 @@ int Fand0File::CreateIndexFile()
 	}
 	_parent->Unlock(0);
 	_parent->OldLockMode(md);
-	if (fail) GoExit(MsgLine);
+	if (error) std::rethrow_exception(error);
 
 	return 0;
 }
@@ -972,7 +974,7 @@ int Fand0File::TestXFExist()
 		}
 		int a = CreateIndexFile();
 		if (a != 0) {
-			RunError(a);
+			fandio::RaiseError(a);
 			return a;
 		}
 	}
@@ -1070,8 +1072,7 @@ label1:
 	WriteRec(RecNr, record);
 
 	if (XF->FirstDupl) {
-		SetMsgPar(_parent->Name);
-		WrLLF10Msg(828);
+		fandio::ShowMessage(828, { _parent->Name });
 		XF->FirstDupl = false;
 	}
 }
@@ -1158,7 +1159,7 @@ void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, Operatio
 		}
 
 		if (n > 255) {
-			WrLLF10Msg(155);
+			fandio::ShowMessage(155);
 			delete k2; k2 = nullptr;
 			return;
 		}
@@ -1227,7 +1228,7 @@ void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
 {
 	int result = XFNotValid();
 	if (result != 0) {
-		RunError(result);
+		fandio::RaiseError(result);
 	}
 
 	std::string orig_path = _parent->SetPathAndVolume();
@@ -1298,7 +1299,7 @@ void Fand0File::IndexFileProc(bool Compress)
 
 	int result = XFNotValid();
 	if (result != 0) {
-		RunError(result);
+		fandio::RaiseError(result);
 	}
 
 	if (Compress) {
@@ -1317,7 +1318,7 @@ void Fand0File::IndexFileProc(bool Compress)
 		NRecs = tmp_file->FF->NRecs;
 		int xf_res = XFNotValid();
 		if (xf_res != 0) {
-			RunError(xf_res);
+			fandio::RaiseError(xf_res);
 		}
 		delete tmp_file; tmp_file = nullptr;
 	}
@@ -1475,8 +1476,7 @@ std::string Fand0File::_extToX(const std::string& dir, const std::string& name, 
 void Fand0File::TestDelErr(std::string& P)
 {
 	if (HandleError != 0) {
-		SetMsgPar(P);
-		RunError(827);
+		fandio::RaiseError(827, { P });
 	}
 }
 

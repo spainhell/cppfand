@@ -6,60 +6,35 @@ fandcat links `fandio.lib` with `/WHOLEARCHIVE` and only `Logging.lib`.
 Each symbol below is used by fandio but defined elsewhere in CppFand.
 The goal is an empty list.
 
-- unresolved symbols: **132**
+- unresolved symbols: **124**
 - headers included from outside fandio: **23**
 
 ## Summary by defining file
 
 | Defined in | Symbols | Used from fandio |
 |---|---:|---|
-| Core/base | 22 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XScan, XWorkFile, XXPage |
 | Common/FileD | 21 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, sort, XKey, XScan, XXPage |
+| Core/base | 19 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XScan, XWorkFile |
 | Common/pstring | 13 | DbfFile, Fand0File, sort, WPage, WRec, XKey, XPage, XScan, XString, XWKey, XWorkFile, XXPage |
 | Common/Record | 12 | Fand0File, sort, XScan, XString, XWorkFile, XXPage |
 | Core/legacy | 8 | DbfFile, DbfTFile, Fand0File |
 | Common/CommonVariables | 7 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XString, XWorkFile |
 | Common/textfunc | 6 | DbfFile, directory, Fand0File, FandTFile |
 | Core/GlobalVariables | 6 | DbfFile, FandTFile, FandXFile, XKey, XXPage |
-| Core/obaseww | 6 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XKey, XWorkFile, XXPage |
 | Core/runfrml | 5 | sort, XScan, XString |
 | Common/DateTime | 4 | DbfFile |
 | Drivers/files | 4 | DbfFile, Fand0File, XWorkFile |
 | Common/compare | 3 | Fand0File, FandTFile |
-| Core/access | 3 | DbfFile, FandXFile, XString |
 | Core/Catalog | 3 | DbfFile |
 | Common/Coding | 2 | DbfFile, Fand0File, FandTFile |
 | Common/random | 2 | FandTFile |
 | Common/realDouble | 2 | Fand0File, FandTFilePrefix, XString |
+| Core/access | 2 | FandXFile, XString |
+| Core/obaseww | 2 | locks |
 | Core/OldDrivers | 2 | locks |
 | Common/exprcmp | 1 | directory |
 
 ## Symbols
-
-### Core/base
-
-- `bool IsNetCVol(void)` - Fand0File
-- `int MaxWSize` - XWorkFile
-- `long FileSizeH(void *)` - FandTFile
-- `long SeekH(void *,unsigned __int64)` - DataFileBase, XWorkFile
-- `Spec spec` - locks
-- `std::string FandWorkName` - XWorkFile
-- `std::string FandWorkXName` - FandXFile
-- `std::string MsgLine` - DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XXPage
-- `std::string WrkDir` - DbfFile, Fand0File
-- `unsigned __int64 ReadH(void *,unsigned __int64,void *)` - DataFileBase, DbfFile, XWorkFile
-- `unsigned __int64 WriteH(void *,unsigned __int64,void const *)` - DataFileBase, Fand0File, XWorkFile
-- `unsigned short MaxW(unsigned short,unsigned short)` - XScan
-- `unsigned short MinW(unsigned short,unsigned short)` - XScan
-- `void * OpenH(std::string const &,FileOpenMode,FileUseMode)` - DbfFile, DbfTFile, Fand0File, FandTFile
-- `void * WorkHandle` - XWorkFile
-- `void CloseClearH(void * *)` - DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile
-- `void CloseH(void * *)` - DbfFile, Fand0File, FandTFile, FandXFile
-- `void GoExit(std::string const &)` - DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XXPage
-- `void MyDeleteFile(std::string const &)` - Fand0File, FandTFile, FandXFile
-- `void RenameFile56(std::string const &,std::string const &,bool)` - Fand0File
-- `void SetMsgPar(std::string const &)` - DataFileBase, Fand0File, FandXFile, XWorkFile, XXPage
-- `void SetMsgPar(std::string const &,std::string const &)` - locks
 
 ### Common/FileD
 
@@ -84,6 +59,28 @@ The goal is an empty list.
 - `void FileD::OldLockMode(LockMode)` - Fand0File, sort
 - `void FileD::SeekRec(int)` - Fand0File
 - `void FileD::Unlock(int)` - Fand0File
+
+### Core/base
+
+- `bool IsNetCVol(void)` - Fand0File
+- `int MaxWSize` - XWorkFile
+- `long FileSizeH(void *)` - FandTFile
+- `long SeekH(void *,unsigned __int64)` - DataFileBase, XWorkFile
+- `Spec spec` - locks
+- `std::string FandWorkName` - XWorkFile
+- `std::string FandWorkXName` - FandXFile
+- `std::string WrkDir` - DbfFile, Fand0File
+- `unsigned __int64 ReadH(void *,unsigned __int64,void *)` - DataFileBase, DbfFile, XWorkFile
+- `unsigned __int64 WriteH(void *,unsigned __int64,void const *)` - DataFileBase, Fand0File, XWorkFile
+- `unsigned short MaxW(unsigned short,unsigned short)` - XScan
+- `unsigned short MinW(unsigned short,unsigned short)` - XScan
+- `void * OpenH(std::string const &,FileOpenMode,FileUseMode)` - DbfFile, DbfTFile, Fand0File, FandTFile
+- `void * WorkHandle` - XWorkFile
+- `void CloseClearH(void * *)` - DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile
+- `void CloseH(void * *)` - DbfFile, Fand0File, FandTFile, FandXFile
+- `void MyDeleteFile(std::string const &)` - Fand0File, FandTFile, FandXFile
+- `void RenameFile56(std::string const &,std::string const &,bool)` - Fand0File
+- `void SetMsgPar(std::string const &,std::string const &)` - locks
 
 ### Common/pstring
 
@@ -155,15 +152,6 @@ The goal is an empty list.
 - `FileD * Chpt` - FandTFile
 - `char * Version` - FandTFile
 
-### Core/obaseww
-
-- `bool PromptYN(unsigned short)` - XXPage
-- `int PushWrLLMsg(unsigned short,bool)` - locks
-- `void FileMsg(FileD *,int,char)` - DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile
-- `void PopW(int,bool)` - locks
-- `void RunError(unsigned short)` - DataFileBase, Fand0File, FandXFile, XKey, XWorkFile
-- `void WrLLF10Msg(int)` - Fand0File, XXPage
-
 ### Core/runfrml
 
 - `bool RunBool(FileD *,FrmlElem *,Record *)` - XScan, XString
@@ -192,12 +180,6 @@ The goal is an empty list.
 - `short CompArea(void *,void *,unsigned __int64)` - FandTFile
 - `short CompStr(pstring &,pstring &)` - Fand0File
 
-### Core/access
-
-- `std::string CExtToX(std::string,std::string,std::string)` - FandXFile
-- `std::string TranslateOrd(std::string)` - XString
-- `void TestCPathError(void)` - DbfFile
-
 ### Core/Catalog
 
 - `int Catalog::GetCatalogIRec(std::string const &,bool)` - DbfFile
@@ -218,6 +200,16 @@ The goal is an empty list.
 
 - `double Real48ToDouble(unsigned char *)` - Fand0File, FandTFilePrefix
 - `std::array<unsigned char,6> DoubleToReal48(double)` - Fand0File, FandTFilePrefix, XString
+
+### Core/access
+
+- `std::string CExtToX(std::string,std::string,std::string)` - FandXFile
+- `std::string TranslateOrd(std::string)` - XString
+
+### Core/obaseww
+
+- `int PushWrLLMsg(unsigned short,bool)` - locks
+- `void PopW(int,bool)` - locks
 
 ### Core/OldDrivers
 
@@ -250,8 +242,8 @@ The goal is an empty list.
 | Core/base.h | FandXFile.cpp, locks.cpp |
 | Core/GlobalVariables.h | DataFileBase.cpp, DbfFile.cpp, DbfTFile.cpp, Fand0File.cpp, FandTFile.cpp, FandXFile.cpp, XKey.cpp, XScan.cpp, XString.cpp, XWorkFile.cpp, XXPage.cpp |
 | Core/models/Instr.h | sort.cpp |
-| Core/obaseww.h | DataFileBase.cpp, DbfFile.cpp, DbfTFile.cpp, Fand0File.cpp, FandTFile.cpp, FandXFile.cpp, locks.cpp, XKey.cpp, XWorkFile.cpp, XXPage.cpp |
+| Core/obaseww.h | locks.cpp |
 | Core/runfrml.h | sort.cpp, XScan.cpp, XString.cpp |
 | Core/switches.h | Fand0File.h, locks.h |
 | Drivers/files.h | Fand0File.cpp |
-| Logging/Logging.h | DataFileBase.cpp, Fand0File.cpp, FandXFile.cpp, XKey.cpp |
+| Logging/Logging.h | DataFileBase.cpp, Fand0File.cpp, FandXFile.cpp, Messages.cpp, XKey.cpp |

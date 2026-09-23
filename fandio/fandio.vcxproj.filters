@@ -123,6 +123,9 @@
     <ClInclude Include="ProgressCallbacks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Messages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Fand0File.cpp">
@@ -184,6 +187,9 @@
     </ClCompile>
     <ClCompile Include="locks.cpp">
       <Filter>Source Files\FandFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="Messages.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FandTFilePrefix.cpp">
       <Filter>Source Files\FandFiles</Filter>

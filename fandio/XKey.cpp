@@ -5,7 +5,7 @@
 #include "../Common/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
-#include "../Core/obaseww.h"
+#include "Messages.h"
 #include "../fandio/FandXFile.h"
 #include "../Logging/Logging.h"
 
@@ -490,7 +490,7 @@ bool XKey::Insert(FileD* file_d, int RecNr, bool Try, Record* record)
 		else {
 			int result = parent_->FF->XFNotValid();
 			if (result != 0) {
-				RunError(result);
+				fandio::RaiseError(result);
 			}
 			parent_->CFileError(822);
 		}

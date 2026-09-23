@@ -6,7 +6,7 @@
 #include "../Common/textfunc.h"
 #include "../Common/Coding.h"
 #include "../Common/DateTime.h"
-#include "../Core/obaseww.h"
+#include "Messages.h"
 #include "../Common/CommonVariables.h"
 
 
@@ -436,7 +436,9 @@ int DbfFile::MakeDbfDcl(std::string& name)
 	}
 
 	HANDLE h = OpenH(CPath, _isOldFile, RdOnly);
-	TestCPathError();
+	if (HandleError != 0) {
+		fandio::RaiseError(700 + HandleError, { CPath });
+	}
 	ReadH(h, 32, &dbf_header);
 	WORD n = (dbf_header.HdLen - 1) / 32 - 1;
 
@@ -530,14 +532,15 @@ void DbfFile::TruncFile()
 
 	TruncF(Handle, HandleError, UsedFileSize());
 	if (HandleError != 0) {
-		FileMsg(_parent, 700 + HandleError, '0');
+		fandio::ShowFileMessage(_parent, fandio::FilePart::Data, 700 + HandleError);
 	}
 	if (TF != nullptr) {
 		TruncF(TF->Handle, HandleError, TF->UsedFileSize());
 		if (HandleError != 0) {
-			FileMsg(GetFileD(), 700 + HandleError, 'T');
+			const int code = 700 + HandleError;
+			fandio::ShowFileMessage(GetFileD(), fandio::FilePart::Text, code);
 			GetFileD()->Close();
-			GoExit(MsgLine);
+			fandio::Abort(code);
 		}
 	}
 }

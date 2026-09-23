@@ -6,7 +6,7 @@
 #include "../Common/CommonVariables.h"
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+#include "Messages.h"
 #include "../Logging/Logging.h"
 
 
@@ -122,7 +122,7 @@ void FandXFile::ClearUpdLock()
 int FandXFile::XFNotValid(int recs, unsigned char keys)
 {
 	if (Handle == nullptr) {
-		RunError(903);
+		fandio::RaiseError(903);
 		return 903;
 	}
 	else {
@@ -226,13 +226,12 @@ void FandXFile::ReleasePage(XPage* P, int N)
 void FandXFile::Err(unsigned short N)
 {
 	if (this == &XWork) {
-		SetMsgPar(FandWorkXName);
-		RunError(N);
+		fandio::RaiseError(N, { FandWorkXName });
 	}
 	else {
 		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
-		FileMsg(_parent->GetFileD(), N, 'X');
+		fandio::ShowFileMessage(_parent->GetFileD(), fandio::FilePart::Index, N);
 		_parent->Close();
-		GoExit(MsgLine);
+		fandio::Abort(N);
 	}
 }

@@ -9,7 +9,7 @@
 #include "../Common/compare.h"
 #include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+#include "Messages.h"
 
 FandTFile::FandTFile(Fand0File* parent)
 {
@@ -30,10 +30,10 @@ FandTFile::~FandTFile()
 
 void FandTFile::Err(unsigned short n, bool ex) const
 {
-	FileMsg(_parent->GetFileD(), n, 'T');
+	fandio::ShowFileMessage(_parent->GetFileD(), fandio::FilePart::Text, n);
 	if (ex) {
 		_parent->GetFileD()->Close();
-		GoExit(MsgLine);
+		fandio::Abort(n);
 	}
 }
 

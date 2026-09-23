@@ -4,7 +4,7 @@
 #include "../Common/Record.h"
 #include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+#include "Messages.h"
 //#include "../Core/RunMessage.h"
 #include "../fandio/FandXFile.h"
 
@@ -163,7 +163,7 @@ void XWorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, OperationType op
 		// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
 		MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array
 		if (MaxOnWPage < 4) {
-			RunError(624);
+			fandio::RaiseError(624);
 		}
 		MaxWPage = 0;
 		NFreeNr = 0;
@@ -231,8 +231,7 @@ void XWorkFile::SortMerge(XKey* xKey, Record* record)
 void XWorkFile::TestErr()
 {
 	if (HandleError != 0) {
-		SetMsgPar(FandWorkName);
-		RunError(700 + HandleError);
+		fandio::RaiseError(700 + HandleError, { FandWorkName });
 	}
 }
 

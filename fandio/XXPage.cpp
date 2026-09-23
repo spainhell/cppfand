@@ -4,7 +4,7 @@
 #include "../Common/FileD.h"
 #include "../Common/Record.h"
 #include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+#include "Messages.h"
 
 
 void XXPage::Reset(XWorkFile* OwnerXW)
@@ -80,14 +80,13 @@ void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, Record* record)
 				if (n == LastRecNr) return; /* overlapping intervals from  key in .. */
 				if (!KD->InWork && !KD->Duplic) {
 					if (!XW->msgWritten) {
-						SetMsgPar(file_d->Name);
 						if (IsTestRun) {
-							if (!PromptYN(832)) {
-								GoExit(MsgLine);
+							if (!fandio::Confirm(832, { file_d->Name })) {
+								fandio::Abort(832, { file_d->Name });
 							}
 						}
 						else {
-							WrLLF10Msg(828);
+							fandio::ShowMessage(828, { file_d->Name });
 						}
 						XW->msgWritten = true;
 					}

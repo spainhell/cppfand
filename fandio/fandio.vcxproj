@@ -182,6 +182,7 @@
     <ClInclude Include="FileEnums.h" />
     <ClInclude Include="KeyFldD.h" />
     <ClInclude Include="locks.h" />
+    <ClInclude Include="Messages.h" />
     <ClInclude Include="ProgressCallbacks.h" />
     <ClInclude Include="realFix.h" />
     <ClInclude Include="sort.h" />
@@ -213,6 +214,7 @@
     <ClCompile Include="FieldDescr.cpp" />
     <ClCompile Include="KeyFldD.cpp" />
     <ClCompile Include="locks.cpp" />
+    <ClCompile Include="Messages.cpp" />
     <ClCompile Include="realFix.cpp" />
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="TextFile.cpp" />
