@@ -75,6 +75,7 @@ public partial class TextEditWindow : Window
         Editor.Options.ShowBoxForControlCharacters = false;
         Editor.Options.EnableRectangularSelection = true;   // = sloupcovy blok FANDu
         Editor.Options.ConvertTabsToSpaces = false;
+        Editor.Options.AllowToggleOverstrikeMode = true;    // Insert (F11) prepina vkladani/prepis
         Editor.WordWrap = false;
         Editor.IsReadOnly = info.ReadOnly != 0 || _isHelp;
         // TxtColor je celý atribut, proto se rozpadá na písmo a pozadí
@@ -170,6 +171,16 @@ public partial class TextEditWindow : Window
 
             case Key.F2:
                 Finish(KeyF2);
+                e.Handled = true;
+                return;
+
+            // Mac nema klavesu Insert, zastupuje ji F11
+            case Key.F11:
+                var mods = Keyboard.Modifiers;
+                if (mods == ModifierKeys.Shift) ApplicationCommands.Paste.Execute(null, Editor.TextArea);
+                else if (mods == ModifierKeys.Control) ApplicationCommands.Copy.Execute(null, Editor.TextArea);
+                else if (mods == ModifierKeys.None && !Editor.IsReadOnly)
+                    Editor.TextArea.OverstrikeMode = !Editor.TextArea.OverstrikeMode;
                 e.Handled = true;
                 return;
 

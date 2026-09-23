@@ -18,7 +18,7 @@ mu dělá obrazovku a klávesnici:
 - **Editace jednořádkového pole** (`DataEditor::EditTxt`) se předává
   hostiteli (`Drivers/host.h`, `FandPollFieldEdit` / `FandCompleteFieldEdit`).
   Nad polem se objeví běžný `TextBox`: schránka (Ctrl+C/V/X), označení myší,
-  Insert přepíná vkládání, filtr znaků podle typu pole, u data se vložený
+  Insert (nebo F11) přepíná vkládání, filtr znaků podle typu pole, u data se vložený
   text převede na masku (`DD.MM.YY`). Enter, Esc, Tab, šipky nahoru/dolů,
   PgUp/PgDn, F-klávesy a Ctrl/Alt kombinace editaci ukončí a klávesu dostane
   FAND, který ji zpracuje stejně jako v konzoli.
@@ -88,6 +88,8 @@ bez konzolového okna, se vstupem i výstupem do `NUL`.
 
 Klávesy hostitele: Shift+Insert vloží text ze schránky jako psaní,
 Ctrl+Shift+C zkopíruje celou obrazovku, Ctrl+kolečko mění velikost písma.
+Mac nemá klávesu Insert, proto ji všude (terminál, editace pole, textový
+editor, i se Shift/Ctrl) zastupuje F11; FAND sám F11 nepoužívá.
 
 ## Sestavení a nasazení
 
