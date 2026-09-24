@@ -6,7 +6,7 @@
 #include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
 #include "Expressions.h"
-#include "../Common/realDouble.h"
+#include "../fandbase/realDouble.h"
 #include "../Common/CommonVariables.h"
 #include "../Common/Record.h"
 

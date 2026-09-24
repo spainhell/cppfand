@@ -3,7 +3,7 @@
 #include "DBaseHeader.h"
 #include "FieldDescr.h"
 #include "../Core/GlobalVariables.h"
-#include "../Common/textfunc.h"
+#include "../fandbase/textfunc.h"
 #include "../Common/Coding.h"
 #include "../Common/DateTime.h"
 #include "Messages.h"

@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\fandbase\fandbase.vcxproj">
+      <Project>{77e43925-1046-430e-983e-25a6211245a6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{193522ab-6765-4a9f-a665-6917ac7bbbeb}</Project>
     </ProjectReference>

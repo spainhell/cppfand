@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a75daab5-58e5-4886-b1f0-6d737afba4ab}</ProjectGuid>
-    <RootNamespace>fandio</RootNamespace>
+    <ProjectGuid>{77e43925-1046-430e-983e-25a6211245a6}</ProjectGuid>
+    <RootNamespace>fandbase</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -168,81 +168,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DBaseField.h" />
-    <ClInclude Include="DBaseHeader.h" />
-    <ClInclude Include="DbfFile.h" />
-    <ClInclude Include="DbfTFile.h" />
-    <ClInclude Include="directory.h" />
-    <ClInclude Include="Fand0File.h" />
-    <ClInclude Include="DataFileBase.h" />
-    <ClInclude Include="FandTFile.h" />
-    <ClInclude Include="FandTFilePrefix.h" />
-    <ClInclude Include="FandXFile.h" />
-    <ClInclude Include="FieldDescr.h" />
-    <ClInclude Include="FileEnums.h" />
-    <ClInclude Include="KeyFldD.h" />
-    <ClInclude Include="locks.h" />
-    <ClInclude Include="Messages.h" />
-    <ClInclude Include="FilePath.h" />
-    <ClInclude Include="Settings.h" />
-    <ClInclude Include="Expressions.h" />
-    <ClInclude Include="KeyInD.h" />
-    <ClInclude Include="ProgressCallbacks.h" />
-    <ClInclude Include="realFix.h" />
-    <ClInclude Include="TextFile.h" />
-    <ClInclude Include="WPage.h" />
-    <ClInclude Include="WRec.h" />
-    <ClInclude Include="XItem.h" />
-    <ClInclude Include="XItemLeaf.h" />
-    <ClInclude Include="XItemNonLeaf.h" />
-    <ClInclude Include="XKey.h" />
-    <ClInclude Include="XPage.h" />
-    <ClInclude Include="XScan.h" />
-    <ClInclude Include="XString.h" />
-    <ClInclude Include="XWKey.h" />
-    <ClInclude Include="XWorkFile.h" />
-    <ClInclude Include="XXPage.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="DBaseField.cpp" />
-    <ClCompile Include="DBaseHeader.cpp" />
-    <ClCompile Include="DbfFile.cpp" />
-    <ClCompile Include="DbfTFile.cpp" />
-    <ClCompile Include="directory.cpp" />
-    <ClCompile Include="Fand0File.cpp" />
-    <ClCompile Include="DataFileBase.cpp" />
-    <ClCompile Include="FandTFile.cpp" />
-    <ClCompile Include="FandTFilePrefix.cpp" />
-    <ClCompile Include="FandXFile.cpp" />
-    <ClCompile Include="FieldDescr.cpp" />
-    <ClCompile Include="KeyFldD.cpp" />
-    <ClCompile Include="locks.cpp" />
-    <ClCompile Include="Messages.cpp" />
-    <ClCompile Include="FilePath.cpp" />
-    <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="Expressions.cpp" />
-    <ClCompile Include="realFix.cpp" />
-    <ClCompile Include="TextFile.cpp" />
-    <ClCompile Include="WPage.cpp" />
-    <ClCompile Include="WRec.cpp" />
-    <ClCompile Include="XItem.cpp" />
-    <ClCompile Include="XItemLeaf.cpp" />
-    <ClCompile Include="XItemNonLeaf.cpp" />
-    <ClCompile Include="XKey.cpp" />
-    <ClCompile Include="XPage.cpp" />
-    <ClCompile Include="XScan.cpp" />
-    <ClCompile Include="XString.cpp" />
-    <ClCompile Include="XWKey.cpp" />
-    <ClCompile Include="XWorkFile.cpp" />
-    <ClCompile Include="XXPage.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\fandbase\fandbase.vcxproj">
-      <Project>{77e43925-1046-430e-983e-25a6211245a6}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Logging\Logging.vcxproj">
-      <Project>{431ccfda-764c-498c-ae07-276fb41ebbf9}</Project>
-    </ProjectReference>
+    <ClInclude Include="codePages.h" />
+    <ClInclude Include="compare.h" />
+    <ClInclude Include="exprcmp.h" />
+    <ClInclude Include="files.h" />
+    <ClInclude Include="LongStr.h" />
+    <ClInclude Include="OperationType.h" />
+    <ClInclude Include="pstring.h" />
+    <ClInclude Include="random.h" />
+    <ClInclude Include="realDouble.h" />
+    <ClInclude Include="textfunc.h" />
+    <ClInclude Include="typeDef.h" />
+    <ClCompile Include="codePages.cpp" />
+    <ClCompile Include="compare.cpp" />
+    <ClCompile Include="exprcmp.cpp" />
+    <ClCompile Include="files.cpp" />
+    <ClCompile Include="pstring.cpp" />
+    <ClCompile Include="random.cpp" />
+    <ClCompile Include="realDouble.cpp" />
+    <ClCompile Include="textfunc.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

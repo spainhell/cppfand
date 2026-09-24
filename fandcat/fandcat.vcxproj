@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   fandcat: minimalni konzolovy program nad knihovnou fandio.
-  Linkuje jen fandio a Logging. fandio.lib se pripojuje s /WHOLEARCHIVE,
+  Linkuje jen fandio, fandbase a Logging. fandio.lib se pripojuje s /WHOLEARCHIVE,
   takze kazdy nevyreseny externi symbol je zavislost fandio na zbytku aplikace.
   Dokud fandio neni oddelene, projekt se neprelozi, proto neni soucasti
   sestaveni reseni. Soupis zavislosti vypise fandcat\check-deps.ps1.
@@ -97,6 +97,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\fandbase\fandbase.vcxproj">
+      <Project>{77e43925-1046-430e-983e-25a6211245a6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\fandio\fandio.vcxproj">
       <Project>{a75daab5-58e5-4886-b1f0-6d737afba4ab}</Project>
     </ProjectReference>

@@ -1,4 +1,3 @@
 #pragma once
-
-typedef unsigned short WORD;
-typedef unsigned char uint8_t;
+// moved to fandbase
+#include "../fandbase/typeDef.h"

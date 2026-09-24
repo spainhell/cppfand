@@ -7,7 +7,7 @@
 #include "../Core/switches.h"
 #include "FieldDescr.h"
 #include "ProgressCallbacks.h"
-#include "../Common/OperationType.h"
+#include "../fandbase/OperationType.h"
 
 class Record;
 class XWKey;

@@ -13,14 +13,14 @@
 
 #include "../Common/Coding.h"
 #include "../Common/CommonVariables.h"
-#include "../Common/compare.h"
+#include "../fandbase/compare.h"
 #include "../Common/DateTime.h"
-#include "../Common/realDouble.h"
-#include "../Common/textfunc.h"
+#include "../fandbase/realDouble.h"
+#include "../fandbase/textfunc.h"
 #include "../Common/Record.h"
 #include "../Logging/Logging.h"
 
-#include "../Drivers/files.h"
+#include "../fandbase/files.h"
 
 const double FirstDate = 6.97248E+5;
 
