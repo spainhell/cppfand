@@ -2,14 +2,24 @@
 
 #include <memory>
 #include "FandTFilePrefix.h"
-#include "../Common/Coding.h"
+#include "../fandbase/Coding.h"
 #include "../Common/FileD.h"
-#include "../Common/random.h"
-#include "../Common/textfunc.h"
-#include "../Common/compare.h"
-#include "../Common/CommonVariables.h"
-#include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+#include "../fandbase/random.h"
+#include "../fandbase/textfunc.h"
+#include "../fandbase/compare.h"
+#include "FileIO.h"
+#include "Messages.h"
+#include "../fandbase/constants.h"
+#include "Settings.h"
+
+// program version from the settings, as 4 bytes for the text file header
+static void version_bytes(char out[4])
+{
+	const std::string& v = fandio::GetSettings().version;
+	for (size_t i = 0; i < 4; i++) {
+		out[i] = i < v.length() ? v[i] : ' ';
+	}
+}
 
 FandTFile::FandTFile(Fand0File* parent)
 {
@@ -30,10 +40,10 @@ FandTFile::~FandTFile()
 
 void FandTFile::Err(unsigned short n, bool ex) const
 {
-	FileMsg(_parent->GetFileD(), n, 'T');
+	fandio::ShowFileMessage(_parent->GetFileD(), fandio::FilePart::Text, n);
 	if (ex) {
 		_parent->GetFileD()->Close();
-		GoExit(MsgLine);
+		fandio::Abort(n);
 	}
 }
 
@@ -96,8 +106,11 @@ void FandTFile::RdPrefix(bool check)
 	MaxPage = T.MaxPage; // 4B
 	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
 
-	if (   (_parent->GetFileD() == Chpt)
-		&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(Version, T.Version, 4) != _equ))) {
+	const fandio::Settings& settings = fandio::GetSettings();
+	char version[4];
+	version_bytes(version);
+	if (   (settings.isCurrentProjectFile && settings.isCurrentProjectFile(_parent->GetFileD()))
+		&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(version, T.Version, 4) != _equ))) {
 		CompileAll = true;
 	}
 
@@ -231,7 +244,7 @@ void FandTFile::WrPrefix()
 	T.old_max_page = 0xffff;
 	T.signum = 1;
 	T.IRec += n;
-	memcpy(T.Version, Version, 4);
+	version_bytes(T.Version);
 	T.HasCoproc = HasCoproc;
 	RandSeed = RS;
 
@@ -491,9 +504,8 @@ void FandTFile::CloseFile()
 			ClearUpdateFlag();
 		}
 		if ((!_parent->IsShared()) && (_parent->NRecs == 0)) {
-			_parent->GetFileD()->SetPathAndVolume();
-			CPath = _parent->GetFileD()->CExtToT(CDir, CName, CExt);
-			MyDeleteFile(CPath);
+			const fandio::FilePath path = _parent->GetFileD()->GetPath();
+			MyDeleteFile(_parent->GetFileD()->CExtToT(path.dir, path.name, path.ext));
 		}
 	}
 }

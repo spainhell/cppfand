@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\fandbase\fandbase.vcxproj">
+      <Project>{77e43925-1046-430e-983e-25a6211245a6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{193522ab-6765-4a9f-a665-6917ac7bbbeb}</Project>
     </ProjectReference>
@@ -53,7 +56,6 @@
     <ClCompile Include="base.cpp" />
     <ClCompile Include="Catalog.cpp" />
     <ClCompile Include="CfgFile.cpp" />
-    <ClCompile Include="datafiles.cpp" />
     <ClCompile Include="Implicit.cpp" />
     <ClCompile Include="LogicControl.cpp" />
     <ClCompile Include="Compiler.cpp" />
@@ -71,6 +73,8 @@
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
     <ClCompile Include="ResFile.cpp" />
+    <ClCompile Include="FandioHost.cpp" />
+    <ClCompile Include="GetIndex.cpp" />
     <ClCompile Include="RunMessage.cpp" />
     <ClCompile Include="runproj.cpp" />
     <ClCompile Include="rdproc.cpp" />
@@ -89,7 +93,6 @@
     <ClInclude Include="base.h" />
     <ClInclude Include="Catalog.h" />
     <ClInclude Include="CfgFile.h" />
-    <ClInclude Include="datafiles.h" />
     <ClInclude Include="Implicit.h" />
     <ClInclude Include="LogicControl.h" />
     <ClInclude Include="Compiler.h" />
@@ -107,6 +110,8 @@
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="ResFile.h" />
+    <ClInclude Include="FandioHost.h" />
+    <ClInclude Include="GetIndex.h" />
     <ClInclude Include="RunMessage.h" />
     <ClInclude Include="runproj.h" />
     <ClInclude Include="rdfildcl.h" />

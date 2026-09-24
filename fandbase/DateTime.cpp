@@ -2,8 +2,9 @@
 
 #include <chrono>
 #include <ctime>
-#include "../Core/base.h"
-#include "../Core/legacy.h"
+#include "pascal.h"
+
+uint8_t OffDefaultYear = 0;
 
 void EncodeMask(std::string& mask, WORD& min, WORD& max)
 {
@@ -232,11 +233,11 @@ double ValDate(const std::string& text, std::string mask)
 			else if (z.Y > 9999) return result;
 			else
 				if (y_length <= 2) {
-					if (spec.OffDefaultYear == 0) {
+					if (OffDefaultYear == 0) {
 						z.Y = (year / 100) * 100 + z.Y;
 					}
 					else {
-						y = (year + spec.OffDefaultYear) % 100;
+						y = (year + OffDefaultYear) % 100;
 						if (z.Y < y) {
 							z.Y = z.Y + 2000;
 						}

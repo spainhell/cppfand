@@ -57,9 +57,6 @@
     <ClInclude Include="XXPage.h">
       <Filter>Header Files\Indexes</Filter>
     </ClInclude>
-    <ClInclude Include="sort.h">
-      <Filter>Header Files\Indexes</Filter>
-    </ClInclude>
     <ClInclude Include="WPage.h">
       <Filter>Header Files\Indexes</Filter>
     </ClInclude>
@@ -123,6 +120,27 @@
     <ClInclude Include="ProgressCallbacks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Messages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FilePath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expressions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileIO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WorkFiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyInD.h">
+      <Filter>Header FilesIndexes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Fand0File.cpp">
@@ -135,9 +153,6 @@
       <Filter>Source Files\FandFiles</Filter>
     </ClCompile>
     <ClCompile Include="XXPage.cpp">
-      <Filter>Source Files\Indexes</Filter>
-    </ClCompile>
-    <ClCompile Include="sort.cpp">
       <Filter>Source Files\Indexes</Filter>
     </ClCompile>
     <ClCompile Include="WPage.cpp">
@@ -184,6 +199,24 @@
     </ClCompile>
     <ClCompile Include="locks.cpp">
       <Filter>Source Files\FandFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="Messages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FilePath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Expressions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileIO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WorkFiles.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FandTFilePrefix.cpp">
       <Filter>Source Files\FandFiles</Filter>

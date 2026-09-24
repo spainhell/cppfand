@@ -27,7 +27,6 @@ enum class ForAllFilesOperation {
 
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d = nullptr, WORD i = 0);
 
-std::string TranslateOrd(std::string text);
 
 Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record);
 void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add);

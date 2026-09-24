@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "../Common/pstring.h"
+#include "../fandbase/pstring.h"
 
 class Record;
 class FrmlElem;

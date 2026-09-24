@@ -11,6 +11,7 @@
 #include "OldDrivers.h"
 #include "access.h"
 #include "CfgFile.h"
+#include "FandioHost.h"
 #include "Compiler.h"
 #include "../Common/FileD.h"
 #include "GlobalVariables.h"
@@ -257,6 +258,7 @@ void InitRunFand()
 	std::string txt;
 	double r = 0.0;
 
+	InstallFandioHandlers();
 	ClrEvent();
 	InitAccess();
 
@@ -278,6 +280,7 @@ void InitRunFand()
 	WrkDir = GetEnv("FANDWORK");
 	if (WrkDir.empty()) WrkDir = FandDir;
 	AddBackSlash(WrkDir);
+	ApplyFandioSettings();
 	s = WrkDir + "FANDWORK";
 	printf("FANDWORK DIR: %s\n", s.c_str());
 	FandWorkName = s + ".$$$";

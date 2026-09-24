@@ -24,7 +24,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "../Prolog/RunProlog.h"
-#include "../fandio/sort.h"
+#include "GetIndex.h"
 #include "../fandio/FandXFile.h"
 #include "../fandio/XWKey.h"
 #include "../TextEditor/TextEditor.h"
@@ -785,7 +785,7 @@ void RunProcedure::ForAllProc(Instr_forall* PD)
 	// TODO: FandSQL condition removed
 	if (LD != nullptr) {
 		if (PD->COwnerTyp == 'i') {
-			int32_t err_no = xScan->ResetOwnerIndex(LD, PD->CLV, Bool);
+			int32_t err_no = xScan->ResetOwnerIndex(LD->ToKey, PD->CLV->key, PD->CLV->FD, Bool);
 			if (err_no != 0) {
 				RunError(err_no);
 			}

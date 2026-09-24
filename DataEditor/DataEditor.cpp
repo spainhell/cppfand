@@ -1573,7 +1573,7 @@ void DataEditor::BuildWork()
 			std::vector<KeyInD*> empty;
 			Scan = new XScan(file_d_, edit_->DownKey, empty, false);
 			if (edit_->OwnerTyp == 'i') {
-				int32_t err_no = Scan->ResetOwnerIndex(edit_->DownLD, edit_->DownLV, boolP);
+				int32_t err_no = Scan->ResetOwnerIndex(edit_->DownLD->ToKey, edit_->DownLV->key, edit_->DownLV->FD, boolP);
 				if (err_no != 0) {
 					RunError(err_no);
 				}

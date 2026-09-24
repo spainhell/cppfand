@@ -3,10 +3,10 @@
 #include <memory>
 
 #include "../Common/FileD.h"
-#include "../Common/CommonVariables.h"
-#include "../Core/base.h"
-#include "../Core/GlobalVariables.h"
-#include "../Core/obaseww.h"
+#include "FilePath.h"
+#include "FileIO.h"
+#include "Messages.h"
+#include "WorkFiles.h"
 #include "../Logging/Logging.h"
 
 
@@ -122,7 +122,7 @@ void FandXFile::ClearUpdLock()
 int FandXFile::XFNotValid(int recs, unsigned char keys)
 {
 	if (Handle == nullptr) {
-		RunError(903);
+		fandio::RaiseError(903);
 		return 903;
 	}
 	else {
@@ -148,15 +148,11 @@ void FandXFile::CloseFile()
 		ClearUpdateFlag();
 		if (!_parent->IsShared()) {
 			if (NotValid) {
-				_parent->GetFileD()->SetPathAndVolume();
-				CPath = CExtToX(CDir, CName, CExt);
-				MyDeleteFile(CPath);
+				MyDeleteFile(fandio::IndexFilePath(_parent->GetFileD()->GetPath()));
 			}
 			else if ((NRecs == 0) || _parent->NRecs == 0) {
 				NRecs = 0;
-				_parent->GetFileD()->SetPathAndVolume();
-				CPath = CExtToX(CDir, CName, CExt);
-				MyDeleteFile(CPath);
+				MyDeleteFile(fandio::IndexFilePath(_parent->GetFileD()->GetPath()));
 			}
 		}
 	}
@@ -226,13 +222,12 @@ void FandXFile::ReleasePage(XPage* P, int N)
 void FandXFile::Err(unsigned short N)
 {
 	if (this == &XWork) {
-		SetMsgPar(FandWorkXName);
-		RunError(N);
+		fandio::RaiseError(N, { FandWorkXName });
 	}
 	else {
 		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
-		FileMsg(_parent->GetFileD(), N, 'X');
+		fandio::ShowFileMessage(_parent->GetFileD(), fandio::FilePart::Index, N);
 		_parent->Close();
-		GoExit(MsgLine);
+		fandio::Abort(N);
 	}
 }

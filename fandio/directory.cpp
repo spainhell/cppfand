@@ -3,8 +3,8 @@
 #include <iostream>
 #include <chrono>
 
-#include "../Common/exprcmp.h"
-#include "../Common/textfunc.h"
+#include "../fandbase/exprcmp.h"
+#include "../fandbase/textfunc.h"
 
 namespace fs = std::filesystem;
 using namespace std::chrono_literals;

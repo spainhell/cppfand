@@ -182,9 +182,15 @@
     <ClInclude Include="FileEnums.h" />
     <ClInclude Include="KeyFldD.h" />
     <ClInclude Include="locks.h" />
+    <ClInclude Include="Messages.h" />
+    <ClInclude Include="FilePath.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="Expressions.h" />
+    <ClInclude Include="FileIO.h" />
+    <ClInclude Include="WorkFiles.h" />
+    <ClInclude Include="KeyInD.h" />
     <ClInclude Include="ProgressCallbacks.h" />
     <ClInclude Include="realFix.h" />
-    <ClInclude Include="sort.h" />
     <ClInclude Include="TextFile.h" />
     <ClInclude Include="WPage.h" />
     <ClInclude Include="WRec.h" />
@@ -213,8 +219,13 @@
     <ClCompile Include="FieldDescr.cpp" />
     <ClCompile Include="KeyFldD.cpp" />
     <ClCompile Include="locks.cpp" />
+    <ClCompile Include="Messages.cpp" />
+    <ClCompile Include="FilePath.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Expressions.cpp" />
+    <ClCompile Include="FileIO.cpp" />
+    <ClCompile Include="WorkFiles.cpp" />
     <ClCompile Include="realFix.cpp" />
-    <ClCompile Include="sort.cpp" />
     <ClCompile Include="TextFile.cpp" />
     <ClCompile Include="WPage.cpp" />
     <ClCompile Include="WRec.cpp" />
@@ -230,6 +241,9 @@
     <ClCompile Include="XXPage.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\fandbase\fandbase.vcxproj">
+      <Project>{77e43925-1046-430e-983e-25a6211245a6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Logging\Logging.vcxproj">
       <Project>{431ccfda-764c-498c-ae07-276fb41ebbf9}</Project>
     </ProjectReference>

@@ -1,9 +1,11 @@
 #pragma once
+#include "FileEnums.h"
+#include "KeyInD.h"
 #include "XWKey.h"
-#include "../Common/LinkD.h"
-#include "../Common/LocVar.h"
 
-struct KeyInD;
+class FileD;
+class FrmlElem;
+class Record;
 
 enum class ScanMode : uint8_t
 {
@@ -30,7 +32,8 @@ public:
 	void ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, Record* record);
 	void SubstWIndex(XWKey* WK);
 	void ResetOwner(XString* XX, FrmlElem* aBool);
-	[[nodiscard]] int32_t ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool);
+	// records of FD whose key link_key matches a key in the work index owner_key of owner_file
+	[[nodiscard]] int32_t ResetOwnerIndex(XKey* link_key, XWKey* owner_key, FileD* owner_file, FrmlElem* aBool);
 #ifdef FandSQL
 	void ResetSQLTxt(FrmlElem* Z);
 #endif
@@ -40,7 +43,8 @@ public:
 	void GetRec(Record* record);
 private:
 	std::vector<KeyInD*> KIRoot;
-	LocVar* OwnerLV = nullptr;
+	XWKey* owner_key_ = nullptr;
+	FileD* owner_file_ = nullptr;
 	std::vector<KeyFldD*> SK;
 	size_t _item = 1;
 	XPage* page_ = nullptr;

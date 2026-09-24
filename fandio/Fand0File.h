@@ -4,10 +4,10 @@
 
 #include "FandTFile.h"
 #include "FandXFile.h"
-#include "../Core/switches.h"
+#include "../fandbase/switches.h"
 #include "FieldDescr.h"
 #include "ProgressCallbacks.h"
-#include "../Common/OperationType.h"
+#include "../fandbase/OperationType.h"
 
 class Record;
 class XWKey;
@@ -110,7 +110,7 @@ public:
 
 	//static int CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos);
 	static void CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos);
-	std::string SetTempCExt(char typ, bool isNet) const;
+	std::string TempFilePath(char typ, bool isNet) const;
 
 	std::string loadTfromPos(FieldDescr* field, int32_t pos); // for lazy-loading of T fields in records
 

@@ -39,19 +39,11 @@
     <ClInclude Include="typeDef.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="codePages.cpp" />
     <ClCompile Include="Coding.cpp" />
     <ClCompile Include="CommonVariables.cpp" />
-    <ClCompile Include="compare.cpp" />
-    <ClCompile Include="DateTime.cpp" />
-    <ClCompile Include="exprcmp.cpp" />
     <ClCompile Include="FileD.cpp" />
     <ClCompile Include="LinkD.cpp" />
-    <ClCompile Include="pstring.cpp" />
-    <ClCompile Include="random.cpp" />
-    <ClCompile Include="realDouble.cpp" />
     <ClCompile Include="Record.cpp" />
-    <ClCompile Include="textfunc.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
