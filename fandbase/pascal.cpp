@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <filesystem>
+#include <memory>
 #include <stdexcept>
 
 #include "textfunc.h"
@@ -234,4 +235,20 @@ uint8_t Lo(WORD cislo)
 WORD Swap(WORD cislo)
 {
 	return ((cislo & 0x00FF) << 4) + (cislo >> 4);
+}
+
+std::string GetEnv(const char* name)
+{
+	std::string result;
+	size_t requiredSize = 0;
+	getenv_s(&requiredSize, NULL, 0, name);
+	if (requiredSize == 0) {
+		result = "";
+	}
+	else {
+		std::unique_ptr<char[]> buffer = std::make_unique<char[]>(requiredSize * sizeof(char));
+		getenv_s(&requiredSize, buffer.get(), requiredSize, name);
+		result = std::string(buffer.get());
+	}
+	return result;
 }

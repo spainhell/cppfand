@@ -32,3 +32,6 @@ void FillChar(void* cil, int delka, size_t vypln);
 uint8_t Hi(WORD cislo);
 uint8_t Lo(WORD cislo);
 WORD Swap(WORD cislo);
+
+// value of an environment variable ("" when not set)
+std::string GetEnv(const char* name);

@@ -1,6 +1,6 @@
-#include "Coding.h"
 #include "FileD.h"
-#include "textfunc.h"
+#include "../fandbase/Coding.h"
+#include "../fandbase/textfunc.h"
 
 // Coding::SetPassword and Coding::HasPassword work with FileD, the rest of Coding is in fandbase
 

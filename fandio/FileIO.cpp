@@ -16,29 +16,21 @@ unsigned long HandleError = 0; // r229
 
 namespace
 {
-	std::function<std::string()> current_volume_;
-
 	bool current_volume_is_net()
 	{
-		return current_volume_ && fandio::IsNetVolume(current_volume_());
+		return fandio::IsNetVolume(fandio::CurrentVolume());
 	}
 
-#ifdef _DEBUG
-	// debug record of files opened by OpenH (path -> handle, open state)
-	struct OpenedFile
-	{
-		HANDLE handle = nullptr;
-		bool open = false;
-	};
-	std::map<std::string, OpenedFile> opened_files_;
-#endif
+	// files opened by OpenH (handle -> path), for messages and debugging
+	std::map<HANDLE, std::string> opened_files_;
 }
 
 namespace fandio
 {
-	void SetCurrentVolumeQuery(std::function<std::string()> query)
+	std::string OpenedPath(HANDLE handle)
 	{
-		current_volume_ = std::move(query);
+		auto it = opened_files_.find(handle);
+		return it != opened_files_.end() ? it->second : std::string();
 	}
 }
 
@@ -153,11 +145,9 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 
 	SPDLOG_DEBUG("opening file {} '{}', error {}", handle, path, HandleError);
 
-#ifdef _DEBUG
 	if (handle != nullptr) {
-		opened_files_[path] = { handle, true };
+		opened_files_[handle] = path;
 	}
-#endif
 
 	return (FILE*)handle;
 }
@@ -195,22 +185,13 @@ void CloseH(HANDLE* handle)
 		throw std::exception("Cannot close file!");
 	}
 
+	// vyradi z evidence
+	if (opened_files_.erase(h) == 0) {
 #ifdef _DEBUG
-	// oznaci za uzavreny
-	bool found = false;
-	for (auto& f : opened_files_) {
-		if (f.second.handle == h) {
-			f.second = { nullptr, false };
-			found = true;
-			break;
-		}
-	}
-
-	if (!found) {
 		// soubor v evidenci nebyl
 		SPDLOG_WARN("closing file {}, but file wasn't in filesMap!", h);
-	}
 #endif
+	}
 }
 
 void CloseClearH(HANDLE* h)

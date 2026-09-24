@@ -42,7 +42,6 @@ inline void Halt(WORD code) { if (FandHost::IsEnabled()) throw FandHost::HaltExc
 
 inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
 
-std::string GetEnv(const char* name);
 
 WORD IOResult();
 WORD DosError();

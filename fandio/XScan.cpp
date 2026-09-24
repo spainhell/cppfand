@@ -1,8 +1,8 @@
 #include "XScan.h"
 #include "XWKey.h"
-#include "../Common/FileD.h"
+#include "FileD.h"
 #include "KeyFldD.h"
-#include "../Common/Record.h"
+#include "Record.h"
 #include "Expressions.h"
 #include "../fandbase/constants.h"
 

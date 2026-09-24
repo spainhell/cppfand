@@ -18,7 +18,7 @@
 #include "../fandbase/DateTime.h"
 #include "../fandbase/realDouble.h"
 #include "../fandbase/textfunc.h"
-#include "../Common/Record.h"
+#include "Record.h"
 #include "../Logging/Logging.h"
 
 #include "../fandbase/files.h"

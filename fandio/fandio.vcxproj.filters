@@ -138,6 +138,15 @@
     <ClInclude Include="WorkFiles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RdbPos.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Record.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="KeyInD.h">
       <Filter>Header FilesIndexes</Filter>
     </ClInclude>
@@ -216,6 +225,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WorkFiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CodingPassword.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Record.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FandTFilePrefix.cpp">

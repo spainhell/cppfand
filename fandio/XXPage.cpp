@@ -1,8 +1,8 @@
 #include "XXPage.h"
 
 #include "XWorkFile.h"
-#include "../Common/FileD.h"
-#include "../Common/Record.h"
+#include "FileD.h"
+#include "Record.h"
 #include "Messages.h"
 
 #include <windows.h>

@@ -2,9 +2,8 @@
 <!--
   fandcat: minimalni konzolovy program nad knihovnou fandio.
   Linkuje jen fandio, fandbase a Logging. fandio.lib a fandbase.lib se pripojuji s /WHOLEARCHIVE,
-  takze kazdy nevyreseny externi symbol je zavislost fandio na zbytku aplikace.
-  Dokud fandio neni oddelene, projekt se neprelozi, proto neni soucasti
-  sestaveni reseni. Soupis zavislosti vypise fandcat\check-deps.ps1.
+  takze kazda zavislost fandio na zbytku aplikace (nevyreseny externi symbol)
+  shodi sestaveni reseni. Soupis takovych zavislosti vypise fandcat\check-deps.ps1.
 -->
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
