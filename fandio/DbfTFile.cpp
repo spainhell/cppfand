@@ -3,7 +3,7 @@
 #include "../fandbase/codePages.h"
 #include "FileIO.h"
 #include "Messages.h"
-#include "../Common/FileD.h"
+#include "FileD.h"
 #include "DbfFile.h"
 #include "FandTFile.h"
 #include "../fandbase/LongStr.h"

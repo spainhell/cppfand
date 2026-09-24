@@ -8,7 +8,7 @@
 #include "FileIO.h"
 #include "Messages.h"
 #include "FilePath.h"
-#include "../Common/FileD.h"
+#include "FileD.h"
 #include "../fandbase/files.h"
 #include "../fandbase/pascal.h"
 #include "../fandbase/realDouble.h"

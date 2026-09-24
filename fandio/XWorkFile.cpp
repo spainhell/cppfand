@@ -1,7 +1,7 @@
 #include "XWorkFile.h"
 
 #include "KeyFldD.h"
-#include "../Common/Record.h"
+#include "Record.h"
 #include "FileIO.h"
 #include "Messages.h"
 #include "../fandbase/files.h"

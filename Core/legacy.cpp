@@ -170,22 +170,6 @@ WORD ParamCount()
 	return (WORD)paramstr.size();
 }
 
-std::string GetEnv(const char* name)
-{
-	std::string result;
-	size_t requiredSize = 0;
-	getenv_s(&requiredSize, NULL, 0, name);
-	if (requiredSize == 0) {
-		result = "";
-	}
-	else {
-		unique_ptr<char[]> buffer = std::make_unique<char[]>(requiredSize * sizeof(char));
-		getenv_s(&requiredSize, buffer.get(), requiredSize, name);
-		result = std::string(buffer.get());
-	}
-	return result;
-}
-
 WORD IOResult()
 {
 	return 0;

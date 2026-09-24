@@ -280,7 +280,6 @@ void InitRunFand()
 	WrkDir = GetEnv("FANDWORK");
 	if (WrkDir.empty()) WrkDir = FandDir;
 	AddBackSlash(WrkDir);
-	ApplyFandioSettings();
 	s = WrkDir + "FANDWORK";
 	printf("FANDWORK DIR: %s\n", s.c_str());
 	FandWorkName = s + ".$$$";
@@ -294,6 +293,7 @@ void InitRunFand()
 		LANNode = (WORD)std::stoi(s, nullptr, 10);
 	}
 	printf("LANNODE: %i\n", LANNode);
+	ApplyFandioSettings();
 
 	SPDLOG_INFO("LANNODE: {}", LANNode);
 

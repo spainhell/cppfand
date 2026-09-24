@@ -1,17 +1,25 @@
 #include "FileD.h"
 
-#include "Coding.h"
-#include "CommonVariables.h"
 #include "Record.h"
-#include "../Core/GlobalVariables.h"
-#include "../Core/oaccess.h"
-#include "../Core/obaseww.h"
-#include "../Core/runfrml.h"
-#include "../fandio/XKey.h"
-#include "../fandio/Messages.h"
-#include "../Common/compare.h"
-#include "../Common/textfunc.h"
-#include "../Drivers/files.h"
+#include "XKey.h"
+#include "FileIO.h"
+#include "FilePath.h"
+#include "Messages.h"
+#include "Settings.h"
+#include "../fandbase/Coding.h"
+#include "../fandbase/compare.h"
+#include "../fandbase/constants.h"
+#include "../fandbase/files.h"
+#include "../fandbase/pascal.h"
+#include "../fandbase/textfunc.h"
+
+// error of the last operation on the file 'path' (formerly TestCPathError)
+static void test_path_error(const std::string& path)
+{
+	if (HandleError != 0) {
+		fandio::RaiseError(700 + HandleError, { path });
+	}
+}
 
 
 FileD::FileD(DataFileType f_type, ProgressCallbacks callbacks)
@@ -707,15 +715,14 @@ void FileD::AssignNRecs(bool Add, int N)
 			FF->SetUpdateFlag(); //SetUpdHandle(FF->Handle);
 			int result = FF->XFNotValid();
 			if (result != 0) {
-				RunError(result);
+				fandio::RaiseError(result);
 			}
 			OldLockMode(md);
 			return;
 		}
 		else {
-			SetMsgPar(Name);
 			RunErrorM(md);
-			RunError(821);
+			fandio::RaiseError(821, { Name });
 		}
 	}
 
@@ -1073,7 +1080,8 @@ void FileD::SetTaLockMode(LockMode mode) const
 void FileD::OldLockMode(LockMode mode)
 {
 	if (FileType == DataFileType::FandFile) {
-		OldLMode(this, CPath, mode, LANNode);
+		std::string path = FullPath;
+		OldLMode(this, path, mode, fandio::GetSettings().lanNode);
 	}
 	else {
 		// locks are not supported in other file types
@@ -1083,7 +1091,8 @@ void FileD::OldLockMode(LockMode mode)
 LockMode FileD::NewLockMode(LockMode mode)
 {
 	if (FileType == DataFileType::FandFile) {
-		return NewLMode(this, CPath, mode, LANNode);
+		std::string path = FullPath;
+		return NewLMode(this, path, mode, fandio::GetSettings().lanNode);
 	}
 	else {
 		return mode;
@@ -1093,7 +1102,8 @@ LockMode FileD::NewLockMode(LockMode mode)
 bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind)
 {
 	if (FileType == DataFileType::FandFile) {
-		return TryLMode(this, CPath, mode, old_mode, kind, LANNode);
+		std::string path = FullPath;
+		return TryLMode(this, path, mode, old_mode, kind, fandio::GetSettings().lanNode);
 	}
 	else {
 		return true;
@@ -1103,7 +1113,8 @@ bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind)
 bool FileD::ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref)
 {
 	if (FileType == DataFileType::FandFile) {
-		return ChangeLMode(this, CPath, mode, kind, rd_pref, LANNode);
+		std::string path = FullPath;
+		return ChangeLMode(this, path, mode, kind, rd_pref, fandio::GetSettings().lanNode);
 	}
 	else {
 		return true;
@@ -1411,12 +1422,11 @@ bool FileD::SearchXKey(XKey* K, XString& X, int& N)
 FileD* FileD::OpenDuplicateF(bool createTextFile)
 {
 	short Len = 0;
-	SetPathAndVolume();
-	bool net = IsNetCVol();
+	bool net = fandio::IsNetVolume(fandio::ResolvePath(this).volume);
 	FileD* newFile = new FileD(*this);
 
 	std::string path = TempFilePath('0', net);
-	CVol = "";
+	fandio::ResetCurrentVolume(); // the work file is local
 	newFile->FullPath = path;
 	newFile->FF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
 	newFile->TestCFileError();
@@ -1444,7 +1454,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 		newFile->FF->TF = new FandTFile(newFile->FF);
 		//*newFile->FF->TF = *FF->TF;
 		std::string path_t = TempFilePath('T', net);
-		CVol = ""; // TempFilePath() sets it again
+		fandio::ResetCurrentVolume(); // TempFilePath() sets it again
 		//newFile->FF->TF->Handle = OpenH(path_t, _isOverwriteFile, Exclusive);
 		newFile->FF->TF->Create(path_t);
 		newFile->FF->TF->TestErr();
@@ -1509,7 +1519,7 @@ void FileD::SetHCatTyp(FandFileType fand_file_type)
 		FF->file_type = fand_file_type;
 	}
 
-	CatIRec = catalog->GetCatalogIRec(Name, FF != nullptr && FF->file_type == FandFileType::RDB /*multilevel*/);
+	CatIRec = fandio::CatalogRecord(Name, FF != nullptr && FF->file_type == FandFileType::RDB /*multilevel*/);
 
 #ifdef FandSQL
 	typSQLFile = isSql;
@@ -1566,12 +1576,8 @@ int32_t FileD::GetXFileD()
 
 bool FileD::IsActiveRdb()
 {
-	Project* R = CRdb;
-	while (R != nullptr) {
-		if (this == R->project_file) return true;
-		R = R->ChainBack;
-	}
-	return false;
+	const fandio::Settings& settings = fandio::GetSettings();
+	return settings.isActiveProjectFile && settings.isActiveProjectFile(this);
 }
 
 bool FileD::IsOpen()
@@ -1642,19 +1648,22 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file
 	uint16_t n;
 	bool result = true;
 	SetLockMode(NullMode);
-	SetPathMountVolumeSetNet(UM, is_project_file);
-	const bool b = is_project_file || (this == catalog->GetCatalogFile());
-	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
-		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110);
+	fandio::FilePath file_path = SetPathMountVolumeSetNet(UM, is_project_file);
+	std::string c_path = file_path.Full();
+	const fandio::Settings& settings = fandio::GetSettings();
+	const bool b = is_project_file || (settings.isCatalogFile && settings.isCatalogFile(this));
+	if (b && (settings.writableProjectFiles && settings.writableProjectFiles())
+		&& ((GetFileAttr(c_path, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
+		SetFileAttr(c_path, HandleError, GetFileAttr(c_path, HandleError) & 0b00100110);
 		if (HandleError == 5) HandleError = 79;
 		TestCFileError();
 		SetWasRdOnly(true);
 	}
 	while (true) {
-		HANDLE h = OpenH(CPath, _isOldFile, GetUMode());
+		HANDLE h = OpenH(c_path, _isOldFile, GetUMode());
 		SetHandle(h);
 		if ((HandleError != 0) && GetWasRdOnly()) {
-			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0b00100111) | 0b00000001 /*RdONly*/);
+			SetFileAttr(c_path, HandleError, (GetFileAttr(c_path, HandleError) & 0b00100111) | 0b00000001 /*RdONly*/);
 			TestCFileError();
 		}
 		if ((HandleError == 5) && (GetUMode() == Exclusive)) {
@@ -1668,25 +1677,24 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file
 		break;
 	}
 #ifndef FandNetV
-	if ((HandleError == 5 || HandleError == 0x21) &&
-		((CVol == '#') || (CVol == "##") || SEquUpcase(CVol, "#R"))) CFileError(842);
+	if ((HandleError == 5 || HandleError == 0x21) && fandio::IsNetVolume(file_path.volume)) CFileError(842);
 #endif
 	TestCFileError();
 
 	// open text file (.T__)
 	if (HasTextFile()) {
-		CPath = CExtToT(CDir, CName, CExt);
+		c_path = CExtToT(file_path.dir, file_path.name, file_path.ext);
 		if (GetWasRdOnly()) {
-			SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110); // 0x26 = archive + hidden + system
+			SetFileAttr(c_path, HandleError, GetFileAttr(c_path, HandleError) & 0b00100110); // 0x26 = archive + hidden + system
 		}
 		while (true) {
-			HANDLE h = OpenH(CPath, _isOldFile, GetUMode());
+			HANDLE h = OpenH(c_path, _isOldFile, GetUMode());
 			SetHandleT(h);
 			if (HandleError == 2) {
 				if (FileType == DataFileType::DBF && DbfF->TF->Format == DbfTFile::DbtFormat) {
 					DbfF->TF->Format = DbfTFile::FptFormat;
-					CExt = ".FPT";
-					CPath = CDir + CName + CExt;
+					file_path.ext = ".FPT";
+					c_path = file_path.Full();
 					continue;
 				}
 				if (IsDynFile) {
@@ -1707,23 +1715,23 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file
 			n = HandleError;
 			Close();
 			HandleError = n;
-			TestCPathError();
+			test_path_error(c_path);
 			return result;
 		}
 	}
 
 	// open index file (*.X__)
 	if (HasIndexFile()) {
-		CPath = CExtToX(CDir, CName, CExt);
+		c_path = fandio::IndexFilePath(file_path);
 		while (true) {
-			FF->XF->Handle = OpenH(CPath, _isOldFile, FF->UMode);
+			FF->XF->Handle = OpenH(c_path, _isOldFile, FF->UMode);
 			if (HandleError == 2) {
-				FF->XF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+				FF->XF->Handle = OpenH(c_path, _isOverwriteFile, Exclusive);
 				if (HandleError != 0) {
 					n = HandleError;
 					FF->Close(); //CloseClearH(file_d->FF);
 					HandleError = n;
-					TestCPathError();
+					test_path_error(c_path);
 					return result;
 				}
 				FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
@@ -1734,7 +1742,7 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file
 				n = HandleError;
 				FF->Close(); //CloseClearH(file_d->FF);
 				HandleError = n;
-				TestCPathError();
+				test_path_error(c_path);
 			}
 			if (FF->XF != nullptr && FileSizeH(FF->XF->Handle) < 512) {
 				FF->XF->SetNotValid(FF->NRecs, GetNrKeys());
@@ -1747,6 +1755,7 @@ bool FileD::OpenF1(const std::string& path, FileUseMode UM, bool is_project_file
 
 bool FileD::OpenF2(const std::string& path, bool is_project_file)
 {
+	const fandio::Settings& settings = fandio::GetSettings();
 	int file_size = GetFileSize();
 	SetNRecs(0);
 
@@ -1763,33 +1772,33 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 				return false;
 			}
 			else {
-				if (catalog->OldToNewCat(file_size)) {
+				if (settings.upgradeFile && settings.upgradeFile(this, file_size)) {
 					int32_t t_result = CheckT(file_size);
 					if (t_result == 616) {
-						FileMsg(this, 616, ' ');
-						GoExit(MsgLine);
+						fandio::ShowFileMessage(this, fandio::FilePart::Data, 616);
+						fandio::Abort(616);
 					}
 
 					int32_t x_result = CheckX(file_size);
 					if (x_result == 830) {
 						if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
-							FileMsg(this, 830, 'X');
+							fandio::ShowFileMessage(this, fandio::FilePart::Index, 830);
 						}
 					}
 					SeekRec(0);
 					return true;
 				}
 
-				FileMsg(this, 883, ' ');
+				fandio::ShowFileMessage(this, fandio::FilePart::Data, 883);
 				int l = GetNRecs() * rLen + GetFirstRecPos();
 
-				if (l == file_size || !PromptYN(885)) {
+				if (l == file_size || !fandio::Confirm(885)) {
 					Close();
-					GoExit(MsgLine);
+					fandio::Abort(885);
 				}
 
 				if (GetNRecs() == 0 || l >> CachePageShft != file_size >> CachePageShft) {
-					WrLLF10Msg(886);
+					fandio::ShowMessage(886);
 					SetNRecs(n);
 				}
 
@@ -1799,15 +1808,13 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 		}
 		else {
 			if (n < GetNRecs()) {
-				SetPathAndVolume();
-				SetMsgPar(CPath);
-				if (PromptYN(882)) {
+				if (fandio::Confirm(882, { SetPathAndVolume() })) {
 					SetNRecs(n);
 					lock_excl_and_write_prefix();
 				}
 				else {
 					Close();
-					GoExit(MsgLine);
+					fandio::Abort(882);
 				}
 			}
 		}
@@ -1815,14 +1822,14 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 
 	int32_t t_result = CheckT(file_size);
 	if (t_result == 616) {
-		FileMsg(this, 616, ' ');
-		GoExit(MsgLine);
+		fandio::ShowFileMessage(this, fandio::FilePart::Data, 616);
+		fandio::Abort(616);
 	}
 
 	int32_t x_result = CheckX(file_size);
 	if (x_result == 830) {
 		if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
-			FileMsg(this, 830, 'X');
+			fandio::ShowFileMessage(this, fandio::FilePart::Index, 830);
 		}
 	}
 
@@ -1832,19 +1839,20 @@ bool FileD::OpenF2(const std::string& path, bool is_project_file)
 
 void FileD::CreateF(bool is_project_file)
 {
-	std::string path = SetPathMountVolumeSetNet(Exclusive, is_project_file);
+	const fandio::FilePath file_path = SetPathMountVolumeSetNet(Exclusive, is_project_file);
+	std::string path = file_path.Full();
 	HANDLE h = OpenH(path, _isOverwriteFile, Exclusive);
 	SetHandle(h);
 	TestCFileError();
 	SetNRecs(0);
 
 	if (HasTextFile()) {
-		path = CExtToT(CDir, CName, CExt);
+		path = CExtToT(file_path.dir, file_path.name, file_path.ext);
 		CreateT(path);
 	}
 
 	if (HasIndexFile() && FF->file_type == FandFileType::INDEX) {
-		path = CExtToX(CDir, CName, CExt);
+		path = fandio::IndexFilePath(file_path);
 		FF->XF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
 		FF->XF->TestErr(); /*SetNotValid*/
 		FF->XF->SetEmpty(FF->NRecs, GetNrKeys());
@@ -1897,15 +1905,13 @@ bool FileD::OpenCreateF(const std::string& path, FileUseMode UM, bool is_project
 void FileD::DeleteF()
 {
 	CloseFile();
-	SetPathAndVolume();
-	MyDeleteFile(CPath);
-	CPath = CExtToX(CDir, CName, CExt);
+	const fandio::FilePath path = fandio::ResolvePath(this);
+	MyDeleteFile(path.Full());
 	if (FF->XF != nullptr) {
-		MyDeleteFile(CPath);
+		MyDeleteFile(fandio::IndexFilePath(path));
 	}
 	if (FF->TF != nullptr) {
-		CPath = CExtToT(CDir, CName, CExt);
-		MyDeleteFile(CPath);
+		MyDeleteFile(CExtToT(path.dir, path.name, path.ext));
 	}
 }
 
@@ -1916,12 +1922,13 @@ void FileD::TestCFileError()
 	}
 }
 
-std::string FileD::SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file)
+fandio::FilePath FileD::SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file)
 {
-	std::string path = SetPathAndVolume();
+	const fandio::FilePath file_path = fandio::ResolvePath(this);
+	const std::string path = file_path.Full();
 	SetUseMode(UM);
-	SetDrive((uint8_t)TestMountVol(path[0]));
-	if (!IsNetCVol() || is_project_file)
+	SetDrive(fandio::MountVolume(path));
+	if (!fandio::IsNetVolume(file_path.volume) || is_project_file)
 		switch (UM) {
 		case RdShared: SetUseMode(RdOnly); break;
 		case Shared: SetUseMode(Exclusive); break;
@@ -1930,111 +1937,27 @@ std::string FileD::SetPathMountVolumeSetNet(FileUseMode UM, bool is_project_file
 		case RdOnly:
 		case Exclusive: break;
 		}
-	else if ((UM == Shared) && EquUpCase(CVol, "#R")) {
+	else if ((UM == Shared) && EquUpCase(file_path.volume, "#R")) {
 		SetUseMode(RdShared);
 	}
-	CPath = path;
-	return path;
+	return file_path;
 }
 
 std::string FileD::SetPathAndVolume(char pathDelim)
 {
-	bool isRdb = false;
-
-	CVol = "";
-	if (FileType == DataFileType::FandFile && FF->file_type == FandFileType::CAT) {
-		CDir = GetEnv("FANDCAT");
-		if (CDir.empty()) {
-			CDir = TopDataDir.empty() ? TopRdbDir : TopDataDir;
-		}
-		AddBackSlash(CDir);
-		CName = CatFDName;
-		CExt = ".CAT";
-		goto finish;
-	}
-
-	if (CatIRec != 0) {
-		catalog->GetPathAndVolume(this, CatIRec, CPath, CVol);
-		FSplit(CPath, CDir, CName, CExt);
-		if (Name == "@") {
-			CName = Name;
-			goto finish;
-		}
-		else {
-			goto finish;
-		}
-	}
-
-	switch (FileType) {
-	case DataFileType::FandFile: {
-		switch (FF->file_type) {
-		case FandFileType::RDB: {
-			CExt = ".RDB";
-			break;
-		}
-		case FandFileType::FAND8: {
-			CExt = ".DTA";
-			break;
-		}
-		default: {
-			CExt = ".000";
-			break;
-		}
-		}
-		break;
-	}
-	case DataFileType::DBF: {
-		CExt = ".DBF";
-		break;
-	}
-	default:
-		// other types don't have an extension
-		break;
-	}
-
-	if (SetContextDir(this, CDir, isRdb)) {
-		// do nothing
-	}
-	else {
-		if (this == HelpFD) {
-			CDir = FandDir;
-#ifdef FandRunV 
-			CName = "UFANDHLP";
-#else
-			CName = "FANDHLP";
-#endif
-			goto finish;
-		}
-		CExt = ".100";
-		if (CRdb != nullptr) {
-			CDir = CRdb->DataDir;
-		}
-		else {
-			CDir = "";
-		}
-	}
-
-	AddBackSlash(CDir);
-	CName = Name;
-
-finish:
-	if (pathDelim == '/') ReplaceChar(CDir, '\\', '/');
-	if (pathDelim == '\\') ReplaceChar(CDir, '/', '\\');
-	CPath = CDir + CName + CExt;
-	return CPath;
+	return fandio::ResolvePath(this, pathDelim).Full();
 }
 
 fandio::FilePath FileD::GetPath()
 {
-	SetPathAndVolume();
-	return { CDir, CName, CExt, CVol };
+	return fandio::ResolvePath(this);
 }
 
 void FileD::CFileError(int N)
 {
-	FileMsg(this, N, '0');
+	fandio::ShowFileMessage(this, fandio::FilePart::Data, N);
 	Close();
-	GoExit(MsgLine);
+	fandio::Abort(N);
 }
 
 void FileD::CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files)
@@ -2093,56 +2016,12 @@ void FileD::CopyH(HANDLE h1, HANDLE h2, const std::string& h1_path)
 	WriteH(h2, sz, p);
 	CloseH(&h1);
 	MyDeleteFile(h1_path);
-	ReleaseStore(&p);
+	delete[] p;
 }
 
 std::string FileD::SetPathForH(HANDLE handle)
 {
-	Project* RD = CRdb;
-	while (RD != nullptr) {
-		if (RD->project_file != nullptr) {
-			if (RD->project_file->FF->Handle == handle) {
-				return RD->project_file->SetPathAndVolume();
-			}
-			if (RD->project_file->FF->TF != nullptr && RD->project_file->FF->TF->Handle == handle) {
-				RD->project_file->SetPathAndVolume();
-				return RD->project_file->CExtToT(CDir, CName, CExt);
-			}
-		}
-
-		if (RD->help_file != nullptr) {
-			if (RD->help_file->FF->Handle == handle) {
-				return RD->help_file->SetPathAndVolume();
-			}
-			if (RD->help_file->FF->TF != nullptr && RD->help_file->FF->TF->Handle == handle) {
-				RD->help_file->SetPathAndVolume();
-				return RD->help_file->CExtToT(CDir, CName, CExt);
-			}
-		}
-
-		for (FileD* fd : RD->data_files) {
-			if (fd->FF->Handle == handle) {
-				fd->SetPathAndVolume();
-				return CPath;
-			}
-
-			if (fd->FF->XF != nullptr && fd->FF->XF->Handle == handle) {
-				fd->SetPathAndVolume();
-				CPath = CExtToX(CDir, CName, CExt);
-				return CPath;
-			}
-
-			if (fd->FF->TF != nullptr && fd->FF->TF->Handle == handle) {
-				fd->SetPathAndVolume();
-				CPath = fd->CExtToT(CDir, CName, CExt);
-				return CPath;
-			}
-		}
-		RD = RD->ChainBack;
-	}
-	ReadMessage(799);
-	CPath = MsgLine;
-	return CPath;
+	return fandio::PathOfHandle(handle);
 }
 
 Record* FileD::LinkLastRec(int32_t& n)

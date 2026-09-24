@@ -1,8 +1,3 @@
 #pragma once
-class Project;
-
-struct RdbPos
-{
-	Project* rdb = nullptr;
-	int i_rec = 0;
-};
+// moved to fandio
+#include "../fandio/RdbPos.h"

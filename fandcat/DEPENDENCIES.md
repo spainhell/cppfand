@@ -6,61 +6,6 @@ fandcat links `fandio.lib` with `/WHOLEARCHIVE` and only `fandbase.lib` and `Log
 Each symbol below is used by fandio but defined elsewhere in CppFand.
 The goal is an empty list.
 
-- unresolved symbols: **34**
-- headers included from outside fandio: **2**
+- unresolved symbols: **0**
+- headers included from outside fandio: **0**
 
-## Summary by defining file
-
-| Defined in | Symbols | Used from fandio |
-|---|---:|---|
-| Common/FileD | 22 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XKey, XScan, XXPage |
-| Common/Record | 12 | Fand0File, XScan, XString, XWorkFile, XXPage |
-
-## Symbols
-
-### Common/FileD
-
-- `bool FileD::HasIndexFile(void)const` - Fand0File
-- `bool FileD::ChangeLockMode(LockMode,unsigned short,bool)` - XScan
-- `bool FileD::Lock(int,unsigned short)const` - Fand0File
-- `bool FileD::NotCached(void)` - FandTFile, FandXFile, XScan
-- `bool FileD::OpenCreateF(std::string const &,FileUseMode,bool)` - locks
-- `fandio::FilePath FileD::GetPath(void)` - DbfFile, Fand0File, FandTFile, FandXFile
-- `FileD * FileD::OpenDuplicateF(bool)` - Fand0File
-- `FileD::~FileD(void)` - Fand0File
-- `int FileD::GetNRecs(void)` - XKey, XScan
-- `LockMode FileD::NewLockMode(LockMode)` - Fand0File
-- `static std::string FileD::SetPathForH(void *)` - DataFileBase
-- `static void FileD::CopyH(void *,void *,std::string const &)` - Fand0File
-- `std::string FileD::CExtToT(std::string const &,std::string const &,std::string)` - DbfFile, Fand0File, FandTFile
-- `std::string FileD::SetPathAndVolume(char)` - Fand0File, locks
-- `unsigned __int64 FileD::ReadRec(unsigned __int64,Record *,bool)const` - XScan, XXPage
-- `unsigned __int64 FileD::UpdateRec(unsigned __int64,Record *)const` - XXPage
-- `unsigned short FileD::GetNrKeys(void)` - Fand0File, FandXFile
-- `void FileD::CFileError(int)` - Fand0File, locks, XKey
-- `void FileD::Close(void)const` - DbfFile, DbfTFile, FandTFile
-- `void FileD::OldLockMode(LockMode)` - Fand0File
-- `void FileD::SeekRec(int)` - Fand0File
-- `void FileD::Unlock(int)` - Fand0File
-
-### Common/Record
-
-- `bool Record::IsDeleted(void)const` - Fand0File, XScan
-- `bool Record::LoadB(FieldDescr *)const` - XString
-- `double Record::LoadR(FieldDescr *)const` - XString
-- `FileD * Record::GetFileD(void)const` - XWorkFile
-- `Record::~Record(void)` - Fand0File
-- `Record::Record(FileD *)` - Fand0File
-- `std::string Record::LoadS(FieldDescr *)` - Fand0File, XString
-- `void Record::Clear(void)` - Fand0File
-- `void Record::ClearDeleted(void)` - Fand0File
-- `void Record::CopyTo(Record *)const` - XScan
-- `void Record::SaveS(FieldDescr *,std::string const &)` - Fand0File
-- `void Record::SetDeleted(bool)` - Fand0File, XXPage
-
-## Headers from outside fandio
-
-| Header | Included from |
-|---|---|
-| Common/FileD.h | DataFileBase.cpp, DbfFile.cpp, DbfTFile.cpp, FandTFile.cpp, FandXFile.cpp, locks.cpp, XKey.cpp, XScan.cpp, XXPage.cpp |
-| Common/Record.h | Fand0File.cpp, XScan.cpp, XString.cpp, XWorkFile.cpp, XXPage.cpp |

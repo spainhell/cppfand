@@ -4,7 +4,7 @@
 
 //#include "../Core/GlobalVariables.h"
 //#include "../fandbase/codePages.h"
-#include "../Common/FileD.h"
+#include "FileD.h"
 #include "Messages.h"
 
 //void RunErrorM(FileD* file_d, LockMode Md, WORD N)

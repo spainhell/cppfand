@@ -39,11 +39,8 @@
     <ClInclude Include="typeDef.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Coding.cpp" />
     <ClCompile Include="CommonVariables.cpp" />
-    <ClCompile Include="FileD.cpp" />
     <ClCompile Include="LinkD.cpp" />
-    <ClCompile Include="Record.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

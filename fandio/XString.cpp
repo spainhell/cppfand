@@ -6,7 +6,7 @@
 #include "KeyFldD.h"
 #include "Expressions.h"
 #include "../fandbase/realDouble.h"
-#include "../Common/Record.h"
+#include "Record.h"
 
 void XString::Clear()
 {

@@ -3,7 +3,7 @@
 #include <memory>
 #include "FandTFilePrefix.h"
 #include "../fandbase/Coding.h"
-#include "../Common/FileD.h"
+#include "FileD.h"
 #include "../fandbase/random.h"
 #include "../fandbase/textfunc.h"
 #include "../fandbase/compare.h"

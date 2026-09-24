@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 #include <utility>
-#include "../Core/runfrml.h"
+#include "Expressions.h"
 
 
 Record::Record(FileD* file_d)
@@ -69,7 +69,7 @@ bool Record::LoadB(FieldDescr* field) const
 		}
 	}
 	else {
-		return RunBool(this->_file_d, field->Frml, const_cast<Record*>(this));
+		return fandio::EvalBool(this->_file_d, field->Frml, const_cast<Record*>(this));
 	}
 }
 
@@ -85,7 +85,7 @@ double Record::LoadR(FieldDescr* field) const
 		}
 	}
 	else {
-		return RunReal(this->_file_d, field->Frml, const_cast<Record*>(this));
+		return fandio::EvalReal(this->_file_d, field->Frml, const_cast<Record*>(this));
 	}
 }
 
@@ -119,7 +119,7 @@ std::string Record::LoadS(FieldDescr* field)
 		}
 	}
 	else {
-		result = RunString(this->_file_d, field->Frml, this);
+		result = fandio::EvalString(this->_file_d, field->Frml, this);
 	}
 
 	return result;

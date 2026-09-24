@@ -71,19 +71,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FileD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LinkD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Coding.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CommonVariables.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Record.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

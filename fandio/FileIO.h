@@ -22,9 +22,6 @@ void RenameFile56(const std::string& OldPath, const std::string& NewPath, bool M
 
 namespace fandio
 {
-	// Volume of the file being opened. CppFand keeps the volume of the last
-	// resolved path in global state (CVol); OpenH asks for it to know whether
-	// to wait for a file locked by another user on a network volume.
-	// Default: empty volume (local).
-	void SetCurrentVolumeQuery(std::function<std::string()> query);
+	// Path the file was opened with by OpenH ("" for an unknown handle)
+	std::string OpenedPath(HANDLE handle);
 }
