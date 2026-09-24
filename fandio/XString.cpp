@@ -5,7 +5,7 @@
 #include "../fandio/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
-#include "../Core/runfrml.h"
+#include "Expressions.h"
 #include "../Common/realDouble.h"
 #include "../Common/CommonVariables.h"
 #include "../Common/Record.h"
@@ -121,15 +121,15 @@ bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<Ke
 		KeyFldD* key_field = KF[i];
 		switch (key_field->FldD->frml_type) {
 		case 'S': {
-			StoreStr(RunString(file_d, Z, record), key_field);
+			StoreStr(fandio::EvalString(file_d, Z, record), key_field);
 			break;
 		}
 		case 'R': {
-			StoreReal(RunReal(file_d, Z, record), key_field);
+			StoreReal(fandio::EvalReal(file_d, Z, record), key_field);
 			break;
 		}
 		case 'B': {
-			StoreBool(RunBool(file_d, Z, record), key_field);
+			StoreBool(fandio::EvalBool(file_d, Z, record), key_field);
 			break;
 		}
 		}

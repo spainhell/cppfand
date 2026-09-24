@@ -72,6 +72,7 @@
     <ClCompile Include="rdfildcl.cpp" />
     <ClCompile Include="ResFile.cpp" />
     <ClCompile Include="FandioHost.cpp" />
+    <ClCompile Include="GetIndex.cpp" />
     <ClCompile Include="RunMessage.cpp" />
     <ClCompile Include="runproj.cpp" />
     <ClCompile Include="rdproc.cpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="Project.h" />
     <ClInclude Include="ResFile.h" />
     <ClInclude Include="FandioHost.h" />
+    <ClInclude Include="GetIndex.h" />
     <ClInclude Include="RunMessage.h" />
     <ClInclude Include="runproj.h" />
     <ClInclude Include="rdfildcl.h" />

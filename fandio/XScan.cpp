@@ -4,7 +4,7 @@
 #include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
 #include "../Common/Record.h"
-#include "../Core/runfrml.h"
+#include "Expressions.h"
 
 
 void AddFFs(XKey* K, pstring& s)
@@ -197,13 +197,14 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	SeekRec(0);
 }
 
-int32_t XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
+int32_t XScan::ResetOwnerIndex(XKey* link_key, XWKey* owner_key, FileD* owner_file, FrmlElem* aBool)
 {
 	FD->FF->TestXFExist();
 	Bool = aBool;
-	OwnerLV = LV;
+	owner_key_ = owner_key;
+	owner_file_ = owner_file;
 	Kind = ScanMode::Interval;
-	if (!KeyFldD::EquKFlds(LV->key->KFlds, LD->ToKey->KFlds)) {
+	if (!KeyFldD::EquKFlds(owner_key->KFlds, link_key->KFlds)) {
 		// RunError(1181);
 		return 1181;
 	}
@@ -254,7 +255,7 @@ void XScan::SeekRec(int I)
 		return;
 	}
 #endif
-	if ((Kind == ScanMode::Interval) && (OwnerLV != nullptr)) {
+	if ((Kind == ScanMode::Interval) && (owner_key_ != nullptr)) {
 		IRec = 0;
 		NRecs = 0x20000000;
 		iOKey = 0;
@@ -314,11 +315,11 @@ void XScan::NextIntvl()
 	bool b = false;
 	int n = 0, nBeg = 0;
 
-	if (OwnerLV != nullptr) {
-		XWKey* k = OwnerLV->key;
+	if (owner_key_ != nullptr) {
+		XWKey* k = owner_key_;
 		while (iOKey < k->NRecs()) {
 			iOKey++;
-			xx.S = k->NrToStr(OwnerLV->FD, iOKey);
+			xx.S = k->NrToStr(owner_file_, iOKey);
 			Key->FindNr(FD, xx.S, nBeg);
 			AddFFs(Key, xx.S);
 			b = Key->FindNr(FD, xx.S, n);
@@ -364,7 +365,7 @@ void XScan::GetRec(Record* record)
 				RecNr = IRec;
 				FD->ReadRec(RecNr, record, true);
 				if (record->IsDeleted()) continue;
-				if (!RunBool(FD, Bool, record)) continue;
+				if (!fandio::EvalBool(FD, Bool, record)) continue;
 				break;
 			}
 			case ScanMode::Index:
@@ -382,7 +383,7 @@ void XScan::GetRec(Record* record)
 				}
 				FD->ReadRec(RecNr, record, true);
 				if (record->IsDeleted()) continue;
-				if (!RunBool(FD, Bool, record)) continue;
+				if (!fandio::EvalBool(FD, Bool, record)) continue;
 				break;
 			}
 #ifdef FandSQL

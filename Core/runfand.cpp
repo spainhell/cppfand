@@ -258,7 +258,7 @@ void InitRunFand()
 	std::string txt;
 	double r = 0.0;
 
-	InstallFandioMessageHandlers();
+	InstallFandioHandlers();
 	ClrEvent();
 	InitAccess();
 

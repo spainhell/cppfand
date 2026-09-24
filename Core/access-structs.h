@@ -3,6 +3,7 @@
 #include "Implicit.h"
 #include "Project.h"
 #include "../fandio/XKey.h"
+#include "../fandio/KeyInD.h"
 #include "../Common/RdbPos.h"
 
 
@@ -13,15 +14,6 @@ class FrmlElem;
 class FrmlElemSum;
 class FieldDescr;
 class LocVarBlock;
-
-struct KeyInD
-{
-	std::vector<FrmlElem*> FL1;
-	std::vector<FrmlElem*> FL2;
-	int XNrBeg = 0, N = 0;
-	std::string X1;
-	std::string X2;
-};
 
 struct LiRoots
 {

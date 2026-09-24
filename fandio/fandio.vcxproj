@@ -185,9 +185,10 @@
     <ClInclude Include="Messages.h" />
     <ClInclude Include="FilePath.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="Expressions.h" />
+    <ClInclude Include="KeyInD.h" />
     <ClInclude Include="ProgressCallbacks.h" />
     <ClInclude Include="realFix.h" />
-    <ClInclude Include="sort.h" />
     <ClInclude Include="TextFile.h" />
     <ClInclude Include="WPage.h" />
     <ClInclude Include="WRec.h" />
@@ -219,8 +220,8 @@
     <ClCompile Include="Messages.cpp" />
     <ClCompile Include="FilePath.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Expressions.cpp" />
     <ClCompile Include="realFix.cpp" />
-    <ClCompile Include="sort.cpp" />
     <ClCompile Include="TextFile.cpp" />
     <ClCompile Include="WPage.cpp" />
     <ClCompile Include="WRec.cpp" />

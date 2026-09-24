@@ -3,6 +3,8 @@
 #include "GlobalVariables.h"
 #include "obaseww.h"
 #include "OldDrivers.h"
+#include "runfrml.h"
+#include "../fandio/Expressions.h"
 #include "../fandio/Messages.h"
 #include "../fandio/Settings.h"
 
@@ -27,8 +29,14 @@ static char file_part_type(fandio::FilePart part)
 	}
 }
 
-void InstallFandioMessageHandlers()
+void InstallFandioHandlers()
 {
+	fandio::SetExpressionHandlers({
+		.evalBool = [](FileD* file, FrmlElem* expr, Record* record) { return RunBool(file, expr, record); },
+		.evalReal = [](FileD* file, FrmlElem* expr, Record* record) { return RunReal(file, expr, record); },
+		.evalString = [](FileD* file, FrmlElem* expr, Record* record) { return RunString(file, expr, record); },
+	});
+
 	fandio::SetMessageHandlers({
 		.error = [](const fandio::Message& message) {
 			set_msg_par(message);

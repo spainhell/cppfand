@@ -6,20 +6,19 @@ fandcat links `fandio.lib` with `/WHOLEARCHIVE` and only `Logging.lib`.
 Each symbol below is used by fandio but defined elsewhere in CppFand.
 The goal is an empty list.
 
-- unresolved symbols: **104**
-- headers included from outside fandio: **22**
+- unresolved symbols: **99**
+- headers included from outside fandio: **18**
 
 ## Summary by defining file
 
 | Defined in | Symbols | Used from fandio |
 |---|---:|---|
-| Common/FileD | 22 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, sort, XKey, XScan, XXPage |
+| Common/FileD | 22 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XKey, XScan, XXPage |
 | Core/base | 15 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XScan, XWorkFile |
-| Common/pstring | 13 | DbfFile, Fand0File, sort, WPage, WRec, XKey, XPage, XScan, XString, XWKey, XWorkFile, XXPage |
-| Common/Record | 12 | Fand0File, sort, XScan, XString, XWorkFile, XXPage |
+| Common/pstring | 13 | DbfFile, Fand0File, WPage, WRec, XKey, XPage, XScan, XString, XWKey, XWorkFile, XXPage |
+| Common/Record | 12 | Fand0File, XScan, XString, XWorkFile, XXPage |
 | Common/textfunc | 6 | DbfFile, directory, Fand0File, FandTFile |
 | Core/legacy | 6 | DbfFile, DbfTFile, Fand0File |
-| Core/runfrml | 5 | sort, XScan, XString |
 | Common/DateTime | 4 | DbfFile |
 | Core/GlobalVariables | 4 | FandTFile, FandXFile, XKey, XXPage |
 | Drivers/files | 4 | DbfFile, Fand0File, XWorkFile |
@@ -43,18 +42,18 @@ The goal is an empty list.
 - `fandio::FilePath FileD::GetPath(void)` - DbfFile, Fand0File, FandTFile, FandXFile
 - `FileD * FileD::OpenDuplicateF(bool)` - Fand0File
 - `FileD::~FileD(void)` - Fand0File
-- `int FileD::GetNRecs(void)` - sort, XKey, XScan
-- `LockMode FileD::NewLockMode(LockMode)` - Fand0File, sort
+- `int FileD::GetNRecs(void)` - XKey, XScan
+- `LockMode FileD::NewLockMode(LockMode)` - Fand0File
 - `static std::string FileD::SetPathForH(void *)` - DataFileBase
 - `static void FileD::CopyH(void *,void *,std::string const &)` - Fand0File
 - `std::string FileD::CExtToT(std::string const &,std::string const &,std::string)` - DbfFile, Fand0File, FandTFile
-- `std::string FileD::SetPathAndVolume(char)` - Fand0File
-- `unsigned __int64 FileD::ReadRec(unsigned __int64,Record *,bool)const` - sort, XScan, XXPage
+- `std::string FileD::SetPathAndVolume(char)` - Fand0File, locks
+- `unsigned __int64 FileD::ReadRec(unsigned __int64,Record *,bool)const` - XScan, XXPage
 - `unsigned __int64 FileD::UpdateRec(unsigned __int64,Record *)const` - XXPage
 - `unsigned short FileD::GetNrKeys(void)` - Fand0File, FandXFile
 - `void FileD::CFileError(int)` - Fand0File, locks, XKey
 - `void FileD::Close(void)const` - DbfFile, DbfTFile, FandTFile
-- `void FileD::OldLockMode(LockMode)` - Fand0File, sort
+- `void FileD::OldLockMode(LockMode)` - Fand0File
 - `void FileD::SeekRec(int)` - Fand0File
 - `void FileD::Unlock(int)` - Fand0File
 
@@ -82,11 +81,11 @@ The goal is an empty list.
 - `pstring & pstring::operator+=(pstring const &)` - XString
 - `pstring & pstring::operator=(pstring const &)` - WPage, XXPage
 - `pstring & pstring::operator=(std::string)` - XKey, XScan, XWorkFile
-- `pstring::~pstring(void)` - DbfFile, Fand0File, sort, WPage, WRec, XKey, XPage, XScan, XString, XWKey, XWorkFile, XXPage
+- `pstring::~pstring(void)` - DbfFile, Fand0File, WPage, WRec, XKey, XPage, XScan, XString, XWKey, XWorkFile, XXPage
 - `pstring::operator std::string(void)const` - XKey, XPage, XScan, XWorkFile
 - `pstring::pstring(pstring const &)` - WPage, XXPage
 - `pstring::pstring(std::string)` - DbfFile, XPage, XString
-- `pstring::pstring(void)` - DbfFile, Fand0File, sort, WPage, WRec, XKey, XScan, XWKey, XWorkFile, XXPage
+- `pstring::pstring(void)` - DbfFile, Fand0File, WPage, WRec, XKey, XScan, XWKey, XWorkFile, XXPage
 - `unsigned char & pstring::operator[](unsigned __int64)` - DbfFile, WRec, XScan, XString, XXPage
 - `unsigned char pstring::at(unsigned char)const` - WRec
 - `unsigned char pstring::length(void)const` - WRec, XScan, XXPage
@@ -94,12 +93,12 @@ The goal is an empty list.
 
 ### Common/Record
 
-- `bool Record::IsDeleted(void)const` - Fand0File, sort, XScan
+- `bool Record::IsDeleted(void)const` - Fand0File, XScan
 - `bool Record::LoadB(FieldDescr *)const` - XString
 - `double Record::LoadR(FieldDescr *)const` - XString
 - `FileD * Record::GetFileD(void)const` - XWorkFile
-- `Record::~Record(void)` - Fand0File, sort
-- `Record::Record(FileD *)` - Fand0File, sort
+- `Record::~Record(void)` - Fand0File
+- `Record::Record(FileD *)` - Fand0File
 - `std::string Record::LoadS(FieldDescr *)` - Fand0File, XString
 - `void Record::Clear(void)` - Fand0File
 - `void Record::ClearDeleted(void)` - Fand0File
@@ -124,14 +123,6 @@ The goal is an empty list.
 - `void str(double,int,int,std::string &)` - DbfFile
 - `void str(int,pstring &)` - DbfFile
 - `void val(pstring,double &,short &)` - DbfFile
-
-### Core/runfrml
-
-- `bool RunBool(FileD *,FrmlElem *,Record *)` - XScan, XString
-- `double RunReal(FileD *,FrmlElem *,Record *)` - XString
-- `FrmlElem * RunEvalFrml(FileD *,FrmlElem *,Record *)` - sort
-- `int RunInt(FileD *,FrmlElem *,Record *)` - sort
-- `std::string RunString(FileD *,FrmlElem *,Record *)` - XString
 
 ### Common/DateTime
 
@@ -198,19 +189,15 @@ The goal is an empty list.
 | Common/DateTime.h | DbfFile.cpp, Fand0File.cpp |
 | Common/exprcmp.h | directory.cpp |
 | Common/FileD.h | FandTFile.cpp, FandXFile.cpp, locks.cpp, XKey.cpp, XScan.cpp, XXPage.cpp |
-| Common/LinkD.h | sort.cpp, XScan.h |
-| Common/LocVar.h | XScan.h |
-| Common/OperationType.h | Fand0File.h |
+| Common/OperationType.h | Fand0File.h, XWorkFile.h |
 | Common/pstring.h | XPage.h, XString.h |
 | Common/random.h | FandTFile.cpp |
 | Common/realDouble.h | Fand0File.cpp, FandTFilePrefix.cpp, XString.cpp |
-| Common/Record.h | Fand0File.cpp, sort.cpp, XScan.cpp, XString.cpp, XWorkFile.cpp, XXPage.cpp |
+| Common/Record.h | Fand0File.cpp, XScan.cpp, XString.cpp, XWorkFile.cpp, XXPage.cpp |
 | Common/textfunc.h | DbfFile.cpp, directory.cpp, Fand0File.cpp, FandTFile.cpp |
 | Core/access.h | DbfTFile.cpp, XString.cpp |
 | Core/base.h | FandXFile.cpp |
 | Core/GlobalVariables.h | DataFileBase.cpp, DbfFile.cpp, DbfTFile.cpp, Fand0File.cpp, FandTFile.cpp, FandXFile.cpp, XKey.cpp, XScan.cpp, XString.cpp, XWorkFile.cpp, XXPage.cpp |
-| Core/models/Instr.h | sort.cpp |
-| Core/runfrml.h | sort.cpp, XScan.cpp, XString.cpp |
 | Core/switches.h | Fand0File.h, FilePath.cpp, locks.h |
 | Drivers/files.h | Fand0File.cpp |
 | Logging/Logging.h | DataFileBase.cpp, Fand0File.cpp, FandXFile.cpp, Messages.cpp, XKey.cpp |

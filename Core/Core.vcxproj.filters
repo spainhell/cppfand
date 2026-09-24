@@ -105,6 +105,9 @@
     <ClCompile Include="FandioHost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GetIndex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="RunMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -222,6 +225,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FandioHost.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GetIndex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RunMessage.h">

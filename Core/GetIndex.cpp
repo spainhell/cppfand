@@ -1,10 +1,11 @@
-#include "sort.h"
+#include "GetIndex.h"
 #include <queue>
 
-#include "XWKey.h"
+#include "../fandio/XScan.h"
+#include "../fandio/XWKey.h"
 #include "../Common/LinkD.h"
-#include "../Core/models/Instr.h"
-#include "../Core/runfrml.h"
+#include "models/Instr.h"
+#include "runfrml.h"
 #include "../Common/Record.h"
 
 
@@ -31,7 +32,7 @@ int32_t GetIndex(Instr_getindex* PD)
 
 		switch (PD->owner_type) {
 		case 'i': {
-			int32_t err_no = Scan->ResetOwnerIndex(ld, lv2, cond);
+			int32_t err_no = Scan->ResetOwnerIndex(ld->ToKey, lv2->key, lv2->FD, cond);
 			if (err_no != 0) {
 				return err_no;
 			}

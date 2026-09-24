@@ -1,7 +1,9 @@
 #pragma once
 #include <functional>
 
+#include "DataFileBase.h"
 #include "ProgressCallbacks.h"
+#include "../Common/OperationType.h"
 #include "XKey.h"
 #include "XScan.h"
 #include "XXPage.h"
