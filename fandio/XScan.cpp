@@ -1,15 +1,15 @@
 #include "XScan.h"
 #include "XWKey.h"
 #include "../Common/FileD.h"
-#include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
 #include "../Common/Record.h"
 #include "Expressions.h"
+#include "../fandbase/constants.h"
 
 
 void AddFFs(XKey* K, pstring& s)
 {
-	unsigned short l = MinW(K->IndexLen + 1, 255);
+	unsigned short l = K->IndexLen + 1 < 255 ? K->IndexLen + 1 : 255;
 	for (unsigned short i = s.length() + 1; i <= l; i++) s[i] = 0xff;
 	s[0] = (char)l;
 }
@@ -149,7 +149,7 @@ void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldM
 		}
 		default: return;
 		}
-		m = LockMode(MaxW(m, OldMd));
+		m = m > OldMd ? m : OldMd;
 		if (m != OldMd) {
 			FD->ChangeLockMode(m, 0, true);
 		}

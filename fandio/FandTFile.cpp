@@ -2,15 +2,24 @@
 
 #include <memory>
 #include "FandTFilePrefix.h"
-#include "../Common/Coding.h"
+#include "../fandbase/Coding.h"
 #include "../Common/FileD.h"
 #include "../fandbase/random.h"
 #include "../fandbase/textfunc.h"
 #include "../fandbase/compare.h"
-#include "../Common/CommonVariables.h"
-#include "../Core/GlobalVariables.h"
 #include "FileIO.h"
 #include "Messages.h"
+#include "../fandbase/constants.h"
+#include "Settings.h"
+
+// program version from the settings, as 4 bytes for the text file header
+static void version_bytes(char out[4])
+{
+	const std::string& v = fandio::GetSettings().version;
+	for (size_t i = 0; i < 4; i++) {
+		out[i] = i < v.length() ? v[i] : ' ';
+	}
+}
 
 FandTFile::FandTFile(Fand0File* parent)
 {
@@ -97,8 +106,11 @@ void FandTFile::RdPrefix(bool check)
 	MaxPage = T.MaxPage; // 4B
 	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
 
-	if (   (_parent->GetFileD() == Chpt)
-		&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(Version, T.Version, 4) != _equ))) {
+	const fandio::Settings& settings = fandio::GetSettings();
+	char version[4];
+	version_bytes(version);
+	if (   (settings.isCurrentProjectFile && settings.isCurrentProjectFile(_parent->GetFileD()))
+		&& (/*(T.HasCoproc != HasCoproc) ||*/ (CompArea(version, T.Version, 4) != _equ))) {
 		CompileAll = true;
 	}
 
@@ -232,7 +244,7 @@ void FandTFile::WrPrefix()
 	T.old_max_page = 0xffff;
 	T.signum = 1;
 	T.IRec += n;
-	memcpy(T.Version, Version, 4);
+	version_bytes(T.Version);
 	T.HasCoproc = HasCoproc;
 	RandSeed = RS;
 

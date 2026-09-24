@@ -9,6 +9,7 @@
 #include "../Common/CommonVariables.h"
 #include "../fandio/Messages.h"
 #include "../fandio/Settings.h"
+#include "../fandbase/DateTime.h"
 
 static void set_msg_par(const fandio::Message& message)
 {
@@ -60,6 +61,15 @@ void InstallFandioHandlers()
 			set_msg_par(message);
 			return PromptYN(static_cast<WORD>(message.code));
 		},
+		.duplicateKey = [](const std::string& file_name) {
+			// in the test run the user decides, otherwise just a message
+			SetMsgPar(file_name);
+			if (IsTestRun) {
+				return PromptYN(832);
+			}
+			WrLLF10Msg(828);
+			return true;
+		},
 		.lockWait = [](fandio::LockWait& wait) {
 			switch (wait.kind) {
 			case fandio::LockWaitKind::Mode:
@@ -110,5 +120,8 @@ void ApplyFandioSettings()
 {
 	fandio::SetSettings({
 		.workDir = WrkDir,
+		.version = Version,
+		.isCurrentProjectFile = [](FileD* file) { return file == Chpt; },
 	});
+	OffDefaultYear = spec.OffDefaultYear;
 }

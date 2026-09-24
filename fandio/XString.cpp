@@ -1,13 +1,11 @@
 #include "XString.h"
 
 #include "realFix.h"
-#include "../Core/access.h"
+#include "../fandbase/codePages.h"
 #include "../fandio/FieldDescr.h"
-#include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
 #include "Expressions.h"
 #include "../fandbase/realDouble.h"
-#include "../Common/CommonVariables.h"
 #include "../Common/Record.h"
 
 void XString::Clear()

@@ -82,3 +82,6 @@ void ConvToNoDiakr(std::string& text, TVideoFont FromFont);
 void ConvKamenToCurr(std::string& text, bool diacritic);
 void ConvKamenLatin(uint8_t* Buf, WORD L, bool ToLatin);
 char ToggleCS(char C);
+
+// translates text by the collation table CharOrdTab (for index keys)
+std::string TranslateOrd(std::string text);

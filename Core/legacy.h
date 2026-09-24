@@ -11,27 +11,8 @@ extern int ExitCode; // exit kód -> OS
 extern void* ErrorAddr; // adresa chyby
 extern void (*ExitProc)(); // ukonèovací procedura
 
-void val(pstring s, uint8_t& b, WORD& err);
-void val(pstring s, WORD& b, WORD& err);
-void val(pstring s, short& b, short& err);
-void val(pstring s, double& b, short& err);
-void val(pstring s, double& b, WORD& err);
-void val(pstring s, int& b, WORD& err);
-void val(pstring s, int& b, short& err);
-double valDouble(std::string& s, short& err);
-pstring copy(pstring source, size_t index, size_t count);
-void str(int input, pstring& output);
-void str(double input, pstring& output);
-void str(double input, std::string& output);
-void str(double input, int total, int right, pstring& output);
-void str(double input, int total, int right, std::string& output);
-void str(double input, int right, pstring& output);
-void str(double input, int right, std::string& output);
-
-WORD pred(WORD input);
-WORD succ(WORD input);
-
-void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext, char pathDelim = '\\');
+// val, str, copy, pred, succ, FSplit, FillChar, Hi, Lo, Swap
+#include "../fandbase/pascal.h"
 
 pstring FSearch(pstring& path, pstring& dirlist);
 std::string FSearch(const std::string path, const std::string dirlist);
@@ -58,10 +39,6 @@ inline void Exit() { return; }
 //inline void RunError(WORD code) { exit(code); }
 inline void Halt(WORD code) { if (FandHost::IsEnabled()) throw FandHost::HaltException(code); exit(code); }
 
-void FillChar(void* cil, int delka, size_t vypln);
-uint8_t Hi(WORD cislo);
-uint8_t Lo(WORD cislo);
-WORD Swap(WORD cislo);
 
 inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
 

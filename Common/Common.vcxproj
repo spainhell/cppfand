@@ -41,7 +41,6 @@
   <ItemGroup>
     <ClCompile Include="Coding.cpp" />
     <ClCompile Include="CommonVariables.cpp" />
-    <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="FileD.cpp" />
     <ClCompile Include="LinkD.cpp" />
     <ClCompile Include="Record.cpp" />

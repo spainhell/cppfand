@@ -1,8 +1,7 @@
 #include "DataFileBase.h"
-#include "../Common/CommonVariables.h"
-#include "../Core/GlobalVariables.h"
 #include "FileIO.h"
 #include "Messages.h"
+#include "../Common/FileD.h"
 #include "../Logging/Logging.h"
 
 

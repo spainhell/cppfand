@@ -47,8 +47,6 @@ std::string OldDir;
 std::string FandDir;
 std::string WrkDir;
 std::string FandResName;
-std::string FandWorkName;
-std::string FandWorkXName;
 std::string FandWorkTName;
 
 ResFile resFile;
@@ -69,8 +67,6 @@ void* AfterCatFD; // r108
 bool ExitP, BreakP;
 int LastExitCode = 0; // r215
 bool WasLPTCancel;
-HANDLE WorkHandle;
-int MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 Printer printer[10];
 TPrTimeOut OldPrTimeOut;
 TPrTimeOut PrTimeOut;  // absolute 0:$478;

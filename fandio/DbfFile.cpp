@@ -2,14 +2,17 @@
 
 #include "DBaseHeader.h"
 #include "FieldDescr.h"
-#include "../Core/GlobalVariables.h"
 #include "../fandbase/textfunc.h"
-#include "../Common/Coding.h"
-#include "../Common/DateTime.h"
+#include "../fandbase/Coding.h"
+#include "../fandbase/DateTime.h"
 #include "FileIO.h"
 #include "Messages.h"
+#include "FilePath.h"
+#include "../Common/FileD.h"
+#include "../fandbase/files.h"
+#include "../fandbase/pascal.h"
+#include "../fandbase/realDouble.h"
 #include "Settings.h"
-#include "../Common/CommonVariables.h"
 
 
 DbfFile::DbfFile(FileD* parent)

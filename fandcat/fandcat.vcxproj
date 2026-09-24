@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   fandcat: minimalni konzolovy program nad knihovnou fandio.
-  Linkuje jen fandio, fandbase a Logging. fandio.lib se pripojuje s /WHOLEARCHIVE,
+  Linkuje jen fandio, fandbase a Logging. fandio.lib a fandbase.lib se pripojuji s /WHOLEARCHIVE,
   takze kazdy nevyreseny externi symbol je zavislost fandio na zbytku aplikace.
   Dokud fandio neni oddelene, projekt se neprelozi, proto neni soucasti
   sestaveni reseni. Soupis zavislosti vypise fandcat\check-deps.ps1.
@@ -66,8 +66,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <!-- pripojit vsechny objekty z fandio.lib, nejen ty, ktere main.cpp primo pouziva -->
-      <AdditionalOptions>/WHOLEARCHIVE:fandio.lib %(AdditionalOptions)</AdditionalOptions>
+      <!-- pripojit vsechny objekty z fandio.lib a fandbase.lib, nejen ty, ktere main.cpp primo pouziva -->
+      <AdditionalOptions>/WHOLEARCHIVE:fandio.lib /WHOLEARCHIVE:fandbase.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">

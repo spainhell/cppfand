@@ -179,6 +179,11 @@
     <ClInclude Include="realDouble.h" />
     <ClInclude Include="textfunc.h" />
     <ClInclude Include="typeDef.h" />
+    <ClInclude Include="constants.h" />
+    <ClInclude Include="Coding.h" />
+    <ClInclude Include="DateTime.h" />
+    <ClInclude Include="pascal.h" />
+    <ClInclude Include="switches.h" />
     <ClCompile Include="codePages.cpp" />
     <ClCompile Include="compare.cpp" />
     <ClCompile Include="exprcmp.cpp" />
@@ -187,6 +192,9 @@
     <ClCompile Include="random.cpp" />
     <ClCompile Include="realDouble.cpp" />
     <ClCompile Include="textfunc.cpp" />
+    <ClCompile Include="Coding.cpp" />
+    <ClCompile Include="DateTime.cpp" />
+    <ClCompile Include="pascal.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

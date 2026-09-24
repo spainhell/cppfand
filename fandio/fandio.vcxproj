@@ -187,6 +187,7 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Expressions.h" />
     <ClInclude Include="FileIO.h" />
+    <ClInclude Include="WorkFiles.h" />
     <ClInclude Include="KeyInD.h" />
     <ClInclude Include="ProgressCallbacks.h" />
     <ClInclude Include="realFix.h" />
@@ -223,6 +224,7 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Expressions.cpp" />
     <ClCompile Include="FileIO.cpp" />
+    <ClCompile Include="WorkFiles.cpp" />
     <ClCompile Include="realFix.cpp" />
     <ClCompile Include="TextFile.cpp" />
     <ClCompile Include="WPage.cpp" />

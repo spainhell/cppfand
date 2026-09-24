@@ -8,6 +8,6 @@
 // Call once at startup, before any data file is opened.
 void InstallFandioHandlers();
 
-// Passes CppFand settings (work directory, ...) to fandio.
-// Call whenever they change.
+// Passes CppFand settings (work directory, version, OffDefaultYear from FAND.CFG, ...)
+// to fandio and fandbase. Call after FAND.CFG is read and whenever they change.
 void ApplyFandioSettings();

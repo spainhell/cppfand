@@ -60,9 +60,9 @@ if ($compileErrors) {
     throw 'fandcat has compile errors, fix them first'
 }
 
-# symbol (mangled) -> @{ Name; Users = set of fandio objects }
+# symbol (mangled) -> @{ Name; Users = set of fandio objects (fandbase ones prefixed "fandbase/") }
 $missing = @{}
-$rx = '^(?:fandio\.lib\()?(?<obj>[^()\s]+?)\.obj\)? : error LNK20(01|19): unresolved external symbol (?:"(?<dem>.+?)" \((?<mang>[^()\s]+)\)|(?<plain>\S+))'
+$rx = '^(?:(?<lib>fandio|fandbase)\.lib\()?(?<obj>[^()\s]+?)\.obj\)? : error LNK20(01|19): unresolved external symbol (?:"(?<dem>.+?)" \((?<mang>[^()\s]+)\)|(?<plain>\S+))'
 foreach ($line in $build.Lines) {
     $m = [regex]::Match($line, $rx)
     if (-not $m.Success) { continue }
@@ -71,7 +71,9 @@ foreach ($line in $build.Lines) {
     if (-not $missing.ContainsKey($mang)) {
         $missing[$mang] = @{ Name = $name; Users = New-Object 'System.Collections.Generic.SortedSet[string]' }
     }
-    [void]$missing[$mang].Users.Add($m.Groups['obj'].Value)
+    $user = $m.Groups['obj'].Value
+    if ($m.Groups['lib'].Value -eq 'fandbase') { $user = "fandbase/$user" }
+    [void]$missing[$mang].Users.Add($user)
 }
 
 if ($build.ExitCode -ne 0 -and $missing.Count -eq 0) {

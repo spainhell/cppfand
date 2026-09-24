@@ -3,9 +3,12 @@
 #include "XKey.h"
 #include "XPage.h"
 #include "../Common/FileD.h"
-#include "../Core/GlobalVariables.h"
 #include "KeyFldD.h"
 #include "Messages.h"
+
+#include <windows.h>
+#include "../fandbase/constants.h"
+#include "WorkFiles.h"
 #include "../fandio/FandXFile.h"
 #include "../Logging/Logging.h"
 

@@ -3,12 +3,10 @@
 #include <memory>
 
 #include "../Common/FileD.h"
-#include "../Common/CommonVariables.h"
-#include "../Core/base.h"
-#include "../Core/GlobalVariables.h"
 #include "FilePath.h"
 #include "FileIO.h"
 #include "Messages.h"
+#include "WorkFiles.h"
 #include "../Logging/Logging.h"
 
 

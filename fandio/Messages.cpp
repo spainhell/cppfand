@@ -91,6 +91,15 @@ namespace fandio
 		return false;
 	}
 
+	bool ReportDuplicateKey(const std::string& file_name)
+	{
+		if (handlers_.duplicateKey) {
+			return handlers_.duplicateKey(file_name);
+		}
+		SPDLOG_WARN("fandio: duplicate key in file '{}', record left out of the index", file_name);
+		return true;
+	}
+
 	bool WaitForLock(LockWait& wait)
 	{
 		wait.attempt++;

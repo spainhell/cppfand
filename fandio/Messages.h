@@ -82,6 +82,11 @@ namespace fandio
 		// Default: writes a warning to the log and answers "no".
 		std::function<bool(const Message&)> confirm;
 
+		// A duplicate key was found while building a unique index; the record
+		// is left out of the index. Returns false to stop the operation.
+		// Default: writes a warning to the log and continues.
+		std::function<bool(const std::string& file_name)> duplicateKey;
+
 		// Called after each failed attempt to get a lock. Waits before the next
 		// attempt and returns true to try again, false to give up (honored only
 		// when wait.cancellable).
@@ -100,6 +105,8 @@ namespace fandio
 	void ShowMessage(int code, std::vector<std::string> params = {});
 	void ShowFileMessage(FileD* file, FilePart part, int code);
 	bool Confirm(int code, std::vector<std::string> params = {});
+	// false = stop the operation
+	bool ReportDuplicateKey(const std::string& file_name);
 
 	// Records a failed attempt in wait and lets the handler wait; false = give up
 	bool WaitForLock(LockWait& wait);

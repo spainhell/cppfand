@@ -4,7 +4,7 @@
 
 #include "FandTFile.h"
 #include "FandXFile.h"
-#include "../Core/switches.h"
+#include "../fandbase/switches.h"
 #include "FieldDescr.h"
 #include "ProgressCallbacks.h"
 #include "../fandbase/OperationType.h"

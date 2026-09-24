@@ -18,7 +18,6 @@ Catalog* catalog = nullptr;
 FileD* HelpFD;
 //size_t InpArrLen, CurrPos, OldErrPos;
 
-FandXFile XWork(nullptr);
 //FandTFile TWork(nullptr);
 int ClpBdPos = 0;
 bool IsTestRun = false;

@@ -2,10 +2,11 @@
 
 #include "KeyFldD.h"
 #include "../Common/Record.h"
-#include "../Common/CommonVariables.h"
-#include "../Core/GlobalVariables.h"
 #include "FileIO.h"
 #include "Messages.h"
+#include "../fandbase/files.h"
+#include "../fandbase/constants.h"
+#include "WorkFiles.h"
 //#include "../Core/RunMessage.h"
 #include "../fandio/FandXFile.h"
 

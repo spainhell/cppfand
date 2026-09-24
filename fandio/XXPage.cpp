@@ -3,8 +3,9 @@
 #include "XWorkFile.h"
 #include "../Common/FileD.h"
 #include "../Common/Record.h"
-#include "../Core/GlobalVariables.h"
 #include "Messages.h"
+
+#include <windows.h>
 
 
 void XXPage::Reset(XWorkFile* OwnerXW)
@@ -80,13 +81,8 @@ void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, Record* record)
 				if (n == LastRecNr) return; /* overlapping intervals from  key in .. */
 				if (!KD->InWork && !KD->Duplic) {
 					if (!XW->msgWritten) {
-						if (IsTestRun) {
-							if (!fandio::Confirm(832, { file_d->Name })) {
-								fandio::Abort(832, { file_d->Name });
-							}
-						}
-						else {
-							fandio::ShowMessage(828, { file_d->Name });
+						if (!fandio::ReportDuplicateKey(file_d->Name)) {
+							fandio::Abort(832, { file_d->Name });
 						}
 						XW->msgWritten = true;
 					}

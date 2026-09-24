@@ -1,10 +1,14 @@
 #include "DbfTFile.h"
 
-#include "../Common/CommonVariables.h"
-#include "../Core/access.h"
+#include "../fandbase/codePages.h"
 #include "FileIO.h"
 #include "Messages.h"
-#include "../Core/GlobalVariables.h"
+#include "../Common/FileD.h"
+#include "DbfFile.h"
+#include "FandTFile.h"
+#include "../fandbase/LongStr.h"
+#include "../fandbase/pascal.h"
+#include "../fandbase/constants.h"
 
 DbfTFile::DbfTFile(DbfFile* parent)
 {

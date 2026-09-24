@@ -6,8 +6,8 @@ fandcat links `fandio.lib` with `/WHOLEARCHIVE` and only `fandbase.lib` and `Log
 Each symbol below is used by fandio but defined elsewhere in CppFand.
 The goal is an empty list.
 
-- unresolved symbols: **58**
-- headers included from outside fandio: **9**
+- unresolved symbols: **34**
+- headers included from outside fandio: **2**
 
 ## Summary by defining file
 
@@ -15,13 +15,6 @@ The goal is an empty list.
 |---|---:|---|
 | Common/FileD | 22 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XKey, XScan, XXPage |
 | Common/Record | 12 | Fand0File, XScan, XString, XWorkFile, XXPage |
-| Core/base | 6 | FandXFile, XScan, XWorkFile |
-| Core/legacy | 6 | DbfFile, DbfTFile, Fand0File |
-| Common/DateTime | 4 | DbfFile |
-| Core/GlobalVariables | 4 | FandTFile, FandXFile, XKey, XXPage |
-| Common/Coding | 2 | DbfFile, Fand0File, FandTFile |
-| Common/CommonVariables | 1 | DbfFile, Fand0File, XString |
-| Core/access | 1 | XString |
 
 ## Symbols
 
@@ -65,61 +58,9 @@ The goal is an empty list.
 - `void Record::SaveS(FieldDescr *,std::string const &)` - Fand0File
 - `void Record::SetDeleted(bool)` - Fand0File, XXPage
 
-### Core/base
-
-- `int MaxWSize` - XWorkFile
-- `std::string FandWorkName` - XWorkFile
-- `std::string FandWorkXName` - FandXFile
-- `unsigned short MaxW(unsigned short,unsigned short)` - XScan
-- `unsigned short MinW(unsigned short,unsigned short)` - XScan
-- `void * WorkHandle` - XWorkFile
-
-### Core/legacy
-
-- `unsigned short Swap(unsigned short)` - DbfTFile
-- `void FillChar(void *,int,unsigned __int64)` - DbfFile, DbfTFile
-- `void FSplit(std::string const &,std::string &,std::string &,std::string &,char)` - DbfFile, Fand0File
-- `void str(double,int,int,std::string &)` - DbfFile
-- `void str(int,pstring &)` - DbfFile
-- `void val(pstring,double &,short &)` - DbfFile
-
-### Common/DateTime
-
-- `double Today(void)` - DbfFile
-- `double ValDate(std::string const &,std::string)` - DbfFile
-- `std::string StrDate(double,std::string)` - DbfFile
-- `void SplitDate(double,unsigned short &,unsigned short &,unsigned short &)` - DbfFile
-
-### Core/GlobalVariables
-
-- `bool IsTestRun` - XXPage
-- `FandXFile XWork` - FandXFile, XKey
-- `FileD * Chpt` - FandTFile
-- `char * Version` - FandTFile
-
-### Common/Coding
-
-- `static std::string Coding::Code(std::string const &)` - DbfFile, Fand0File, FandTFile
-- `static void Coding::Code(unsigned char *,unsigned __int64)` - DbfFile, Fand0File
-
-### Common/CommonVariables
-
-- `double * Power10` - DbfFile, Fand0File, XString
-
-### Core/access
-
-- `std::string TranslateOrd(std::string)` - XString
-
 ## Headers from outside fandio
 
 | Header | Included from |
 |---|---|
-| Common/Coding.h | DbfFile.cpp, Fand0File.cpp, FandTFile.cpp |
-| Common/CommonVariables.h | DataFileBase.cpp, DbfFile.cpp, DbfTFile.cpp, Fand0File.cpp, FandTFile.cpp, FandXFile.cpp, XString.cpp, XWorkFile.cpp |
-| Common/DateTime.h | DbfFile.cpp, Fand0File.cpp |
-| Common/FileD.h | FandTFile.cpp, FandXFile.cpp, locks.cpp, XKey.cpp, XScan.cpp, XXPage.cpp |
+| Common/FileD.h | DataFileBase.cpp, DbfFile.cpp, DbfTFile.cpp, FandTFile.cpp, FandXFile.cpp, locks.cpp, XKey.cpp, XScan.cpp, XXPage.cpp |
 | Common/Record.h | Fand0File.cpp, XScan.cpp, XString.cpp, XWorkFile.cpp, XXPage.cpp |
-| Core/access.h | DbfTFile.cpp, XString.cpp |
-| Core/base.h | FandXFile.cpp |
-| Core/GlobalVariables.h | DataFileBase.cpp, DbfFile.cpp, DbfTFile.cpp, Fand0File.cpp, FandTFile.cpp, FandXFile.cpp, XKey.cpp, XScan.cpp, XString.cpp, XWorkFile.cpp, XXPage.cpp |
-| Core/switches.h | Fand0File.h, FilePath.cpp, locks.h |

@@ -24,7 +24,8 @@ extern Catalog* catalog;
 extern FileD* HelpFD;
 
 // r483
-extern FandXFile XWork;
+// XWork, FandWorkName, FandWorkXName, WorkHandle, MaxWSize
+#include "../fandio/WorkFiles.h"
 //extern FandTFile TWork;
 extern int ClpBdPos;
 extern bool IsTestRun;
@@ -102,12 +103,8 @@ extern std::string OldDir;
 extern std::string FandDir;
 extern std::string WrkDir;
 extern std::string FandResName;
-extern std::string FandWorkName;
-extern std::string FandWorkXName;
 extern std::string FandWorkTName;
 extern bool WasLPTCancel;
-extern HANDLE WorkHandle;
-extern int MaxWSize; // {currently occupied in FANDWORK.$$$}
 // *** MESSAGES ***
 extern WORD F10SpecKey; // r. 293
 extern uint8_t ProcAttr;

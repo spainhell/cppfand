@@ -1,5 +1,5 @@
 #include "FilePath.h"
-#include "../Core/switches.h"
+#include "../fandbase/switches.h"
 
 namespace fandio
 {
