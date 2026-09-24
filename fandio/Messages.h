@@ -39,12 +39,20 @@ namespace fandio
 	// How fandio reports errors and talks to the user. The host application
 	// installs its own handlers with SetMessageHandlers(); an empty handler
 	// means the default behavior described below.
+	enum class LockWaitKind
+	{
+		Mode,	// change of the lock mode of a file
+		Record,	// lock of a record (record 0 = whole file)
+		Open	// opening a file on a network volume that another user holds
+	};
+
 	// A lock that is held by another user; fandio retries until the handler gives up
 	struct LockWait
 	{
+		LockWaitKind kind = LockWaitKind::Mode;
 		std::string path;		// file being locked
 		std::string mode;		// requested lock mode (RD, WR, CR, ...)
-		int32_t record = -1;	// record lock: record number (0 = whole file); -1 = lock mode change
+		int32_t record = 0;		// LockWaitKind::Record: record number (0 = whole file)
 		bool cancellable = false;	// the user may give up (e.g. by ESC)
 		int attempt = 0;		// number of failed attempts so far (1, 2, ...)
 		int token = 0;			// free for the handler (e.g. id of a message window)

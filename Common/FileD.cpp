@@ -1121,7 +1121,7 @@ bool FileD::Lock(int32_t n, uint16_t kind) const
 
 #ifdef FandNetV
 		if (!FF->IsShared()) return result;
-		fandio::LockWait wait{ .mode = "CrX", .record = n, .cancellable = kind == 1 };
+		fandio::LockWait wait{ .kind = fandio::LockWaitKind::Record, .mode = "CrX", .record = n, .cancellable = kind == 1 };
 		while (true) {
 			if (!TryLockH(FF->Handle, RecLock + n, 1)) {
 				if (kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/

@@ -9,6 +9,7 @@
 #include "../fandbase/compare.h"
 #include "../Common/CommonVariables.h"
 #include "../Core/GlobalVariables.h"
+#include "FileIO.h"
 #include "Messages.h"
 
 FandTFile::FandTFile(Fand0File* parent)

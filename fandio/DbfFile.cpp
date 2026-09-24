@@ -6,6 +6,7 @@
 #include "../fandbase/textfunc.h"
 #include "../Common/Coding.h"
 #include "../Common/DateTime.h"
+#include "FileIO.h"
 #include "Messages.h"
 #include "Settings.h"
 #include "../Common/CommonVariables.h"

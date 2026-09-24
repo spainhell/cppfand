@@ -8,6 +8,7 @@
 #include "KeyFldD.h"
 
 #include "../Core/GlobalVariables.h"
+#include "FileIO.h"
 #include "Messages.h"
 #include "Settings.h"
 

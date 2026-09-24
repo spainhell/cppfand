@@ -6,7 +6,7 @@ fandcat links `fandio.lib` with `/WHOLEARCHIVE` and only `fandbase.lib` and `Log
 Each symbol below is used by fandio but defined elsewhere in CppFand.
 The goal is an empty list.
 
-- unresolved symbols: **68**
+- unresolved symbols: **58**
 - headers included from outside fandio: **9**
 
 ## Summary by defining file
@@ -14,13 +14,13 @@ The goal is an empty list.
 | Defined in | Symbols | Used from fandio |
 |---|---:|---|
 | Common/FileD | 22 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, locks, XKey, XScan, XXPage |
-| Core/base | 15 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XScan, XWorkFile |
 | Common/Record | 12 | Fand0File, XScan, XString, XWorkFile, XXPage |
+| Core/base | 6 | FandXFile, XScan, XWorkFile |
 | Core/legacy | 6 | DbfFile, DbfTFile, Fand0File |
 | Common/DateTime | 4 | DbfFile |
 | Core/GlobalVariables | 4 | FandTFile, FandXFile, XKey, XXPage |
 | Common/Coding | 2 | DbfFile, Fand0File, FandTFile |
-| Common/CommonVariables | 2 | DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XString, XWorkFile |
+| Common/CommonVariables | 1 | DbfFile, Fand0File, XString |
 | Core/access | 1 | XString |
 
 ## Symbols
@@ -50,24 +50,6 @@ The goal is an empty list.
 - `void FileD::SeekRec(int)` - Fand0File
 - `void FileD::Unlock(int)` - Fand0File
 
-### Core/base
-
-- `int MaxWSize` - XWorkFile
-- `long FileSizeH(void *)` - FandTFile
-- `long SeekH(void *,unsigned __int64)` - DataFileBase, XWorkFile
-- `std::string FandWorkName` - XWorkFile
-- `std::string FandWorkXName` - FandXFile
-- `unsigned __int64 ReadH(void *,unsigned __int64,void *)` - DataFileBase, DbfFile, XWorkFile
-- `unsigned __int64 WriteH(void *,unsigned __int64,void const *)` - DataFileBase, Fand0File, XWorkFile
-- `unsigned short MaxW(unsigned short,unsigned short)` - XScan
-- `unsigned short MinW(unsigned short,unsigned short)` - XScan
-- `void * OpenH(std::string const &,FileOpenMode,FileUseMode)` - DbfFile, DbfTFile, Fand0File, FandTFile
-- `void * WorkHandle` - XWorkFile
-- `void CloseClearH(void * *)` - DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile
-- `void CloseH(void * *)` - DbfFile, Fand0File, FandTFile, FandXFile
-- `void MyDeleteFile(std::string const &)` - Fand0File, FandTFile, FandXFile
-- `void RenameFile56(std::string const &,std::string const &,bool)` - Fand0File
-
 ### Common/Record
 
 - `bool Record::IsDeleted(void)const` - Fand0File, XScan
@@ -82,6 +64,15 @@ The goal is an empty list.
 - `void Record::CopyTo(Record *)const` - XScan
 - `void Record::SaveS(FieldDescr *,std::string const &)` - Fand0File
 - `void Record::SetDeleted(bool)` - Fand0File, XXPage
+
+### Core/base
+
+- `int MaxWSize` - XWorkFile
+- `std::string FandWorkName` - XWorkFile
+- `std::string FandWorkXName` - FandXFile
+- `unsigned short MaxW(unsigned short,unsigned short)` - XScan
+- `unsigned short MinW(unsigned short,unsigned short)` - XScan
+- `void * WorkHandle` - XWorkFile
 
 ### Core/legacy
 
@@ -114,7 +105,6 @@ The goal is an empty list.
 ### Common/CommonVariables
 
 - `double * Power10` - DbfFile, Fand0File, XString
-- `unsigned long HandleError` - DataFileBase, DbfFile, DbfTFile, Fand0File, FandTFile, FandXFile, XWorkFile
 
 ### Core/access
 

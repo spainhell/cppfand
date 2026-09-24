@@ -105,7 +105,7 @@ bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, WORD Kind, bool
 			fileD->FF->ClearUpdateFlag();
 		}
 	}
-	fandio::LockWait wait{ .mode = LockModeTxt[Mode], .cancellable = Kind == 1 };
+	fandio::LockWait wait{ .kind = fandio::LockWaitKind::Mode, .mode = LockModeTxt[Mode], .cancellable = Kind == 1 };
 label1:
 	if (Mode != NullMode)
 		if (!TryLockH(h, TransLock, 1)) {

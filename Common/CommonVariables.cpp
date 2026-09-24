@@ -8,5 +8,4 @@ std::string CDir;
 std::string CName;
 std::string CExt;
 std::string CVol;
-unsigned long HandleError; // r229
 uint16_t LANNode;

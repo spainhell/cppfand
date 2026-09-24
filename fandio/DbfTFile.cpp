@@ -2,6 +2,7 @@
 
 #include "../Common/CommonVariables.h"
 #include "../Core/access.h"
+#include "FileIO.h"
 #include "Messages.h"
 #include "../Core/GlobalVariables.h"
 
