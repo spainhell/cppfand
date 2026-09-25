@@ -1,0 +1,4 @@
+{ výsledky testů, čte je fandtest }
+Test :A,20;
+Stav :A,5;
+Popis:A,60;

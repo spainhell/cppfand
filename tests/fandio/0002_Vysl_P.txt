@@ -1,0 +1,10 @@
+{ zápis výsledku testu: Stav = OK nebo CHYBA }
+(t:string; stav:string; p:string)
+VAR r:record of VYSLEDKY;
+begin
+readrec(r,0);
+r.Test:=t;
+r.Stav:=stav;
+r.Popis:=p;
+writerec(r,0);
+end;

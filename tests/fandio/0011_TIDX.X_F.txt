@@ -1,0 +1,6 @@
+{ indexovaný soubor: vlastní klíč a sestupný alternativní klíč }
+Kod   :A,10;
+Poradi:F,5.0;
+Popis :A,30;
+#K @ Kod;
+PodlePor(@) >Poradi;

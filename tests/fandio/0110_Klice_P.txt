@@ -1,0 +1,52 @@
+{ indexovaný soubor: pořadí podle klíčů, hledání podle klíče, rušení a compress }
+VAR r:record of TIDX; i,v,n,pp:real; chyba,pred:string;
+begin
+chyba:='';
+TIDX.nrecs:=0;
+{ klíče K1001..K1100 v zamíchaném pořadí (permutace i*37 mod 101) }
+for i:=1 to 100 do begin
+  v:=i*37-int(i*37/101)*101;
+  readrec(r,0);
+  r.Kod:='K'+str(1000+v,4,0);
+  r.Poradi:=v;
+  r.Popis:='vložena jako '+str(i,3,0);
+  writerec(r,0);
+end;
+if TIDX.nrecs<>100 then chyba:='nrecs='+str(TIDX.nrecs,1,0);
+{ vzestupně podle vlastního klíče }
+pred:=''; n:=0;
+forall r/@ do begin
+  n:=n+1;
+  if (chyba='') & (r.Kod<=pred) then chyba:='pořadí /@ u '+r.Kod;
+  pred:=r.Kod;
+end;
+if (chyba='') & (n<>100) then chyba:='forall /@ prošel '+str(n,1,0);
+{ sestupně podle alternativního klíče }
+pp:=1000;
+forall r/PodlePor do begin
+  if (chyba='') & (r.Poradi>=pp) then chyba:='pořadí /PodlePor u '+str(r.Poradi,1,0);
+  pp:=r.Poradi;
+end;
+{ hledání podle klíče }
+for i:=1 to 100 do begin
+  readrec(r,keyof(TIDX,'K'+str(1000+i,4,0)));
+  if (chyba='') & (isdeleted(r) | (r.Poradi<>i)) then chyba:='readrec klíč K'+str(1000+i,4,0);
+end;
+{ zrušení každé třetí věty podle klíče }
+for i:=1 to 33 do deleterec(TIDX,keyof(TIDX,'K'+str(1000+3*i,4,0)));
+if (chyba='') & (TIDX.nrecs<>67) then chyba:='po rušení nrecs='+str(TIDX.nrecs,1,0);
+if (chyba='') & (TIDX.nrecsabs<>100) then chyba:='po rušení nrecsabs='+str(TIDX.nrecsabs,1,0);
+readrec(r,keyof(TIDX,'K1003'));
+if (chyba='') & ^isdeleted(r) then chyba:='zrušená K1003 se našla';
+{ reorganizace }
+indexfile(TIDX,compress);
+if (chyba='') & (TIDX.nrecsabs<>67) then chyba:='po compress nrecsabs='+str(TIDX.nrecsabs,1,0);
+pred:=''; n:=0;
+forall r/@ do begin
+  n:=n+1;
+  if (chyba='') & ((r.Kod<=pred) | (r.Poradi-int(r.Poradi/3)*3=0)) then chyba:='po compress u '+r.Kod;
+  pred:=r.Kod;
+end;
+if (chyba='') & (n<>67) then chyba:='po compress forall prošel '+str(n,1,0);
+proc(Vysl,('Klice',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;
