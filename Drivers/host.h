@@ -130,4 +130,27 @@ namespace FandHost
 	// Vlakno hostitele.
 	bool PollTextEdit(TextEditRequest& request);
 	void CompleteTextEdit(const TextEditResult& result);
+
+	// --- tisk na tiskarne Windows --------------------------------------------
+	// Nahrada puvodniho tisku na LPT (ASSIGN=LPT1, printtxt, F6, automaticky
+	// tisk auto-sestavy). Hostitel zobrazi tiskovy dialog Windows a text vytiskne
+	// sam: znaky atributu (^S, ^B, ^E, ...) prevede na styl pisma a 0x0C na novou
+	// stranku, ESC sekvence tiskaren z FAND.CFG se nepouzivaji.
+	struct PrintRequest
+	{
+		std::string Text;      // CP852, s ridicimi znaky atributu
+		std::string Title;     // nazev tiskove ulohy (CP852)
+		int Copies = 1;        // predvyplneny pocet kopii (TIMES=)
+	};
+
+	bool PrintEnabled();
+	void SetPrintEnabled(bool enabled);
+
+	// Vlakno interpretu: blokuje, dokud hostitel tisk nedokonci nebo nezrusi.
+	// Vraci false, kdyz tisk hostitel neumi (printed je pak false).
+	bool RunPrint(const PrintRequest& request, bool& printed);
+
+	// Vlakno hostitele.
+	bool PollPrint(PrintRequest& request);
+	void CompletePrint(bool printed);
 }

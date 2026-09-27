@@ -44,6 +44,7 @@ public partial class TextEditWindow : Window
     private readonly FandColorizer _colorizer;
     private readonly ControlCharGenerator _generator;
     private readonly string _originalText;
+    private readonly string _name;
 
     /// <summary>Text po editaci (CP852 uz si prevede volajici).</summary>
     public string ResultText { get; private set; } = "";
@@ -85,7 +86,10 @@ public partial class TextEditWindow : Window
         Editor.TextArea.TextView.ElementGenerators.Add(_generator);
 
         string name = Cp852.Decode(info.Name).Trim();
+        _name = name;
         Title = _isHelp ? "Nápověda" : (name.Length > 0 ? name : "Text");
+        // v nápovědě tiskne F6 interpret (EditorHelp.cpp), panel tam nedává smysl
+        if (_isHelp) OutputBar.Visibility = Visibility.Collapsed;
         if (Editor.IsReadOnly && !_isHelp) Title += " (jen prohlížení)";
 
         if (info.Pos > 0 && info.Pos < doc.TextLength) Editor.CaretOffset = info.Pos;
@@ -174,6 +178,12 @@ public partial class TextEditWindow : Window
                 e.Handled = true;
                 return;
 
+            // tisk, jako F6 v editoru PC-FANDu (TextEditor.cpp: PrintTxtFile/PrintArray)
+            case Key.F6 when Keyboard.Modifiers == ModifierKeys.None:
+                Print_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                return;
+
             // Mac nema klavesu Insert, zastupuje ji F11
             case Key.F11:
                 var mods = Keyboard.Modifiers;
@@ -257,6 +267,46 @@ public partial class TextEditWindow : Window
         // zavreni krizkem se chova jako Esc, aby interpret nezustal viset v RunTextEdit
         if (DialogResult == null) Finish(KeyEsc);
         base.OnClosing(e);
+    }
+
+    // --- tisk a export ------------------------------------------------------------
+
+    private void Print_Click(object sender, RoutedEventArgs e)
+    {
+        if (ReportActions.Print(this, Editor.Document.Text, _name)) HintText.Text = "odesláno na tiskárnu";
+        Editor.Focus();
+    }
+
+    private void SavePdf_Click(object sender, RoutedEventArgs e) => SaveAs(ReportActions.Format.Pdf);
+    private void SaveDocx_Click(object sender, RoutedEventArgs e) => SaveAs(ReportActions.Format.Docx);
+    private void SaveOdt_Click(object sender, RoutedEventArgs e) => SaveAs(ReportActions.Format.Odt);
+
+    private void SaveAs(ReportActions.Format format)
+    {
+        string? path = ReportActions.SaveAs(this, Editor.Document.Text, _name, format);
+        if (path != null) HintText.Text = "uloženo: " + path;
+        Editor.Focus();
+    }
+
+    private async void Email_Click(object sender, RoutedEventArgs e)
+    {
+        IsEnabled = false;
+        try
+        {
+            string status = await ReportActions.EmailAsync(this, Editor.Document.Text, _name);
+            if (status.Length > 0) HintText.Text = status;
+        }
+        finally
+        {
+            IsEnabled = true;
+            Editor.Focus();
+        }
+    }
+
+    private void MailSettings_Click(object sender, RoutedEventArgs e)
+    {
+        ReportActions.EditMailSettings(this);
+        Editor.Focus();
     }
 
     private void UpdateStatus()

@@ -31,6 +31,16 @@ namespace FandHost
 		bool g_textReady = false;
 		TextEditRequest g_textRequest;
 		TextEditResult g_textResult;
+
+		// tisk sestavy / textu na tiskarne Windows
+		std::atomic<bool> g_printEnabled{ false };
+		std::mutex g_printMutex;
+		std::condition_variable g_printCv;
+		bool g_printPending = false;
+		bool g_printTaken = false;
+		bool g_printReady = false;
+		bool g_printResult = false;
+		PrintRequest g_printRequest;
 	}
 
 	bool IsEnabled() { return g_enabled; }
@@ -58,6 +68,15 @@ namespace FandHost
 			g_textPending = false;
 			g_textTaken = false;
 			g_textCv.notify_all();
+		}
+		// a kdyz ceka na tisk
+		std::lock_guard<std::mutex> printLock(g_printMutex);
+		if (g_printPending || g_printTaken) {
+			g_printResult = false;
+			g_printReady = true;
+			g_printPending = false;
+			g_printTaken = false;
+			g_printCv.notify_all();
 		}
 	}
 
@@ -203,5 +222,45 @@ namespace FandHost
 		g_textTaken = false;
 		g_textReady = true;
 		g_textCv.notify_all();
+	}
+
+	bool PrintEnabled() { return g_enabled && g_printEnabled; }
+	void SetPrintEnabled(bool enabled) { g_printEnabled = enabled; }
+
+	bool RunPrint(const PrintRequest& request, bool& printed)
+	{
+		printed = false;
+		if (!PrintEnabled() || g_stop) return false;
+
+		std::unique_lock<std::mutex> lock(g_printMutex);
+		g_printRequest = request;
+		g_printResult = false;
+		g_printPending = true;
+		g_printTaken = false;
+		g_printReady = false;
+		g_printCv.wait(lock, [] { return g_printReady; });
+		printed = g_printResult;
+		g_printReady = false;
+		return true;
+	}
+
+	bool PollPrint(PrintRequest& request)
+	{
+		std::lock_guard<std::mutex> lock(g_printMutex);
+		if (!g_printPending) return false;
+		request = g_printRequest;
+		g_printPending = false;
+		g_printTaken = true;
+		return true;
+	}
+
+	void CompletePrint(bool printed)
+	{
+		std::lock_guard<std::mutex> lock(g_printMutex);
+		if (!g_printTaken) return;
+		g_printResult = printed;
+		g_printTaken = false;
+		g_printReady = true;
+		g_printCv.notify_all();
 	}
 }

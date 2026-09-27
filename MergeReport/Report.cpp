@@ -17,6 +17,7 @@
 #include "../Core/oaccess.h"
 #include "../Core/obase.h"
 #include "../Core/obaseww.h"
+#include "../Core/printtxt.h"
 #include "../Core/RunMessage.h"
 #include "../Core/wwmix.h"
 #include "../Core/rdfildcl.h"
@@ -339,6 +340,14 @@ void Report::Run(RprtOpt* RO)
 	if (PgeSize < 2) PgeSize = 2;
 	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
 	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru
+	// u tiskarny tiskne hostitel TIMES kopii z jednoho behu sestavy
+	WORD lptCopies = 1;
+	std::string lptPath;
+	if (isLPT1) {
+		lptCopies = Times;
+		Times = 1;
+		lptPath = CPath;
+	}
 	//MarkStore(Store2Ptr);
 	ex = true;
 	//Compiler::ProcStack.push_front(&LVBD); //PushProcStk();
@@ -411,8 +420,11 @@ label1:
 			printf("%s%s", ReportString.c_str(), MsgLine.c_str());
 		}
 		Rprt.Close(ReportString.c_str());
-		// if (isLPT1) ClosePrinter(0);
 		CloseInp();
+		if (isLPT1 && !ex) {
+			std::string text;
+			if (ReadWholeFile(lptPath, text)) PrintViaHost(text, lptCopies, "Sestava");
+		}
 		//LVBD = *Compiler::ProcStack.front(); Compiler::ProcStack.pop_front(); //PopProcStk();
 		if (ex) {
 			RunMsgOff();
@@ -2169,11 +2181,19 @@ bool Report::RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 	}
 	else {
 		if (!RO->Path.empty() && EquUpCase(RO->Path, "LPT1")) {
-			CPath = "LPT1";
-			CVol = "";
+			// Tiskarna: sestava se zapise do PRINTER.TXT a po dokonceni ji vytiskne
+			// hostitel pres tiskovy dialog Windows (Report::Run). Times zustava
+			// jako pocet kopii, sestava se neopakuje.
 			IsLPT1 = true;
-			result = ResetPrinter(pageLimit, 0, true, true) && RewriteTxt(CPath, &Rprt, false);
-			return result;
+			SetPrintTxtPath();
+			PrintView = false;
+			PrintCtrl = false;
+			if (!RewriteTxt(CPath, &Rprt, PrintCtrl)) {
+				SetMsgPar(CPath);
+				WrLLF10Msg(700 + HandleError);
+				return result;
+			}
+			return true;
 		}
 		SetTxtPathVol(RO->Path, RO->CatIRec);
 	}

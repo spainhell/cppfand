@@ -12,6 +12,7 @@
 #include "RunMessage.h"
 #include "runfrml.h"
 #include "wwmenu.h"
+#include "../Drivers/host.h"
 
 char* pBlk;
 WORD iBlk, nBlk, Po;
@@ -236,55 +237,64 @@ label3:
 	RunMsgOff();
 }
 
+/// Tisk pres hostitele (tiskovy dialog Windows). Vraci false, kdyz hostitel tisk
+/// neumi; pak se pokracuje puvodni cestou pres ESC kody tiskarny.
+bool PrintViaHost(const std::string& text, int copies, const std::string& title)
+{
+	FandHost::PrintRequest request;
+	request.Text = text;
+	request.Title = title;
+	request.Copies = copies > 0 ? copies : 1;
+	bool printed = false;
+	return FandHost::RunPrint(request, printed);
+}
+
+/// Nazev souboru bez cesty, pro titulek tiskove ulohy.
+static std::string TitleFromPath(const std::string& path)
+{
+	size_t i = path.find_last_of("\\/:");
+	return i == std::string::npos ? path : path.substr(i + 1);
+}
+
+bool ReadWholeFile(const std::string& path, std::string& text)
+{
+	FILE* handle = nullptr;
+	if (fopen_s(&handle, path.c_str(), "rb") != 0 || handle == nullptr) return false;
+	fseek(handle, 0, SEEK_END);
+	long size = ftell(handle);
+	fseek(handle, 0, SEEK_SET);
+	text.assign(size > 0 ? (size_t)size : 0, '\0');
+	size_t read = size > 0 ? fread(&text[0], 1, (size_t)size, handle) : 0;
+	text.resize(read);
+	fclose(handle);
+	return true;
+}
+
 void PrintTxtFile(int BegPos)
 {
-	//TestMountVol(CPath[1]);
-	//if (!Rprt.ResetTxt())
-	//{
-	//	SetMsgPar(CPath);
-	//	WrLLF10Msg(700 + HandleError);
-	//	return;
-	//}
 	std::string text;
-	try {
-		//std::ifstream t(CPath);
-		//text = std::string((std::istreambuf_iterator<char>(t)),	std::istreambuf_iterator<char>());
-		//t.close();
-		FILE* handle;
-		fopen_s(&handle, CPath.c_str(), "r");
-		fseek(handle, 0, std::ios::end);
-		size_t size = ftell(handle);
-		text = std::string(size, ' ');
-		fseek(handle, 0, std::ios::beg);
-		fread(&text[0], 1, size, handle);
-		fclose(handle);
-	}
-	catch (std::exception& e) {
+	if (!ReadWholeFile(CPath, text)) {
 		SetMsgPar(CPath);
 		WrLLF10Msg(700 + HandleError);
 		return;
 	}
+	if (BegPos > 0 && (size_t)BegPos < text.size()) text.erase(0, BegPos);
+
+	if (PrintViaHost(text, 1, TitleFromPath(CPath))) return;
 
 	printBlk = false;
-	PrintTxtFBlk(text, BegPos, true);
-
-	//if (Rprt.Handle == nullptr) return;
-	//Rprt.Close(nullptr); // nullptr je tady navic po uprave metody Close()
+	PrintTxtFBlk(text, 0, true);
 }
-
-
 
 void PrintArray(void* P, WORD N, bool CtrlL)
 {
-	printBlk = true;
-	std::string text = std::string((char*)P);
-	//pBlk = CharArrPtr(P);
-	//nBlk = N;
-	PrintTxtFBlk(text, 0, CtrlL);
+	std::string text = N > 0 ? std::string((char*)P, N) : std::string((char*)P);
+	PrintArray(text, CtrlL);
 }
 
 void PrintArray(const std::string& arr, bool CtrlL)
 {
+	if (PrintViaHost(arr, 1, "FAND")) return;
 	printBlk = true;
 	PrintTxtFBlk(arr, 0, CtrlL);
 }

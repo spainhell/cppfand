@@ -42,6 +42,7 @@ public partial class MainWindow : Window
         Loaded += (_, _) =>
         {
             Native.FandSetScreenSize(HostSettings.ScreenCols, HostSettings.ScreenRows);
+            Native.FandSetPrintHost(1);   // ASSIGN=LPT1, printtxt: tisk přes dialog Windows
             int rc = Native.FandStart(options.FandDir, options.WorkDir, options.RdbName, options.Mode);
             if (rc != 0)
             {
@@ -73,6 +74,7 @@ public partial class MainWindow : Window
 
         TryBeginPendingEdit();
         TryBeginPendingTextEdit();
+        TryBeginPendingPrint();
 
         if (_started && info.Running == 0 && !_endedReported)
         {
@@ -116,6 +118,35 @@ public partial class MainWindow : Window
         finally
         {
             _textEditOpen = false;
+            Terminal.Focus();
+        }
+    }
+
+    private bool _printOpen;
+
+    /// <summary>
+    /// Interpret čeká v RunPrint (Drivers/host.h): sestava s ASSIGN=LPT1 nebo printtxt.
+    /// Tiskový dialog nahrazuje původní výběr tiskárny a tisk na LPT.
+    /// </summary>
+    private void TryBeginPendingPrint()
+    {
+        if (_printOpen || !_started) return;
+        if (Native.FandPollPrint(out var info) == 0) return;
+
+        _printOpen = true;
+        bool printed = false;
+        try
+        {
+            var bytes = new byte[Math.Max(info.TextLength, 1)];
+            int len = Native.FandGetPrintText(bytes, info.TextLength);
+            string text = FandAttr.Decode(bytes, len);
+            string title = Cp852.Decode(info.Title).Trim();
+            printed = ReportActions.Print(this, text, title, Math.Max(1, info.Copies));
+        }
+        finally
+        {
+            Native.FandCompletePrint(printed ? 1 : 0);
+            _printOpen = false;
             Terminal.Focus();
         }
     }

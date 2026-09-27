@@ -3448,8 +3448,12 @@ void DataEditor::AutoReport()
 		SpecFDNameAllowed = false;
 	}
 	ReleaseStore(&p);
-	std::unique_ptr<TextEditor> text_editor = std::make_unique<TextEditor>(EditorMode::Unknown, TextType::Unknown);
-	text_editor->ViewPrinterTxt();
+	// PrintView nastavi RewriteRprt jen pro vystup do PRINTER.TXT; po tisku
+	// (AutoRprtPrint -> ASSIGN=LPT1) ani po zruseni vyberu se nic neprohlizi
+	if (PrintView) {
+		std::unique_ptr<TextEditor> text_editor = std::make_unique<TextEditor>(EditorMode::Unknown, TextType::Unknown);
+		text_editor->ViewPrinterTxt();
+	}
 	//record_ = edit_->NewRec->GetRecord();
 }
 

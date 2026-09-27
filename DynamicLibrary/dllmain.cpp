@@ -495,6 +495,54 @@ extern "C" void FAND_API FandCompleteTextEdit(const char* text, int textLength, 
 	FandHost::CompleteTextEdit(res);
 }
 
+// --- tisk na tiskarne Windows (viz FandHost::RunPrint) ---------------------
+
+struct FandPrintInfo
+{
+	int TextLength;      // v bajtech CP852, bez ukoncujici nuly
+	int Copies;          // predvyplneny pocet kopii
+	char Title[128];     // nazev tiskove ulohy (CP852)
+};
+
+namespace
+{
+	FandHost::PrintRequest g_pendingPrint;
+}
+
+extern "C" void FAND_API FandSetPrintHost(int enabled)
+{
+	FandHost::SetPrintEnabled(enabled != 0);
+}
+
+/// Vyzvedne cekajici pozadavek na tisk. Vraci 1, pokud byl.
+extern "C" int FAND_API FandPollPrint(FandPrintInfo* info)
+{
+	if (info == nullptr) return 0;
+	if (!FandHost::PollPrint(g_pendingPrint)) return 0;
+	info->TextLength = static_cast<int>(g_pendingPrint.Text.size());
+	info->Copies = g_pendingPrint.Copies;
+	memset(info->Title, 0, sizeof(info->Title));
+	strncpy_s(info->Title, g_pendingPrint.Title.c_str(), sizeof(info->Title) - 1);
+	return 1;
+}
+
+/// Zkopiruje text vyzvednuteho tisku (CP852, bez ukoncujici nuly). Vraci pocet bajtu.
+extern "C" int FAND_API FandGetPrintText(char* buffer, int capacity)
+{
+	if (buffer == nullptr || capacity <= 0) return 0;
+	int len = static_cast<int>(g_pendingPrint.Text.size());
+	if (len > capacity) len = capacity;
+	memcpy(buffer, g_pendingPrint.Text.data(), len);
+	return len;
+}
+
+/// Tisk dokoncen (printed = 1) nebo zrusen (0); probudi interpret.
+extern "C" void FAND_API FandCompletePrint(int printed)
+{
+	g_pendingPrint = FandHost::PrintRequest();
+	FandHost::CompletePrint(printed != 0);
+}
+
 /// Preda vysledek editace: text (CP852), pozice kurzoru (1-based), rezim vkladani,
 /// ukoncovaci klavesa v kodovani KeyCombination (0x8000 = neznakova, 0x0400 Alt, 0x0200 Ctrl, 0x0100 Shift).
 extern "C" void FAND_API FandCompleteFieldEdit(const char* text, int pos, int insertMode, uint16_t key)

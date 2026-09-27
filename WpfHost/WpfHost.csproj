@@ -47,6 +47,17 @@
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
   </ItemGroup>
 
+  <!-- export sestav do PDF (MIT); DOCX a ODT se skladaji rucne jako zip s XML -->
+  <ItemGroup>
+    <PackageReference Include="PDFsharp" Version="6.2.4" />
+  </ItemGroup>
+
+  <!-- .NET Framework: tiskový dialog a PrintTicket -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.Printing" />
+    <Reference Include="ReachFramework" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Remove="System.Net.Http" />
     <Using Remove="System.Windows.Forms" />

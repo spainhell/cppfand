@@ -5,6 +5,17 @@
         Title="Text" Height="700" Width="1000"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
     <DockPanel>
+        <!-- tisk a export; v nápovědě skrytý -->
+        <ToolBar x:Name="OutputBar" DockPanel.Dock="Top" ToolBarTray.IsLocked="True">
+            <Button Content="Tisk… (F6)" Click="Print_Click" ToolTip="Vytisknout na tiskárně Windows"/>
+            <Separator/>
+            <Button Content="PDF…" Click="SavePdf_Click" ToolTip="Uložit jako PDF"/>
+            <Button Content="Word…" Click="SaveDocx_Click" ToolTip="Uložit jako dokument Word (DOCX)"/>
+            <Button Content="ODT…" Click="SaveOdt_Click" ToolTip="Uložit jako OpenDocument (LibreOffice)"/>
+            <Separator/>
+            <Button Content="E-mailem…" Click="Email_Click" ToolTip="Odeslat jako PDF přílohu"/>
+            <Button Content="Nastavení e-mailu…" Click="MailSettings_Click"/>
+        </ToolBar>
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem><TextBlock x:Name="PosText" Text="–"/></StatusBarItem>
             <Separator/>
