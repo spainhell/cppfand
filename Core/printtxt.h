@@ -27,3 +27,8 @@ void PrintTxtFile(int BegPos);
 void PrintArray(void* P, WORD N, bool CtrlL);
 void PrintArray(const std::string& arr, bool CtrlL);
 void PrintFandWork();
+
+// tisk pres hostitele (tiskovy dialog Windows); false = hostitel tisk neumi
+bool PrintViaHost(const std::string& text, int copies, const std::string& title);
+// precte cely soubor bajtove (CP852, CRLF zustavaji)
+bool ReadWholeFile(const std::string& path, std::string& text);

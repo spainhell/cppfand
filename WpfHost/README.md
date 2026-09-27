@@ -23,6 +23,37 @@ mu dělá obrazovku a klávesnici:
   text převede na masku (`DD.MM.YY`). Enter, Esc, Tab, šipky nahoru/dolů,
   PgUp/PgDn, F-klávesy a Ctrl/Alt kombinace editaci ukončí a klávesu dostane
   FAND, který ji zpracuje stejně jako v konzoli.
+- **Tisk a export sestav**: viz níže.
+
+## Tisk, PDF, Word a e-mail
+
+Výstup sestavy (`PRINTER.TXT`, kapitoly R i auto-sestavy) i jakýkoli text
+v prohlížeči (`TextEditWindow`) má nahoře panel **Tisk… (F6) · PDF… · Word… ·
+ODT… · E-mailem… · Nastavení e-mailu…**.
+
+- Text se rozloží na stránky podle `0x0C` (FormFeed v `Report.cpp`) a přepínací
+  znaky atributů se kreslí stylem písma Consolas: `^B`/`^D` tučně, `^W` kurzíva,
+  `^S` podtržení, `^E` zhuštěně (17 cpi), `^A` elite (12 cpi), `^Q` dvojitá šířka.
+  ESC sekvence tiskáren z `FAND.CFG` se na Windows nepoužívají.
+- Písmo se přizpůsobí papíru: nejdelší řádek se vejde na šířku, stránka sestavy
+  na výšku (7–12 pt); široké sestavy jdou na šířku papíru. Delší stránky se dělí.
+  Rozvržení (`ReportLayout.cs`) sdílí tisk, PDF, DOCX i ODT.
+- **Tisk** jde přes běžný tiskový dialog Windows (tiskárna, kopie, rozsah stran).
+  Stejný dialog otevírají i cesty z jazyka FANDu, které dřív tiskly na LPT:
+  `report(... ASSIGN=LPT1 ...)` (`TIMES=` = počet kopií), automatický tisk
+  auto-sestavy (`AutoRprtPrint` ve `FAND.CFG`), `printtxt` a F6 v nápovědě.
+  Interpret čeká v `FandHost::RunPrint` (`Drivers/host.h`), hostitel požadavek
+  vyzvedne přes `FandPollPrint` / `FandGetPrintText` / `FandCompletePrint`.
+- **PDF** vytváří PDFsharp (MIT) s vloženým písmem Consolas. **DOCX a ODT** se
+  skládají ručně (`ReportOffice.cs`, `SimpleZip.cs`): každý řádek je odstavec
+  s pevnou výškou řádku, stránky sestavy začínají novou stránkou.
+- **E-mail** pošle sestavu jako PDF přílohu. Bez nastaveného SMTP serveru se
+  otevře nový e-mail ve výchozím poštovním klientovi (Simple MAPI: klasický
+  Outlook, Thunderbird, eM Client…); nový Outlook ani webová pošta MAPI neumí,
+  program pak nabídne nastavení SMTP. S vyplněným serverem (**Nastavení e-mailu…**)
+  pošle e-mail sám; nastavení je v `%AppData%\cppfand\mail.txt`, heslo
+  zašifrované DPAPI pro daného uživatele Windows. Podporovaný je STARTTLS
+  (obvykle port 587), implicitní TLS na portu 465 `SmtpClient` neumí.
 
 ## Spuštění
 
@@ -98,7 +129,8 @@ editor, i se Shift/Ctrl) zastupuje F11; FAND sám F11 nepoužívá.
   (`net10.0-windows`), v platformách **x64** i **x86**. Výstup leží vedle
   nativních binárek: `x64\Release\wpf\<TFM>\` pro x64 a `Release\wpf\<TFM>\`
   pro 32bit, která používá 32bitovou `cppfandlib.dll` z konfigurace Win32.
-  Pro klienty stačí složka `net48`:
+  Pro klienty stačí složka `net48` (celá, včetně knihoven PDFsharp a jeho
+  závislostí):
   .NET Framework 4.8 je součástí Windows 10 (od 1903) a 11, nic dalšího
   se neinstaluje. Nativní `cppfandlib.dll` i `cppfand.exe` jsou linkované
   se statickou runtime knihovnou (`/MT`), takže nepotřebují Visual C++
@@ -121,3 +153,6 @@ editor, i se Shift/Ctrl) zastupuje F11; FAND sám F11 nepoužívá.
 - Kolečko myši původní PC-FAND neznal, interpretu se neposílá
   (Ctrl+kolečko mění velikost písma).
 - Heslo (`star`) se v překryvném editoru jen skrývá barvou.
+- Nový tiskový dialog Windows 11 u tisku z WPF nezobrazuje náhled.
+- Tečkové příkazy textu pro tisk (`.pl`, `.he`, `.fo`, …) se při tisku přes
+  Windows neinterpretují, stránkuje se jen podle `0x0C` a výšky papíru.

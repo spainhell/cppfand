@@ -135,6 +135,27 @@ public static class Native
     public static extern void FandCompleteTextEdit(byte[] textCp852, int textLength, int pos, int scroll, int updated,
         ushort key, byte[]? wordCp852, int wordLength);
 
+    /// <summary>Musí odpovídat struct FandPrintInfo v DynamicLibrary/dllmain.cpp.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PrintInfo
+    {
+        public int TextLength;      // bajty CP852
+        public int Copies;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)] public byte[] Title;
+    }
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void FandSetPrintHost(int enabled);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int FandPollPrint(out PrintInfo info);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int FandGetPrintText([Out] byte[] buffer, int capacity);
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void FandCompletePrint(int printed);
+
     public static string LastError()
     {
         var sb = new StringBuilder(512);

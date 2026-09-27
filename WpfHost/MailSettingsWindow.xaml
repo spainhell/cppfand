@@ -1,0 +1,38 @@
+<Window x:Class="WpfHost.MailSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Nastavení e-mailu" SizeToContent="WidthAndHeight" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <StackPanel Margin="14" Width="420">
+        <TextBlock TextWrapping="Wrap" Margin="0,0,0,10" Foreground="#555"
+                   Text="Bez vyplněného serveru se sestava otevře ve výchozím poštovním klientovi (Outlook, Thunderbird…). Se serverem ji program odešle sám přes SMTP."/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Content="SMTP server:" Target="{Binding ElementName=HostBox}"/>
+            <TextBox Grid.Row="0" Grid.Column="1" x:Name="HostBox" Margin="0,3" ToolTip="např. smtp.firma.cz; prázdné = výchozí poštovní klient"/>
+            <Label Grid.Row="1" Content="Port:" Target="{Binding ElementName=PortBox}"/>
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
+                <TextBox x:Name="PortBox" Width="60"/>
+                <CheckBox x:Name="SslBox" Content="šifrovat (STARTTLS)" Margin="12,0,0,0" VerticalAlignment="Center"
+                          ToolTip="Obvykle port 587. Implicitní TLS na portu 465 není podporováno."/>
+            </StackPanel>
+            <Label Grid.Row="2" Content="Uživatel:" Target="{Binding ElementName=UserBox}"/>
+            <TextBox Grid.Row="2" Grid.Column="1" x:Name="UserBox" Margin="0,3"/>
+            <Label Grid.Row="3" Content="Heslo:" Target="{Binding ElementName=PasswordBox}"/>
+            <PasswordBox Grid.Row="3" Grid.Column="1" x:Name="PasswordBox" Margin="0,3"
+                         ToolTip="Uloží se zašifrované pro tohoto uživatele Windows."/>
+            <Label Grid.Row="4" Content="Odesílatel:" Target="{Binding ElementName=FromBox}"/>
+            <TextBox Grid.Row="4" Grid.Column="1" x:Name="FromBox" Margin="0,3" ToolTip="adresa odesílatele, např. ucetni@firma.cz"/>
+        </Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="OK" Width="80" IsDefault="True" Click="Ok_Click"/>
+            <Button Content="Zrušit" Width="80" Margin="8,0,0,0" IsCancel="True"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

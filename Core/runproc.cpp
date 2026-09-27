@@ -513,12 +513,9 @@ void RunProcedure::EditTxtProc(Instr_edittxt* PD)
 
 void RunProcedure::PrintTxtProc(Instr_edittxt* PD)
 {
-	LongStr* s = nullptr;
-	/* !!! with PD^ do!!! */
 	if (PD->TxtLV != nullptr) {
-		//s = TWork.ReadLongStr(1, *(int*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs));
-		PrintArray(s->A, s->LL, false);
-		delete s; s = nullptr;
+		// text lokalni promenne (drive se tu dereferencoval nullptr)
+		PrintArray(PD->TxtLV->S, false);
 	}
 	else {
 		SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec);
