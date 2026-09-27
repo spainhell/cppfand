@@ -1,6 +1,6 @@
 // fandtest - runs a PC-FAND test task in CppFand and reports its results.
 //
-//   fandtest [--fand-dir DIR] [--timeout SEC] [--keep] <task-dir>
+//   fandtest [--fand-dir DIR] [--timeout SEC] [--only TEST[,TEST...]] [--keep] <task-dir>
 //
 // 1. Packs the chapter files of <task-dir> (NNNN_<name>_<type>.txt) into
 //    FANDTEST.RDB in a new temporary work directory (fandrdb pack).
@@ -187,16 +187,18 @@ int main(int argc, char* argv[])
 	std::string fand_dir = env("FANDDIR");
 	int timeout_s = 60;
 	bool keep = false;
+	std::string only;
 	std::string task_dir;
 	for (int i = 1; i < argc; i++) {
 		const std::string a = argv[i];
 		if (a == "--fand-dir" && i + 1 < argc) fand_dir = argv[++i];
 		else if (a == "--timeout" && i + 1 < argc) timeout_s = atoi(argv[++i]);
+		else if (a == "--only" && i + 1 < argc) only = argv[++i];
 		else if (a == "--keep") keep = true;
 		else task_dir = a;
 	}
 	if (task_dir.empty()) {
-		fprintf(stderr, "usage: fandtest [--fand-dir DIR] [--timeout SEC] [--keep] <task-dir>\n");
+		fprintf(stderr, "usage: fandtest [--fand-dir DIR] [--timeout SEC] [--only TEST[,TEST...]] [--keep] <task-dir>\n");
 		return 2;
 	}
 	if (fand_dir.empty() || !fs::exists(fs::path(fand_dir) / "FAND.RES")) {
@@ -209,6 +211,54 @@ int main(int argc, char* argv[])
 		std::chrono::system_clock::now().time_since_epoch()).count() % 100000000;
 	const fs::path work = fs::temp_directory_path() / ("ft" + std::to_string(stamp));
 	fs::create_directories(work);
+	if (!only.empty()) {
+		// a copy of the chapters where MAIN calls only the selected tests
+		const fs::path src = work / "src";
+		fs::create_directories(src);
+		// test chapters (numbers 0100 and higher) that are not selected are left out,
+		// so that a compile error in one of them does not stop the others
+		auto selected = [&only](const std::string& file_name) {
+			const std::string list = "," + only + ",";
+			const size_t first = file_name.find('_');
+			const size_t last = file_name.rfind('_');
+			if (first == std::string::npos || last <= first) return true;
+			if (std::atoi(file_name.substr(0, first).c_str()) < 100) return true;
+			const std::string name = "," + file_name.substr(first + 1, last - first - 1) + ",";
+			for (size_t i = 0; i + name.size() <= list.size(); i++) {
+				if (_strnicmp(list.c_str() + i, name.c_str(), name.size()) == 0) return true;
+			}
+			return false;
+		};
+		fs::path main_chapter;
+		for (const auto& entry : fs::directory_iterator(task_dir)) {
+			if (entry.path().extension() != ".txt") continue;
+			const std::string name = entry.path().filename().string();
+			if (!selected(name)) continue;
+			fs::copy_file(entry.path(), src / entry.path().filename());
+			if (name.size() > 11 && _stricmp(name.substr(name.size() - 11).c_str(), "_MAIN_P.txt") == 0) {
+				main_chapter = src / entry.path().filename();
+			}
+		}
+		if (main_chapter.empty()) {
+			fprintf(stderr, "no MAIN chapter (NNNN_MAIN_P.txt) in '%s'\n", task_dir.c_str());
+			return 2;
+		}
+		std::string main_text = "begin\r\n";
+		size_t start = 0;
+		while (start <= only.size()) {
+			const size_t comma = only.find(',', start);
+			const std::string test = only.substr(start, comma == std::string::npos ? std::string::npos : comma - start);
+			if (!test.empty()) main_text += "proc(" + test + ");\r\n";
+			if (comma == std::string::npos) break;
+			start = comma + 1;
+		}
+		main_text += std::string("proc(Vysl,('") + EndMark + "','OK',''));\r\nend;\r\n";
+		FILE* f = nullptr;
+		if (_wfopen_s(&f, main_chapter.c_str(), L"wb") != 0 || f == nullptr) return 2;
+		fwrite(main_text.data(), 1, main_text.size(), f);
+		fclose(f);
+		task_dir = src.string();
+	}
 	const fs::path rdb = work / (std::string(TaskName) + ".RDB");
 	const std::string pack = "\"\"" + (exe_dir() / "fandrdb.exe").string() + "\" pack \"" + task_dir + "\" \"" + rdb.string() + "\" > nul\"";
 	if (std::system(pack.c_str()) != 0) {

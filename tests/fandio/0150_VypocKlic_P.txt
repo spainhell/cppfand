@@ -1,0 +1,40 @@
+{ klíč nad vypočítaným údajem: pořadí, hledání, změna věty, reindexace }
+VAR r:record of TCOMP; i,n,s:real; chyba:string;
+begin
+chyba:='';
+TCOMP.nrecs:=0;
+{ Soucet = A+B = 3*i, věty vkládané sestupně }
+for i:=1 to 50 do begin
+  readrec(r,0);
+  r.A:=51-i;
+  r.B:=2*(51-i);
+  writerec(r,0);
+end;
+s:=0; n:=0;
+forall r/@ do begin
+  n:=n+1;
+  if (chyba='') & (r.Soucet<=s) then chyba:='pořadí /@ u Soucet '+str(r.Soucet,1,0);
+  s:=r.Soucet;
+end;
+if (chyba='') & (n<>50) then chyba:='forall /@ prošel '+str(n,1,0);
+readrec(r,keyof(TCOMP,30));
+if (chyba='') & (isdeleted(r) | (r.A<>10)) then chyba:='hledání Soucet 30';
+{ změna věty s A=10: nový součet 1000 musí být v indexu, starý 30 ne }
+r.B:=990;
+writerec(r,keyof(TCOMP,30));
+readrec(r,keyof(TCOMP,30));
+if (chyba='') & ^isdeleted(r) then chyba:='starý klíč 30 se po změně našel';
+readrec(r,keyof(TCOMP,1000));
+if (chyba='') & (isdeleted(r) | (r.A<>10)) then chyba:='nový klíč 1000 se po změně nenašel';
+{ poslední podle klíče musí být změněná věta }
+forall r/@ do s:=r.Soucet;
+if (chyba='') & (s<>1000) then chyba:='po změně poslední Soucet '+str(s,1,0);
+{ reindexace }
+indexfile(TCOMP);
+readrec(r,keyof(TCOMP,1000));
+if (chyba='') & (isdeleted(r) | (r.A<>10)) then chyba:='po indexfile klíč 1000';
+n:=0;
+forall r/@ do n:=n+1;
+if (chyba='') & (n<>50) then chyba:='po indexfile forall prošel '+str(n,1,0);
+proc(Vysl,('VypocKlic',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;

@@ -1,0 +1,3 @@
+{ indexovaný soubor s lexikálním klíčem }
+Jmeno:A,20;
+#K @ ~Jmeno;

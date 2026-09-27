@@ -14,6 +14,8 @@ x64\Debug\fandtest.exe --fand-dir C:\PCFAND\fis-cppfand tests\fandio
   v repozitáři nejsou.
 - `--timeout SEC` (výchozí 60): když úloha do té doby neskončí, spouštěč vypíše
   obrazovku (typicky chybu překladu nebo hlášku čekající na klávesu) a úlohu zastaví.
+- `--only Test1,Test2`: pustí jen vybrané testy. Ostatní testovací kapitoly (0100 a výš)
+  do úlohy nedá, takže chyba překladu v jednom testu nebrání ladění ostatních.
 - `--keep`: nechá pracovní adresář s úlohou, daty a `fand.log`.
 
 Návratový kód 0 = všechny testy prošly, 1 = některý selhal nebo úloha nedoběhla.
@@ -39,6 +41,17 @@ Soubor `NNNN_<název>_<typ>.txt`, kódování UTF-8 (při balení se převede do
 | 0010–0099 | deklarace testovacích souborů (F) |
 | 0100–     | testy (P), jeden test = jedna procedura |
 
+| Test | Co ověřuje |
+|---|---|
+| ZapisCteni | všechny typy uložených údajů, přepis vět, čtení po zavření souboru |
+| Klice | vlastní a sestupný alternativní klíč, `keyof`, rušení, `indexfile` s `compress` |
+| Texty | volné texty 0 B až 65 000 B, přepis, rušení věty, `appendrec` |
+| Trideni | `sort` vzestupně i sestupně |
+| DuplKlice | duplicitní klíč, `key in`, `getindex`, `recno`, `forall` s podmínkou, `recallrec` |
+| VypocKlic | klíč nad vypočítaným údajem, změna věty, reindexace |
+| Lexikalni | české řazení (`~`) v klíči, v `sort` a v porovnání; závisí na tabulce abecedy ve FAND.CFG |
+| Transformace | `merge` s filtrem do indexovaného souboru, připojení `+`, přepis s výpočtem |
+
 Nový test: přidat proceduru `01x0_<Název>_P.txt`, na jejím konci zavolat
 `proc(Vysl,('<Název>',cond(chyba='':'OK',else:'CHYBA'),chyba));`
 a zařadit ji do `MAIN`. Každý test si na začátku vyprázdní své soubory
@@ -54,3 +67,8 @@ a zařadit ji do `MAIN`. Každý test si na začátku vyprázdní své soubory
 - **`modulo`** je kontrola kontrolní číslice, ne zbytek po dělení
   (zbytek: `i-int(i/n)*n`).
 - Procedura bez parametrů se volá `proc(Název)`.
+- Cyklus `for` zná jen `to`, ne `downto`.
+- **Podmínka ve `forall`** se píše nad údaji souboru: `forall r (Por>90)`, ne `(r.Por>90)`.
+- **`readrec` podle alternativního klíče** potřebuje klíč i u proměnné:
+  `readrec(r/Klic,keyof(SOUBOR/Klic,…))`. Bez něj se hledá podle vlastního klíče `@`.
+- **České řazení:** samostatná písmena jsou jen Č, Ř, Š, Ž a CH. Ď, Ť, Ň se řadí jako D, T, N.

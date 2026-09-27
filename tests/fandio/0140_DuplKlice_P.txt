@@ -1,0 +1,58 @@
+{ duplicitní klíč: key in, getindex, recno, forall s podmínkou, rušení a obnovení věty }
+VAR r:record of TDUP; ix:index of TDUP; i,n,s:real; chyba:string;
+begin
+chyba:='';
+TDUP.nrecs:=0;
+{ Skup = i mod 7: skupina 0 má 14 vět, 1 a 2 po 15, 3..6 po 14 }
+for i:=1 to 100 do begin
+  readrec(r,0);
+  r.Skup:=i-int(i/7)*7;
+  r.Por:=i;
+  writerec(r,0);
+end;
+if TDUP.nrecs<>100 then chyba:='nrecs='+str(TDUP.nrecs,1,0);
+{ pořadí podle duplicitního klíče }
+s:=-1; n:=0;
+forall r/@ do begin
+  n:=n+1;
+  if (chyba='') & (r.Skup<s) then chyba:='pořadí /@ u Por '+str(r.Por,1,0);
+  s:=r.Skup;
+end;
+if (chyba='') & (n<>100) then chyba:='forall /@ prošel '+str(n,1,0);
+{ key in: jedna hodnota a interval }
+n:=0;
+forall r/@ (key in [3]) do n:=n+1;
+if (chyba='') & (n<>14) then chyba:='key in [3]: '+str(n,1,0);
+n:=0;
+forall r/@ (key in [2..4]) do begin
+  n:=n+1;
+  if (chyba='') & ((r.Skup<2) | (r.Skup>4)) then chyba:='key in [2..4] vrátil Skup '+str(r.Skup,1,0);
+end;
+if (chyba='') & (n<>43) then chyba:='key in [2..4]: '+str(n,1,0);
+{ pracovní index }
+getindex(ix,TDUP/@,cond=(key in [2..4]));
+if (chyba='') & (ix.nrecs<>43) then chyba:='getindex nrecs='+str(ix.nrecs,1,0);
+n:=0;
+forall r/ix do n:=n+1;
+if (chyba='') & (n<>43) then chyba:='forall přes getindex: '+str(n,1,0);
+{ podmínka nad neklíčovým údajem }
+n:=0;
+forall r (Por>90) do n:=n+1;
+if (chyba='') & (n<>10) then chyba:='forall (Por>90): '+str(n,1,0);
+{ recno podle alternativního klíče }
+if (chyba='') & (recno(TDUP/PodlePor,50)<>50) then chyba:='recno Por 50: '+str(recno(TDUP/PodlePor,50),1,0);
+{ zrušení a obnovení věty }
+deleterec(TDUP,10);
+if (chyba='') & ^isdeleted(TDUP,10) then chyba:='věta 10 po deleterec není zrušená';
+if (chyba='') & ((TDUP.nrecs<>99) | (TDUP.nrecsabs<>100)) then chyba:='po deleterec nrecs='+str(TDUP.nrecs,1,0)+' nrecsabs='+str(TDUP.nrecsabs,1,0);
+readrec(r/PodlePor,keyof(TDUP/PodlePor,10));
+if (chyba='') & ^isdeleted(r) then chyba:='zrušená věta Por 10 se našla podle klíče';
+recallrec(TDUP,10);
+if (chyba='') & (isdeleted(TDUP,10) | (TDUP.nrecs<>100)) then chyba:='po recallrec nrecs='+str(TDUP.nrecs,1,0);
+readrec(r/PodlePor,keyof(TDUP/PodlePor,10));
+if (chyba='') & (isdeleted(r) | (r.Skup<>3)) then chyba:='obnovená věta Por 10 se nenašla podle klíče';
+n:=0;
+forall r/@ (key in [3]) do n:=n+1;
+if (chyba='') & (n<>14) then chyba:='po recallrec key in [3]: '+str(n,1,0);
+proc(Vysl,('DuplKlice',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;

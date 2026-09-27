@@ -1,0 +1,2 @@
+{ neindexovaný soubor pro lexikální sort }
+Jmeno:A,20;

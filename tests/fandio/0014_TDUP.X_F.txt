@@ -1,0 +1,5 @@
+{ indexovaný soubor s duplicitním vlastním klíčem a jednoznačným alternativním klíčem }
+Skup:F,3.0;
+Por :F,5.0;
+#K @ *Skup;
+PodlePor(@) Por;

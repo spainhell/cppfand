@@ -1,0 +1,4 @@
+{ vstup transformace }
+Kod   :F,4.0;
+Skup  :A,1;
+Castka:F,7.2;
