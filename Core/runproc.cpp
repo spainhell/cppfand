@@ -656,7 +656,7 @@ void RunProcedure::ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				label1:
 					lv->FD->NewLockMode(CrMode);
 					if (lv->FD->FileType == DataFileType::FandFile) {
-						lv->FD->FF->TestXFExist();
+						lv->FD->TestXFExist();
 					}
 					lv->FD->IncNRecs(1);
 					app = true;
@@ -941,14 +941,14 @@ void RunProcedure::WithLockedProc(Instr_withshared* PD)
 	std::vector<LockD*>::iterator it = PD->WLD.begin();
 	while (it != PD->WLD.end()) {
 		FileD* f = (*it)->FD;
-		if (f->FF->Handle == nullptr) {
+		if (!f->IsOpen()) {
 			if (f->OpenF1(CPath, Shared, false)) {
 				if (f->TryLockMode(RdMode, md, 2)) {
 					f->OpenF2(CPath, false);
 					f->OldLockMode(NullMode);
 				}
 				else {
-					f->FF->Close(); //CloseClearH(f->FF);
+					f->Close();
 					goto label2;
 				}
 			}
@@ -956,7 +956,7 @@ void RunProcedure::WithLockedProc(Instr_withshared* PD)
 				f->OpenCreateF(CPath, Shared, false);
 			}
 		}
-		if (f->FF->IsShared()) {
+		if (f->IsShared()) {
 			if (op == PInstrCode::_withlocked) {
 				if (f->Lock((*it)->N, 2)) {
 					++it;
@@ -1133,7 +1133,7 @@ void RunProcedure::ResetCatalog()
 		for (size_t i = 0; i < CRdb->data_files.size(); i++) {
 			FileD* f = CRdb->data_files[i];
 			f->CloseFile();
-			f->CatIRec = catalog->GetCatalogIRec(f->Name, f->FF->file_type == FandFileType::RDB);
+			f->CatIRec = catalog->GetCatalogIRec(f->Name, f->GetFandFileType() == FandFileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
@@ -1161,7 +1161,7 @@ void RunProcedure::RecallRecProc(Instr_recs* PD)
 	if ((N > 0) && (N <= f->GetNRecs())) {
 		f->ReadRec(N, rec);
 		if (rec->IsDeleted()) {
-			f->FF->RecallRec(N, rec);
+			f->RecallRec(N, rec);
 			if (PD->AdUpd) {
 				LastExitCode = !RunAddUpdate(f, '+', nullptr, nullptr, rec);
 			}
@@ -1178,7 +1178,7 @@ void RunProcedure::UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 	//while (ld != Ld1) {
 	for (LockD* ld : PD->WLD) {
 		//CFile = ld->FD;
-		if (ld->FD->FF->IsShared()) {
+		if (ld->FD->IsShared()) {
 			if (Op == PInstrCode::_withlocked) {
 				ld->FD->Unlock(ld->N);
 			}
@@ -1542,7 +1542,7 @@ void RunProcedure::RunInstr(const std::vector<Instr*>& instructions)
 			if (f == nullptr) {
 				ForAllFDs(ForAllFilesOperation::close_passive_fd);
 			}
-			else if (!f->FF->IsShared() || (f->FF->LMode == NullMode)) {
+			else if (!f->IsShared() || (f->GetLockMode() == NullMode)) {
 				f->CloseFile();
 			}
 			break;

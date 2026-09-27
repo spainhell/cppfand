@@ -8,5 +8,6 @@ proc(DuplKlice);
 proc(VypocKlic);
 proc(Lexikalni);
 proc(Transformace);
+proc(Dbf);
 proc(Vysl,('*KONEC*','OK',''));
 end;

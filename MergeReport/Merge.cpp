@@ -526,7 +526,7 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 		FileD* inputFile = InpFD_M(Ii);
 		Record* inputRecPointer = IDA[Ii]->RecPtr;
 		if (
-			(inputFile->FF->file_type == outputFile->FF->file_type)
+			(inputFile->GetFandFileType() == outputFile->GetFandFileType())
 			&& base_compiler->FldTypIdentity(inputField, outputField)
 			//&& (inputField->field_type != FieldType::TEXT)
 			&& (inputField->isStored())
@@ -961,7 +961,7 @@ void Merge::OpenOutp()
 			OD->FD = f->OpenDuplicateF(true);
 		}
 		else {
-			OD->Md = f->FF->RewriteFile(OD->Append);
+			OD->Md = f->RewriteFile(OD->Append);
 		}
 	}
 }

@@ -13,9 +13,11 @@
 //
 // DIR is the directory with FAND.CFG and FAND.RES (default: %FANDDIR%).
 // Exit code: 0 = all tests passed, 1 = a test failed or the task did not
-// finish, 2 = wrong usage or environment.
+// finish, 2 = wrong usage or environment, 3 = the interpreter crashed (the
+// stack is printed).
 
 #include <windows.h>
+#include <dbghelp.h>
 
 #include <chrono>
 #include <cstdio>
@@ -29,6 +31,8 @@
 #include "../fandio/FileIO.h"
 #include "../fandio/Messages.h"
 #include "../fandio/Record.h"
+
+#pragma comment(lib, "dbghelp.lib")
 
 namespace fs = std::filesystem;
 
@@ -162,6 +166,56 @@ namespace
 		return true;
 	}
 
+	// A crash of the interpreter (in its thread in cppfandlib.dll) ends the whole
+	// process; print where it happened (function names and lines from the .pdb).
+	LONG WINAPI crash_handler(EXCEPTION_POINTERS* info)
+	{
+		fprintf(stderr, "\nCRASH: exception 0x%08lX at %p\n",
+			info->ExceptionRecord->ExceptionCode, info->ExceptionRecord->ExceptionAddress);
+
+		HANDLE process = GetCurrentProcess();
+		HANDLE thread = GetCurrentThread();
+		SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
+		SymInitialize(process, nullptr, TRUE);
+
+		CONTEXT context = *info->ContextRecord;
+		STACKFRAME64 frame{};
+#ifdef _M_X64
+		const DWORD machine = IMAGE_FILE_MACHINE_AMD64;
+		frame.AddrPC.Offset = context.Rip;
+		frame.AddrFrame.Offset = context.Rbp;
+		frame.AddrStack.Offset = context.Rsp;
+#else
+		const DWORD machine = IMAGE_FILE_MACHINE_I386;
+		frame.AddrPC.Offset = context.Eip;
+		frame.AddrFrame.Offset = context.Ebp;
+		frame.AddrStack.Offset = context.Esp;
+#endif
+		frame.AddrPC.Mode = frame.AddrFrame.Mode = frame.AddrStack.Mode = AddrModeFlat;
+
+		alignas(SYMBOL_INFO) char symbol_buffer[sizeof(SYMBOL_INFO) + 256];
+		for (int i = 0; i < 40; i++) {
+			if (!StackWalk64(machine, process, thread, &frame, &context, nullptr,
+				SymFunctionTableAccess64, SymGetModuleBase64, nullptr) || frame.AddrPC.Offset == 0) break;
+			SYMBOL_INFO* symbol = reinterpret_cast<SYMBOL_INFO*>(symbol_buffer);
+			symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+			symbol->MaxNameLen = 255;
+			DWORD64 displacement = 0;
+			const char* name = SymFromAddr(process, frame.AddrPC.Offset, &displacement, symbol) ? symbol->Name : "?";
+			IMAGEHLP_LINE64 line{ sizeof(IMAGEHLP_LINE64) };
+			DWORD line_displacement = 0;
+			if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &line_displacement, &line)) {
+				fprintf(stderr, "  %s  %s:%lu\n", name, fs::path(line.FileName).filename().string().c_str(), line.LineNumber);
+			}
+			else {
+				fprintf(stderr, "  %s\n", name);
+			}
+		}
+		fflush(stderr);
+		TerminateProcess(GetCurrentProcess(), 3);
+		return EXCEPTION_EXECUTE_HANDLER;
+	}
+
 	fs::path exe_dir()
 	{
 		wchar_t buf[MAX_PATH];
@@ -183,6 +237,7 @@ namespace
 int main(int argc, char* argv[])
 {
 	SetConsoleOutputCP(CP_UTF8);
+	SetUnhandledExceptionFilter(crash_handler);
 
 	std::string fand_dir = env("FANDDIR");
 	int timeout_s = 60;

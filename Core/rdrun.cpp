@@ -219,10 +219,10 @@ bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
 			switch (kind) {
 			case 0: {
 				if (Ta) {
-					add_d->File2->FF->TaLMode = add_d->File2->FF->LMode;
+					add_d->File2->SetTaLockMode(add_d->File2->GetLockMode());
 				}
 				else {
-					add_d->File2->FF->ExLMode = add_d->File2->FF->LMode;
+					add_d->File2->SetExLockMode(add_d->File2->GetLockMode());
 				}
 				break;
 			}
@@ -238,10 +238,10 @@ bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
 			}
 			case 2: {
 				if (Ta) {
-					add_d->File2->OldLockMode(add_d->File2->FF->TaLMode);
+					add_d->File2->OldLockMode(add_d->File2->GetTaLockMode());
 				}
 				else {
-					add_d->File2->OldLockMode(add_d->File2->FF->ExLMode);
+					add_d->File2->OldLockMode(add_d->File2->GetExLockMode());
 				}
 				break;
 			}

@@ -234,7 +234,8 @@ uint8_t Lo(WORD cislo)
 
 WORD Swap(WORD cislo)
 {
-	return ((cislo & 0x00FF) << 4) + (cislo >> 4);
+	// swaps the high and low byte (Turbo Pascal Swap)
+	return static_cast<WORD>(((cislo & 0x00FF) << 8) | (cislo >> 8));
 }
 
 std::string GetEnv(const char* name)

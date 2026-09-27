@@ -111,6 +111,41 @@ void FileD::SetNRecs(int recs)
 	}
 }
 
+int FileD::XNRecs()
+{
+	if (FileType == DataFileType::FandFile) {
+		return FF->XNRecs(Keys);
+	}
+	else {
+		return GetNRecs();
+	}
+}
+
+void FileD::TestXFExist()
+{
+	if (FileType == DataFileType::FandFile) {
+		FF->TestXFExist();
+	}
+}
+
+bool FileD::GetWasWrRec() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile: return FF->WasWrRec;
+	case DataFileType::DBF: return DbfF->WasWrRec;
+	default: return false;
+	}
+}
+
+void FileD::SetWasWrRec(bool was_written) const
+{
+	switch (FileType) {
+	case DataFileType::FandFile: FF->WasWrRec = was_written; break;
+	case DataFileType::DBF: DbfF->WasWrRec = was_written; break;
+	default: break;
+	}
+}
+
 long FileD::GetFileSize()
 {
 	long result;
@@ -426,15 +461,12 @@ int32_t FileD::CheckT(int file_size)
 			break;
 		}
 		case DataFileType::DBF: {
+			// memo file .DBT/.FPT has no password (OACCESS.PAS: 616 only for .RDB)
 			if (file_size < GetFirstRecPos()) {
 				DbfF->TF->SetEmpty();
 			}
 			else {
 				DbfF->TF->RdPrefix(true);
-				//FileMsg(this, 616, ' ');
-				Close();
-				//GoExit(MsgLine);
-				return 616;
 			}
 			break;
 		}
@@ -677,12 +709,33 @@ void FileD::RecallRec(int recNr, Record* record)
 		break;
 	}
 	case DataFileType::DBF: {
-		DbfF->ClearDeletedFlag(record);
+		record->ClearDeleted();
 		UpdateRec(recNr, record);
 		break;
 	}
 	default: break;
 	}
+}
+
+LockMode FileD::RewriteFile(bool append)
+{
+	if (FileType == DataFileType::FandFile) {
+		return FF->RewriteFile(append);
+	}
+
+	LockMode result;
+	if (append) {
+		result = NewLockMode(CrMode);
+		SeekRec(GetNRecs());
+	}
+	else {
+		result = NewLockMode(ExclMode);
+		SetNRecs(0);
+		SeekRec(0);
+		SetUpdateFlag();
+		if (FileType == DataFileType::DBF && DbfF->TF != nullptr) DbfF->TF->SetEmpty();
+	}
+	return result;
 }
 
 void FileD::AssignNRecs(bool Add, int N)
@@ -694,7 +747,7 @@ void FileD::AssignNRecs(bool Add, int N)
 	}
 #endif
 	md = NewLockMode(DelMode);
-	OldNRecs = FF->NRecs;
+	OldNRecs = GetNRecs();
 
 	if (Add) {
 		N = N + OldNRecs;
@@ -705,11 +758,12 @@ void FileD::AssignNRecs(bool Add, int N)
 		return;
 	}
 
-	if ((N == 0) && (FF->TF != nullptr)) {
-		FF->TF->SetEmpty();
+	if (N == 0) {
+		if (FileType == DataFileType::FandFile && FF->TF != nullptr) FF->TF->SetEmpty();
+		if (FileType == DataFileType::DBF && DbfF->TF != nullptr) DbfF->TF->SetEmpty();
 	}
 
-	if (FF->file_type == FandFileType::INDEX) {
+	if (IsIndexFile()) {
 		if (N == 0) {
 			FF->NRecs = 0;
 			FF->SetUpdateFlag(); //SetUpdHandle(FF->Handle);
@@ -912,6 +966,15 @@ void FileD::IndexesMaintenance(bool remove_deleted)
 //	return result;
 //}
 
+uint8_t FileD::GetDrive() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile: return FF->Drive;
+	case DataFileType::DBF: return DbfF->Drive;
+	default: return 0;
+	}
+}
+
 void FileD::SetDrive(uint8_t drive) const
 {
 	switch (FileType) {
@@ -1018,18 +1081,21 @@ FileUseMode FileD::GetUMode() const
 LockMode FileD::GetLockMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->LMode;
+	else if (FileType == DataFileType::DBF) return DbfF->LMode;
 	else return NullMode;
 }
 
 LockMode FileD::GetExLockMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->ExLMode;
+	else if (FileType == DataFileType::DBF) return DbfF->ExLMode;
 	else return NullMode;
 }
 
 LockMode FileD::GetTaLockMode() const
 {
 	if (FileType == DataFileType::FandFile) return FF->TaLMode;
+	else if (FileType == DataFileType::DBF) return DbfF->TaLMode;
 	else return NullMode;
 }
 
@@ -1052,6 +1118,9 @@ void FileD::SetLockMode(LockMode mode) const
 	if (FileType == DataFileType::FandFile) {
 		FF->LMode = mode;
 	}
+	else if (FileType == DataFileType::DBF) {
+		DbfF->LMode = mode;
+	}
 	else {
 		// locks are not supported in other file types
 	}
@@ -1062,6 +1131,9 @@ void FileD::SetExLockMode(LockMode mode) const
 	if (FileType == DataFileType::FandFile) {
 		FF->ExLMode = mode;
 	}
+	else if (FileType == DataFileType::DBF) {
+		DbfF->ExLMode = mode;
+	}
 	else {
 		// locks are not supported in other file types
 	}
@@ -1071,6 +1143,9 @@ void FileD::SetTaLockMode(LockMode mode) const
 {
 	if (FileType == DataFileType::FandFile) {
 		FF->TaLMode = mode;
+	}
+	else if (FileType == DataFileType::DBF) {
+		DbfF->TaLMode = mode;
 	}
 	else {
 		// locks are not supported in other file types
@@ -1083,6 +1158,9 @@ void FileD::OldLockMode(LockMode mode)
 		std::string path = FullPath;
 		OldLMode(this, path, mode, fandio::GetSettings().lanNode);
 	}
+	else if (FileType == DataFileType::DBF) {
+		if (IsOpen()) DbfChangeLockMode(mode);
+	}
 	else {
 		// locks are not supported in other file types
 	}
@@ -1093,6 +1171,11 @@ LockMode FileD::NewLockMode(LockMode mode)
 	if (FileType == DataFileType::FandFile) {
 		std::string path = FullPath;
 		return NewLMode(this, path, mode, fandio::GetSettings().lanNode);
+	}
+	else if (FileType == DataFileType::DBF) {
+		LockMode old_mode;
+		TryLockMode(mode, old_mode, 0);
+		return old_mode;
 	}
 	else {
 		return mode;
@@ -1105,9 +1188,27 @@ bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind)
 		std::string path = FullPath;
 		return TryLMode(this, path, mode, old_mode, kind, fandio::GetSettings().lanNode);
 	}
+	else if (FileType == DataFileType::DBF) {
+		// .DBF files are opened on demand as FAND files, but they are not locked
+		if (!IsOpen()) {
+			OpenCreateF(FullPath, Shared, false);
+		}
+		old_mode = DbfF->LMode;
+		if (mode > DbfF->LMode) DbfChangeLockMode(mode);
+		return true;
+	}
 	else {
 		return true;
 	}
+}
+
+void FileD::DbfChangeLockMode(LockMode mode)
+{
+	// leaving the write modes: the header (number of records) must be written
+	if (DbfF->LMode >= WrMode && mode < WrMode) {
+		DbfF->WrPrefixes();
+	}
+	DbfF->LMode = mode;
 }
 
 bool FileD::ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref)
@@ -1115,6 +1216,10 @@ bool FileD::ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref)
 	if (FileType == DataFileType::FandFile) {
 		std::string path = FullPath;
 		return ChangeLMode(this, path, mode, kind, rd_pref, fandio::GetSettings().lanNode);
+	}
+	else if (FileType == DataFileType::DBF) {
+		DbfChangeLockMode(mode);
+		return true;
 	}
 	else {
 		return true;
@@ -1345,6 +1450,11 @@ void FileD::WrPrefixes() const
 	}
 }
 
+FandFileType FileD::GetFandFileType() const
+{
+	return FileType == DataFileType::FandFile ? FF->file_type : FandFileType::UNKNOWN;
+}
+
 bool FileD::IsIndexFile() const
 {
 	bool result;
@@ -1402,15 +1512,62 @@ bool FileD::HasTextFile() const
 	return result;
 }
 
-bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, Record* record) const
+bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, Record* record)
 {
-	return FF->SearchKey(XX, Key, NN, record);
+	// binary search in a file sorted by the key (a file without an index)
+	int R = 0;
+	XString x;
+
+	bool bResult = false;
+	int L = 1;
+	short Result = _gt;
+	NN = GetNRecs();
+	int N = NN;
+	if (N == 0) return bResult;
+
+	do {
+		if (Result == _gt) {
+			R = N;
+		}
+		else {
+			L = N + 1;
+		}
+		N = (L + R) / 2;
+		ReadRec(N, record);
+		x.PackKF(Key->KFlds, record);
+		Result = CompStr(x.S, XX.S);
+	} while (!((L >= R) || (Result == _equ)));
+
+	if ((N == NN) && (Result == _lt)) {
+		NN++;
+	}
+	else {
+		if (Key->Duplic && (Result == _equ)) {
+			while (N > 1) {
+				N--;
+				ReadRec(N, record);
+				x.PackKF(Key->KFlds, record);
+				if (CompStr(x.S, XX.S) != _equ) {
+					N++;
+					ReadRec(N, record);
+					break;
+				}
+			}
+		}
+		NN = N;
+	}
+
+	if ((Result == _equ) || Key->IntervalTest && (Result == _gt)) {
+		bResult = true;
+	}
+
+	return bResult;
 }
 
 bool FileD::SearchXKey(XKey* K, XString& X, int& N)
 {
-	if (FF->file_type == FandFileType::INDEX) {
-		FF->TestXFExist();
+	if (GetFandFileType() == FandFileType::INDEX) {
+		TestXFExist();
 		return K->SearchInterval(this, X, false, N);
 	}
 	else {
@@ -1907,10 +2064,10 @@ void FileD::DeleteF()
 	CloseFile();
 	const fandio::FilePath path = fandio::ResolvePath(this);
 	MyDeleteFile(path.Full());
-	if (FF->XF != nullptr) {
+	if (HasIndexFile()) {
 		MyDeleteFile(fandio::IndexFilePath(path));
 	}
-	if (FF->TF != nullptr) {
+	if (HasTextFile()) {
 		MyDeleteFile(CExtToT(path.dir, path.name, path.ext));
 	}
 }

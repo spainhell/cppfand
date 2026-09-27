@@ -293,7 +293,7 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 			newD->L = maxcol;
 		}
 		if (edit_->FD->FileType == DataFileType::FandFile 
-			&& edit_->FD->FF->file_type == FandFileType::CAT 
+			&& edit_->FD->GetFandFileType() == FandFileType::CAT 
 			&& newD->L > 44) {
 			// catalog pathname
 			newD->L = 44;
@@ -686,7 +686,7 @@ void EditReader::RdDepChkImpl(EditD* edit)
 	std::string s;
 
 	if (file_d->FileType == DataFileType::FandFile) {
-		switch (file_d->FF->file_type) {
+		switch (file_d->GetFandFileType()) {
 		case FandFileType::RDB: {
 			ReadMessage(53);
 			s = MsgLine;
@@ -950,7 +950,7 @@ std::string EditReader::StandardHead(EditD* edit)
 	else {
 		s = edit->FD->Name;
 		if (edit->FD->FileType == DataFileType::FandFile) {
-			switch (edit->FD->FF->file_type) {
+			switch (edit->FD->GetFandFileType()) {
 			case FandFileType::INDEX: {
 				if (!edit->VK->Alias.empty()) s = s + "/" + edit->VK->Alias;
 				break;

@@ -151,10 +151,10 @@ std::vector<std::string> RunProlog::GetFilesInModule(std::string& module_name, F
 	while (R != nullptr) {
 		if (R->project_file != nullptr && EquUpCase(R->project_file->Name, module_name)) {
 			for (size_t i = 0; i < R->data_files.size(); i++) {
-				if (R->data_files[i]->FF->file_type == FandFileType::UNKNOWN) {
+				if (R->data_files[i]->GetFandFileType() == FandFileType::UNKNOWN) {
 					result.push_back(R->data_files[i]->Name);
 				}
-				else if (R->data_files[i]->FF->file_type == file_type) {
+				else if (R->data_files[i]->GetFandFileType() == file_type) {
 					result.push_back(R->data_files[i]->Name);
 				}
 				else {
@@ -187,7 +187,7 @@ std::vector<FileD*> RunProlog::GetFileDescsInModule(std::string& module_name, Fa
 				else if (file_type == FandFileType::UNKNOWN) {
 					result.push_back(R->data_files[i]);
 				}
-				else if (R->data_files[i]->FF->file_type == file_type) {
+				else if (R->data_files[i]->GetFandFileType() == file_type) {
 					result.push_back(R->data_files[i]);
 				}
 				else {

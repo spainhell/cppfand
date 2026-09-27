@@ -93,7 +93,6 @@ public:
 
 	FileD* GetFileD();
 
-	bool SearchKey(XString& XX, XKey* Key, int& NN, Record* record);
 	int XNRecs(std::vector<XKey*>& K);
 	void TryInsertAllIndexes(int RecNr, Record* record);
 	void RecallRec(int recNr, Record* record);

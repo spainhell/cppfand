@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <string>
 
 #include "DataFileBase.h"
@@ -16,6 +17,10 @@ public:
 
 	DbfTFile* TF = nullptr;
 	FileUseMode UMode = Closed;
+	// .DBF files are not locked, the modes are only remembered
+	LockMode LMode = NullMode;
+	LockMode ExLMode = NullMode;
+	LockMode TaLMode = NullMode;
 
 	uint16_t RecLen = 0;
 	uint16_t NRecs = 0;
@@ -51,7 +56,7 @@ public:
 	void CloseFile();
 	void Close();
 
-	static bool DeletedFlag(Record* record);
+	bool DeletedFlag(Record* record);
 	void ClearDeletedFlag(Record* record);
 	void SetDeletedFlag(Record* record);
 	FileD* GetFileD();
@@ -60,6 +65,12 @@ public:
 
 private:
 	FileD* _parent;
+
+	std::unique_ptr<uint8_t[]> ReadRaw(size_t rec_nr);
+	void WriteRaw(size_t rec_nr, uint8_t* buffer);
+	void RecordFromBuffer(uint8_t* buffer, Record* record);
+	// orig_buffer: current record in the file (its unchanged texts are kept), or nullptr
+	std::unique_ptr<uint8_t[]> BufferFromRecord(Record* record, uint8_t* orig_buffer);
 
 	bool loadB(FieldDescr* field_d, uint8_t* record);
 	double loadR(FieldDescr* field_d, uint8_t* record);

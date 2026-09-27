@@ -1336,7 +1336,7 @@ bool RdViewOpt(Compiler* compiler, EditOpt* EO, FileD* file_d)
 	else if (compiler->IsOpt("JOURNAL")) {
 		EO->Journal = compiler->RdFileName();
 		WORD l = EO->Journal->FF->RecLen - 13;
-		if (file_d->FF->file_type == FandFileType::INDEX) {
+		if (file_d->GetFandFileType() == FandFileType::INDEX) {
 			l++;
 		}
 		if (file_d->FF->RecLen != l) {
@@ -1555,7 +1555,7 @@ void RdProcCall(Compiler* compiler, Instr** pinstr)
 		compiler->RdLex();
 		auto iPD = (Instr_checkfile*)*pinstr;
 		iPD->cfFD = compiler->RdFileName();
-		if (iPD->cfFD != nullptr && (iPD->cfFD->FileType == DataFileType::DBF || iPD->cfFD->FF->file_type == FandFileType::FAND8)
+		if (iPD->cfFD != nullptr && (iPD->cfFD->FileType == DataFileType::DBF || iPD->cfFD->GetFandFileType() == FandFileType::FAND8)
 #ifdef FandSQL
 			|| PD->cfFD->typSQLFile
 #endif
@@ -2810,7 +2810,7 @@ Instr_assign* RdAssign(Compiler* compiler)
 			}
 			else if (FD == nullptr) compiler->OldError(9);
 			else if (compiler->IsKeyWord("NRECS")) {
-				if (FD->FF->file_type == FandFileType::RDB) { compiler->OldError(127); }
+				if (FD->GetFandFileType() == FandFileType::RDB) { compiler->OldError(127); }
 				PD = new Instr_assign(PInstrCode::_asgnnrecs);
 				PD->FD = FD;
 				FTyp = 'R';

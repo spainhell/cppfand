@@ -999,57 +999,6 @@ FileD* Fand0File::GetFileD()
 	return _parent;
 }
 
-bool Fand0File::SearchKey(XString& XX, XKey* Key, int& NN, Record* record)
-{
-	int R = 0;
-	XString x;
-
-	bool bResult = false;
-	int L = 1;
-	short Result = _gt;
-	NN = NRecs;
-	int N = NN;
-	if (N == 0) return bResult;
-
-	do {
-		if (Result == _gt) {
-			R = N;
-		}
-		else {
-			L = N + 1;
-		}
-		N = (L + R) / 2;
-		ReadRec(N, record);
-		x.PackKF(Key->KFlds, record);
-		Result = CompStr(x.S, XX.S);
-	} while (!((L >= R) || (Result == _equ)));
-
-	if ((N == NN) && (Result == _lt)) {
-		NN++;
-	}
-	else {
-		if (Key->Duplic && (Result == _equ)) {
-			while (N > 1) {
-				N--;
-				ReadRec(N, record);
-				x.PackKF(Key->KFlds, record);
-				if (CompStr(x.S, XX.S) != _equ) {
-					N++;
-					ReadRec(N, record);
-					break;
-				}
-			}
-		}
-		NN = N;
-	}
-
-	if ((Result == _equ) || Key->IntervalTest && (Result == _gt)) {
-		bResult = true;
-	}
-
-	return bResult;
-}
-
 int Fand0File::XNRecs(std::vector<XKey*>& K)
 {
 	if (file_type == FandFileType::INDEX && !K.empty()) {
