@@ -98,10 +98,7 @@ public:
 	void RecallRec(int recNr, Record* record);
 
 	void GenerateNew000File(XScan* x);
-	void CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type);
-	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type);
 	void SortAndSubst(std::vector<KeyFldD*>& SK);
-	void CopyIndex(XWKey* K, XKey* FromK);
 
 	void SubstDuplF(FileD* TempFD, bool DelTF);
 	void CopyDuplF(FileD* TempFD, bool DelTF);

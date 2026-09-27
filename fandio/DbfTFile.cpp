@@ -47,6 +47,18 @@ DbfTFile::DbfTFile(DbfFile* parent)
 	_parent = parent;
 }
 
+DbfTFile::DbfTFile(const DbfTFile& orig, DbfFile* parent)
+{
+	_parent = parent;
+	Handle = orig.Handle;
+	Format = orig.Format;
+	FreePart = orig.FreePart;
+	FptFormatBlockSize = orig.FptFormatBlockSize;
+	MaxPage = orig.MaxPage;
+	MLen = orig.MLen;
+	LicenseNr = orig.LicenseNr;
+}
+
 DbfTFile::~DbfTFile()
 {
 }

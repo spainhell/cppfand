@@ -53,6 +53,7 @@ public:
 	std::vector<XKey*> Keys;
 	std::vector<Additive*> Add;
 	std::vector<std::string> ViewNames;  // after each string uint8_t string with user codes 
+	ProgressCallbacks progress;
 
 	int GetNRecs();
 	void SetNRecs(int recs);
@@ -80,6 +81,10 @@ public:
 
 	bool GetWasRdOnly() const;
 	void SetWasRdOnly(bool was_read_only) const;
+	HANDLE GetHandle() const;
+	// handle of the text file (.T__, .DBT, .FPT), nullptr if there is none
+	HANDLE GetHandleT() const;
+	int UsedTextFileSize() const;
 	void SetHandle(HANDLE handle);
 	void SetHandleT(HANDLE handle);
 	int32_t CheckT(int file_size);
@@ -97,7 +102,11 @@ public:
 	// prepares the file for an output (merge, import): empties it or appends to it
 	LockMode RewriteFile(bool append);
 
-	void SortByKey(std::vector<KeyFldD*>& keys) const;
+	// work indexes (in the work file, for any file type)
+	void CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type);
+	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type);
+	void CopyIndex(XWKey* K, XKey* FromK);
+	void SortByKey(std::vector<KeyFldD*>& keys);
 	void IndexesMaintenance(bool remove_deleted);
 
 	uint8_t GetDrive() const;
@@ -142,6 +151,8 @@ public:
 
 	FileD* OpenDuplicateF(bool createTextFile);
 	void DeleteDuplicateF(FileD* TempFD);
+	// replaces the file by the work file from OpenDuplicateF
+	void SubstDuplF(FileD* TempFD, bool DelTF);
 
 	std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
 	std::string TempFilePath(char typ, bool isNet);
@@ -185,4 +196,5 @@ private:
 	//Fand0File* FF = nullptr;	// FandFile reference
 	void lock_excl_and_write_prefix();
 	void DbfChangeLockMode(LockMode mode);
+	FileD* open_duplicate_dbf(bool createTextFile);
 };

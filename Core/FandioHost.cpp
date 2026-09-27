@@ -150,6 +150,20 @@ static std::string path_of_handle(HANDLE handle)
 		}
 
 		for (FileD* fd : RD->data_files) {
+			if (fd->FileType == DataFileType::DBF) {
+				if (fd->DbfF->Handle == handle) {
+					fd->SetPathAndVolume();
+					return CPath;
+				}
+				if (fd->DbfF->TF != nullptr && fd->DbfF->TF->Handle == handle) {
+					fd->SetPathAndVolume();
+					CPath = fd->CExtToT(CDir, CName, CExt);
+					return CPath;
+				}
+				continue;
+			}
+			if (fd->FF == nullptr) continue;
+
 			if (fd->FF->Handle == handle) {
 				fd->SetPathAndVolume();
 				return CPath;

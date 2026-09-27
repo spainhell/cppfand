@@ -1,6 +1,6 @@
 { soubor .DBF: zápis a čtení všech typů údajů a memo textů, přepis, zrušení věty
   (následující se posunou), appendrec, čtení po zavření souboru }
-VAR r:record of TDBF; r2:record of TDBF2; i,n,s,d0:real; chyba,t:string;
+VAR r:record of TDBF; r2:record of TDBF2; r3:record of TDBF3; rc:record of TDBFC; i,n,s,d0:real; chyba,t:string;
 begin
 chyba:='';
 TDBF.nrecs:=0;
@@ -80,5 +80,54 @@ if (chyba='') & (TDBF2.nrecs<>26) then chyba:='merge + nrecs='+str(TDBF2.nrecs,1
 merge(['#I1_ TDBF ((Kod>30) & (Kod<50)) #O1_ TDBF2']);
 readrec(r2,1);
 if (chyba='') & ((TDBF2.nrecs<>10) | (r2.Kod<>31)) then chyba:='merge přepis nrecs='+str(TDBF2.nrecs,1,0);
+{ merge se vstupem totožným s výstupem: TDBF2 má Kod 31..40 }
+merge(['#I1_ TDBF2 #O1_ TDBF2 Kod:=Kod+1000']);
+n:=0;
+forall r2 do begin
+  n:=n+1;
+  if (chyba='') & (r2.Kod=1032) & (r2.Pozn<>repeatstr('Z',708)) then chyba:='merge do sebe: text Kod 1032';
+  if (chyba='') & (r2.Kod=1034) & (length(r2.Pozn)<>5000) then chyba:='merge do sebe: text Kod 1034';
+  if (chyba='') & ((r2.Kod<1031) | (r2.Kod>1040)) then chyba:='merge do sebe: Kod '+str(r2.Kod,1,0);
+end;
+if (chyba='') & ((n<>10) | (TDBF2.nrecs<>10)) then chyba:='merge do sebe nrecs='+str(TDBF2.nrecs,1,0);
+{ sort sestupně: texty se musí přesunout s větou }
+sort(TDBF2,(>Kod));
+s:=10000;
+for i:=1 to 10 do begin
+  readrec(r2,i);
+  if (chyba='') & (r2.Kod>=s) then chyba:='sort, věta '+str(i,1,0);
+  if (chyba='') & (r2.Kod=1040) & (r2.Pozn<>repeatstr('Z',710)) then chyba:='sort: text Kod 1040';
+  if (chyba='') & (r2.Kod=1034) & (length(r2.Pozn)<>5000) then chyba:='sort: text Kod 1034';
+  s:=r2.Kod;
+end;
+readrec(r2,1);
+if (chyba='') & ((TDBF2.nrecs<>10) | (r2.Kod<>1040)) then chyba:='sort nrecs='+str(TDBF2.nrecs,1,0);
+{ merge s tříděním vstupu (pracovní index nad .DBF) }
+merge(['#I1_ TDBF2 ! Kod #O1_ TDBF3']);
+s:=0;
+for i:=1 to TDBF3.nrecs do begin
+  readrec(r3,i);
+  if (chyba='') & (r3.Kod<=s) then chyba:='merge s tříděním, věta '+str(i,1,0);
+  if (chyba='') & (r3.Kod=1032) & (r3.Pozn<>repeatstr('Z',708)) then chyba:='merge s tříděním: text Kod 1032';
+  s:=r3.Kod;
+end;
+if (chyba='') & (TDBF3.nrecs<>10) then chyba:='merge s tříděním nrecs='+str(TDBF3.nrecs,1,0);
+{ vazba do .DBF číselníku: hledání podle vlastního klíče v souboru bez indexu }
+TDBFC.nrecs:=0;
+for i:=1 to 5 do begin
+  readrec(rc,0);
+  rc.Kod:=1030+2*i;
+  rc.Nazev:='C'+str(1030+2*i,4,0);
+  writerec(rc,0);
+end;
+n:=0;
+for i:=1 to TDBF3.nrecs do begin
+  readrec(r3,i);
+  if r3.TDBFC.exist then begin
+    n:=n+1;
+    if (chyba='') & (trailchar(' ',r3.TDBFC.Nazev)<>'C'+str(r3.Kod,4,0)) then chyba:='vazba u Kod '+str(r3.Kod,1,0);
+  end;
+end;
+if (chyba='') & (n<>5) then chyba:='vazba našla '+str(n,1,0)+' vět';
 proc(Vysl,('Dbf',cond(chyba='':'OK',else:'CHYBA'),chyba));
 end;

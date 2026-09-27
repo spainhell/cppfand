@@ -722,9 +722,10 @@ void RunProcedure::LinkRecProc(Instr_assign* assign_instr)
 	LinkD* ld = assign_instr->LinkLD;
 	Record* lr2 = assign_instr->RecLV2->record;
 
-	Record* rec = LinkUpw(ld, n, true, assign_instr->RecLV1->record);
+	bool found;
+	Record* rec = LinkUpw(ld, n, true, assign_instr->RecLV1->record, found);
 
-	if (rec == nullptr) {
+	if (!found) {
 		LastExitCode = 1;
 	}
 	else {
@@ -800,7 +801,7 @@ void RunProcedure::ForAllProc(Instr_forall* PD)
 	// TODO: FandSQL condition removed
 	if (Key != nullptr) {
 		if (PD->CWIdx) {
-			FD->FF->ScanSubstWIndex(xScan, Key->KFlds, OperationType::Work);
+			FD->ScanSubstWIndex(xScan, Key->KFlds, OperationType::Work);
 		}
 		else {
 			FD->FF->XF->UpdLockCnt++;

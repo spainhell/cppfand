@@ -51,7 +51,9 @@ Soubor `NNNN_<název>_<typ>.txt`, kódování UTF-8 (při balení se převede do
 | VypocKlic | klíč nad vypočítaným údajem, změna věty, reindexace |
 | Lexikalni | české řazení (`~`) v klíči, v `sort` a v porovnání; závisí na tabulce abecedy ve FAND.CFG |
 | Transformace | `merge` s filtrem do indexovaného souboru, připojení `+`, přepis s výpočtem |
-| Dbf | soubor .DBF s memo souborem .DBT: všechny typy údajů, přepis, rušení věty, `appendrec`, `forall`, `merge` do .DBF i s připojením `+` |
+| Dbf | soubor .DBF s memo souborem .DBT: všechny typy údajů, přepis, rušení věty, `appendrec`, `forall`, `merge` do .DBF (i s `+`, do sebe sama a s tříděním vstupu `!`), `sort`, vazba do .DBF číselníku a `.exist` |
+| Aditivni | aditivní změny `#A` s `!!` (založení nadřízené věty) při `writerec` a `deleterec` s `+`; nadřízený indexovaný soubor i .DBF |
+| Editor | datový editor nad .DBF ovládaný přes `setkeybuf`: oprava údaje, zrušení (Ctrl-Y) a vložení (Ctrl-N) věty |
 
 Nový test: přidat proceduru `01x0_<Název>_P.txt`, na jejím konci zavolat
 `proc(Vysl,('<Název>',cond(chyba='':'OK',else:'CHYBA'),chyba));`
@@ -73,4 +75,6 @@ a zařadit ji do `MAIN`. Každý test si na začátku vyprázdní své soubory
 - **`readrec` podle alternativního klíče** potřebuje klíč i u proměnné:
   `readrec(r/Klic,keyof(SOUBOR/Klic,…))`. Bez něj se hledá podle vlastního klíče `@`.
 - **České řazení:** samostatná písmena jsou jen Č, Ř, Š, Ž a CH. Ď, Ť, Ň se řadí jako D, T, N.
-- **.DBF** nemá index; `sort`, `merge` se vstupem totožným s výstupem a `link` nad .DBF zatím nejsou podporované.
+- **Editor v testu:** klávesy se zadají předem příkazem `setkeybuf` (Enter `char(13)`, Esc `char(27)`,
+  šipky `char(0)+char(72)`/`char(80)`, Ctrl-písmeno `char(1)`..`char(26)`). Nová věta se uloží
+  až po průchodu všemi údaji (Enter na posledním). Znaky s diakritikou `setkeybuf` zatím nepředá.

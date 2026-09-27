@@ -10,6 +10,7 @@ class DbfTFile : public DataFileBase
 {
 public:
 	DbfTFile(DbfFile* parent);
+	DbfTFile(const DbfTFile& orig, DbfFile* parent);
 	~DbfTFile() override;
 
 	int FreePart = 0;

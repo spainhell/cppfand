@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "DataFileBase.h"
 #include "DbfTFile.h"
@@ -13,6 +14,8 @@ class DbfFile : public DataFileBase
 {
 public:
 	DbfFile(FileD* parent);
+	// copy for a work file of the same structure (the text file is shared)
+	DbfFile(const DbfFile& orig, FileD* parent);
 	~DbfFile() override;
 
 	DbfTFile* TF = nullptr;
@@ -23,7 +26,7 @@ public:
 	LockMode TaLMode = NullMode;
 
 	uint16_t RecLen = 0;
-	uint16_t NRecs = 0;
+	int NRecs = 0;
 	uint16_t FirstRecPos = 0;
 	unsigned char Drive = 0;           // 1=A, 2=B, else 0
 	bool WasWrRec = false;
@@ -40,6 +43,10 @@ public:
 	void IncNRecs(int n);
 	void DecNRecs(int n);
 	void PutRec(Record* record, int& i_rec);
+	// rewrites the file with the records in the given order (texts are kept)
+	void Reorder(const std::vector<int>& order);
+	// replaces the content of the file by the work file 'temp' and deletes it
+	void SubstDuplF(DbfFile* temp);
 
 	uint16_t RdPrefix();
 	void WrPrefix();

@@ -2,6 +2,10 @@
 
 #include "Record.h"
 #include "XKey.h"
+#include "XScan.h"
+#include "XWKey.h"
+#include "XWorkFile.h"
+#include "KeyFldD.h"
 #include "FileIO.h"
 #include "FilePath.h"
 #include "Messages.h"
@@ -24,6 +28,7 @@ static void test_path_error(const std::string& path)
 
 FileD::FileD(DataFileType f_type, ProgressCallbacks callbacks)
 {
+	this->progress = callbacks;
 	this->FileType = f_type;
 	switch (f_type) {
 	case DataFileType::FandFile: {
@@ -49,6 +54,7 @@ FileD::FileD(const FileD& orig)
 	typSQLFile = orig.typSQLFile;
 	IsSQLFile = orig.IsSQLFile;
 	IsDynFile = orig.IsDynFile;
+	progress = orig.progress;
 
 	for (FieldDescr* f : orig.FldD) {
 		FieldDescr* new_field_d = new FieldDescr(*f);
@@ -57,6 +63,10 @@ FileD::FileD(const FileD& orig)
 
 	if (orig.FF != nullptr) {
 		FF = new Fand0File(*orig.FF, this);
+	}
+
+	if (orig.DbfF != nullptr) {
+		DbfF = new DbfFile(*orig.DbfF, this);
 	}
 
 	if (!orig.Keys.empty()) {
@@ -398,6 +408,33 @@ void FileD::SetWasRdOnly(bool was_read_only) const
 	default: {
 		break;
 	}
+	}
+}
+
+HANDLE FileD::GetHandle() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile: return FF->Handle;
+	case DataFileType::DBF: return DbfF->Handle;
+	default: return nullptr;
+	}
+}
+
+HANDLE FileD::GetHandleT() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile: return FF->TF != nullptr ? FF->TF->Handle : nullptr;
+	case DataFileType::DBF: return DbfF->TF != nullptr ? DbfF->TF->Handle : nullptr;
+	default: return nullptr;
+	}
+}
+
+int FileD::UsedTextFileSize() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile: return FF->TF != nullptr ? FF->TF->UsedFileSize() : 0;
+	case DataFileType::DBF: return DbfF->TF != nullptr ? DbfF->TF->UsedFileSize() : 0;
+	default: return 0;
 	}
 }
 
@@ -800,10 +837,96 @@ void FileD::AssignNRecs(bool Add, int N)
 	OldLockMode(md);
 }
 
-void FileD::SortByKey(std::vector<KeyFldD*>& keys) const
+void FileD::CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type)
+{
+	std::vector<XKey*> xw_keys;
+	xw_keys.push_back(K);
+	std::unique_ptr<Record> record = std::make_unique<Record>(this);
+	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(this, Scan, xw_keys, progress);
+	XW->Main(oper_type, record.get());
+}
+
+void FileD::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type)
+{
+	unsigned short n = 0;
+	XWKey* k2 = new XWKey(this);
+
+	if (Scan->FD->IsSQLFile && (Scan->Kind == ScanMode::WorkingIndex)) {
+		/* F6-autoreport & sort */
+		XKey* k = Scan->Key;
+		n = k->IndexLen;
+
+		for (KeyFldD* kf : SK) {
+			n += kf->FldD->NBytes;
+		}
+
+		if (n > 255) {
+			fandio::ShowMessage(155);
+			delete k2; k2 = nullptr;
+			return;
+		}
+
+		std::vector<KeyFldD*> kfroot;
+
+		for (KeyFldD* kf : k->KFlds) {
+			kfroot.push_back(kf);
+		}
+
+		if (SK.size() > kfroot.size()) {
+			for (size_t i = 0; i < SK.size(); i++) {
+				kfroot.push_back(SK[i]);
+			}
+		}
+
+		k2->Open(this, kfroot, true, false);
+	}
+	else {
+		k2->Open(this, SK, true, false);
+	}
+
+	CreateWIndex(Scan, k2, oper_type);
+	Scan->SubstWIndex(k2);
+}
+
+void FileD::CopyIndex(XWKey* K, XKey* FromK)
+{
+	Record* record = new Record(this);
+
+	K->Release(this);
+	LockMode md = NewLockMode(RdMode);
+	std::vector<KeyInD*> empty;
+	XScan* Scan = new XScan(this, FromK, empty, false);
+	Scan->Reset(nullptr, false, record);
+	CreateWIndex(Scan, K, OperationType::Work);
+	OldLockMode(md);
+
+	delete record; record = nullptr;
+}
+
+void FileD::SortByKey(std::vector<KeyFldD*>& keys)
 {
 	if (FF != nullptr) {
 		FF->SortAndSubst(keys);
+	}
+	else if (DbfF != nullptr) {
+		// the order is taken from a work index, the records are moved in the file
+		std::vector<KeyInD*> empty;
+		std::unique_ptr<XScan> scan = std::make_unique<XScan>(this, nullptr, empty, false);
+		scan->Reset(nullptr, false, nullptr);
+		ScanSubstWIndex(scan.get(), keys, OperationType::Sort);
+		progress.runMsgOn('S', scan->NRecs);
+
+		std::vector<int> order;
+		std::unique_ptr<Record> record = std::make_unique<Record>(this);
+		while (true) {
+			scan->GetRec(record.get());
+			if (scan->eof) break;
+			order.push_back(scan->RecNr);
+			progress.runMsgN(scan->IRec);
+		}
+		scan->Close();
+		DbfF->Reorder(order);
+		progress.runMsgOff();
 	}
 }
 
@@ -1578,6 +1701,10 @@ bool FileD::SearchXKey(XKey* K, XString& X, int& N)
 
 FileD* FileD::OpenDuplicateF(bool createTextFile)
 {
+	if (FileType == DataFileType::DBF) {
+		return open_duplicate_dbf(createTextFile);
+	}
+
 	short Len = 0;
 	bool net = fandio::IsNetVolume(fandio::ResolvePath(this).volume);
 	FileD* newFile = new FileD(*this);
@@ -1622,10 +1749,55 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	return newFile;
 }
 
+FileD* FileD::open_duplicate_dbf(bool createTextFile)
+{
+	const bool net = fandio::IsNetVolume(fandio::ResolvePath(this).volume);
+	FileD* newFile = new FileD(*this);
+
+	const std::string path = TempFilePath('0', net);
+	fandio::ResetCurrentVolume(); // the work file is local
+	newFile->FullPath = path;
+	DbfFile* dbf = newFile->DbfF;
+	dbf->Handle = OpenH(path, _isOverwriteFile, Exclusive);
+	newFile->TestCFileError();
+	dbf->NRecs = 0;
+	newFile->IRec = 0;
+	dbf->Eof = true;
+	dbf->UMode = Exclusive;
+	dbf->SetUpdateFlag();
+
+	if (createTextFile && dbf->TF != nullptr) {
+		const DbfTFile::eDbtFormat format = dbf->TF->Format;
+		dbf->TF = new DbfTFile(dbf);
+		dbf->TF->Format = format;
+		const std::string path_t = TempFilePath('T', net);
+		fandio::ResetCurrentVolume(); // TempFilePath() sets it again
+		dbf->TF->Create(path_t);
+	}
+	dbf->WrPrefixes();
+	return newFile;
+}
+
+void FileD::SubstDuplF(FileD* TempFD, bool DelTF)
+{
+	if (FileType == DataFileType::FandFile) {
+		FF->SubstDuplF(TempFD, DelTF);
+	}
+	else if (FileType == DataFileType::DBF) {
+		DbfF->SubstDuplF(TempFD->DbfF);
+	}
+}
+
 void FileD::DeleteDuplicateF(FileD* TempFD)
 {
-	CloseClearH(&TempFD->FF->Handle);
-	MyDeleteFile(TempFilePath('0', FF->IsShared()));
+	if (FileType == DataFileType::FandFile) {
+		CloseClearH(&TempFD->FF->Handle);
+		MyDeleteFile(TempFilePath('0', FF->IsShared()));
+	}
+	else if (FileType == DataFileType::DBF) {
+		CloseClearH(&TempFD->DbfF->Handle);
+		MyDeleteFile(TempFD->FullPath);
+	}
 }
 
 std::string FileD::CExtToT(const std::string& dir, const std::string& name, std::string ext)
@@ -2186,7 +2358,7 @@ Record* FileD::LinkLastRec(int32_t& n)
 	Record* result = nullptr;
 	LockMode md = NewLockMode(RdMode);
 	// FandSQL condition removed
-	n = FF->NRecs;
+	n = GetNRecs();
 	if (n == 0) {
 		n = 1;
 	}

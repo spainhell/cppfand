@@ -1,0 +1,4 @@
+{ výstupní soubor .DBF pro merge s tříděním vstupu }
+Kod    :F,5.0;
+Pozn   :T;
+#K TDBFC Kod

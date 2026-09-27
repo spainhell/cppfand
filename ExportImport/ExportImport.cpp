@@ -417,17 +417,17 @@ void ExportFD(CopyD* CD)
 			F2 = nullptr;
 		}
 		else {
-			Cpy(CD->FD1->FF->Handle, CD->FD1->UsedFileSize(), F2);
+			Cpy(CD->FD1->GetHandle(), CD->FD1->UsedFileSize(), F2);
 		}
 
-		if (CD->FD1->FF->TF != nullptr) {
+		if (CD->FD1->HasTextFile()) {
 			F2->RewriteT();
 			if (n == 0) {
 				delete F2;
 				F2 = nullptr;
 			}
 			else {
-				Cpy(CD->FD1->FF->TF->Handle, CD->FD1->FF->TF->UsedFileSize(), F2);
+				Cpy(CD->FD1->GetHandleT(), CD->FD1->UsedTextFileSize(), F2);
 			}
 		}
 
@@ -700,13 +700,13 @@ void CheckFile(FileD* FD)
 	ReadH(h, 2, &Prfx.RecLen);
 	fs = FileSizeH(h);
 	CloseH(&h);
-	if ((FD->FF->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (!FD->IsIndexFile()) ||
-		((fs - FD->FF->FirstRecPos) / Prfx.RecLen < Prfx.NRecs) ||
+	if ((FD->GetRecLen() != Prfx.RecLen) || (Prfx.NRecs < 0) && (!FD->IsIndexFile()) ||
+		((fs - FD->GetFirstRecPos()) / Prfx.RecLen < Prfx.NRecs) ||
 		(Prfx.NRecs > 0) && FD->IsIndexFile()) {
 		LastExitCode = 3;
 		return;
 	}
-	if (FD->FF->TF == nullptr) return;
+	if (!FD->HasTextFile()) return;
 	FSplit(CPath, d, n, e);
 	if (EquUpCase(e, ".RDB")) e = ".TTT";
 	else e[1] = 'T'; // .T__

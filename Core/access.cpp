@@ -60,7 +60,7 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 }
 
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
-Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
+Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record, bool& found)
 {
 	FileD* from_FD = LD->FromFile;
 	FileD* to_FD = LD->ToFile;
@@ -116,6 +116,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 		}
 	}
 
+	found = lu;
 	// TODO: FandSQL removed
 	to_FD->OldLockMode(md);
 

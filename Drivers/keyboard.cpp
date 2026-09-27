@@ -142,7 +142,14 @@ void Keyboard::SetKeyBuf(std::string input)
 			case 13: key.wVirtualKeyCode = VK_RETURN; break;
 			case 27: key.wVirtualKeyCode = VK_ESCAPE; break;
 			case 9: key.wVirtualKeyCode = VK_TAB; break;
-			default: break;
+			case 8: key.wVirtualKeyCode = VK_BACK; break;
+			default:
+				if (c <= 26) {
+					// ^A .. ^Z as the console delivers them: Ctrl + letter
+					key.wVirtualKeyCode = static_cast<WORD>('A' + c - 1);
+					key.dwControlKeyState = LEFT_CTRL_PRESSED;
+				}
+				break;
 			}
 		}
 		else {

@@ -21,6 +21,17 @@ DbfFile::DbfFile(FileD* parent)
 	_parent = parent;
 }
 
+DbfFile::DbfFile(const DbfFile& orig, FileD* parent)
+{
+	_parent = parent;
+	UMode = orig.UMode;
+	RecLen = orig.RecLen;
+	NRecs = orig.NRecs;
+	FirstRecPos = orig.FirstRecPos;
+	Drive = orig.Drive;
+	if (orig.TF != nullptr) TF = new DbfTFile(*orig.TF, this);
+}
+
 DbfFile::~DbfFile()
 {
 }
@@ -155,6 +166,43 @@ void DbfFile::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
 		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
 			DelDifTFld(F, record, comp_record);
 		}
+	}
+}
+
+void DbfFile::Reorder(const std::vector<int>& order)
+{
+	std::vector<std::unique_ptr<uint8_t[]>> buffers;
+	buffers.reserve(order.size());
+	for (int rec_nr : order) {
+		buffers.push_back(ReadRaw(rec_nr));
+	}
+	for (size_t i = 0; i < buffers.size(); i++) {
+		WriteRaw(i + 1, buffers[i].get());
+	}
+	NRecs = static_cast<int>(buffers.size());
+	SetUpdateFlag();
+}
+
+void DbfFile::SubstDuplF(DbfFile* temp)
+{
+	// the records are copied back and their texts stored again,
+	// so the file keeps its name, handle and memo file format
+	std::unique_ptr<Record> record = std::make_unique<Record>(temp->_parent);
+	if (TF != nullptr) TF->SetEmpty();
+	for (int i = 1; i <= temp->NRecs; i++) {
+		temp->ReadRec(i, record.get());
+		std::unique_ptr<uint8_t[]> buffer = BufferFromRecord(record.get(), nullptr);
+		WriteRaw(i, buffer.get());
+	}
+	NRecs = temp->NRecs;
+	SetUpdateFlag();
+	WrPrefixes();
+
+	CloseClearH(&temp->Handle);
+	MyDeleteFile(temp->_parent->FullPath);
+	if (temp->TF != nullptr && temp->TF != TF && temp->TF->Handle != TF->Handle) {
+		CloseClearH(&temp->TF->Handle);
+		MyDeleteFile(TempFilePath('T', fandio::IsNetVolume(fandio::ResolvePath(_parent).volume)));
 	}
 }
 

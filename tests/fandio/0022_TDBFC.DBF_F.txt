@@ -1,0 +1,4 @@
+{ číselník .DBF s vlastním klíčem (soubor bez indexu, setříděný podle Kod) }
+Kod    :F,5.0;
+Nazev  :A,20;
+#K @ Kod

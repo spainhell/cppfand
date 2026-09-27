@@ -399,8 +399,9 @@ double LinkProc(FrmlElemLink* X, Record* record)
 		//if (!LinkUpw(LD, N, false, X->LinkLV->record->GetRecord(), &rec)) {
 		//	N = -N;
 		//}
-		Record* rec = LinkUpw(LD, N, false, X->LinkLV->record);
-		if (rec == nullptr) {
+		bool found;
+		Record* rec = LinkUpw(LD, N, false, X->LinkLV->record, found);
+		if (!found) {
 			N = -N;
 		}
 		delete rec; rec = nullptr;
@@ -416,8 +417,9 @@ double LinkProc(FrmlElemLink* X, Record* record)
 		Record* newRecord = new Record(fromFD);
 		fromFD->ReadRec(N, newRecord);
 		fromFD->OldLockMode(md);
-		Record* rec = LinkUpw(LD, N, false, X->LinkLV->record);
-		if (rec == nullptr) {
+		bool found;
+		Record* rec = LinkUpw(LD, N, false, X->LinkLV->record, found);
+		if (!found) {
 			N = -N;
 		}
 		delete rec; rec = nullptr;
@@ -712,8 +714,8 @@ bool RunBool(FileD* file_d, FrmlElem* X, Record* record)
 		int RecNo;
 
 		if (iX->Link != nullptr) {
-			Record* new_rec = LinkUpw(iX->Link, RecNo, false, record);
-			bool b7 = (new_rec != nullptr);
+			bool b7;
+			Record* new_rec = LinkUpw(iX->Link, RecNo, false, record, b7);
 			if ((iX->Frml == nullptr)) {
 				result = b7;
 			}
@@ -950,7 +952,8 @@ label1:
 		auto iX = (FrmlElemAccess*)X;
 
 		if (iX->Link != nullptr) {
-			Record* newRecord = LinkUpw(iX->Link, RecNo, false, record);
+			bool found;
+			Record* newRecord = LinkUpw(iX->Link, RecNo, false, record, found);
 
 			result = RunReal(iX->Link->ToFile, iX->Frml, newRecord);
 			delete newRecord; newRecord = nullptr;
@@ -1557,7 +1560,8 @@ label1:
 		LockMode lm = iX7->File->NewLockMode(RdMode);
 
 		if (iX7->Link != nullptr) {
-			Record* newRecord = LinkUpw(iX7->Link, RecNo, true, record);
+			bool found;
+			Record* newRecord = LinkUpw(iX7->Link, RecNo, true, record, found);
 			result = RunString(iX7->Link->ToFile, iX7->Frml, newRecord);
 			delete newRecord; newRecord = nullptr;
 		}

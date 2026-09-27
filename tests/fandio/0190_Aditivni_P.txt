@@ -1,0 +1,38 @@
+{ aditivní změny (#A) při writerec a deleterec s +: založení nadřízené věty (!!),
+  přičtení, odečtení při zrušení, rozdíl při změně; nadřízený .X i .DBF }
+VAR p:record of TPOL; s:record of TSUM; d:record of TSUMD; i:real; chyba,t:string;
+begin
+chyba:='';
+TPOL.nrecs:=0;
+TSUM.nrecs:=0;
+TSUMD.nrecs:=0;
+{ skupiny C,B,A,C,B,A,..: C = 1+4+7+10, B = 2+5+8+11, A = 3+6+9+12 }
+for i:=1 to 12 do begin
+  readrec(p,0);
+  p.Skup:=cond(((i-int(i/3)*3)=1):'C',((i-int(i/3)*3)=2):'B',else:'A');
+  p.Castka:=i;
+  writerec(p,0,+);
+end;
+{ zrušení věty 1 (C, 1) a změna věty 1 (teď B, 2 -> 102) }
+deleterec(TPOL,1,+);
+readrec(p,1);
+p.Castka:=102;
+writerec(p,1,+);
+if TSUM.nrecs<>3 then chyba:='TSUM nrecs='+str(TSUM.nrecs,1,0);
+if (chyba='') & (TSUMD.nrecs<>3) then chyba:='TSUMD nrecs='+str(TSUMD.nrecs,1,0);
+t:='';
+forall s/@ do t:=t+trailchar(' ',s.Skup)+str(s.Suma,1,0)+'/'+str(s.Pocet,1,0)+' ';
+if (chyba='') & (t<>'A30/4 B126/4 C21/3 ') then chyba:='TSUM: '+t;
+{ .DBF: věty se musí vložit podle klíče, fyzické pořadí A, B, C }
+t:='';
+for i:=1 to TSUMD.nrecs do begin
+  readrec(d,i);
+  t:=t+trailchar(' ',d.Skup)+str(d.Suma,1,0)+'/'+str(d.Pocet,1,0)+' ';
+end;
+if (chyba='') & (t<>'A30/4 B126/4 C21/3 ') then chyba:='TSUMD: '+t;
+readrec(p,1);
+if (chyba='') & ^p.TSUMD.exist then chyba:='exist pro existující větu';
+p.Skup:='X';
+if (chyba='') & p.TSUMD.exist then chyba:='exist pro neexistující větu';
+proc(Vysl,('Aditivni',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;

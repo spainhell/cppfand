@@ -1097,63 +1097,12 @@ void Fand0File::GenerateNew000File(XScan* x)
 	WrPrefix();
 }
 
-void Fand0File::CreateWIndex(XScan* Scan, XWKey* K, OperationType oper_type)
-{
-	std::vector<XKey*> xw_keys;
-	xw_keys.push_back(K);
-	std::unique_ptr<Record> record = std::make_unique<Record>(_parent);
-	std::unique_ptr<XWorkFile> XW = std::make_unique<XWorkFile>(_parent, Scan, xw_keys, _msgs);
-	XW->Main(oper_type, record.get());
-}
-
-void Fand0File::ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, OperationType oper_type)
-{
-	unsigned short n = 0;
-	XWKey* k2 = new XWKey(_parent);
-
-	if (Scan->FD->IsSQLFile && (Scan->Kind == ScanMode::WorkingIndex)) {
-		/* F6-autoreport & sort */
-		XKey* k = Scan->Key;
-		n = k->IndexLen;
-
-		for (KeyFldD* kf : SK) {
-			n += kf->FldD->NBytes;
-		}
-
-		if (n > 255) {
-			fandio::ShowMessage(155);
-			delete k2; k2 = nullptr;
-			return;
-		}
-
-		std::vector<KeyFldD*> kfroot;
-
-		for (KeyFldD* kf : k->KFlds) {
-			kfroot.push_back(kf);
-		}
-
-		if (SK.size() > kfroot.size()) {
-			for (size_t i = 0; i < SK.size(); i++) {
-				kfroot.push_back(SK[i]);
-			}
-		}
-
-		k2->Open(_parent, kfroot, true, false);
-	}
-	else {
-		k2->Open(_parent, SK, true, false);
-	}
-
-	CreateWIndex(Scan, k2, oper_type);
-	Scan->SubstWIndex(k2);
-}
-
 void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 {
 	std::vector<KeyInD*> empty;
 	XScan* scan = new XScan(_parent, nullptr, empty, false);
 	scan->Reset(nullptr, false, nullptr); // record not needed for sorting? previously there was a record allocated in this method
-	ScanSubstWIndex(scan, SK, OperationType::Sort);
+	_parent->ScanSubstWIndex(scan, SK, OperationType::Sort);
 	FileD* subst_file = _parent->OpenDuplicateF(false);
 
 	_msgs.runMsgOn('S', scan->NRecs);
@@ -1169,21 +1118,6 @@ void Fand0File::SortAndSubst(std::vector<KeyFldD*>& SK)
 	_msgs.runMsgOff();
 
 	delete subst_file; subst_file = nullptr;
-}
-
-void Fand0File::CopyIndex(XWKey* K, XKey* FromK)
-{
-	Record* record = new Record(_parent);
-
-	K->Release(_parent);
-	LockMode md = _parent->NewLockMode(RdMode);
-	std::vector<KeyInD*> empty;
-	XScan* Scan = new XScan(_parent, FromK, empty, false);
-	Scan->Reset(nullptr, false, record);
-	CreateWIndex(Scan, K, OperationType::Work);
-	_parent->OldLockMode(md);
-
-	delete record; record = nullptr;
 }
 
 void Fand0File::SubstDuplF(FileD* TempFD, bool DelTF)
