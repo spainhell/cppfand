@@ -132,13 +132,16 @@ public:
 	LockMode NewLockMode(LockMode mode);
 	bool TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind);
 	bool ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref);
-	bool Lock(int32_t n, uint16_t kind) const;
+	bool Lock(int32_t n, uint16_t kind);
 	void Unlock(int32_t n);
 	void RunErrorM(LockMode mode);
 
 	uint16_t RdPrefix() const;
 	void WrPrefix() const;
 	void WrPrefixes() const;
+	// re-reads the prefixes of the data, index and text file (changes of other users)
+	int RdPrefixes();
+	void ClearUpdateFlag() const;
 
 	// type of a FAND file; FandFileType::UNKNOWN for other file types (.DBF)
 	FandFileType GetFandFileType() const;
@@ -195,6 +198,5 @@ public:
 private:
 	//Fand0File* FF = nullptr;	// FandFile reference
 	void lock_excl_and_write_prefix();
-	void DbfChangeLockMode(LockMode mode);
 	FileD* open_duplicate_dbf(bool createTextFile);
 };

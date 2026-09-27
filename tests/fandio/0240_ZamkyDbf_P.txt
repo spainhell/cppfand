@@ -1,0 +1,39 @@
+{ zámky souboru TZAMD proti druhému uživateli (ZamkyDbf2): režim souboru (with shared)
+  a zámek věty (with locked) }
+VAR r:record of TZAMD; i:real; ok:boolean; chyba:string;
+begin
+chyba:='';
+TZAMD.nrecs:=0;
+for i:=1 to 5 do begin
+  readrec(r,0);
+  r.Kod:=i;
+  writerec(r,0);
+end;
+{ výhradní režim: druhý uživatel nesmí číst ani zapisovat }
+with shared TZAMD(EXCL) do begin
+  proc(Signal,('A','ZamkyDbf-excl',''));
+  proc(Cekej,('B','ZamkyDbf-excl-ok',ok));
+  if ^ok then chyba:='B neodpověděl při EXCL';
+end
+else chyba:='EXCL nezískán';
+proc(Signal,('A','ZamkyDbf-excl-konec',''));
+proc(Cekej,('B','ZamkyDbf-excl-konec-ok',ok));
+{ čtení: druhý uživatel smí také číst, nesmí zapisovat }
+with shared TZAMD(RD) do begin
+  proc(Signal,('A','ZamkyDbf-rd',''));
+  proc(Cekej,('B','ZamkyDbf-rd-ok',ok));
+end
+else if chyba='' then chyba:='RD nezískán';
+proc(Signal,('A','ZamkyDbf-rd-konec',''));
+{ zámek věty 3 }
+with locked TZAMD[3] do begin
+  proc(Signal,('A','ZamkyDbf-veta',''));
+  proc(Cekej,('B','ZamkyDbf-veta-ok',ok));
+end
+else if chyba='' then chyba:='zámek věty 3 nezískán';
+proc(Signal,('A','ZamkyDbf-veta-konec',''));
+proc(Cekej,('B','ZamkyDbf-konec',ok));
+if (chyba='') & ^ok then chyba:='druhý uživatel nedoběhl';
+proc(ChybaB,('ZamkyDbf',chyba));
+proc(Vysl,('ZamkyDbf',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;

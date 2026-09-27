@@ -1,0 +1,4 @@
+{ soubor pro test viditelnosti změn druhého uživatele }
+Kod    :F,5.0;
+Nazev  :A,20;
+Pozn   :T;

@@ -1,0 +1,17 @@
+{ čeká na signál (Kdo, Krok) druhého uživatele, nejdéle asi 20 s }
+(k:string; s:string; VAR ok:boolean)
+VAR r:record of TSYNC; i,j:real;
+begin
+ok:=false;
+i:=0;
+while ^ok & (i<200) do begin
+  for j:=1 to TSYNC.nrecs do begin
+    readrec(r,j);
+    if (trailchar(' ',r.Kdo)=k) & (trailchar(' ',r.Krok)=s) then ok:=true;
+  end;
+  if ^ok then begin
+    delay(100);
+    i:=i+1;
+  end;
+end;
+end;

@@ -1,0 +1,26 @@
+{ druhý uživatel testu Soubezne }
+VAR r:record of TSOUB; n:record of TSOUBN; d:record of TSOUBD; i,k:real; ok:boolean; t:string;
+begin
+proc(Cekej,('A','sou-start',ok));
+proc(Signal,('B','sou-start',''));
+for i:=1 to 150 do begin
+  k:=1000+i;
+  t:=repeatstr('b',(k-int(k/7)*7)*300+1);
+  readrec(r,0);
+  r.Kdo:='B';
+  r.Kod:=k;
+  r.Pozn:=t;
+  writerec(r,0);
+  readrec(n,0);
+  n.Kdo:='B';
+  n.Kod:=k;
+  n.Pozn:=t;
+  writerec(n,0);
+  readrec(d,0);
+  d.Kdo:='B';
+  d.Kod:=k;
+  d.Pozn:=t;
+  writerec(d,0);
+end;
+proc(Signal,('B','sou-hotovo',''));
+end;

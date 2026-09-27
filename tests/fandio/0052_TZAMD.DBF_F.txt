@@ -1,0 +1,3 @@
+{ soubor .DBF pro test zámků }
+Kod    :F,5.0;
+Nazev  :A,20;

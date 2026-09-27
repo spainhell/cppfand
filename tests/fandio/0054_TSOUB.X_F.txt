@@ -1,0 +1,5 @@
+{ souběžné přidávání: indexovaný soubor s texty }
+Kdo    :A,1;
+Kod    :F,5.0;
+Pozn   :T;
+#K @ Kod
