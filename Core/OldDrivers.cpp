@@ -108,17 +108,18 @@ WORD ReadKey()
 bool GetKeyEvent()
 {
 	KEY_EVENT_RECORD key;
-	bool exists;
 
-	do {
-		exists = keyboard.Get(key);
-		if (exists && key.bKeyDown) {
+	// uvolneni klaves preskocime bez cekani
+	while (keyboard.Get(key)) {
+		if (key.bKeyDown) {
 			Event.Pressed = PressedKey(key);
 			Event.What = evKeyDown;
 			return true;
 		}
-		::Sleep(20); // to decrease CPU load
-	} while (exists);
+	}
+	// nic neprislo: misto pevneho Sleep se probudime hned, jak neco prijde;
+	// timeout kvuli opakovani mysi, sporici obrazovce a casovacum
+	keyboard.WaitForInput(20);
 	return false;
 }
 
