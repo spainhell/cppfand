@@ -537,7 +537,7 @@ void RdFieldDList(FileD* file_d, bool stored)
 		//ChainLast(file_d->FldD.front(), F);
 
 		if (stored) {
-			if (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::FAND8) {
+			if (file_d->FileType == DataFileType::FandFile && file_d->GetFandFileType() == FandFileType::FAND8) {
 				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) {
 					gc->OldError(35);
 				}
@@ -698,7 +698,7 @@ FileD* RdFileD_Like(const std::string& FileName, FandFileType FDTyp)
 	like->IsHlpFile = false;
 	if (!(FDTyp == FandFileType::FAND16
 		|| FDTyp == FandFileType::INDEX)
-		|| !(like->FF->file_type == FandFileType::FAND16 || like->FF->file_type == FandFileType::INDEX)
+		|| !(like->GetFandFileType() == FandFileType::FAND16 || like->GetFandFileType() == FandFileType::INDEX)
 		) {
 		gc->OldError(106);
 	}
@@ -797,7 +797,7 @@ FileD* RdFileD(std::string FileName, DataFileType data_file_type, FandFileType f
 		file_d->CompileRecLen();
 		SetLDIndexRoot(file_d, LDOld);
 		if (file_d->FileType == DataFileType::FandFile
-			&& file_d->FF->file_type == FandFileType::INDEX
+			&& file_d->GetFandFileType() == FandFileType::INDEX
 			&& file_d->Keys.empty()) {
 			gc->Error(107);
 		}
@@ -952,7 +952,7 @@ void RdKeyD(FileD* file_d)
 		LinkDRoot.push_front(L);
 
 		if (gc->Lexem == '!') {
-			if (file_d->FF->file_type != FandFileType::INDEX
+			if (file_d->GetFandFileType() != FandFileType::INDEX
 #ifdef FandSQL
 				&& !file_d->typSQLFile
 #endif
@@ -1003,7 +1003,7 @@ void RdKeyD(FileD* file_d)
 
 void CheckDuplAlias(FileD* file_d, pstring name)
 {
-	if (file_d->FF->file_type != FandFileType::INDEX
+	if (file_d->GetFandFileType() != FandFileType::INDEX
 #ifdef FandSQL
 		&& !file_d->typSQLFile
 #endif

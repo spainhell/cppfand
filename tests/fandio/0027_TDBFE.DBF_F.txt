@@ -1,0 +1,4 @@
+{ soubor .DBF pro test datového editoru }
+Kod    :F,5.0;
+Nazev  :A,20;
+Pozn   :T;

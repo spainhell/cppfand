@@ -1,0 +1,4 @@
+{ výstupní soubor .DBF pro merge; memo soubor .DBT }
+Kod    :F,5.0;
+Nazev  :A,20;
+Pozn   :T;

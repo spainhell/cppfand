@@ -1,0 +1,31 @@
+{ lexikální (české) řazení: klíč ~, sort ~ a porovnání =~;
+  výsledek závisí na tabulce abecedy ve FAND.CFG }
+VAR r:record of TLEX; rs:record of TLEXS; i:real; chyba,ocek,skut:string;
+begin
+chyba:='';
+{ očekávané pořadí: CH za H; Č, Ř, Š, Ž jsou samostatná písmena za C, R, S, Z;
+  Ď se řadí jako D (Ďas před Dub) }
+ocek:='Cibule,Čáp,Ďas,Dub,Hora,Chata,Ivan,Ryba,Řeka,Sova,Šum,Zima,Žába,';
+TLEX.nrecs:=0;
+TLEXS.nrecs:=0;
+for i:=1 to 13 do begin
+  readrec(r,0);
+  r.Jmeno:=cond((i=1):'Žába',(i=2):'Chata',(i=3):'Cibule',(i=4):'Šum',(i=5):'Ďas',(i=6):'Ryba',
+               (i=7):'Hora',(i=8):'Řeka',(i=9):'Čáp',(i=10):'Ivan',(i=11):'Zima',(i=12):'Dub',else:'Sova');
+  writerec(r,0);
+  readrec(rs,0);
+  rs.Jmeno:=r.Jmeno;
+  writerec(rs,0);
+end;
+skut:='';
+forall r/@ do skut:=skut+trailchar(' ',r.Jmeno)+',';
+if skut<>ocek then chyba:='klíč ~: '+skut;
+sort(TLEXS,(~Jmeno));
+skut:='';
+for i:=1 to 13 do begin readrec(rs,i); skut:=skut+trailchar(' ',rs.Jmeno)+','; end;
+if (chyba='') & (skut<>ocek) then chyba:='sort ~: '+skut;
+if (chyba='') & ^('chata'=~'CHATA') then chyba:='chata=~CHATA';
+if (chyba='') & ^('Dáma'=~'dama') then chyba:='Dáma=~dama';
+if (chyba='') & ('čap'=~'cap') then chyba:='čap=~cap';
+proc(Vysl,('Lexikalni',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;

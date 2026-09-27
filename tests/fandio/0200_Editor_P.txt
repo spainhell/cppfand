@@ -1,0 +1,24 @@
+{ datový editor nad .DBF, klávesy ze setkeybuf: oprava údaje, zrušení věty (Ctrl-Y),
+  vložení věty (Ctrl-N); ostatní věty si musí nechat své texty }
+VAR r:record of TDBFE; i:real; chyba,t:string;
+begin
+chyba:='';
+TDBFE.nrecs:=0;
+for i:=1 to 3 do begin
+  readrec(r,0);
+  r.Kod:=i;
+  r.Nazev:='Věta '+str(i,1,0);
+  r.Pozn:='text '+str(i,1,0);
+  writerec(r,0);
+end;
+{ Enter na Nazev, oprava, dolů na větu 2, Ctrl-Y, Ctrl-N a vyplnění nové věty, Esc }
+setkeybuf(char(13)+'Novy'+char(13)+char(0)+char(80)+char(25)+char(14)+'7'+char(13)+'Vlozena'+char(13)+char(13)+char(27));
+edit(TDBFE,());
+t:='';
+for i:=1 to TDBFE.nrecs do begin
+  readrec(r,i);
+  t:=t+str(r.Kod,1,0)+':'+trailchar(' ',r.Nazev)+':'+r.Pozn+' ';
+end;
+if t<>'1:Novy:text 1 7:Vlozena: 3:Věta 3:text 3 ' then chyba:=t;
+proc(Vysl,('Editor',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;

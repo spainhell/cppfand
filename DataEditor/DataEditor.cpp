@@ -811,7 +811,7 @@ int DataEditor::AbsRecNr(int N)
 	}
 	else if (HasIndex) {
 		LockMode md = file_d_->NewLockMode(RdMode);
-		file_d_->FF->TestXFExist();
+		file_d_->TestXFExist();
 		N = VK->NrToRecNr(file_d_, N);
 		file_d_->OldLockMode(md);
 	}
@@ -832,7 +832,7 @@ int DataEditor::LogRecNo(int N)
 			result = WK->RecNrToNr(file_d_, N, current_rec_);
 		}
 		else if (HasIndex) {
-			file_d_->FF->TestXFExist();
+			file_d_->TestXFExist();
 			result = VK->RecNrToNr(file_d_, N, current_rec_);
 		}
 		else {
@@ -1585,7 +1585,7 @@ void DataEditor::BuildWork()
 			if (!edit_->KIRoot.empty()) {
 				wk2 = new XWKey(file_d_);
 				wk2->Open(file_d_, *KF, true, false);
-				file_d_->FF->CreateWIndex(Scan, wk2, OperationType::Work);
+				file_d_->CreateWIndex(Scan, wk2, OperationType::Work);
 				XScan* Scan2 = new XScan(file_d_, wk2, edit_->KIRoot, false);
 				Scan2->Reset(nullptr, false, current_rec_);
 				Scan = Scan2;
@@ -1594,7 +1594,7 @@ void DataEditor::BuildWork()
 		else {
 #ifdef FandSQL
 			if (file_d_->IsSQLFile && (boolP == nullptr)) {
-				l = file_d_->FF->RecLen; f = file_d_->FldD[0]; OnlyKeyArgFlds(WK);
+				l = file_d_->GetRecLen(); f = file_d_->FldD[0]; OnlyKeyArgFlds(WK);
 			}
 #endif
 			if (
@@ -1606,7 +1606,7 @@ void DataEditor::BuildWork()
 			Scan = new XScan(file_d_, K, edit_->KIRoot, false);
 			Scan->Reset(boolP, edit_->SQLFilter, current_rec_);
 		}
-		file_d_->FF->CreateWIndex(Scan, WK, OperationType::Work);
+		file_d_->CreateWIndex(Scan, WK, OperationType::Work);
 		Scan->Close();
 		if (wk2 != nullptr) wk2->Close(file_d_);
 		ok = true;
@@ -1720,7 +1720,7 @@ bool DataEditor::OpenEditWw()
 #endif
 	{
 		if (HasIndex) {
-			file_d_->FF->TestXFExist();
+			file_d_->TestXFExist();
 		}
 		md = NoDelMode;
 		if (params_->OnlyAppend || (edit_->Cond != nullptr) || (!edit_->KIRoot.empty()) || edit_->DownSet ||
@@ -1969,7 +1969,7 @@ void DataEditor::UpdMemberRef(Record* old_record, Record* new_record)
 			Scan = new XScan(link_descr->FromFile, k, empty, true);
 			Scan->ResetOwner(&x_old, nullptr);
 			// TODO: FandSQL condition removed
-			link_descr->FromFile->FF->ScanSubstWIndex(Scan, k->KFlds, OperationType::Work);
+			link_descr->FromFile->ScanSubstWIndex(Scan, k->KFlds, OperationType::Work);
 
 			Scan->GetRec(src_rec1);
 			while (!Scan->eof) {
@@ -2071,7 +2071,7 @@ bool DataEditor::LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md)
 			file_d_ = ld->FromFile;
 			switch (Kind) {
 			case 0: {
-				file_d_->FF->TaLMode = file_d_->FF->LMode;
+				file_d_->SetTaLockMode(file_d_->GetLockMode());
 				break;
 			}
 			case 1: {
@@ -2080,7 +2080,7 @@ bool DataEditor::LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md)
 				break;
 			}
 			case 2: {
-				file_d_->OldLockMode(file_d_->FF->TaLMode);
+				file_d_->OldLockMode(file_d_->GetTaLockMode());
 				break;
 			}
 			}
@@ -2260,7 +2260,7 @@ bool DataEditor::DeleteRecProc()
 	oBaseRec = BaseRec;    /* exit proc uses CRec for locking etc.*/
 	if (HasIndex) {
 		//SPDLOG_DEBUG("... from file with index ...");
-		file_d_->FF->TestXFExist();
+		file_d_->TestXFExist();
 		if (Group) {
 			IRec = 1; BaseRec = 1;
 			while (BaseRec <= CNRecs()) {
@@ -2685,8 +2685,8 @@ void DataEditor::DisplChkErr(LogicControl* logic_control)
 
 		int n = 0;
 
-		Record* rec = LinkUpw(LD, n, false, current_rec_);
-		bool b = (rec != nullptr);
+		bool b;
+		Record* rec = LinkUpw(LD, n, false, current_rec_, b);
 		delete rec; rec = nullptr;
 
 		file_d_ = cf;
@@ -2918,7 +2918,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		current_rec_->ClearDeleted();
 
 		if (HasIndex) {
-			file_d_->FF->TestXFExist();
+			file_d_->TestXFExist();
 
 			if (IsNewRec) {
 				if (params_->AddSwitch
@@ -4837,7 +4837,7 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	/*float t;*/
 
 	bool result = false;
-	file_d_->FF->WasWrRec = false;
+	file_d_->SetWasWrRec(false);
 
 	//if (HasTF) {
 	//	p = file_d_->GetRecSpaceUnique();
@@ -4862,7 +4862,7 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	// some methods use RunString "_edfile" to identify caller
 	EditDRoot = edit_;
 
-	LockMode md = file_d_->FF->LMode;
+	LockMode md = file_d_->GetLockMode();
 
 	//EditD* EE = WriteParamsToE();                            /*t = currtime;*/
 
@@ -4872,7 +4872,7 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	//ReadParamsFromE(EE);
 
 	file_d_->NewLockMode(md);
-	bool upd = file_d_->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
+	bool upd = file_d_->GetWasWrRec();      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
 
 	if (current_rec_->IsUpdated()) {
 		b = true;
@@ -5191,10 +5191,10 @@ void DataEditor::ToggleSelectAll()
 		k->Release(file_d_);
 	}
 	else if (params_->Subset) {
-		file_d_->FF->CopyIndex(k, WK);
+		file_d_->CopyIndex(k, WK);
 	}
 	else {
-		file_d_->FF->CopyIndex(k, VK);
+		file_d_->CopyIndex(k, VK);
 	}
 	DisplAllWwRecs();
 }

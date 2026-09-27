@@ -1,5 +1,7 @@
 #pragma once
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "DataFileBase.h"
 #include "DbfTFile.h"
@@ -12,13 +14,19 @@ class DbfFile : public DataFileBase
 {
 public:
 	DbfFile(FileD* parent);
+	// copy for a work file of the same structure (the text file is shared)
+	DbfFile(const DbfFile& orig, FileD* parent);
 	~DbfFile() override;
 
 	DbfTFile* TF = nullptr;
 	FileUseMode UMode = Closed;
+	// .DBF files are not locked, the modes are only remembered
+	LockMode LMode = NullMode;
+	LockMode ExLMode = NullMode;
+	LockMode TaLMode = NullMode;
 
 	uint16_t RecLen = 0;
-	uint16_t NRecs = 0;
+	int NRecs = 0;
 	uint16_t FirstRecPos = 0;
 	unsigned char Drive = 0;           // 1=A, 2=B, else 0
 	bool WasWrRec = false;
@@ -35,6 +43,10 @@ public:
 	void IncNRecs(int n);
 	void DecNRecs(int n);
 	void PutRec(Record* record, int& i_rec);
+	// rewrites the file with the records in the given order (texts are kept)
+	void Reorder(const std::vector<int>& order);
+	// replaces the content of the file by the work file 'temp' and deletes it
+	void SubstDuplF(DbfFile* temp);
 
 	uint16_t RdPrefix();
 	void WrPrefix();
@@ -51,7 +63,7 @@ public:
 	void CloseFile();
 	void Close();
 
-	static bool DeletedFlag(Record* record);
+	bool DeletedFlag(Record* record);
 	void ClearDeletedFlag(Record* record);
 	void SetDeletedFlag(Record* record);
 	FileD* GetFileD();
@@ -60,6 +72,12 @@ public:
 
 private:
 	FileD* _parent;
+
+	std::unique_ptr<uint8_t[]> ReadRaw(size_t rec_nr);
+	void WriteRaw(size_t rec_nr, uint8_t* buffer);
+	void RecordFromBuffer(uint8_t* buffer, Record* record);
+	// orig_buffer: current record in the file (its unchanged texts are kept), or nullptr
+	std::unique_ptr<uint8_t[]> BufferFromRecord(Record* record, uint8_t* orig_buffer);
 
 	bool loadB(FieldDescr* field_d, uint8_t* record);
 	double loadR(FieldDescr* field_d, uint8_t* record);

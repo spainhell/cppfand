@@ -28,7 +28,9 @@ enum class ForAllFilesOperation {
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d = nullptr, WORD i = 0);
 
 
-Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record);
+// returns the linked record (an empty one with the key values when it does not exist);
+// 'found' tells whether it exists
+Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record, bool& found);
 void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add);
 void TestCPathError();
 std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);

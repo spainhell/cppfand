@@ -68,23 +68,25 @@ void CrIndRec(FileD* file_d, Record* record)
 
 Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record)
 {
-	// TODO: is param file_d needed?
-
+	// the linked record belongs to the superior file (CFile:=ToFD in the original)
+	FileD* f2 = add_d->File2;
 	Record* result = nullptr;
 	LinkD* ld = add_d->LD;
 	kind2 = 'd';
 
 	if (ld != nullptr) {
-		Record* rec = LinkUpw(ld, n, false, record);
+		bool found;
+		Record* rec = LinkUpw(ld, n, false, record, found);
 
-		if (rec != nullptr) {
+		if (found) {
 			result = new Record(add_d->File2);
 			//memcpy(result->GetRecord(), rec->GetRecord(), add_d->File2->GetRecordSize());
 			rec->CopyTo(result);
 			delete rec; rec = nullptr;
 			return result;
 		}
-
+		// not found: an empty record with the key values, it may be created below
+		result = rec;
 		SetMsgPar(ld->RoleName);
 	}
 	else {
@@ -93,8 +95,8 @@ Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record
 
 		if (r == nullptr) {
 			r = new Record(add_d->File2);
-			file_d->IncNRecs(1);
-			file_d->UpdateRec(1, r);
+			f2->IncNRecs(1);
+			f2->UpdateRec(1, r);
 		}
 
 		result = new Record(add_d->File2);
@@ -108,16 +110,17 @@ Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record
 	if ((add_d->Create == 2) || (add_d->Create == 1) && PromptYN(132)) {
 		// cond. for FandSQL removed
 		result->ClearDeleted();
-		if ((ld != nullptr) && file_d->IsIndexFile()) {
-			CrIndRec(file_d, result);
-			n = file_d->GetNRecs();
+		if ((ld != nullptr) && f2->IsIndexFile()) {
+			CrIndRec(f2, result);
+			n = f2->GetNRecs();
 		}
 		else {
-			file_d->CreateRec(n, result);
+			f2->CreateRec(n, result);
 		}
 		return result;
 	}
 	WrLLF10Msg(119);
+	delete result; result = nullptr;
 
 	return result;
 }
@@ -219,10 +222,10 @@ bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
 			switch (kind) {
 			case 0: {
 				if (Ta) {
-					add_d->File2->FF->TaLMode = add_d->File2->FF->LMode;
+					add_d->File2->SetTaLockMode(add_d->File2->GetLockMode());
 				}
 				else {
-					add_d->File2->FF->ExLMode = add_d->File2->FF->LMode;
+					add_d->File2->SetExLockMode(add_d->File2->GetLockMode());
 				}
 				break;
 			}
@@ -238,10 +241,10 @@ bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
 			}
 			case 2: {
 				if (Ta) {
-					add_d->File2->OldLockMode(add_d->File2->FF->TaLMode);
+					add_d->File2->OldLockMode(add_d->File2->GetTaLockMode());
 				}
 				else {
-					add_d->File2->OldLockMode(add_d->File2->FF->ExLMode);
+					add_d->File2->OldLockMode(add_d->File2->GetExLockMode());
 				}
 				break;
 			}
@@ -320,14 +323,14 @@ bool RunAddUpdate(FileD* file_d, char kind, Record* old_record, bool back, Addit
 			int n2 = 0;
 			int n2_old = 0;
 			if (r != 0.0) {
-				Record* linked = Link(file_d, add, n2, kind2, record);
-				if (linked == nullptr) {
+				cr2 = Link(file_d, add, n2, kind2, record);
+				if (cr2 == nullptr) {
 					throw std::exception("fail");
 				}
 			}
 			if (r_old != 0.0) {
-				Record* linked = Link(file_d, add, n2_old, kind2_old, old_record);
-				if (linked == nullptr) {
+				cr2_old = Link(file_d, add, n2_old, kind2_old, old_record);
+				if (cr2_old == nullptr) {
 					throw std::exception("fail");
 				}
 				if (n2_old == n2) {

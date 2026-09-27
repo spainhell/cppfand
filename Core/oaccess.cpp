@@ -67,7 +67,7 @@ void CloseFANDFiles()
 			RD->help_file->CloseFile();
 		}
 		for (FileD* f : RD->data_files) {
-			f->FF->ExLMode = f->FF->LMode;
+			f->SetExLockMode(f->GetLockMode());
 			f->CloseFile();
 		}
 		RD = RD->ChainBack;
@@ -102,9 +102,9 @@ void OpenFANDFiles()
 		}
 
 		for (FileD* file : RD->data_files) {
-			if (file->FF->ExLMode != NullMode) {
+			if (file->GetExLockMode() != NullMode) {
 				file->OpenF(CPath, Shared, false);
-				md = file->NewLockMode(file->FF->ExLMode);
+				md = file->NewLockMode(file->GetExLockMode());
 			}
 		}
 
@@ -130,7 +130,7 @@ bool ActiveRdbOnDrive(WORD D)
 	auto result = true;
 	Project* R = CRdb;
 	while (R != nullptr) {
-		if (R->project_file->FF->Drive == D) return result;
+		if (R->project_file->GetDrive() == D) return result;
 		R = R->ChainBack;
 	}
 	result = false;
@@ -142,11 +142,11 @@ void CloseFilesOnDrive(WORD drive)
 	Project* R = CRdb;
 
 	while (R != nullptr) {
-		if (R->project_file->FF->Drive == drive) {
+		if (R->project_file->GetDrive() == drive) {
 			R->project_file->CloseFile();
 		}
 		for (FileD* f : R->data_files) {
-			if (f->FF->Drive == drive) {
+			if (f->GetDrive() == drive) {
 				f->CloseFile();
 			}
 		}
@@ -259,7 +259,7 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 				isRdb = true;
 				return true;
 			}
-			if ((file_d == R->help_file) || (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::RDB)) {
+			if ((file_d == R->help_file) || (file_d->FileType == DataFileType::FandFile && file_d->GetFandFileType() == FandFileType::RDB)) {
 				//.RDB
 				dir = R->RdbDir;
 				return true;
@@ -273,7 +273,7 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 
 		for (FileD* f : R->data_files) {
 			if (file_d == f) {
-				if ((file_d == R->help_file) || (file_d->FileType == DataFileType::FandFile && file_d->FF->file_type == FandFileType::RDB)) {
+				if ((file_d == R->help_file) || (file_d->FileType == DataFileType::FandFile && file_d->GetFandFileType() == FandFileType::RDB)) {
 					//.RDB
 					dir = R->RdbDir;
 				}

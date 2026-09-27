@@ -1,0 +1,7 @@
+{ soubor ve formátu dBase (.DBF), volné texty v memo souboru .DBT }
+Kod   :F,5.0;
+Nazev :A,20;
+Cena  :F,7.2;
+Datum :D;
+Platny:B;
+Pozn  :T;

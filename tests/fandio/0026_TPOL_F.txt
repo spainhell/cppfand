@@ -1,0 +1,9 @@
+{ podřízený soubor: aditivní změny do TSUM a TSUMD, nadřízené věty se založí (!!) }
+Skup   :A,3;
+Castka :F,9.2;
+#K TSUM Skup;
+   TSUMD Skup
+#A TSUM.Suma !! += Castka;
+   TSUM.Pocet !! += 1;
+   TSUMD.Suma !! += Castka;
+   TSUMD.Pocet !! += 1;

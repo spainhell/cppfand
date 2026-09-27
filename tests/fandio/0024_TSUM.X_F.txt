@@ -1,0 +1,5 @@
+{ nadřízený indexovaný soubor pro aditivní změny }
+Skup   :A,3;
+Suma   :F,9.2;
+Pocet  :F,5.0;
+#K @ Skup

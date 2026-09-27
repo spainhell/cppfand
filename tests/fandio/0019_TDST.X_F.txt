@@ -1,0 +1,5 @@
+{ výstup transformace: indexovaný soubor se stejnými údaji }
+Kod   :F,4.0;
+Skup  :A,1;
+Castka:F,7.2;
+#K @ *Kod;

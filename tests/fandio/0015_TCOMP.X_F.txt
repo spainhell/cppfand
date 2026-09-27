@@ -1,0 +1,5 @@
+{ indexovaný soubor s klíčem nad vypočítaným údajem }
+A:F,4.0;
+B:F,4.0;
+#C Soucet:=A+B:F,5.0;
+#K @ Soucet;

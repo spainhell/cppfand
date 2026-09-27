@@ -60,7 +60,7 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 }
 
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
-Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
+Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record, bool& found)
 {
 	FileD* from_FD = LD->FromFile;
 	FileD* to_FD = LD->ToFile;
@@ -74,8 +74,8 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 
 	const LockMode md = to_FD->NewLockMode(RdMode);
 	bool lu;
-	if (to_FD->FF->file_type == FandFileType::INDEX) {
-		to_FD->FF->TestXFExist();
+	if (to_FD->GetFandFileType() == FandFileType::INDEX) {
+		to_FD->TestXFExist();
 		lu = K->SearchInterval(to_FD, x, false, N);
 	}
 	else if (to_FD->GetNRecs() == 0) {
@@ -83,7 +83,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 		N = 1;
 	}
 	else {
-		lu = to_FD->FF->SearchKey(x, K, N, up_rec);
+		lu = to_FD->SearchKey(x, K, N, up_rec);
 	}
 
 	if (lu) {
@@ -116,6 +116,7 @@ Record* LinkUpw(LinkD* LD, int& N, bool WithT, Record* record)
 		}
 	}
 
+	found = lu;
 	// TODO: FandSQL removed
 	to_FD->OldLockMode(md);
 
@@ -158,19 +159,19 @@ void ProcessFileOperation(ForAllFilesOperation op, FileD* file_d)
 		break;
 	}
 	case ForAllFilesOperation::clear_xf_update_lock: {
-		file_d->FF->ClearXFUpdLock();
+		if (file_d->FileType == DataFileType::FandFile) file_d->FF->ClearXFUpdLock();
 		break;
 	}
 	case ForAllFilesOperation::save_l_mode: {
-		file_d->FF->ExLMode = file_d->FF->LMode;
+		file_d->SetExLockMode(file_d->GetLockMode());
 		break;
 	}
 	case ForAllFilesOperation::set_old_lock_mode: {
-		file_d->OldLockMode(file_d->FF->ExLMode);
+		file_d->OldLockMode(file_d->GetExLockMode());
 		break;
 	}
 	case ForAllFilesOperation::close_passive_fd: {
-		if ((file_d->FF->file_type != FandFileType::RDB) && (file_d->FF->LMode == NullMode)) {
+		if ((file_d->GetFandFileType() != FandFileType::RDB) && (file_d->GetLockMode() == NullMode)) {
 			file_d->CloseFile();
 		}
 		break;

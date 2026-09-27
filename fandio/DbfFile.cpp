@@ -13,11 +13,23 @@
 #include "../fandbase/pascal.h"
 #include "../fandbase/realDouble.h"
 #include "Settings.h"
+#include "Record.h"
 
 
 DbfFile::DbfFile(FileD* parent)
 {
 	_parent = parent;
+}
+
+DbfFile::DbfFile(const DbfFile& orig, FileD* parent)
+{
+	_parent = parent;
+	UMode = orig.UMode;
+	RecLen = orig.RecLen;
+	NRecs = orig.NRecs;
+	FirstRecPos = orig.FirstRecPos;
+	Drive = orig.Drive;
+	if (orig.TF != nullptr) TF = new DbfTFile(*orig.TF, this);
 }
 
 DbfFile::~DbfFile()
@@ -36,39 +48,114 @@ uint8_t* DbfFile::GetRecSpace() const
 	return result;
 }
 
+// A record of .DBF: byte 0 = deleted flag ('*' or ' '), then the stored fields
+// from Displ as text (RECACC.PAS: _R, _B, _T, S_, R_, B_, T_ for Typ='D').
+
+std::unique_ptr<uint8_t[]> DbfFile::ReadRaw(size_t rec_nr)
+{
+	std::unique_ptr<uint8_t[]> buffer(GetRecSpace());
+	ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer.get());
+	return buffer;
+}
+
+void DbfFile::WriteRaw(size_t rec_nr, uint8_t* buffer)
+{
+	WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer);
+	WasWrRec = true;
+}
+
+void DbfFile::RecordFromBuffer(uint8_t* buffer, Record* record)
+{
+	record->Clear();
+	for (FieldDescr* field : _parent->FldD) {
+		BRS_Value val;
+		if (field->isStored()) {
+			switch (field->field_type) {
+			case FieldType::BOOL: val.B = loadB(field, buffer); break;
+			case FieldType::DATE:
+			case FieldType::FIXED:
+			case FieldType::REAL: val.R = loadR(field, buffer); break;
+			case FieldType::ALFANUM:
+			case FieldType::NUMERIC:
+			case FieldType::TEXT: val.S = loadS(field, buffer); break;
+			default: break;
+			}
+		}
+		record->_values.insert(std::pair(field->Name, val));
+	}
+	if (buffer[0] == '*') {
+		record->SetDeleted(false);
+	}
+}
+
+std::unique_ptr<uint8_t[]> DbfFile::BufferFromRecord(Record* record, uint8_t* orig_buffer)
+{
+	std::unique_ptr<uint8_t[]> buffer(GetRecSpace());
+	memset(buffer.get(), ' ', RecLen);
+	buffer[0] = record->IsDeleted() ? '*' : ' ';
+
+	for (FieldDescr* field : _parent->FldD) {
+		if (!field->isStored()) continue;
+		const auto item = record->_values.find(field->Name);
+		if (item == record->_values.end()) continue;
+		const BRS_Value& val = item->second;
+		switch (field->field_type) {
+		case FieldType::BOOL: saveB(field, val.B, buffer.get()); break;
+		case FieldType::DATE:
+		case FieldType::FIXED:
+		case FieldType::REAL: saveR(field, val.R, buffer.get()); break;
+		case FieldType::ALFANUM:
+		case FieldType::NUMERIC: saveS(field, val.S, buffer.get()); break;
+		case FieldType::TEXT: {
+			// an unchanged text keeps its position in the memo file
+			if (orig_buffer != nullptr && loadS(field, orig_buffer) == val.S) {
+				saveT(field, loadT(field, orig_buffer), buffer.get());
+			}
+			else {
+				saveS(field, val.S, buffer.get());
+			}
+			break;
+		}
+		default: break;
+		}
+	}
+	return buffer;
+}
+
 size_t DbfFile::ReadRec(size_t rec_nr, Record* record)
 {
-	// TODO: prepare data to read from Record object
-	return ReadData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+	std::unique_ptr<uint8_t[]> buffer = ReadRaw(rec_nr);
+	RecordFromBuffer(buffer.get(), record);
+	return RecLen;
 }
 
 size_t DbfFile::WriteRec(size_t rec_nr, Record* record)
 {
-	// TODO: prepare data to write from Record object
-	WasWrRec = true;
-	return WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+	std::unique_ptr<uint8_t[]> orig = ReadRaw(rec_nr);
+	std::unique_ptr<uint8_t[]> buffer = BufferFromRecord(record, orig.get());
+	WriteRaw(rec_nr, buffer.get());
+	return RecLen;
 }
 
 void DbfFile::CreateRec(int n, Record* record)
 {
 	IncNRecs(1);
+	// shift records n..NRecs-1 one position up as raw data, texts stay where they are
 	for (int i = NRecs - 1; i >= n; i--) {
-		ReadRec(i, record);
-		WriteRec(i + 1, record);
+		std::unique_ptr<uint8_t[]> buffer = ReadRaw(i);
+		WriteRaw(i + 1, buffer.get());
 	}
-	WriteRec(n, record);
+	std::unique_ptr<uint8_t[]> buffer = BufferFromRecord(record, nullptr);
+	WriteRaw(n, buffer.get());
 }
 
 void DbfFile::DeleteRec(int n, Record* record)
 {
-	uint8_t* buffer = new uint8_t[RecLen];
-	// TODO: transform Record to buffer
-	throw("DbfFile::DeleteRec() - not implemented yet");
-
-	DelAllDifTFlds(buffer, nullptr);
+	// .DBF is not indexed: the record is removed and the following ones shift down
+	// (texts in the memo file are not reused, see DbfTFile::Delete)
 	for (int i = n; i <= NRecs - 1; i++) {
-		ReadRec(i + 1, record);
-		WriteRec(i, record);
+		std::unique_ptr<uint8_t[]> buffer = ReadRaw(i + 1);
+		WriteRaw(i, buffer.get());
 	}
 	DecNRecs(1);
 }
@@ -79,6 +166,43 @@ void DbfFile::DelAllDifTFlds(uint8_t* record, uint8_t* comp_record)
 		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
 			DelDifTFld(F, record, comp_record);
 		}
+	}
+}
+
+void DbfFile::Reorder(const std::vector<int>& order)
+{
+	std::vector<std::unique_ptr<uint8_t[]>> buffers;
+	buffers.reserve(order.size());
+	for (int rec_nr : order) {
+		buffers.push_back(ReadRaw(rec_nr));
+	}
+	for (size_t i = 0; i < buffers.size(); i++) {
+		WriteRaw(i + 1, buffers[i].get());
+	}
+	NRecs = static_cast<int>(buffers.size());
+	SetUpdateFlag();
+}
+
+void DbfFile::SubstDuplF(DbfFile* temp)
+{
+	// the records are copied back and their texts stored again,
+	// so the file keeps its name, handle and memo file format
+	std::unique_ptr<Record> record = std::make_unique<Record>(temp->_parent);
+	if (TF != nullptr) TF->SetEmpty();
+	for (int i = 1; i <= temp->NRecs; i++) {
+		temp->ReadRec(i, record.get());
+		std::unique_ptr<uint8_t[]> buffer = BufferFromRecord(record.get(), nullptr);
+		WriteRaw(i, buffer.get());
+	}
+	NRecs = temp->NRecs;
+	SetUpdateFlag();
+	WrPrefixes();
+
+	CloseClearH(&temp->Handle);
+	MyDeleteFile(temp->_parent->FullPath);
+	if (temp->TF != nullptr && temp->TF != TF && temp->TF->Handle != TF->Handle) {
+		CloseClearH(&temp->TF->Handle);
+		MyDeleteFile(TempFilePath('T', fandio::IsNetVolume(fandio::ResolvePath(_parent).volume)));
 	}
 }
 
@@ -98,7 +222,10 @@ void DbfFile::DecNRecs(int n)
 void DbfFile::PutRec(Record* record, int& i_rec)
 {
 	NRecs++;
-	WriteData(i_rec * RecLen + FirstRecPos, RecLen, record);
+	std::unique_ptr<uint8_t[]> buffer = BufferFromRecord(record, nullptr);
+	WriteData(i_rec * RecLen + FirstRecPos, RecLen, buffer.get());
+	WasWrRec = true;
+	SetUpdateFlag();
 	i_rec++;
 	Eof = true;
 }
@@ -111,7 +238,7 @@ bool DbfFile::loadB(FieldDescr* field_d, uint8_t* record)
 
 double DbfFile::loadR(FieldDescr* field_d, uint8_t* record)
 {
-	return DBF_RforD(field_d, record);
+	return DBF_RforD(field_d, record + field_d->Displ);
 }
 
 std::string DbfFile::loadS(FieldDescr* field_d, uint8_t* record)
@@ -155,11 +282,13 @@ std::string DbfFile::loadS(FieldDescr* field_d, uint8_t* record)
 
 int DbfFile::loadT(FieldDescr* F, uint8_t* record)
 {
-	// tvarime se, ze CRecPtr je pstring ...
-	// TODO: toto je asi blbe, nutno opravit pred 1. pouzitim
-	//pstring* s = (pstring*)CRecPtr;
-	//auto result = std::stoi(LeadChar(' ', *s));
-	return 0; // result;
+	// block number of the memo file as 10 characters, right-aligned; spaces = no text
+	const char* source = reinterpret_cast<const char*>(record) + F->Displ;
+	int result = 0;
+	for (int i = 0; i < 10; i++) {
+		if (source[i] >= '0' && source[i] <= '9') result = result * 10 + (source[i] - '0');
+	}
+	return result;
 }
 
 void DbfFile::saveB(FieldDescr* field_d, bool b, uint8_t* record)
@@ -182,7 +311,7 @@ void DbfFile::saveR(FieldDescr* field_d, double r, uint8_t* record)
 			std::string s;
 			if ((field_d->Flg & f_Comma) != 0) r = r / Power10[m];
 			str(r, field_d->NBytes, field_d->M, s);
-			memcpy(pRec, s.c_str(), s.length());
+			memcpy(pRec, s.c_str(), s.length() < field_d->NBytes ? s.length() : field_d->NBytes);
 			break;
 		}
 		case FieldType::DATE: {
@@ -273,9 +402,9 @@ int DbfFile::saveT(FieldDescr* field_d, int pos, uint8_t* record)
 			FillChar(source, 10, ' ');
 		}
 		else {
-			pstring s;
-			str(pos, s);
-			memcpy(source, &s[1], 10);
+			char s[16];
+			snprintf(s, sizeof(s), "%10d", pos); // str(Pos:10,s)
+			memcpy(source, s, 10);
 		}
 		return 0;
 	}
@@ -588,20 +717,17 @@ void DbfFile::Close()
 
 bool DbfFile::DeletedFlag(Record* record)
 {
-	if (((uint8_t*)record)[0] != '*') return false;
-	else return true;
+	return record->IsDeleted();
 }
 
 void DbfFile::ClearDeletedFlag(Record* record)
 {
-	uint8_t* ptr = (uint8_t*)record;
-	ptr[0] = ' ';
+	record->ClearDeleted();
 }
 
 void DbfFile::SetDeletedFlag(Record* record)
 {
-	uint8_t* ptr = (uint8_t*)record;
-	ptr[0] = '*';
+	record->SetDeleted();
 }
 
 FileD* DbfFile::GetFileD()

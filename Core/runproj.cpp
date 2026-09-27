@@ -135,7 +135,7 @@ void ProjectRunner::GetRdbRecVars(const EditD* edit, Record* record, RdbRecVars*
 		// !!! RdFDSegment returns always FALSE:
 		//if (!X->OldTxt.empty()) {
 		//	if (RdFDSegment(0, X->OldTxt)) {
-		//		X->FTyp = file_d->FF->file_type;
+		//		X->FTyp = file_d->GetFandFileType();
 		//		if (file_d->IsSQLFile) {
 		//			X->Ext = ".SQL";
 		//		}
@@ -1198,7 +1198,7 @@ bool ProjectRunner::MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		fd_old->DeleteF();
 		//CFile = fd_new;
 		fd_new->CloseFile();
-		fd_old->FF->file_type = fd_new->FF->file_type;
+		if (fd_old->FileType == DataFileType::FandFile) fd_old->FF->file_type = fd_new->GetFandFileType();
 		fd_new->SetPathAndVolume();
 		std::string p = CPath;
 		//CFile = fd_old;
@@ -1262,7 +1262,7 @@ bool ProjectRunner::MergeOldNew(FileD* new_file, FileD* old_file)
 	FDNew->Name = "@";
 
 	FDOld->Name = Name;
-	if ((FDNew->FF->file_type != FDOld->FF->file_type) || !EquStoredF(FDNew->FldD, FDOld->FldD)
+	if ((FDNew->GetFandFileType() != FDOld->GetFandFileType()) || !EquStoredF(FDNew->FldD, FDOld->FldD)
 #ifdef FandSQL
 		&& !FDNew->IsSQLFile && !FDOld->IsSQLFile
 #endif

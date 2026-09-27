@@ -82,13 +82,13 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, Record* record)
 	case ScanMode::Index:
 	case ScanMode::WorkingIndex: {
 		if (Key != nullptr) {
-			if (!Key->InWork) FD->FF->TestXFExist();
+			if (!Key->InWork) FD->TestXFExist();
 			NRecs = Key->NRecs();
 		}
 		break;
 	}
 	case ScanMode::Interval: {
-		if (!Key->InWork) FD->FF->TestXFExist();
+		if (!Key->InWork) FD->TestXFExist();
 		CompKIFrml(FD, Key, KIRoot, true, record);
 		NRecs = 0;
 		//k = KIRoot;
@@ -128,7 +128,7 @@ void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldM
 	}
 	if (!aSK.empty()) {
 		Reset(BoolZ, false, record);
-		FD->FF->ScanSubstWIndex(this, aSK, OperationType::Sort);
+		FD->ScanSubstWIndex(this, aSK, OperationType::Sort);
 		BoolZ = nullptr;
 	}
 	else {
@@ -139,7 +139,7 @@ void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldM
 		switch (Kind) {
 		case ScanMode::Sequential: {
 			m = NoCrMode;
-			if (FD->FF->XF != nullptr) m = NoExclMode;
+			if (FD->IsIndexFile()) m = NoExclMode;
 			break;
 		}
 		case ScanMode::Index: {
@@ -184,7 +184,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	else
 #endif
 	{
-		FD->FF->TestXFExist();
+		FD->TestXFExist();
 		KeyInD* new_key_in = new KeyInD();
 		KIRoot.push_back(new_key_in);
 		Key->FindNr(FD, XX->S, new_key_in->XNrBeg);
@@ -199,7 +199,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 
 int32_t XScan::ResetOwnerIndex(XKey* link_key, XWKey* owner_key, FileD* owner_file, FrmlElem* aBool)
 {
-	FD->FF->TestXFExist();
+	FD->TestXFExist();
 	Bool = aBool;
 	owner_key_ = owner_key;
 	owner_file_ = owner_file;

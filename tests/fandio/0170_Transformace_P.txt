@@ -1,0 +1,37 @@
+{ transformace: výstup s filtrem do indexovaného souboru, připojení +, přepis }
+VAR r:record of TSRC; d:record of TDST; i,n,s:real; chyba:string;
+begin
+chyba:='';
+TSRC.nrecs:=0;
+TDST.nrecs:=0;
+for i:=1 to 30 do begin
+  readrec(r,0);
+  r.Kod:=31-i;
+  r.Skup:=cond(((i-int(i/3)*3)=0):'A',else:'B');
+  r.Castka:=i*10.5;
+  writerec(r,0);
+end;
+{ skupina A: i = 3,6,..,30 -> 10 vět s kódy 28,25,..,1 }
+merge(['#I1_ TSRC (Skup=''A'') #O1_ TDST']);
+if TDST.nrecs<>10 then chyba:='merge nrecs='+str(TDST.nrecs,1,0);
+s:=0; n:=0;
+forall d/@ do begin
+  n:=n+1;
+  if (chyba='') & (d.Kod<=s) then chyba:='pořadí výstupu u Kod '+str(d.Kod,1,0);
+  if (chyba='') & ((d.Skup<>'A') | (d.Castka<>(31-d.Kod)*10.5)) then chyba:='údaje výstupu u Kod '+str(d.Kod,1,0);
+  s:=d.Kod;
+end;
+if (chyba='') & (n<>10) then chyba:='forall výstupu prošel '+str(n,1,0);
+{ připojení: stejné věty ještě jednou -> duplicitní klíče }
+merge(['#I1_ TSRC (Skup=''A'') #O1_ TDST +']);
+if (chyba='') & (TDST.nrecs<>20) then chyba:='merge + nrecs='+str(TDST.nrecs,1,0);
+n:=0;
+forall d/@ (key in [4]) do n:=n+1;
+if (chyba='') & (n<>2) then chyba:='po merge + key in [4]: '+str(n,1,0);
+{ přepis výstupu: skupina B, 20 vět, s výpočtem }
+merge(['#I1_ TSRC (Skup=''B'') #O1_ TDST Castka:=Castka*2']);
+if (chyba='') & (TDST.nrecs<>20) then chyba:='merge přepis nrecs='+str(TDST.nrecs,1,0);
+forall d/@ do
+  if (chyba='') & ((d.Skup<>'B') | (d.Castka<>(31-d.Kod)*21)) then chyba:='přepis u Kod '+str(d.Kod,1,0);
+proc(Vysl,('Transformace',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;
