@@ -40,6 +40,16 @@ public sealed class TerminalControl : FrameworkElement
     private double _cellWidth = 10, _cellHeight = 20, _baseline = 15;
     private readonly Dictionary<char, (GlyphTypeface face, ushort glyph)> _glyphCache = new();
 
+    // Každý řádek má vlastní DrawingVisual a kurzor také. Při změně obrazovky se
+    // překreslí jen změněné řádky (šipka v menu mění dva), ne celá mřížka.
+    private readonly VisualCollection _visuals;
+    private DrawingVisual[] _rowVisuals = Array.Empty<DrawingVisual>();
+    private readonly DrawingVisual _cursorVisual = new();
+    private bool _allRowsDirty = true;
+    private readonly List<ushort> _runIndices = new();
+    private readonly List<double> _runAdvances = new();
+    private readonly List<(int x, char ch)> _runBlocks = new();
+
     private int _lastVirtualKey;
 
     public event Action<string>? StatusChanged;
@@ -65,9 +75,10 @@ public sealed class TerminalControl : FrameworkElement
         UseLayoutRounding = true;
         TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
         TextOptions.SetTextRenderingMode(this, TextRenderingMode.ClearType);
+        _visuals = new VisualCollection(this);
         ResolveFonts();
         _blink = new DispatcherTimer(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(450) };
-        _blink.Tick += (_, _) => { _blinkOn = !_blinkOn; if (_cursorVisible) InvalidateVisual(); };
+        _blink.Tick += (_, _) => { _blinkOn = !_blinkOn; if (_cursorVisible) RenderCursor(); };
         _blink.Start();
     }
 
@@ -85,8 +96,7 @@ public sealed class TerminalControl : FrameworkElement
         {
             _fontSize = Math.Max(8, Math.Min(72, value));
             MeasureCell();
-            InvalidateMeasure();
-            InvalidateVisual();
+            RenderAll();
         }
     }
 
@@ -103,8 +113,24 @@ public sealed class TerminalControl : FrameworkElement
         bool sizeChanged = info.Cols != _cols || info.Rows != _rows;
         _cols = info.Cols;
         _rows = info.Rows;
-        if (_cells.Length != _cols * _rows) _cells = new ushort[_cols * _rows];
-        Array.Copy(cells, _cells, Math.Min(cells.Length, _cells.Length));
+        if (_cells.Length != _cols * _rows)
+        {
+            _cells = new ushort[_cols * _rows];
+            _allRowsDirty = true;
+        }
+        EnsureRowVisuals();
+
+        int n = Math.Min(cells.Length, _cells.Length);
+        for (int y = 0; y < _rows; y++)
+        {
+            int off = y * _cols;
+            int len = Math.Max(0, Math.Min(_cols, n - off));
+            if (!_allRowsDirty && RowEquals(cells, _cells, off, len)) continue;
+            Array.Copy(cells, off, _cells, off, len);
+            RenderRow(y);
+        }
+        _allRowsDirty = false;
+
         _cursorX = info.CursorX;
         _cursorY = info.CursorY;
         _cursorVisible = info.CursorVisible != 0;
@@ -113,8 +139,19 @@ public sealed class TerminalControl : FrameworkElement
         _fieldY = info.FieldY;
         _fieldLen = info.FieldLen;
         _blinkOn = true;
-        if (sizeChanged) InvalidateMeasure();
-        InvalidateVisual();
+        RenderCursor();
+        if (sizeChanged)
+        {
+            InvalidateMeasure();
+            InvalidateVisual();
+        }
+    }
+
+    private static bool RowEquals(ushort[] a, ushort[] b, int off, int len)
+    {
+        for (int i = off; i < off + len; i++)
+            if (a[i] != b[i]) return false;
+        return true;
     }
 
     /// <summary>Text celé obrazovky (pro kopírování do schránky).</summary>
@@ -191,70 +228,110 @@ public sealed class TerminalControl : FrameworkElement
     protected override Size MeasureOverride(Size availableSize)
         => new(_cols * _cellWidth, _rows * _cellHeight);
 
+    protected override int VisualChildrenCount => _visuals.Count;
+
+    protected override Visual GetVisualChild(int index) => _visuals[index];
+
     protected override void OnRender(DrawingContext dc)
     {
-        if (_primary == null) return;
-        double pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-
-        // pozadí celé plochy černé (pro případ nesouladu rozměrů)
+        // pozadí celé plochy černé (pro případ nesouladu rozměrů); obsah kreslí vizuály řádků
         dc.DrawRectangle(Brushes[0], null, new Rect(0, 0, _cols * _cellWidth, _rows * _cellHeight));
+    }
 
-        var indices = new List<ushort>(_cols);
-        var advances = new List<double>(_cols);
-        var blocks = new List<(int x, char ch)>();
-        ushort spaceGlyph = _primary.CharacterToGlyphMap.TryGetValue(' ', out var sg) ? sg : (ushort)0;
+    protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
+    {
+        base.OnDpiChanged(oldDpi, newDpi);
+        RenderAll(); // GlyphRun závisí na PixelsPerDip
+    }
 
+    /// <summary>Jeden vizuál na řádek, kurzor nahoře nad nimi.</summary>
+    private void EnsureRowVisuals()
+    {
+        if (_rowVisuals.Length == _rows) return;
+        _visuals.Clear();
+        _rowVisuals = new DrawingVisual[_rows];
         for (int y = 0; y < _rows; y++)
         {
-            int x = 0;
+            _rowVisuals[y] = new DrawingVisual();
+            _visuals.Add(_rowVisuals[y]);
+        }
+        _visuals.Add(_cursorVisual);
+        _allRowsDirty = true;
+    }
+
+    /// <summary>Překreslí vše (změna písma, DPI).</summary>
+    private void RenderAll()
+    {
+        EnsureRowVisuals();
+        for (int y = 0; y < _rows; y++) RenderRow(y);
+        _allRowsDirty = false;
+        RenderCursor();
+        InvalidateMeasure();
+        InvalidateVisual();
+    }
+
+    private void RenderRow(int y)
+    {
+        using var dc = _rowVisuals[y].RenderOpen();
+        if (_primary == null) return;
+        double pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+        ushort spaceGlyph = _primary.CharacterToGlyphMap.TryGetValue(' ', out var sg) ? sg : (ushort)0;
+        var indices = _runIndices;
+        var advances = _runAdvances;
+        var blocks = _runBlocks;
+
+        int x = 0;
+        while (x < _cols)
+        {
+            ushort first = _cells[y * _cols + x];
+            byte attr = (byte)(first >> 8);
+            char firstChr = Cp852.ToChar((byte)(first & 0xFF));
+            var face = IsBlock(firstChr) ? _primary : Glyph(firstChr).face;
+            int runStart = x;
+            bool allSpaces = true;
+            indices.Clear();
+            advances.Clear();
+            blocks.Clear();
             while (x < _cols)
             {
-                ushort first = _cells[y * _cols + x];
-                byte attr = (byte)(first >> 8);
-                char firstChr = Cp852.ToChar((byte)(first & 0xFF));
-                var face = IsBlock(firstChr) ? _primary : Glyph(firstChr).face;
-                int runStart = x;
-                bool allSpaces = true;
-                indices.Clear();
-                advances.Clear();
-                blocks.Clear();
-                while (x < _cols)
+                ushort c = _cells[y * _cols + x];
+                if ((byte)(c >> 8) != attr) break;
+                char chr = Cp852.ToChar((byte)(c & 0xFF));
+                if (IsBlock(chr))
                 {
-                    ushort c = _cells[y * _cols + x];
-                    if ((byte)(c >> 8) != attr) break;
-                    char chr = Cp852.ToChar((byte)(c & 0xFF));
-                    if (IsBlock(chr))
-                    {
-                        // plné a stínované bloky kreslíme sami jako obdélníky (bez mezer mezi glyfy)
-                        if (face != _primary) break;
-                        blocks.Add((x, chr));
-                        indices.Add(spaceGlyph);
-                    }
-                    else
-                    {
-                        var (f, gi) = Glyph(chr);
-                        if (f != face) break;
-                        if (chr != ' ') allSpaces = false;
-                        indices.Add(gi);
-                    }
-                    advances.Add(_cellWidth);
-                    x++;
+                    // plné a stínované bloky kreslíme sami jako obdélníky (bez mezer mezi glyfy)
+                    if (face != _primary) break;
+                    blocks.Add((x, chr));
+                    indices.Add(spaceGlyph);
                 }
-                int len = x - runStart;
-                var bg = Brushes[(attr >> 4) & 0x0F];
-                var fg = Brushes[attr & 0x0F];
-                var rect = new Rect(runStart * _cellWidth, y * _cellHeight, len * _cellWidth, _cellHeight);
-                dc.DrawRectangle(bg, null, rect);
-                foreach (var (bx, bch) in blocks) DrawBlock(dc, bx, y, bch, attr & 0x0F);
-                if (allSpaces) continue;
-                var origin = new Point(runStart * _cellWidth, y * _cellHeight + _baseline);
-                var run = new GlyphRun(face, 0, false, _fontSize, (float)pixelsPerDip,
-                    indices.ToArray(), origin, advances.ToArray(), null, null, null, null, null, null);
-                dc.DrawGlyphRun(fg, run);
+                else
+                {
+                    var (f, gi) = Glyph(chr);
+                    if (f != face) break;
+                    if (chr != ' ') allSpaces = false;
+                    indices.Add(gi);
+                }
+                advances.Add(_cellWidth);
+                x++;
             }
+            int len = x - runStart;
+            var bg = Brushes[(attr >> 4) & 0x0F];
+            var fg = Brushes[attr & 0x0F];
+            var rect = new Rect(runStart * _cellWidth, y * _cellHeight, len * _cellWidth, _cellHeight);
+            dc.DrawRectangle(bg, null, rect);
+            foreach (var (bx, bch) in blocks) DrawBlock(dc, bx, y, bch, attr & 0x0F);
+            if (allSpaces) continue;
+            var origin = new Point(runStart * _cellWidth, y * _cellHeight + _baseline);
+            var run = new GlyphRun(face, 0, false, _fontSize, (float)pixelsPerDip,
+                indices.ToArray(), origin, advances.ToArray(), null, null, null, null, null, null);
+            dc.DrawGlyphRun(fg, run);
         }
+    }
 
-        // kurzor: podtržítko (normální) nebo spodní polovina buňky (velký = přepis)
+    // kurzor: podtržítko (normální) nebo spodní polovina buňky (velký = přepis)
+    private void RenderCursor()
+    {
+        using var dc = _cursorVisual.RenderOpen();
         if (_cursorVisible && _blinkOn && _cursorX >= 0 && _cursorX < _cols && _cursorY >= 0 && _cursorY < _rows)
         {
             byte attr = (byte)(_cells[_cursorY * _cols + _cursorX] >> 8);

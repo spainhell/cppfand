@@ -1,6 +1,7 @@
 #include "keyboard.h"
 #include "host.h"
 #include "mouse.h"
+#include <chrono>
 #include <exception>
 
 const int buff_size = 128;
@@ -113,6 +114,18 @@ void Keyboard::PumpInput()
 {
 	KEY_EVENT_RECORD key;
 	Get(key, true);
+}
+
+void Keyboard::WaitForInput(DWORD timeoutMs)
+{
+	if (FandHost::IsEnabled() || _handle == nullptr) {
+		// probudi nas PushEvent, jakmile hostitel posle klavesu nebo mys
+		std::unique_lock<std::mutex> lock(_hostMutex);
+		_hostCv.wait_for(lock, std::chrono::milliseconds(timeoutMs), [this] { return !_hostQueue.empty(); });
+		return;
+	}
+	// vstupni buffer konzole je signalizovany, dokud v nem je nejaka udalost
+	WaitForSingleObject(_handle, timeoutMs);
 }
 
 void Keyboard::DeleteKeyBuf()
@@ -304,6 +317,7 @@ void Keyboard::PushEvent(const INPUT_RECORD& record)
 	// aby fronta nerostla; klavesy se nezahazuji nikdy
 	if (record.EventType == MOUSE_EVENT && _hostQueue.size() >= hostQueueLimit) return;
 	_hostQueue.push_back(record);
+	_hostCv.notify_one();
 }
 
 void Keyboard::_read()

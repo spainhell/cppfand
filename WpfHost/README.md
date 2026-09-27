@@ -6,7 +6,8 @@ mu dělá obrazovku a klávesnici:
 
 - **Obrazovka 80×25** se kreslí z bufferu, který si drží `Drivers/screen.cpp`
   (znak CP852 + atribut). Hostitel ji čte přes `FandGetScreen` ~30× za sekundu
-  a překreslí jen při změně čísla verze. Plné a stínované bloky (logo Účta)
+  a překreslí jen při změně čísla verze, a to jen změněné řádky (každý řádek
+  je samostatný `DrawingVisual`, kurzor také). Plné a stínované bloky (logo Účta)
   se kreslí jako obdélníky, ostatní znaky písmem Cascadia Mono / Consolas.
 - **Klávesy** se posílají přes `FandPushKey` ve tvaru `KEY_EVENT_RECORD`
   konzole, takže `PressedKey` a všechny klávesové zkratky FANDu zůstávají.
