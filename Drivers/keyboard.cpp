@@ -367,7 +367,8 @@ PressedKey::PressedKey(KEY_EVENT_RECORD& key)
 		_key.uChar.UnicodeChar = '.';
 	}
 	// transformed character (for use with Alt, Ctrl or Shift)
-	if (key.uChar.AsciiChar >= 32)
+	// AsciiChar is signed: characters of CP852 above 0x7F are negative
+	if ((uint8_t)key.uChar.AsciiChar >= 32)
 	{
 		Char = key.uChar.AsciiChar;
 	}
@@ -391,7 +392,7 @@ uint32_t PressedKey::KeyDescr()
 	// 1. a 2. B - ControlKeyState  https://docs.microsoft.com/en-us/windows/console/key-event-record-str
 	// 3. B      - Virtual Key Code https://docs.microsoft.com/cs-cz/windows/win32/inputdev/virtual-key-codes
 	// 4. B      - znak CHAR
-	return (_key.dwControlKeyState << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + Char;
+	return (_key.dwControlKeyState << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + (uint8_t)Char;
 }
 
 uint32_t PressedKey::SimpleKeyDescr()
@@ -404,7 +405,7 @@ uint32_t PressedKey::SimpleKeyDescr()
 	if (Alt()) ControlKey += 4;
 	if (Ctrl()) ControlKey += 2;
 	if (Shift()) ControlKey += 1;
-	return (ControlKey << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + Char;
+	return (ControlKey << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + (uint8_t)Char;
 }
 
 uint16_t PressedKey::KeyCombination()
