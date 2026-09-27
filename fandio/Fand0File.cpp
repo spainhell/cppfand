@@ -116,13 +116,19 @@ size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 void Fand0File::CreateRec(int n, Record* record)
 {
 	IncNRecs(1);
-	Record* tmp = new Record(_parent);
+	// shift records n..NRecs-1 one position up as raw data (like RECACC.PAS);
+	// their texts stay where they are, only the text positions move with them
+	std::unique_ptr<uint8_t[]> buffer = GetRecSpaceUnique();
 	for (int32_t i = NRecs - 1; i >= n; i--) {
-		ReadRec(i, tmp);
-		WriteRec(i + 1, tmp);
+		ReadRec(i, buffer.get());
+		WriteData(i * RecLen + FirstRecPos, RecLen, buffer.get());
 	}
-	delete tmp; tmp = nullptr;
-	WriteRec(n, record);
+	// the new record: its texts are stored as new ones (the old record n
+	// with its texts is now at n + 1, so WriteRec must not free them)
+	const std::map<FieldDescr*, int32_t> no_unchanged_texts;
+	std::unique_ptr<uint8_t[]> data = _getRowDataFromRecord(record, no_unchanged_texts);
+	WriteData((n - 1) * RecLen + FirstRecPos, RecLen, data.get());
+	WasWrRec = true;
 }
 
 void Fand0File::DeleteRec(int32_t rec_nr, Record* record)
@@ -138,9 +144,12 @@ void Fand0File::DeleteRec(int32_t rec_nr, Record* record)
 	} 
 	else {
 		DelAllTFlds(rec_nr);
+		// shift the following records one position down as raw data (like RECACC.PAS);
+		// WriteRec would free the texts of the overwritten record once more
+		std::unique_ptr<uint8_t[]> buffer = GetRecSpaceUnique();
 		for (int i = rec_nr; i <= NRecs - 1; i++) {
-			ReadRec(i + 1, record);
-			WriteRec(i, record);
+			ReadRec(i + 1, buffer.get());
+			WriteData((i - 1) * RecLen + FirstRecPos, RecLen, buffer.get());
 		}
 		DecNRecs(1);
 	}

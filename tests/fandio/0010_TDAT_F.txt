@@ -1,0 +1,8 @@
+{ neindexovaný soubor se všemi typy uložených údajů kromě T }
+Cislo  :F,5.0;
+Text   :A,20;
+Kod    :N,6;
+Castka :F,9.2;
+Realne :R;
+Datum  :D;
+Priznak:B;

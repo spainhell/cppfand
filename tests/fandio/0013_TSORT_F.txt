@@ -1,0 +1,3 @@
+{ soubor pro třídění }
+Cislo:F,5.0;
+Jmeno:A,20;

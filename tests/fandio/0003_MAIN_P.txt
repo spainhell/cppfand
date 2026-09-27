@@ -1,0 +1,8 @@
+{ spustí všechny testy; poslední věta *KONEC* znamená, že úloha doběhla }
+begin
+proc(ZapisCteni);
+proc(Klice);
+proc(Texty);
+proc(Trideni);
+proc(Vysl,('*KONEC*','OK',''));
+end;

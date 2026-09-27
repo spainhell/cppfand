@@ -1,0 +1,3 @@
+{ soubor s volným textem }
+Id  :F,5.0;
+Pozn:T;
