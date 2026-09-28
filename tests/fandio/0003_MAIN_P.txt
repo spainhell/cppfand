@@ -15,5 +15,6 @@ proc(Zamky);
 proc(Viditelnost);
 proc(Soubezne);
 proc(ZamkyDbf);
+proc(EdSoubeh);
 proc(Vysl,('*KONEC*','OK',''));
 end;

@@ -1,0 +1,8 @@
+{ exit-procedura editoru druhého uživatele: věta je rozeditovaná (zamčená),
+  první uživatel mezitím zkouší zámky }
+(r:record of TEDS)
+VAR ok:boolean;
+begin
+proc(Signal,('B','eds-rozeditovano',''));
+proc(Cekej,('A','eds-zkouseno',ok));
+end;
