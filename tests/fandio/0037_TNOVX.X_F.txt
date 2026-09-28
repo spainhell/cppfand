@@ -1,0 +1,4 @@
+{ nová věta na místě dřívější věty: indexovaný soubor s volným textem }
+Kod :A,10;
+Pozn:T;
+#K @ Kod;

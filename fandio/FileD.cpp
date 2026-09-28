@@ -839,7 +839,7 @@ void FileD::AssignNRecs(bool Add, int N)
 	IncNRecs(N - OldNRecs);
 
 	for (int i = OldNRecs + 1; i <= N; i++) {
-		UpdateRec(i, record);
+		WriteNewRec(i, record);
 	}
 
 	delete record; record = nullptr;
