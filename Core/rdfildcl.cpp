@@ -632,6 +632,11 @@ FileD* RdFileD_Journal(const std::string& FileName, FandFileType fand_file_type)
 
 	std::vector<FieldDescr*> orig_fields = journal->FldD;
 	journal->Reset();
+	// the journal has no text or index file of its own (text fields become numbers)
+	if (journal->FF != nullptr) {
+		delete journal->FF->TF; journal->FF->TF = nullptr;
+		delete journal->FF->XF; journal->FF->XF = nullptr;
+	}
 	journal->Name = FileName;
 	journal->IsJournal = true;
 	journal->SetHCatTyp(fand_file_type);

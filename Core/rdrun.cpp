@@ -96,7 +96,7 @@ Record* Link(FileD* file_d, Additive* add_d, int& n, char& kind2, Record* record
 		if (r == nullptr) {
 			r = new Record(add_d->File2);
 			f2->IncNRecs(1);
-			f2->UpdateRec(1, r);
+			f2->WriteNewRec(1, r);
 		}
 
 		result = new Record(add_d->File2);

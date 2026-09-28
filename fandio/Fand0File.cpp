@@ -113,6 +113,14 @@ size_t Fand0File::WriteRec(size_t rec_nr, Record* record)
 	return result;
 }
 
+size_t Fand0File::WriteNewRec(size_t rec_nr, Record* record)
+{
+	WasWrRec = true;
+	const std::map<FieldDescr*, int32_t> no_unchanged_texts;
+	std::unique_ptr<uint8_t[]> buffer = _getRowDataFromRecord(record, no_unchanged_texts);
+	return WriteData((rec_nr - 1) * RecLen + FirstRecPos, RecLen, buffer.get());
+}
+
 void Fand0File::CreateRec(int n, Record* record)
 {
 	IncNRecs(1);
@@ -1070,7 +1078,7 @@ void Fand0File::UpdateRec(int RecNr, Record* old_rec, Record* new_rec)
 	WriteRec(RecNr, new_rec);
 }
 
-void Fand0File::RecallRec(int recNr, Record* record)
+void Fand0File::RecallRec(int recNr, Record* record, bool new_record)
 {
 	TestXFExist();
 	XF->NRecs++;
@@ -1078,7 +1086,8 @@ void Fand0File::RecallRec(int recNr, Record* record)
 		K->Insert(_parent, recNr, false, record);
 	}
 	record->ClearDeleted();
-	WriteRec(recNr, record);
+	if (new_record) WriteNewRec(recNr, record);
+	else WriteRec(recNr, record);
 }
 
 void Fand0File::GenerateNew000File(XScan* x)

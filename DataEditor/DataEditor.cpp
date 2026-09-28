@@ -2003,50 +2003,67 @@ void DataEditor::UpdMemberRef(Record* old_record, Record* new_record)
 	} // for
 }
 
-void DataEditor::WrJournal(char Upd, Record* record, double Time)
+std::unique_ptr<Record> DataEditor::TextPositions(int rec_nr)
+{
+	std::unique_ptr<Record> result = std::make_unique<Record>(file_d_);
+	if (rec_nr >= 1 && rec_nr <= file_d_->GetNRecs()) {
+		file_d_->ReadRec(rec_nr, result.get(), true);
+	}
+	return result;
+}
+
+void DataEditor::WrJournal(char Upd, Record* record, double Time, Record* text_positions)
 {
 	// Upd:
 	// + new record
 	// - deleted record
-	// O old record data 
+	// O old record data
 	// N new record data
 
 	if (edit_->Journal != nullptr) {
+		FileD* journal = edit_->Journal;
 		int n = AbsRecNr(CRec());
 
-		const std::unique_ptr journal_data = std::make_unique<Record>(edit_->Journal);
-		std::vector<FieldDescr*>::iterator it = edit_->Journal->FldD.begin();
+		std::unique_ptr<Record> positions;
+		if (text_positions == nullptr) {
+			positions = TextPositions(n);
+			text_positions = positions.get();
+		}
+
+		const std::unique_ptr journal_data = std::make_unique<Record>(journal);
+		std::vector<FieldDescr*>::iterator it = journal->FldD.begin();
 
 		journal_data->SaveS((*it++), std::string(1, Upd));	// change type
 		journal_data->SaveR((*it++), n);								// record number
 		journal_data->SaveR((*it++), user->get_user_code());		// user code
 		journal_data->SaveR((*it++), Time);								// timestamp
 
-		for (size_t i = 0; i < record->_values.size(); i++) {
-			FieldDescr* f = file_d_->FldD[i];
+		// the stored fields of the file follow (in the journal by the same names);
+		// a text field is a number there: the position of the text in the file
+		for (; it != journal->FldD.end(); ++it) {
+			FieldDescr* jf = *it;
+			FieldDescr* f = nullptr;
+			for (FieldDescr* fd : file_d_->FldD) {
+				if (fd->Name == jf->Name) { f = fd; break; }
+			}
+			if (f == nullptr) continue;
+			if (f->field_type == FieldType::TEXT) {
+				const auto item = text_positions->_values.find(f->Name);
+				journal_data->SaveR(jf, item != text_positions->_values.end() ? item->second.R : 0.0);
+				continue;
+			}
 			switch (f->frml_type) {
-			case 'S': {
-				std::string s = record->LoadS(f);
-				journal_data->SaveS(f, s);
-				break;
-			}
-			case 'R': {
-				double r = record->LoadR(f);
-				journal_data->SaveR(f, r);
-				break;
-			}
-			case 'B': {
-				bool b = record->LoadB(f);
-				journal_data->SaveB(f, b);
-				break;
-			}
+			case 'S': journal_data->SaveS(jf, record->LoadS(f)); break;
+			case 'R': journal_data->SaveR(jf, record->LoadR(f)); break;
+			case 'B': journal_data->SaveB(jf, record->LoadB(f)); break;
+			default: break;
 			}
 		}
 
-		LockMode md = edit_->Journal->NewLockMode(CrMode);
-		edit_->Journal->IncNRecs(1);
-		edit_->Journal->UpdateRec(edit_->Journal->GetNRecs(), record);
-		edit_->Journal->OldLockMode(md);
+		LockMode md = journal->NewLockMode(CrMode);
+		journal->IncNRecs(1);
+		journal->WriteNewRec(journal->GetNRecs(), journal_data.get());
+		journal->OldLockMode(md);
 
 		file_d_ = edit_->FD;
 	}
@@ -2916,6 +2933,12 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		}
 		current_rec_->ClearDeleted();
 
+		// text positions before the write: the journal keeps them for the old record
+		std::unique_ptr<Record> old_positions;
+		if (edit_->Journal != nullptr && !IsNewRec) {
+			old_positions = TextPositions(edit_->LockedRec);
+		}
+
 		if (HasIndex) {
 			file_d_->TestXFExist();
 
@@ -3017,7 +3040,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			current_rec_->Reset();
 		}
 		else {
-			WrJournal('O', original_rec_, time);
+			WrJournal('O', original_rec_, time, old_positions.get());
 			WrJournal('N', current_rec_, time);
 			current_rec_->Reset();
 		}

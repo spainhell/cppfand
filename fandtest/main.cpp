@@ -164,7 +164,13 @@ namespace
 		FieldDescr* description = make_alfa("Popis", 60);
 		file.FldD = { test, state, description };
 		file.CompileRecLen();
-		if (!file.OpenF(file.FullPath, RdOnly, false)) return false;
+		try {
+			// the task may still hold the file (it did not end in time)
+			if (!file.OpenF(file.FullPath, RdOnly, false)) return false;
+		}
+		catch (const std::exception&) {
+			return false;
+		}
 
 		Record record(&file);
 		for (int i = 1; i <= file.GetNRecs(); i++) {
@@ -182,6 +188,7 @@ namespace
 	// process; print where it happened (function names and lines from the .pdb).
 	LONG WINAPI crash_handler(EXCEPTION_POINTERS* info)
 	{
+		fflush(stdout);
 		fprintf(stderr, "\nCRASH: exception 0x%08lX at %p\n",
 			info->ExceptionRecord->ExceptionCode, info->ExceptionRecord->ExceptionAddress);
 

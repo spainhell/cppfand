@@ -35,6 +35,11 @@ XKey::XKey(const XKey& orig)
 	Alias = orig.Alias;
 }
 
+XKey::XKey(const XKey& orig, FileD* parent) : XKey(orig)
+{
+	parent_ = parent;
+}
+
 /**
  * \brief Returns working or regular index file
  * \return Pointer to working or regular index file

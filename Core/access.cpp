@@ -49,7 +49,7 @@ void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add
 			// add a new empty record to the file
 			file_d->IncNRecs(1);
 			rec = new Record(file_d);
-			file_d->UpdateRec(n, rec);
+			file_d->WriteNewRec(n, rec);
 		}
 
 		AssgnFrml(rec, field_d, frml, add);

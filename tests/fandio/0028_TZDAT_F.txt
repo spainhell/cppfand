@@ -1,0 +1,4 @@
+{ soubor, jehož editace se zapisuje do žurnálu TZJ }
+Kod    :F,5.0;
+Nazev  :A,20;
+Pozn   :T;

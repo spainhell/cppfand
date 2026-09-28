@@ -57,6 +57,8 @@ Soubor `NNNN_<název>_<typ>.txt`, kódování UTF-8 (při balení se převede do
 | Dbf | soubor .DBF s memo souborem .DBT: všechny typy údajů, přepis, rušení věty, `appendrec`, `forall`, `merge` do .DBF (i s `+`, do sebe sama a s tříděním vstupu `!`), `sort`, vazba do .DBF číselníku a `.exist` |
 | Aditivni | aditivní změny `#A` s `!!` (založení nadřízené věty) při `writerec` a `deleterec` s `+`; nadřízený indexovaný soubor i .DBF |
 | Editor | datový editor nad .DBF ovládaný přes `setkeybuf`: oprava údaje, psaní s diakritikou, zrušení (Ctrl-Y) a vložení (Ctrl-N) věty |
+| Zurnal | žurnál editace (`journalof`, `edit(…,journal=)`): O a N při opravě, − při zrušení, + u nové věty; číslo věty, uživatel, čas, údaje, údaj T jako pozice textu |
+| Like | `like` s rozšířením deklarace a `like` indexovaného souboru s prefixem klíčů; vlastní data, texty i index, originál se nezmění |
 | Zamky | zámky režimu souboru (`with shared`) a věty (`with locked`) proti druhému uživateli |
 | Viditelnost | změny druhého uživatele (počet vět, přepis, přidání, zrušení, texty) jsou vidět; nový text nepřepíše cizí |
 | Soubezne | oba uživatelé současně přidávají věty s texty do indexovaného souboru, souboru bez indexu a .DBF |
