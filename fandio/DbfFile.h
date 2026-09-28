@@ -37,6 +37,7 @@ public:
 
 	size_t ReadRec(size_t rec_nr, Record* record);
 	size_t WriteRec(size_t rec_nr, Record* record);
+	size_t WriteNewRec(size_t rec_nr, Record* record);
 	void CreateRec(int n, Record* record);
 	void DeleteRec(int n, Record* record);
 

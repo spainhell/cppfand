@@ -55,6 +55,9 @@ public:
 	size_t ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields = false);
 	size_t ReadRec(size_t rec_nr, uint8_t* buffer);
 	size_t WriteRec(size_t rec_nr, Record* record);
+	// writes a record that is new at rec_nr (appended): the data on disk there
+	// do not belong to it, its texts are stored as new ones
+	size_t WriteNewRec(size_t rec_nr, Record* record);
 	void CreateRec(int n, Record* record);
 	void DeleteRec(int32_t rec_nr, Record* record);
 	size_t PutRec(Record* record, int& i_rec);
@@ -95,7 +98,7 @@ public:
 
 	int XNRecs(std::vector<XKey*>& K);
 	void TryInsertAllIndexes(int RecNr, Record* record);
-	void RecallRec(int recNr, Record* record);
+	void RecallRec(int recNr, Record* record, bool new_record = false);
 
 	void GenerateNew000File(XScan* x);
 	void SortAndSubst(std::vector<KeyFldD*>& SK);

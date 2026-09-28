@@ -114,7 +114,9 @@ private:
     void DisplRecTxt();
     
     void UpdMemberRef(Record* old_record, Record* new_record);
-    void WrJournal(char Upd, Record* record, double Time);
+    // text_positions: record read without texts (T fields hold positions); nullptr = record on disk
+    void WrJournal(char Upd, Record* record, double Time, Record* text_positions = nullptr);
+    std::unique_ptr<Record> TextPositions(int rec_nr);
     bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md);
     bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd);
     void UnLockWithDep(LockMode OldMd);

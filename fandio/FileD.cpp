@@ -71,7 +71,7 @@ FileD::FileD(const FileD& orig)
 
 	if (!orig.Keys.empty()) {
 		for (auto& k : orig.Keys) {
-			XKey* newKey = new XKey(*k);
+			XKey* newKey = new XKey(*k, this);
 			Keys.push_back(newKey);
 		}
 	}
@@ -738,16 +738,26 @@ void FileD::DeleteRec(int n, Record* record) const
 	}
 }
 
-void FileD::RecallRec(int recNr, Record* record)
+size_t FileD::WriteNewRec(size_t rec_nr, Record* record) const
+{
+	switch (FileType) {
+	case DataFileType::FandFile: return FF->WriteNewRec(rec_nr, record);
+	case DataFileType::DBF: return DbfF->WriteNewRec(rec_nr, record);
+	default: return 0;
+	}
+}
+
+void FileD::RecallRec(int recNr, Record* record, bool new_record)
 {
 	switch (FileType) {
 	case DataFileType::FandFile: {
-		FF->RecallRec(recNr, record);
+		FF->RecallRec(recNr, record, new_record);
 		break;
 	}
 	case DataFileType::DBF: {
 		record->ClearDeleted();
-		UpdateRec(recNr, record);
+		if (new_record) WriteNewRec(recNr, record);
+		else UpdateRec(recNr, record);
 		break;
 	}
 	default: break;

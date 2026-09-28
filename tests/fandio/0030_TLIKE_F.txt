@@ -1,0 +1,2 @@
+like TTXT;
+Navic  :A,10;

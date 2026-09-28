@@ -137,6 +137,13 @@ size_t DbfFile::WriteRec(size_t rec_nr, Record* record)
 	return RecLen;
 }
 
+size_t DbfFile::WriteNewRec(size_t rec_nr, Record* record)
+{
+	std::unique_ptr<uint8_t[]> buffer = BufferFromRecord(record, nullptr);
+	WriteRaw(rec_nr, buffer.get());
+	return RecLen;
+}
+
 void DbfFile::CreateRec(int n, Record* record)
 {
 	IncNRecs(1);

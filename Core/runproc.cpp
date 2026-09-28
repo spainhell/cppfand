@@ -694,10 +694,10 @@ void RunProcedure::ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		lv->record->CopyTo(record1);
 		if (app) {
 			if (lv->FD->FileType == DataFileType::FandFile && lv->FD->IsIndexFile()) {
-				lv->FD->RecallRec(N, record1);
+				lv->FD->RecallRec(N, record1, true);
 			}
 			else {
-				lv->FD->UpdateRec(N, record1);
+				lv->FD->WriteNewRec(N, record1);
 			}
 
 			if (ad) {

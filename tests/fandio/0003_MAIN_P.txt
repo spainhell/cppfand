@@ -11,6 +11,8 @@ proc(Transformace);
 proc(Dbf);
 proc(Aditivni);
 proc(Editor);
+proc(Zurnal);
+proc(Like);
 proc(Zamky);
 proc(Viditelnost);
 proc(Soubezne);

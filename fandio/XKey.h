@@ -21,6 +21,8 @@ class XKey
 public:
 	XKey(FileD* parent);
 	XKey(const XKey& orig);
+	// copy of the key for another file (like, journalof): the key belongs to parent
+	XKey(const XKey& orig, FileD* parent);
 
 	std::string Alias;
 	std::vector<KeyFldD*> KFlds;

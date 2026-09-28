@@ -73,6 +73,8 @@ public:
 
 	size_t ReadRec(size_t rec_nr, Record* record, bool ignore_T_fields = false) const;
 	size_t UpdateRec(size_t rec_nr, Record* record) const;
+	// writes a record appended at rec_nr (after IncNRecs): what is on disk there is not its old version
+	size_t WriteNewRec(size_t rec_nr, Record* record) const;
 	size_t UpdateRec(size_t rec_nr, Record* old_record, Record* new_record) const;
 	void PutRec(Record* record);
 	
@@ -97,7 +99,7 @@ public:
 	void SeekRec(int n);
 	void CreateRec(int n, Record* record) const;
 	void DeleteRec(int n, Record* record) const;
-	void RecallRec(int recNr, Record* record);
+	void RecallRec(int recNr, Record* record, bool new_record = false);
 	void AssignNRecs(bool Add, int N);
 	// prepares the file for an output (merge, import): empties it or appends to it
 	LockMode RewriteFile(bool append);
