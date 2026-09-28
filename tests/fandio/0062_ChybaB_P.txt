@@ -1,0 +1,9 @@
+{ první chyba, kterou k testu t ohlásil druhý uživatel (signál 't!') }
+(t:string; VAR chyba:string)
+VAR r:record of TSYNC; j:real;
+begin
+for j:=1 to TSYNC.nrecs do begin
+  readrec(r,j);
+  if (chyba='') & (trailchar(' ',r.Kdo)='B') & (trailchar(' ',r.Krok)=t+'!') then chyba:='B: '+trailchar(' ',r.Info);
+end;
+end;

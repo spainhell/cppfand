@@ -94,7 +94,7 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	}
 	case RdShared: {
 		access_mode = GENERIC_READ;
-		share_mode = FILE_SHARE_READ;
+		share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE; // $40: read, deny none (others may write)
 		break;
 	}
 	case Shared: {
@@ -143,7 +143,7 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 		break;
 	}
 
-	SPDLOG_DEBUG("opening file {} '{}', error {}", handle, path, HandleError);
+	SPDLOG_DEBUG("opening file {} '{}' {}, error {}", handle, path, txt[UM], HandleError);
 
 	if (handle != nullptr) {
 		opened_files_[handle] = path;

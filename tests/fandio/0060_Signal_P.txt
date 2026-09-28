@@ -1,0 +1,10 @@
+{ pošle signál druhému uživateli }
+(k:string; s:string; i:string)
+VAR r:record of TSYNC;
+begin
+readrec(r,0);
+r.Kdo:=k;
+r.Krok:=s;
+r.Info:=i;
+writerec(r,0);
+end;

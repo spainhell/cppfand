@@ -85,24 +85,23 @@ bool ChangeLMode(FileD* fileD, std::string& path, LockMode Mode, WORD Kind, bool
 {
 	int oldpos; WORD oldlen;
 	bool result = false;
-	if (!fileD->FF->IsShared()) {         /*neu!!*/
+	if (!fileD->IsShared()) {         /*neu!!*/
 		result = true;
-		fileD->FF->LMode = Mode;
+		fileD->SetLockMode(Mode);
 		return result;
 	}
 	result = false;
-	LockMode oldmode = fileD->FF->LMode;
-	HANDLE h = fileD->FF->Handle;
+	LockMode oldmode = fileD->GetLockMode();
+	HANDLE h = fileD->GetHandle();
 	if (oldmode >= WrMode) {
 		if (Mode < WrMode) {
-			fileD->FF->WrPrefixes();
+			fileD->WrPrefixes();
 		}
 		if (oldmode == ExclMode) {
-			//SaveCache(0, fileD->FF->Handle);
 			// ClearCacheCFile(); - this method does not exist anymore (we don't use a cache)
 		}
 		if (Mode < WrMode) {
-			fileD->FF->ClearUpdateFlag();
+			fileD->ClearUpdateFlag();
 		}
 	}
 	fandio::LockWait wait{ .kind = fandio::LockWaitKind::Mode, .mode = LockModeTxt[Mode], .cancellable = Kind == 1 };
@@ -137,9 +136,9 @@ label1:
 		UnLockH(h, TransLock, 1);
 	}
 	fandio::EndLockWait(wait);
-	fileD->FF->LMode = Mode;
+	fileD->SetLockMode(Mode);
 	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) {
-		int rp = fileD->FF->RdPrefixes();
+		int rp = fileD->RdPrefixes();
 		if (rp != 0) {
 			fileD->CFileError(rp);
 		}
@@ -161,8 +160,8 @@ void OldLMode(FileD* fileD, std::string& path, LockMode Mode, uint16_t lan_node)
 #ifdef FandSQL
 	if (fileD->IsSQLFile) { fileD->LMode = Mode; return; }
 #endif
-	if (fileD->FF->Handle == nullptr) return;
-	if (Mode != fileD->FF->LMode) ChangeLMode(fileD, path, Mode, 0, true, lan_node);
+	if (!fileD->IsOpen()) return;
+	if (Mode != fileD->GetLockMode()) ChangeLMode(fileD, path, Mode, 0, true, lan_node);
 }
 
 bool TryLMode(FileD* fileD, std::string& path, LockMode Mode, LockMode& OldMode, WORD Kind, uint16_t lan_node)
@@ -175,11 +174,11 @@ bool TryLMode(FileD* fileD, std::string& path, LockMode Mode, LockMode& OldMode,
 	else
 #endif
 	{
-		if (fileD->FF->Handle == nullptr) {
+		if (!fileD->IsOpen()) {
 			fileD->OpenCreateF(path, Shared, false);
 		}
-		OldMode = fileD->FF->LMode;
-		if (Mode > fileD->FF->LMode) {
+		OldMode = fileD->GetLockMode();
+		if (Mode > fileD->GetLockMode()) {
 			result = ChangeLMode(fileD, path, Mode, Kind, true, lan_node);
 		}
 	}
@@ -193,15 +192,15 @@ LockMode NewLMode(FileD* fileD, std::string& path, LockMode Mode, uint16_t lan_n
 	return md;
 }
 
-void UnLockN(Fand0File* fand_file, int32_t N)
+void UnLockN(FileD* file_d, int32_t N)
 {
 #ifdef FandSQL
-	if (fand_file->GetFileD()->IsSQLFile) return;
+	if (file_d->IsSQLFile) return;
 #endif
 #ifdef FandNetV
-	if ((fand_file->Handle == nullptr) || !fand_file->IsShared()) {
+	if ((file_d->GetHandle() == nullptr) || !file_d->IsShared()) {
 		return;
 	}
-	UnLockH(fand_file->Handle, RecLock + N, 1);
+	UnLockH(file_d->GetHandle(), RecLock + N, 1);
 #endif
 	}

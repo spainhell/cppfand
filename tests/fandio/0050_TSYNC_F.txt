@@ -1,0 +1,5 @@
+{ synchronizace dvou uživatelů při testech souběhu: signál = věta (Kdo, Krok, Info);
+  věty se nikdy nemažou; Krok 'Test!' = chyba zjištěná druhým uživatelem }
+Kdo    :A,1;
+Krok   :A,30;
+Info   :A,60;

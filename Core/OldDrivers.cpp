@@ -15,6 +15,7 @@
 #include "obaseww.h"
 #include "../Drivers/screen.h"
 #include "../Drivers/mouse.h"
+#include "../Drivers/host.h"
 #include "../Drivers/constants.h"
 #include "wwmenu.h"
 #include <chrono>
@@ -601,6 +602,12 @@ bool ESCPressed()
 
 void Delay(WORD N)
 {
+	// N ticks of the BIOS timer (55 ms) as in the original; a host may stop the task meanwhile
+	const auto end = std::chrono::steady_clock::now() + std::chrono::milliseconds(55 * N);
+	while (std::chrono::steady_clock::now() < end) {
+		if (FandHost::StopRequested()) throw FandHost::HaltException(0);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
 }
 
 void Sound(WORD N)

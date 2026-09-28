@@ -15,14 +15,24 @@
 // Exit code: 0 = all tests passed, 1 = a test failed or the task did not
 // finish, 2 = wrong usage or environment, 3 = the interpreter crashed (the
 // stack is printed).
+//
+// Concurrent access: chapters NNNN_<Test>2_P.txt are the second user of the
+// test <Test>. They form a second task FANDTST2 (its MAIN calls them in order),
+// which runs in another process over the same data (own FANDWORK, LANNODE 2;
+// the first task has LANNODE 1). It starts when the first task creates the
+// synchronization file TSYNC.000; the tasks then wait for each other there.
+// Files of chapters F 0050-0099 are shared (catalog volume #), see write_catalog.
 
 #include <windows.h>
 #include <dbghelp.h>
 
+#include <algorithm>
 #include <chrono>
+#include <cstring>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -39,7 +49,9 @@ namespace fs = std::filesystem;
 namespace
 {
 	const char* TaskName = "FANDTEST";
+	const char* PartnerTaskName = "FANDTST2";
 	const char* ResultsFile = "VYSLEDKY.000";
+	const char* SyncFile = "TSYNC.000";
 	const char* EndMark = "*KONEC*";
 
 	// ---------------------------------------------------------------- cppfandlib.dll
@@ -232,6 +244,110 @@ namespace
 		free(value);
 		return result;
 	}
+
+	// for this process and for cppfandlib.dll loaded later (it may have its own CRT)
+	void set_env(const char* name, const std::string& value)
+	{
+		_putenv_s(name, value.c_str());
+		SetEnvironmentVariableA(name, value.c_str());
+	}
+
+	bool write_file(const fs::path& path, const std::string& text)
+	{
+		FILE* f = nullptr;
+		if (_wfopen_s(&f, path.c_str(), L"wb") != 0 || f == nullptr) return false;
+		fwrite(text.data(), 1, text.size(), f);
+		fclose(f);
+		return true;
+	}
+
+	// NNNN_<name>_<type>.txt -> number, name and type
+	bool split_chapter(const std::string& file_name, int& number, std::string& name, std::string& type)
+	{
+		const size_t first = file_name.find('_');
+		const size_t last = file_name.rfind('_');
+		const size_t dot = file_name.rfind('.');
+		if (first == std::string::npos || last <= first || dot == std::string::npos || dot < last) return false;
+		number = std::atoi(file_name.substr(0, first).c_str());
+		name = file_name.substr(first + 1, last - first - 1);
+		type = file_name.substr(last + 1, dot - last - 1);
+		return true;
+	}
+
+	// procedure of the second user of a test (<Test>2)
+	bool is_partner_chapter(const std::string& file_name)
+	{
+		int number; std::string name, type;
+		return split_chapter(file_name, number, name, type) && number >= 100
+			&& _stricmp(type.c_str(), "P") == 0 && name.size() > 1 && name.back() == '2';
+	}
+
+	// Files declared in chapters F 0050-0099 are shared by the users: the catalog
+	// <task>.CAT puts them on the network volume '#' (otherwise PC-FAND opens files
+	// exclusively). Catalog record (107 B): RdbName A,8; FileName A,8; Archive 1 B;
+	// PathName 79 B; Volume 11 B (as in real catalogs).
+	bool write_catalog(const fs::path& work, const char* task, const std::vector<std::string>& chapters)
+	{
+		auto field = [](std::string s, size_t len) { s.resize(len, ' '); return s; };
+		std::string records;
+		int32_t n = 0;
+		for (const std::string& chapter : chapters) {
+			int number; std::string name, type;
+			if (!split_chapter(chapter, number, name, type) || number < 50 || number > 99 || _stricmp(type.c_str(), "F") != 0) continue;
+			const size_t dot = name.find('.');
+			const bool dbf = dot != std::string::npos && _stricmp(name.substr(dot).c_str(), ".DBF") == 0;
+			const std::string file = name.substr(0, dot);
+			records += field(task, 8) + field(file, 8) + std::string(1, '\0') + field(file + (dbf ? ".DBF" : ".000"), 79) + field("#", 11);
+			n++;
+		}
+		if (n == 0) return true;
+		const uint16_t rec_len = 107;
+		std::string prefix(6, '\0');
+		memcpy(prefix.data(), &n, 4);
+		memcpy(prefix.data() + 4, &rec_len, 2);
+		return write_file(work / (std::string(task) + ".CAT"), prefix + records);
+	}
+
+	int start_and_wait(Fand& fand, const std::string& fand_dir, const fs::path& work, const char* task,
+		int timeout_s, const char* who, std::function<void()> tick = nullptr)
+	{
+		fand.SetScreenSize(132, 25); // wide enough for messages with long paths
+		if (fand.Start(fand_dir.c_str(), work.string().c_str(), task, "") != 0) {
+			fprintf(stderr, "%sFandStart failed\n", who);
+			return -1;
+		}
+		fand.SetFieldEditHost(0);
+
+		const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(timeout_s);
+		bool finished = false;
+		while (!finished && std::chrono::steady_clock::now() < deadline) {
+			finished = fand.Wait(100) != 0;
+			if (tick) tick();
+		}
+		if (!finished) {
+			printf("%sthe task did not finish in %d s:\n", who, timeout_s);
+			print_screen(fand);
+			fand.Stop();
+			fand.Wait(5000);
+		}
+		return finished ? 1 : 0;
+	}
+
+	// the second user: runs FANDTST2 in the work directory of the first one
+	int run_partner(const std::string& fand_dir, const fs::path& work, int timeout_s)
+	{
+		set_env("FANDWORK", (work / "wB").string() + "\\");
+		set_env("LANNODE", "2");
+		Fand fand;
+		if (!fand.load(exe_dir() / "cppfandlib.dll")) return 2;
+		const int finished = start_and_wait(fand, fand_dir, work, PartnerTaskName, timeout_s, "second user: ");
+		char error[512]{};
+		fand.LastError(error, sizeof(error));
+		const int exit_code = fand.ExitCode();
+		if (finished > 0 && exit_code == 0 && error[0] == '\0') return 0;
+		printf("second user: exit code %d %s\n", exit_code, error);
+		return 1;
+	}
 }
 
 int main(int argc, char* argv[])
@@ -242,6 +358,7 @@ int main(int argc, char* argv[])
 	std::string fand_dir = env("FANDDIR");
 	int timeout_s = 60;
 	bool keep = false;
+	bool partner = false;
 	std::string only;
 	std::string task_dir;
 	for (int i = 1; i < argc; i++) {
@@ -250,6 +367,7 @@ int main(int argc, char* argv[])
 		else if (a == "--timeout" && i + 1 < argc) timeout_s = atoi(argv[++i]);
 		else if (a == "--only" && i + 1 < argc) only = argv[++i];
 		else if (a == "--keep") keep = true;
+		else if (a == "--partner") partner = true;
 		else task_dir = a;
 	}
 	if (task_dir.empty()) {
@@ -260,44 +378,65 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "FAND.RES not found; set --fand-dir or FANDDIR to the directory with FAND.CFG and FAND.RES\n");
 		return 2;
 	}
+	if (partner) {
+		// started by the first user, task_dir is its work directory
+		return run_partner(fand_dir, task_dir, timeout_s);
+	}
 
-	// 1. work directory with the packed task
+	// 1. work directory with the packed task (src) and the task of the second user (src2)
 	const auto stamp = std::chrono::duration_cast<std::chrono::milliseconds>(
 		std::chrono::system_clock::now().time_since_epoch()).count() % 100000000;
 	const fs::path work = fs::temp_directory_path() / ("ft" + std::to_string(stamp));
-	fs::create_directories(work);
+	const fs::path src = work / "src";
+	const fs::path src2 = work / "src2";
+	fs::create_directories(src);
+	fs::create_directories(src2);
+	fs::create_directories(work / "wA");
+	fs::create_directories(work / "wB");
+
+	// with --only, test chapters (numbers 0100 and higher) that are not selected are left out,
+	// so that a compile error in one of them does not stop the others
+	auto selected = [&only](const std::string& file_name) {
+		if (only.empty()) return true;
+		int number; std::string name, type;
+		if (!split_chapter(file_name, number, name, type) || number < 100) return true;
+		if (is_partner_chapter(file_name)) name.pop_back(); // <Test>2 belongs to <Test>
+		const std::string list = "," + only + ",";
+		const std::string item = "," + name + ",";
+		for (size_t i = 0; i + item.size() <= list.size(); i++) {
+			if (_strnicmp(list.c_str() + i, item.c_str(), item.size()) == 0) return true;
+		}
+		return false;
+	};
+	std::vector<std::string> chapters;
+	for (const auto& entry : fs::directory_iterator(task_dir)) {
+		if (entry.path().extension() != ".txt") continue;
+		const std::string name = entry.path().filename().string();
+		if (selected(name)) chapters.push_back(name);
+	}
+	std::sort(chapters.begin(), chapters.end());
+
+	std::string main_chapter;
+	std::string partner_main = "begin\r\n";
+	bool has_partner = false;
+	for (const std::string& name : chapters) {
+		fs::copy_file(fs::path(task_dir) / name, src / name);
+		fs::copy_file(fs::path(task_dir) / name, src2 / name);
+		if (name.size() > 11 && _stricmp(name.substr(name.size() - 11).c_str(), "_MAIN_P.txt") == 0) main_chapter = name;
+		if (is_partner_chapter(name)) {
+			int number; std::string proc, type;
+			split_chapter(name, number, proc, type);
+			partner_main += "proc(" + proc + ");\r\n";
+			has_partner = true;
+		}
+	}
+	partner_main += "end;\r\n";
+	if (main_chapter.empty()) {
+		fprintf(stderr, "no MAIN chapter (NNNN_MAIN_P.txt) in '%s'\n", task_dir.c_str());
+		return 2;
+	}
 	if (!only.empty()) {
-		// a copy of the chapters where MAIN calls only the selected tests
-		const fs::path src = work / "src";
-		fs::create_directories(src);
-		// test chapters (numbers 0100 and higher) that are not selected are left out,
-		// so that a compile error in one of them does not stop the others
-		auto selected = [&only](const std::string& file_name) {
-			const std::string list = "," + only + ",";
-			const size_t first = file_name.find('_');
-			const size_t last = file_name.rfind('_');
-			if (first == std::string::npos || last <= first) return true;
-			if (std::atoi(file_name.substr(0, first).c_str()) < 100) return true;
-			const std::string name = "," + file_name.substr(first + 1, last - first - 1) + ",";
-			for (size_t i = 0; i + name.size() <= list.size(); i++) {
-				if (_strnicmp(list.c_str() + i, name.c_str(), name.size()) == 0) return true;
-			}
-			return false;
-		};
-		fs::path main_chapter;
-		for (const auto& entry : fs::directory_iterator(task_dir)) {
-			if (entry.path().extension() != ".txt") continue;
-			const std::string name = entry.path().filename().string();
-			if (!selected(name)) continue;
-			fs::copy_file(entry.path(), src / entry.path().filename());
-			if (name.size() > 11 && _stricmp(name.substr(name.size() - 11).c_str(), "_MAIN_P.txt") == 0) {
-				main_chapter = src / entry.path().filename();
-			}
-		}
-		if (main_chapter.empty()) {
-			fprintf(stderr, "no MAIN chapter (NNNN_MAIN_P.txt) in '%s'\n", task_dir.c_str());
-			return 2;
-		}
+		// MAIN calls only the selected tests
 		std::string main_text = "begin\r\n";
 		size_t start = 0;
 		while (start <= only.size()) {
@@ -308,40 +447,64 @@ int main(int argc, char* argv[])
 			start = comma + 1;
 		}
 		main_text += std::string("proc(Vysl,('") + EndMark + "','OK',''));\r\nend;\r\n";
-		FILE* f = nullptr;
-		if (_wfopen_s(&f, main_chapter.c_str(), L"wb") != 0 || f == nullptr) return 2;
-		fwrite(main_text.data(), 1, main_text.size(), f);
-		fclose(f);
-		task_dir = src.string();
+		if (!write_file(src / main_chapter, main_text)) return 2;
 	}
-	const fs::path rdb = work / (std::string(TaskName) + ".RDB");
-	const std::string pack = "\"\"" + (exe_dir() / "fandrdb.exe").string() + "\" pack \"" + task_dir + "\" \"" + rdb.string() + "\" > nul\"";
-	if (std::system(pack.c_str()) != 0) {
+	if (!write_file(src2 / main_chapter, partner_main)) return 2;
+
+	auto pack = [&work](const fs::path& dir, const char* task) {
+		const fs::path rdb = work / (std::string(task) + ".RDB");
+		const std::string cmd = "\"\"" + (exe_dir() / "fandrdb.exe").string() + "\" pack \"" + dir.string() + "\" \"" + rdb.string() + "\" > nul\"";
+		return std::system(cmd.c_str()) == 0;
+	};
+	if (!pack(src, TaskName) || (has_partner && !pack(src2, PartnerTaskName))) {
 		fprintf(stderr, "fandrdb pack failed\n");
 		return 2;
 	}
-
-	// 2. run the task (FandStart switches the current directory of the process to work)
-	const fs::path original_dir = fs::current_path();
-	Fand fand;
-	if (!fand.load(exe_dir() / "cppfandlib.dll")) return 2;
-	fand.SetScreenSize(132, 25); // wide enough for messages with long paths
-	if (fand.Start(fand_dir.c_str(), work.string().c_str(), TaskName, "") != 0) {
-		fprintf(stderr, "FandStart failed\n");
+	if (!write_catalog(work, TaskName, chapters) || (has_partner && !write_catalog(work, PartnerTaskName, chapters))) {
+		fprintf(stderr, "cannot write the catalog\n");
 		return 2;
 	}
-	fand.SetFieldEditHost(0);
 
-	bool finished = fand.Wait(timeout_s * 1000) != 0;
-	if (!finished) {
-		printf("the task did not finish in %d s:\n", timeout_s);
-		print_screen(fand);
-		fand.Stop();
-		fand.Wait(5000);
-	}
+	// 2. run the task (FandStart switches the current directory of the process to work);
+	//    the second user starts when the task creates the synchronization file
+	const fs::path original_dir = fs::current_path();
+	set_env("FANDWORK", (work / "wA").string() + "\\");
+	set_env("LANNODE", "1");
+	Fand fand;
+	if (!fand.load(exe_dir() / "cppfandlib.dll")) return 2;
+
+	PROCESS_INFORMATION partner_process{};
+	bool partner_started = false;
+	auto start_partner = [&]() {
+		if (!has_partner || partner_started || !fs::exists(work / SyncFile)) return;
+		wchar_t exe[MAX_PATH];
+		GetModuleFileNameW(nullptr, exe, MAX_PATH);
+		std::wstring cmd = L"\"" + std::wstring(exe) + L"\" --partner --fand-dir \"" + fs::path(fand_dir).wstring()
+			+ L"\" --timeout " + std::to_wstring(timeout_s) + L" \"" + work.wstring() + L"\"";
+		STARTUPINFOW si{ sizeof(si) };
+		partner_started = CreateProcessW(nullptr, cmd.data(), nullptr, nullptr, FALSE, 0, nullptr,
+			work.c_str(), &si, &partner_process) != 0;
+		if (!partner_started) fprintf(stderr, "cannot start the second user (error %lu)\n", GetLastError());
+	};
+	const int started = start_and_wait(fand, fand_dir, work, TaskName, timeout_s, "", start_partner);
+	if (started < 0) return 2;
+	const bool finished = started > 0;
 	char error[512]{};
 	fand.LastError(error, sizeof(error));
 	const int exit_code = fand.ExitCode();
+
+	bool partner_ok = true;
+	if (partner_started) {
+		if (WaitForSingleObject(partner_process.hProcess, (timeout_s + 10) * 1000) != WAIT_OBJECT_0) {
+			TerminateProcess(partner_process.hProcess, 1);
+			printf("second user: did not end\n");
+		}
+		DWORD code = 1;
+		GetExitCodeProcess(partner_process.hProcess, &code);
+		partner_ok = code == 0;
+		CloseHandle(partner_process.hProcess);
+		CloseHandle(partner_process.hThread);
+	}
 
 	// 3. results
 	std::vector<Result> results;
@@ -362,6 +525,7 @@ int main(int argc, char* argv[])
 	if (!have_results) printf(", no results file");
 	else if (!complete) printf(", the task did not finish (no %s record)", EndMark);
 	if (exit_code != 0 || error[0] != '\0') printf(", exit code %d %s", exit_code, error);
+	if (!partner_ok) printf(", the second user failed");
 	printf("\n");
 
 	std::error_code ec;
@@ -369,5 +533,5 @@ int main(int argc, char* argv[])
 	if (!keep) fs::remove_all(work, ec);
 	if (keep || ec) printf("work directory: %s\n", work.string().c_str());
 
-	return (finished && complete && failed == 0 && passed > 0) ? 0 : 1;
+	return (finished && complete && failed == 0 && passed > 0 && partner_ok) ? 0 : 1;
 }

@@ -1277,12 +1277,9 @@ void FileD::SetTaLockMode(LockMode mode) const
 
 void FileD::OldLockMode(LockMode mode)
 {
-	if (FileType == DataFileType::FandFile) {
+	if (FileType == DataFileType::FandFile || FileType == DataFileType::DBF) {
 		std::string path = FullPath;
 		OldLMode(this, path, mode, fandio::GetSettings().lanNode);
-	}
-	else if (FileType == DataFileType::DBF) {
-		if (IsOpen()) DbfChangeLockMode(mode);
 	}
 	else {
 		// locks are not supported in other file types
@@ -1291,14 +1288,9 @@ void FileD::OldLockMode(LockMode mode)
 
 LockMode FileD::NewLockMode(LockMode mode)
 {
-	if (FileType == DataFileType::FandFile) {
+	if (FileType == DataFileType::FandFile || FileType == DataFileType::DBF) {
 		std::string path = FullPath;
 		return NewLMode(this, path, mode, fandio::GetSettings().lanNode);
-	}
-	else if (FileType == DataFileType::DBF) {
-		LockMode old_mode;
-		TryLockMode(mode, old_mode, 0);
-		return old_mode;
 	}
 	else {
 		return mode;
@@ -1307,51 +1299,29 @@ LockMode FileD::NewLockMode(LockMode mode)
 
 bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, uint16_t kind)
 {
-	if (FileType == DataFileType::FandFile) {
+	if (FileType == DataFileType::FandFile || FileType == DataFileType::DBF) {
 		std::string path = FullPath;
 		return TryLMode(this, path, mode, old_mode, kind, fandio::GetSettings().lanNode);
-	}
-	else if (FileType == DataFileType::DBF) {
-		// .DBF files are opened on demand as FAND files, but they are not locked
-		if (!IsOpen()) {
-			OpenCreateF(FullPath, Shared, false);
-		}
-		old_mode = DbfF->LMode;
-		if (mode > DbfF->LMode) DbfChangeLockMode(mode);
-		return true;
 	}
 	else {
 		return true;
 	}
-}
-
-void FileD::DbfChangeLockMode(LockMode mode)
-{
-	// leaving the write modes: the header (number of records) must be written
-	if (DbfF->LMode >= WrMode && mode < WrMode) {
-		DbfF->WrPrefixes();
-	}
-	DbfF->LMode = mode;
 }
 
 bool FileD::ChangeLockMode(LockMode mode, uint16_t kind, bool rd_pref)
 {
-	if (FileType == DataFileType::FandFile) {
+	if (FileType == DataFileType::FandFile || FileType == DataFileType::DBF) {
 		std::string path = FullPath;
 		return ChangeLMode(this, path, mode, kind, rd_pref, fandio::GetSettings().lanNode);
-	}
-	else if (FileType == DataFileType::DBF) {
-		DbfChangeLockMode(mode);
-		return true;
 	}
 	else {
 		return true;
 	}
 }
 
-bool FileD::Lock(int32_t n, uint16_t kind) const
+bool FileD::Lock(int32_t n, uint16_t kind)
 {
-	if (FileType == DataFileType::FandFile) {
+	if (FileType == DataFileType::FandFile || FileType == DataFileType::DBF) {
 		bool result = true;
 
 #ifdef FandSQL
@@ -1359,13 +1329,13 @@ bool FileD::Lock(int32_t n, uint16_t kind) const
 #endif
 
 #ifdef FandNetV
-		if (!FF->IsShared()) return result;
+		if (!IsShared()) return result;
 		fandio::LockWait wait{ .kind = fandio::LockWaitKind::Record, .mode = "CrX", .record = n, .cancellable = kind == 1 };
 		while (true) {
-			if (!TryLockH(FF->Handle, RecLock + n, 1)) {
+			if (!TryLockH(GetHandle(), RecLock + n, 1)) {
 				if (kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 					if (n == 0) {
-						wait.path = FF->GetFileD()->SetPathAndVolume();
+						wait.path = SetPathAndVolume();
 					}
 					if (fandio::WaitForLock(wait)) {
 						continue;
@@ -1388,8 +1358,8 @@ bool FileD::Lock(int32_t n, uint16_t kind) const
 
 void FileD::Unlock(int32_t n)
 {
-	if (FileType == DataFileType::FandFile) {
-		UnLockN(this->FF, n);
+	if (FileType == DataFileType::FandFile || FileType == DataFileType::DBF) {
+		UnLockN(this, n);
 	}
 	else {
 		// locks are not supported in other file types
@@ -1567,6 +1537,35 @@ void FileD::WrPrefixes() const
 		break;
 	case DataFileType::DBF:
 		DbfF->WrPrefixes();
+		break;
+	default:
+		break;
+	}
+}
+
+int FileD::RdPrefixes()
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		return FF->RdPrefixes();
+	case DataFileType::DBF:
+		if (DbfF->RdPrefix() != 0xffff) return 883;
+		if (DbfF->TF != nullptr) DbfF->TF->RdPrefix(false);
+		return 0;
+	default:
+		return 0;
+	}
+}
+
+void FileD::ClearUpdateFlag() const
+{
+	switch (FileType) {
+	case DataFileType::FandFile:
+		FF->ClearUpdateFlag();
+		break;
+	case DataFileType::DBF:
+		DbfF->ClearUpdateFlag();
+		if (DbfF->TF != nullptr) DbfF->TF->ClearUpdateFlag();
 		break;
 	default:
 		break;
@@ -1934,6 +1933,9 @@ bool FileD::IsShared()
 {
 	if (FileType == DataFileType::FandFile) {
 		return FF->IsShared();
+	}
+	else if (FileType == DataFileType::DBF) {
+		return DbfF->UMode == Shared || DbfF->UMode == RdShared;
 	}
 	else {
 		return false;

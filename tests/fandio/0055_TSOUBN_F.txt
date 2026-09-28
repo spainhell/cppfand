@@ -1,0 +1,4 @@
+{ souběžné přidávání: soubor bez indexu s texty }
+Kdo    :A,1;
+Kod    :F,5.0;
+Pozn   :T;

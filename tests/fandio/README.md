@@ -17,6 +17,7 @@ x64\Debug\fandtest.exe --fand-dir C:\PCFAND\fis-cppfand tests\fandio
 - `--only Test1,Test2`: pustí jen vybrané testy. Ostatní testovací kapitoly (0100 a výš)
   do úlohy nedá, takže chyba překladu v jednom testu nebrání ladění ostatních.
 - `--keep`: nechá pracovní adresář s úlohou, daty a `fand.log`.
+  Každý uživatel má vlastní `FANDWORK` (`wA`, `wB`), v něm je jeho `fand.log`.
 
 Návratový kód 0 = všechny testy prošly, 1 = některý selhal nebo úloha nedoběhla.
 
@@ -38,7 +39,9 @@ Soubor `NNNN_<název>_<typ>.txt`, kódování UTF-8 (při balení se převede do
 | Kapitoly | Obsah |
 |---|---|
 | 0001–0003 | `VYSLEDKY`, `Vysl`, `MAIN` |
-| 0010–0099 | deklarace testovacích souborů (F) |
+| 0010–0049 | deklarace testovacích souborů (F), otevírají se výhradně |
+| 0050–0059 | sdílené soubory pro testy souběhu (F), viz níže |
+| 0060–0069 | synchronizace dvou uživatelů: `Signal`, `Cekej`, `ChybaB` |
 | 0100–     | testy (P), jeden test = jedna procedura |
 
 | Test | Co ověřuje |
@@ -54,11 +57,32 @@ Soubor `NNNN_<název>_<typ>.txt`, kódování UTF-8 (při balení se převede do
 | Dbf | soubor .DBF s memo souborem .DBT: všechny typy údajů, přepis, rušení věty, `appendrec`, `forall`, `merge` do .DBF (i s `+`, do sebe sama a s tříděním vstupu `!`), `sort`, vazba do .DBF číselníku a `.exist` |
 | Aditivni | aditivní změny `#A` s `!!` (založení nadřízené věty) při `writerec` a `deleterec` s `+`; nadřízený indexovaný soubor i .DBF |
 | Editor | datový editor nad .DBF ovládaný přes `setkeybuf`: oprava údaje, psaní s diakritikou, zrušení (Ctrl-Y) a vložení (Ctrl-N) věty |
+| Zamky | zámky režimu souboru (`with shared`) a věty (`with locked`) proti druhému uživateli |
+| Viditelnost | změny druhého uživatele (počet vět, přepis, přidání, zrušení, texty) jsou vidět; nový text nepřepíše cizí |
+| Soubezne | oba uživatelé současně přidávají věty s texty do indexovaného souboru, souboru bez indexu a .DBF |
+| ZamkyDbf | zámky režimu a věty u souboru .DBF |
 
 Nový test: přidat proceduru `01x0_<Název>_P.txt`, na jejím konci zavolat
 `proc(Vysl,('<Název>',cond(chyba='':'OK',else:'CHYBA'),chyba));`
 a zařadit ji do `MAIN`. Každý test si na začátku vyprázdní své soubory
 (`SOUBOR.nrecs:=0`), výsledky tak nezávisí na pořadí.
+
+## Testy souběhu (dva uživatelé)
+
+- Kapitola `NNNN_<Test>2_P.txt` je procedura druhého uživatele testu `<Test>`. Spouštěč z nich
+  sestaví druhou úlohu `FANDTST2` (její `MAIN` je volá v pořadí čísel) a pustí ji jako druhý
+  proces nad stejným adresářem dat. První uživatel má `LANNODE=1`, druhý `LANNODE=2`.
+- Druhý proces se spustí, jakmile první úloha založí soubor `TSYNC.000` (první `Signal`).
+- **Sdílené soubory:** PC-FAND otevírá soubor sdíleně (a zamyká) jen na síťovém svazku.
+  Spouštěč proto pro obě úlohy vytvoří katalog (`FANDTEST.CAT`, `FANDTST2.CAT`), ve kterém mají
+  soubory z kapitol F 0050–0099 svazek `#`. Ostatní soubory se otevírají výhradně jako dosud.
+- **Synchronizace:** `proc(Signal,('A','krok',''))` přidá do `TSYNC` větu,
+  `proc(Cekej,('B','krok',ok))` na ni čeká (nejdéle asi 20 s). Chybu zjištěnou druhým uživatelem
+  ohlásí `Signal` s krokem `'<Test>!'` a popisem v Info; první uživatel ji převezme
+  `proc(ChybaB,('<Test>',chyba))` a zapíše do výsledků.
+- Zámky se zkoušejí s větví `else` (`with shared F(RD) do … else …`), aby test nečekal na hlášku.
+- Kdo čeká na zámek, zkouší to znovu po `NetDelay` z FAND.CFG (v `fis-cppfand` asi 3 s),
+  proto se zápisy dvou rychlých uživatelů neprokládají po větách, ale po delších úsecích.
 
 ## Na co si dát pozor
 
