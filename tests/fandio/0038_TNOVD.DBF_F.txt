@@ -1,0 +1,3 @@
+{ nová věta na místě dřívější věty: soubor .DBF s memo souborem }
+Id  :F,5.0;
+Pozn:T;

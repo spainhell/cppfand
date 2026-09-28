@@ -65,6 +65,7 @@ Soubor `NNNN_<název>_<typ>.txt`, kódování UTF-8 (při balení se převede do
 | ZamkyDbf | zámky režimu a věty u souboru .DBF |
 | EdSoubeh | editor dvou uživatelů: rozeditovaná věta je zamčená; změnu rozeditované věty jiným uživatelem editor při uložení zjistí a větu načte znovu; větu zamčenou jiným uživatelem editor nezmění |
 | Zaloha | `backup`/`restore` podle katalogu (archiv 01 a 02 ze seznamu za cestou archivu), s kompresí i `nocompress`: otevřený i zavřený soubor s texty, indexovaný soubor (index se po obnově přebuduje), .DBF s memo, soubor na disku bez deklarace v úloze; `backupm`/`restorem` podle masek, `subdir` do nových adresářů, `overwrite` |
+| NovaVeta | nová věta (`writerec(r,0)`, zvětšení `nrecs`) na místě, kde na disku zůstala dřívější věta: po `nrecs:=0` a po `deleterec`; texty dřívější věty se nečtou ani neruší; soubor bez indexu, indexovaný a .DBF |
 
 Další záznamy katalogu (`FANDTEST.CAT`) jsou v `katalog.csv`: řádky
 `RdbName;FileName;Archive;PathName;Volume`, `*` = úloha, `#` = komentář. Pro záznamy

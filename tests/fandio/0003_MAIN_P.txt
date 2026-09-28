@@ -19,5 +19,6 @@ proc(Soubezne);
 proc(ZamkyDbf);
 proc(EdSoubeh);
 proc(Zaloha);
+proc(NovaVeta);
 proc(Vysl,('*KONEC*','OK',''));
 end;
