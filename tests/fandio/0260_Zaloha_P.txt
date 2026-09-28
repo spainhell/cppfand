@@ -1,0 +1,89 @@
+{ zálohování: backup/restore souborů archivu podle katalogu (archiv 01 a 02 ze seznamu za cestou
+  archivu), s kompresí i bez ní; otevřený i zavřený soubor s volnými texty, indexovaný soubor
+  (po obnově se index přebuduje), .DBF s memo souborem, soubor na disku bez deklarace v úloze;
+  backupm/restorem souborů adresáře podle masek, se SUBDIR do nových adresářů, OVERWRITE }
+VAR ra:record of TBKA; rb:record of TBKB; rd:record of TBKD; rg:record of TBKG;
+    ro:record of TBKO; rp:record of TBKP; i,k,n:real; chyba,co:string;
+begin
+chyba:='';
+TBKA.nrecs:=0; TBKB.nrecs:=0; TBKD.nrecs:=0; TBKG.nrecs:=0;
+for i:=1 to 50 do begin
+  readrec(ra,0); ra.Id:=i; ra.Nazev:='věta '+str(i,1,0);
+  ra.Pozn:=repeatstr('text č. '+str(i,1,0)+' ',i*10); writerec(ra,0);
+  readrec(rb,0); rb.Kod:='K'+str(100+i,3,0); rb.Hodn:=i*1.5; rb.Pozn:=repeatstr('b',i*20); writerec(rb,0);
+  readrec(rd,0); rd.Kod:=i; rd.Nazev:='dbf '+str(i,1,0); rd.Pozn:=repeatstr('memo ',i); writerec(rd,0);
+  readrec(rg,0); rg.Id:=i; rg.Nazev:='disk '+str(i,1,0); writerec(rg,0);
+end;
+for k:=1 to 2 do begin
+  co:=cond((k=1):'',else:' (nocompress)');
+  { 1. kolo: TBKA a TBKD otevřené; 2. kolo: TBKA zavřený; TBKG zavřený vždy (TBKE.000 se čte z disku) }
+  close(TBKB); close(TBKG);
+  if k=2 then close(TBKA);
+  if k=1 then backup(ZALOHA) else backup(ZALOHA,nocompress);
+  { změny po záloze }
+  readrec(ra,2); ra.Nazev:='změněná'; ra.Pozn:='nový text'; writerec(ra,2);
+  deleterec(TBKA,1);
+  deleterec(TBKB,keyof(TBKB,'K110'));
+  readrec(rb,20); rb.Hodn:=0; rb.Pozn:='změněno'; writerec(rb,20);
+  TBKD.nrecs:=0;
+  TBKG.nrecs:=0; close(TBKG);
+  if k=2 then close(TBKA);
+  if k=1 then restore(ZALOHA) else restore(ZALOHA,nocompress);
+  { kontrola obnovených souborů }
+  if (chyba='') & (TBKA.nrecs<>50) then chyba:='TBKA nrecs='+str(TBKA.nrecs,1,0)+co;
+  for i:=1 to 50 do begin
+    readrec(ra,i);
+    if (chyba='') & ((ra.Id<>i) | (trailchar(' ',ra.Nazev)<>'věta '+str(i,1,0)) | (ra.Pozn<>repeatstr('text č. '+str(i,1,0)+' ',i*10)))
+      then chyba:='TBKA věta '+str(i,1,0)+co;
+  end;
+  if (chyba='') & (TBKB.nrecs<>50) then chyba:='TBKB nrecs='+str(TBKB.nrecs,1,0)+co;
+  n:=0;
+  forall rb/@ do begin
+    n:=n+1;
+    if (chyba='') & (trailchar(' ',rb.Kod)<>'K'+str(100+n,3,0)) then chyba:='TBKB pořadí u '+trailchar(' ',rb.Kod)+co;
+  end;
+  if (chyba='') & (n<>50) then chyba:='TBKB forall prošel '+str(n,1,0)+co;
+  readrec(rb,keyof(TBKB,'K110'));
+  if (chyba='') & (isdeleted(rb) | (rb.Hodn<>15) | (rb.Pozn<>repeatstr('b',200))) then chyba:='TBKB K110'+co;
+  readrec(rb,keyof(TBKB,'K120'));
+  if (chyba='') & ((rb.Hodn<>30) | (rb.Pozn<>repeatstr('b',400))) then chyba:='TBKB K120'+co;
+  if (chyba='') & (TBKD.nrecs<>50) then chyba:='TBKD nrecs='+str(TBKD.nrecs,1,0)+co;
+  for i:=1 to 50 do begin
+    readrec(rd,i);
+    if (chyba='') & ((rd.Kod<>i) | (trailchar(' ',rd.Nazev)<>'dbf '+str(i,1,0)) | (rd.Pozn<>repeatstr('memo ',i)))
+      then chyba:='TBKD věta '+str(i,1,0)+co;
+  end;
+  if (chyba='') & (TBKG.nrecs<>50) then chyba:='TBKE nrecs='+str(TBKG.nrecs,1,0)+co;
+  for i:=1 to 50 do begin
+    readrec(rg,i);
+    if (chyba='') & ((rg.Id<>i) | (trailchar(' ',rg.Nazev)<>'disk '+str(i,1,0))) then chyba:='TBKE věta '+str(i,1,0)+co;
+  end;
+end;
+
+{ backupm/restorem: TBKA.000 a TBKA.T00 do nového adresáře OBN (TBKO) }
+close(TBKA);
+backupm(ZALM,'.','TBKA.*');
+restorem(ZALM,'OBN',subdir);
+if (chyba='') & (TBKO.nrecs<>50) then chyba:='restorem TBKO nrecs='+str(TBKO.nrecs,1,0);
+for i:=1 to 50 do begin
+  readrec(ro,i);
+  if (chyba='') & ((ro.Id<>i) | (ro.Pozn<>repeatstr('text č. '+str(i,1,0)+' ',i*10))) then chyba:='restorem TBKO věta '+str(i,1,0);
+end;
+close(TBKO);
+{ se SUBDIR i z podadresářů (OBN\TBKA.*), bez komprese, do nového OBN2 (TBKP = OBN2\OBN\TBKA.000) }
+backupm(ZALM,'.','TBKA.*',subdir,nocompress);
+restorem(ZALM,'OBN2',subdir,nocompress);
+if (chyba='') & (TBKP.nrecs<>50) then chyba:='restorem subdir TBKP nrecs='+str(TBKP.nrecs,1,0);
+for i:=1 to 50 do begin
+  readrec(rp,i);
+  if (chyba='') & ((rp.Id<>i) | (rp.Pozn<>repeatstr('text č. '+str(i,1,0)+' ',i*10))) then chyba:='restorem subdir TBKP věta '+str(i,1,0);
+end;
+close(TBKP);
+{ OVERWRITE: existující soubory se přepíšou bez dotazu; více masek oddělených čárkou }
+deleterec(TBKO,1); close(TBKO);
+backupm(ZALM,'.','XYZ*, TBKA.*',subdir);
+restorem(ZALM,'OBN2',subdir,overwrite);
+if (chyba='') & (TBKP.nrecs<>49) then chyba:='restorem overwrite TBKP nrecs='+str(TBKP.nrecs,1,0);
+close(TBKP);
+proc(Vysl,('Zaloha',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;

@@ -291,9 +291,12 @@ namespace
 
 	// Files declared in chapters F 0050-0099 are shared by the users: the catalog
 	// <task>.CAT puts them on the network volume '#' (otherwise PC-FAND opens files
-	// exclusively). Catalog record (107 B): RdbName A,8; FileName A,8; Archive 1 B;
+	// exclusively). Catalog record (107 B): RdbName A,8; FileName A,8; Archive N,2 (1 B);
 	// PathName 79 B; Volume 11 B (as in real catalogs).
-	bool write_catalog(const fs::path& work, const char* task, const std::vector<std::string>& chapters)
+	// Further records are in <task-dir>\katalog.csv (lines RdbName;FileName;Archive;PathName;Volume,
+	// RdbName * = the task, # = comment); for ARCHIVES records the directory of the archive
+	// is created in the work directory.
+	bool write_catalog(const fs::path& work, const char* task, const std::vector<std::string>& chapters, const fs::path& task_dir)
 	{
 		auto field = [](std::string s, size_t len) { s.resize(len, ' '); return s; };
 		std::string records;
@@ -306,6 +309,38 @@ namespace
 			const std::string file = name.substr(0, dot);
 			records += field(task, 8) + field(file, 8) + std::string(1, '\0') + field(file + (dbf ? ".DBF" : ".000"), 79) + field("#", 11);
 			n++;
+		}
+
+		FILE* f = nullptr;
+		if (_wfopen_s(&f, (task_dir / "katalog.csv").c_str(), L"rb") == 0 && f != nullptr) {
+			char buf[512];
+			while (fgets(buf, sizeof(buf), f) != nullptr) {
+				std::string line = buf;
+				while (!line.empty() && (line.back() == '\n' || line.back() == '\r')) line.pop_back();
+				if (line.empty() || line[0] == '#') continue;
+				std::vector<std::string> items;
+				size_t start = 0;
+				while (true) {
+					const size_t semicolon = line.find(';', start);
+					items.push_back(line.substr(start, semicolon == std::string::npos ? std::string::npos : semicolon - start));
+					if (semicolon == std::string::npos) break;
+					start = semicolon + 1;
+				}
+				items.resize(5);
+				const std::string rdb = items[0] == "*" ? std::string(task) : items[0];
+				std::string archive = items[2];
+				if (archive.size() == 1) archive = "0" + archive;
+				const uint8_t packed = archive.size() == 2 ? static_cast<uint8_t>(((archive[0] - '0') << 4) | (archive[1] - '0')) : 0;
+				records += field(rdb, 8) + field(items[1], 8) + std::string(1, static_cast<char>(packed)) + field(items[3], 79) + field(items[4], 11);
+				n++;
+				if (_stricmp(rdb.c_str(), "ARCHIVES") == 0) {
+					// path of the archive (without the list of further archive numbers after a space)
+					const fs::path archive_path = work / items[3].substr(0, items[3].find(' '));
+					std::error_code ec;
+					fs::create_directories(archive_path.parent_path(), ec);
+				}
+			}
+			fclose(f);
 		}
 		if (n == 0) return true;
 		const uint16_t rec_len = 107;
@@ -467,7 +502,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "fandrdb pack failed\n");
 		return 2;
 	}
-	if (!write_catalog(work, TaskName, chapters) || (has_partner && !write_catalog(work, PartnerTaskName, chapters))) {
+	if (!write_catalog(work, TaskName, chapters, task_dir) || (has_partner && !write_catalog(work, PartnerTaskName, chapters, task_dir))) {
 		fprintf(stderr, "cannot write the catalog\n");
 		return 2;
 	}

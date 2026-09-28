@@ -64,6 +64,12 @@ Soubor `NNNN_<název>_<typ>.txt`, kódování UTF-8 (při balení se převede do
 | Soubezne | oba uživatelé současně přidávají věty s texty do indexovaného souboru, souboru bez indexu a .DBF |
 | ZamkyDbf | zámky režimu a věty u souboru .DBF |
 | EdSoubeh | editor dvou uživatelů: rozeditovaná věta je zamčená; změnu rozeditované věty jiným uživatelem editor při uložení zjistí a větu načte znovu; větu zamčenou jiným uživatelem editor nezmění |
+| Zaloha | `backup`/`restore` podle katalogu (archiv 01 a 02 ze seznamu za cestou archivu), s kompresí i `nocompress`: otevřený i zavřený soubor s texty, indexovaný soubor (index se po obnově přebuduje), .DBF s memo, soubor na disku bez deklarace v úloze; `backupm`/`restorem` podle masek, `subdir` do nových adresářů, `overwrite` |
+
+Další záznamy katalogu (`FANDTEST.CAT`) jsou v `katalog.csv`: řádky
+`RdbName;FileName;Archive;PathName;Volume`, `*` = úloha, `#` = komentář. Pro záznamy
+`ARCHIVES` spouštěč založí adresář archivu. Používá je test `Zaloha` (soubory z kapitol 0030–0035).
+Pozor: soubor, který má po `close` 0 vět, se smaže.
 
 Nový test: přidat proceduru `01x0_<Název>_P.txt`, na jejím konci zavolat
 `proc(Vysl,('<Název>',cond(chyba='':'OK',else:'CHYBA'),chyba));`

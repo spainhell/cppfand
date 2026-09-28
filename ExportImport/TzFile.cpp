@@ -1,371 +1,342 @@
 #include "TzFile.h"
 
-#include <filesystem>
-#include <regex>
+#include <algorithm>
+#include <cctype>
+#include <cstring>
+#include <windows.h>
 
-#include "../Common/exprcmp.h"
 #include "../Common/CommonVariables.h"
+#include "../Core/access.h"
+#include "../Core/base.h"
+#include "../Core/Catalog.h"
 #include "../Core/GlobalVariables.h"
+#include "../Core/legacy.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"
 
-namespace fs = std::filesystem;
+namespace
+{
+	// DOS mask: '*' any characters, '?' one character, case insensitive
+	bool WildcardMatch(const char* s, const char* m)
+	{
+		const char* star = nullptr;
+		const char* ss = nullptr;
+		while (*s != '\0') {
+			if (*m == '*') {
+				star = m++;
+				ss = s;
+			}
+			else if (*m == '?' || toupper((uint8_t)*m) == toupper((uint8_t)*s)) {
+				m++;
+				s++;
+			}
+			else if (star != nullptr) {
+				m = star + 1;
+				s = ++ss;
+			}
+			else {
+				return false;
+			}
+		}
+		while (*m == '*') m++;
+		return *m == '\0';
+	}
+}
 
-TzFile::TzFile(bool BkUp, bool compress, bool SubDirO, bool OverwrO, int Ir, std::string& aDir) : TyFile(compress)
+TzFile::TzFile(bool BkUp, bool compress, bool SubDirO, bool OverwrO, int Ir, const std::string& aDir) : TyFile(compress)
 {
 	SaveFiles();
 	ForAllFDs(ForAllFilesOperation::close_passive_fd);
-	//if NoCompr then inherited init(0) else inherited init(1);
-	Compress = compress;
 	IsBackup = BkUp;
 	SubDirOpt = SubDirO;
 	OverwrOpt = OverwrO;
-	OldDir = GetDir(0);
 	Vol = catalog->GetVolume(Ir);
 	CPath = catalog->GetPathName(Ir);
 	Path = FExpand(CPath);
-	drive_letter = Path[0];
-	Dir = aDir;
+	drive_letter = Path.empty() ? '\0' : Path[0];
+	Dir = aDir.empty() ? GetDir(0) : FExpand(aDir);
 	AddBackSlash(Dir);
-	WBase = MaxWSize;
-	WPos = WBase;
 }
 
 void TzFile::Close()
 {
 	if (Handle != nullptr) {
-		MaxWSize = WBase;
-		TruncF(WorkHandle, HandleError, MaxWSize);
-		FlushF(WorkHandle, HandleError);
-		CloseH(&Handle);
-		ChDir(OldDir);
+		CloseArchive();
 	}
 }
 
-int TzFile::GetWPtr()
+int32_t TzFile::GetWPtr()
 {
-	int result = WPos - WBase;
-	WPos += 4;
+	const int32_t result = (int32_t)table_.size();
+	table_.resize(table_.size() + 4, 0);
 	return result;
 }
 
-void TzFile::StoreWPtr(int Pos, int N)
+void TzFile::StoreWPtr(int32_t Pos, int32_t N)
 {
-	SeekH(WorkHandle, WBase + Pos);
-	WriteH(WorkHandle, 4, &N);
+	memcpy(table_.data() + Pos, &N, 4);
 }
 
-int TzFile::StoreWStr(const std::string& s)
+int32_t TzFile::StoreWStr(const std::string& s)
 {
-	SeekH(WorkHandle, WPos);
-	uint8_t len = (uint8_t)s.length();
-	WriteH(WorkHandle, 1, &len);
-	WriteH(WorkHandle, s.length(), s.c_str());
-	int result = WPos - WBase;
-	WPos += s.length() + 1;
+	const int32_t result = (int32_t)table_.size();
+	const size_t len = s.length() > 255 ? 255 : s.length();
+	table_.push_back((uint8_t)len);
+	table_.insert(table_.end(), s.begin(), s.begin() + len);
 	return result;
 }
 
-int TzFile::ReadWPtr(int Pos)
+int32_t TzFile::ReadWPtr(int32_t Pos) const
 {
-	int n;
-	SeekH(WorkHandle, WBase + Pos);
-	ReadH(WorkHandle, 4, &n);
+	if (Pos < 0 || (size_t)Pos + 4 > table_.size()) {
+		SetMsgPar(Path);
+		RunError(883);
+	}
+	int32_t n;
+	memcpy(&n, table_.data() + Pos, 4);
 	return n;
 }
 
-std::string TzFile::ReadWStr(int& Pos)
+std::string TzFile::ReadWStr(int32_t& Pos) const
 {
-	SeekH(WorkHandle, WBase + Pos);
-
-	// get length of the string
-	uint8_t len;
-	ReadH(WorkHandle, 1, &len);
-
-	// create buffer and read the string
-	char buffer[256];
-	ReadH(WorkHandle, len, buffer);
-
+	if (Pos < 0 || (size_t)Pos >= table_.size() || (size_t)Pos + 1 + table_[Pos] > table_.size()) {
+		SetMsgPar(Path);
+		RunError(883);
+	}
+	const uint8_t len = table_[Pos];
+	std::string s((const char*)table_.data() + Pos + 1, len);
 	Pos += len + 1;
-	return std::string(buffer, len);
+	return s;
 }
 
-int TzFile::StoreDirD(std::string RDir)
+int32_t TzFile::StoreDirD(const std::string& RDir)
 {
-	int result = GetWPtr();
-	GetWPtr();
-	GetWPtr();
+	const int32_t result = GetWPtr(); // next directory
+	GetWPtr();                        // 1st file name
+	GetWPtr();                        // count of files
 	StoreWStr(RDir);
 	return result;
 }
 
-void TzFile::SetDir(std::string RDir)
+// checks (RESTOREM with SUBDIR: creates) the directory; returns its path with '\'
+std::string TzFile::SetDir(const std::string& RDir)
 {
 	std::string d = Dir + RDir;
 	SetMsgPar(d);
 	DelBackSlash(d);
-label1:
-	ChDir(d);
-	if (IOResult() != 0) {
+	const DWORD attr = GetFileAttributesA(d.c_str());
+	if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY) == 0) {
 		if (!IsBackup && SubDirOpt) {
-			MkDir(d);
-			if (IOResult() != 0) {
+			if (!CreateDirectoryA(d.c_str(), nullptr)) {
 				RunError(644);
 			}
-			goto label1;
 		}
 		else {
 			RunError(703);
 		}
 	}
+	return Dir + RDir;
 }
 
-void TzFile::Get1Dir(int D, int& DLast)
+bool TzFile::MatchesMask(const std::string& name) const
 {
-	std::vector<std::string> dirs;
-
-	int i = D + 12;
-	std::string RDir = ReadWStr(i);
-	std::string path_str_p = Dir + RDir + "*.*";
-
-	int n = 0;
-
-	if (!(DosError() == 0 || DosError() == 18)) {
-		SetMsgPar(path_str_p);
-		RunError(904);
-	}
-
-	for (const fs::directory_entry& entry : fs::directory_iterator(Dir + RDir)) {
-		std::string fileName = entry.path().filename().string();
-		if (entry.is_directory() && SubDirOpt) {
-			// add subdir to the list if subdir processing is enabled
-			dirs.push_back(fileName);
+	if (masks_.empty()) return true;
+	for (const std::string& mask : masks_) {
+		// name without extension matches "*.*" and "NAME.*" as in DOS
+		if (WildcardMatch(name.c_str(), mask.c_str())
+			|| (name.find('.') == std::string::npos && WildcardMatch((name + ".").c_str(), mask.c_str()))) {
+			return true;
 		}
-		else {
-			// process file
-			if (v_masks_.empty()) {
-				i = StoreWStr(fileName);
+	}
+	return false;
+}
+
+void TzFile::Get1Dir(int32_t D, int32_t& DLast)
+{
+	int32_t i = D + 12;
+	const std::string RDir = ReadWStr(i);
+	const std::string p = Dir + RDir + "*.*";
+	std::vector<std::string> sub_dirs;
+	int32_t n = 0;
+
+	WIN32_FIND_DATAA fd;
+	HANDLE hf = FindFirstFileA(p.c_str(), &fd);
+	if (hf == INVALID_HANDLE_VALUE) {
+		const DWORD err = GetLastError();
+		if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES) {
+			SetMsgPar(p);
+			RunError(904);
+		}
+	}
+	else {
+		do {
+			const std::string name = fd.cFileName;
+			if (name.length() > 255) continue;
+			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+				if (name != "." && name != "..") sub_dirs.push_back(name);
+			}
+			else if ((fd.dwFileAttributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)) == 0
+				&& MatchesMask(name)
+				&& _stricmp((Dir + RDir + name).c_str(), Path.c_str()) != 0 /* not the archive itself */) {
+				i = StoreWStr(name);
 				if (n == 0) StoreWPtr(D + 4, i);
 				n++;
 			}
-			else {
-				for (std::string mask : v_masks_) {
-					if (CmpStringWithMask(fileName, mask)) {
-						i = StoreWStr(fileName);
-						if (n == 0) StoreWPtr(D + 4, i);
-						n++;
-						break;
-					}
-					else {
-						continue;
-					}
-				}
-			}
-		}
+		} while (FindNextFileA(hf, &fd));
+		FindClose(hf);
 	}
 
 	StoreWPtr(D + 8, n);
 	StoreWPtr(DLast, 0);
-
-	// process subdirs
-	for (std::string subdir : dirs) {
-		i = StoreDirD(RDir + subdir + "\\");
+	if (!SubDirOpt) return;
+	for (const std::string& sub_dir : sub_dirs) {
+		i = StoreDirD(RDir + sub_dir + "\\");
 		StoreWPtr(DLast, i);
 		DLast = i;
 	}
 }
 
-//void TzFile::GetFilesInDir(const std::string& main_dir, const std::string& sub_dir)
-//{
-//	for (const fs::directory_entry& entry : fs::directory_iterator(main_dir + sub_dir)) {
-//		std::string fileName = entry.path().filename().string();
-//		if (entry.is_directory()) {
-//			if (SubDirOpt) {
-//				GetFilesInDir(main_dir, sub_dir + fileName + '\\');
-//			}
-//		}
-//		else {
-//			for (const std::string& mask : v_masks_) {
-//				if (CmpStringWithMask(fileName, mask)) {
-//					paths_[sub_dir].push_back(fileName);
-//					break;
-//				}
-//			}
-//		}
-//	}
-//}
-
-void TzFile::GetDirs()
+void TzFile::GetDirs(const std::string& mask)
 {
-	int d = StoreDirD("");
-	int dLast = d;
+	// masks separated by spaces or commas
+	masks_.clear();
+	size_t j = 0;
+	while (j < mask.length()) {
+		while (j < mask.length() && (mask[j] == ' ' || mask[j] == ',')) j++;
+		const size_t start = j;
+		while (j < mask.length() && mask[j] != ' ' && mask[j] != ',') j++;
+		if (j > start) masks_.push_back(mask.substr(start, std::min<size_t>(j - start, 255)));
+	}
+
+	table_.clear();
+	int32_t d = StoreDirD("");
+	int32_t d_last = d;
 	do {
-		Get1Dir(d, dLast);
+		Get1Dir(d, d_last);
 		d = ReadWPtr(d);
 	} while (d != 0);
-	SeekH(WorkHandle, WBase);
-	WrH(WorkHandle, WPos - WBase);
+
+	size_t pos = 0;
+	WrH((uint32_t)table_.size(), [&](uint8_t* buf, size_t len) {
+		memcpy(buf, table_.data() + pos, len);
+		pos += len;
+		});
 }
 
-void TzFile::Reset()
+// reads one item <4 B size><data> of the archive
+void TzFile::RdH(const std::function<void(const uint8_t*, size_t)>& write)
 {
-	CVol = Vol;
-	CPath = Path;
-	Handle = OpenH(CPath, _isOldFile, RdOnly);
-	Continued = false;
-	/*if ((HandleError == 2) && Floppy) {
-		inc(CPath[l - 2], 5);
-		Handle = OpenH(_isOldFile, RdOnly);
-		Continued = true;
-	}*/
-	TestCPathError();
-	Size = FileSizeH(Handle);
-	OrigSize = Size;
-	RunMsgOn('C', Size);
-}
-
-void TzFile::Rewrite()
-{
-	CVol = Vol;
-	CPath = Path;
-	Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
-	TestCPathError();
-	SpaceOnDisk = MyDiskFree(Floppy, drive_letter);
-}
-
-void TzFile::WriteBuf2()
-{
-	size_t i = 0;
-	while (i < lBuf2) {
-		if (SpaceOnDisk == 0) {
-			CloseH(&Handle);
-			CPath = Path;
-			// TODO: change extension to *.5xx //inc(CPath[l - 2], 5);
-			RenameFile56(Path, CPath, true);
-			MountVol(false);
-			Rewrite();
+	auto fill = [&]() {
+		if (iBuf == lBuf) {
+			ReadBuf();
+			if (lBuf == 0) {
+				// the archive is shorter than expected
+				HandleError = ERROR_HANDLE_EOF;
+				TestErr();
+			}
 		}
-		size_t n = lBuf2 - i;
-		if (n > SpaceOnDisk) n = SpaceOnDisk;
-		WriteH(Handle, n, &buffer2[i]);
-		CPath = Path;
-		TestCPathError();
-		i += n;
-		SpaceOnDisk -= (int32_t)n;
-	}
-	lBuf2 = 0;
-}
+		};
 
-void TzFile::RdH(HANDLE H, bool Skip)
-{
-	int sz;
+	uint32_t sz;
 	uint8_t* a = (uint8_t*)&sz;
-
-	for (WORD i = 0; i <= 3; i++) {
-		if (iBuf == lBuf) ReadBuf();
+	for (size_t i = 0; i < 4; i++) {
+		fill();
 		a[i] = buffer1[iBuf];
 		iBuf++;
 	}
 	while (sz > 0) {
-		if (iBuf == lBuf) ReadBuf();
-		WORD n = lBuf - iBuf;
+		fill();
+		size_t n = lBuf - iBuf;
 		if (sz < n) n = sz;
-		if (!Skip) WriteH(H, n, &buffer1[iBuf]);
+		if (write != nullptr) write(&buffer1[iBuf], n);
 		iBuf += n;
-		sz -= n;
+		sz -= (uint32_t)n;
 	}
 }
 
-void TzFile::WrH(HANDLE src_file, uint32_t file_size)
+// writes one item <4 B size><data> into the archive
+void TzFile::WrH(uint32_t Sz, const std::function<void(uint8_t*, size_t)>& read)
 {
-	RunMsgOn('C', (int32_t)file_size);
-
-	size_t buf_index = 0;
-	memcpy(&buffer1[buf_index], &file_size, 4);
-	buf_index += 4;
-	size_t free_space = BufSize - 4;
-	uint32_t finished = 0;
-
+	memcpy(buffer1, &Sz, 4);
+	size_t j = 4;
+	size_t max = BufSize - 4;
+	RunMsgOn('C', (int32_t)Sz);
+	uint32_t i = 0;
 	do {
-		size_t rest;
-		if (file_size - finished > free_space) rest = free_space;
-		else rest = file_size - finished;
-
-		if (rest > 0) {
-			ReadH(src_file, rest, &buffer1[buf_index]);
-		}
-
-		lBuf = buf_index + rest;
-
+		size_t n = max;
+		if (Sz - i < n) n = Sz - i;
+		i += (uint32_t)n;
+		if (n > 0) read(&buffer1[j], n);
+		lBuf = j + n;
 		WriteBuf(false);
-
-		buf_index = 0;
-		free_space = BufSize;
-		finished += rest;
-
-		RunMsgN((int32_t)finished);
-	} while (finished != file_size);
-
+		j = 0;
+		max = BufSize;
+		RunMsgN((int32_t)i);
+	} while (i != Sz);
 	RunMsgOff();
 }
 
 void TzFile::ProcFileList()
 {
-	uint8_t* p = nullptr;
-	HANDLE h = nullptr;
-
-	int d = 0;
-	MarkStore(p);
+	int32_t d = 0;
 	do {
-		int dNext = ReadWPtr(d);
-		int n = ReadWPtr(d + 8);
-		int i = d + 12;
-		std::string r_dir = ReadWStr(i);
-		SetDir(r_dir);
-		i = ReadWPtr(d + 4);
+		const int32_t d_next = ReadWPtr(d);
+		int32_t n = ReadWPtr(d + 8);
+		int32_t i = d + 12;
+		const std::string r_dir = ReadWStr(i);
+		const std::string dir = SetDir(r_dir);
+		if (n > 0) i = ReadWPtr(d + 4);
 		while (n > 0) {
-			std::string file_name = ReadWStr(i);
+			const std::string file_name = ReadWStr(i);
 			n--;
-			CPath = FExpand(file_name);
+			CPath = dir + file_name;
 			CVol = "";
-			if (IsBackup) {
-				h = OpenH(CPath, _isOldFile, RdOnly);
-				TestCPathError();
-				WrH(h, FileSizeH(h));
-			}
-			else {
-				bool skp = false;
-				if (!OverwrOpt) {
-					h = OpenH(CPath, _isNewFile, Exclusive);
-					if (HandleError == 80) {
-						SetMsgPar(CPath);
-						if (PromptYN(780)) h = OpenH(CPath, _isOverwriteFile, Exclusive);
-						else {
-							skp = true;
-							goto label1;
+			HANDLE h = nullptr;
+			try {
+				if (IsBackup) {
+					h = OpenH(CPath, _isOldFile, RdOnly);
+					TestCPathError();
+					WrH((uint32_t)FileSizeH(h), [&](uint8_t* buf, size_t len) { ReadH(h, len, buf); });
+				}
+				else {
+					bool skip = false;
+					if (!OverwrOpt) {
+						h = OpenH(CPath, _isNewFile, Exclusive);
+						if (HandleError == ERROR_FILE_EXISTS) {
+							SetMsgPar(CPath);
+							if (PromptYN(780)) h = OpenH(CPath, _isOverwriteFile, Exclusive);
+							else skip = true;
 						}
 					}
+					else {
+						h = OpenH(CPath, _isOverwriteFile, Exclusive);
+					}
+					if (skip) {
+						RdH(nullptr);
+					}
+					else {
+						TestCPathError();
+						RdH([&](const uint8_t* buf, size_t len) { WriteH(h, len, buf); });
+					}
 				}
-				else h = OpenH(CPath, _isOverwriteFile, Exclusive);
-				TestCPathError();
-			label1:
-				RdH(h, skp);
+			}
+			catch (...) {
+				CloseH(&h);
+				throw;
 			}
 			CloseH(&h);
 		}
-		d = dNext;
-		ReleaseStore(&p);
+		d = d_next;
 	} while (d != 0);
 }
 
-void TzFile::Backup(std::string& mask)
+void TzFile::Backup(const std::string& mask)
 {
-	ParseMask(mask);
 	MountVol(true);
 	Rewrite();
 	InitBufOutp();
-	GetDirs();
+	GetDirs(mask);
 	ProcFileList();
 	WriteBuf(true);
 }
@@ -374,26 +345,14 @@ void TzFile::Restore()
 {
 	MountVol(true);
 	Reset();
-	if (Size == 0) CloseH(&Handle);
+	if (Size == 0) {
+		CloseArchive();
+	}
 	else {
 		InitBufInp();
-		SeekH(WorkHandle, WBase);
-		RdH(WorkHandle, false);
+		table_.clear();
+		RdH([&](const uint8_t* buf, size_t len) { table_.insert(table_.end(), buf, buf + len); });
 		ProcFileList();
 	}
 	RunMsgOff();
-}
-
-void TzFile::ParseMask(const std::string& mask)
-{
-	v_masks_.clear();
-
-	std::regex pattern("(\\\".*?\\\")|(\\S+)", std::regex_constants::icase);
-	auto words_begin = std::sregex_iterator(mask.begin(), mask.end(), pattern);
-	auto words_end = std::sregex_iterator();
-
-	for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
-		std::smatch match = *i;
-		v_masks_.push_back(match.str());
-	}
 }

@@ -1,0 +1,4 @@
+{ test zálohování: soubor s volným textem (archiv 01) }
+Id   :F,5.0;
+Nazev:A,20;
+Pozn :T;

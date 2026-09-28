@@ -18,5 +18,6 @@ proc(Viditelnost);
 proc(Soubezne);
 proc(ZamkyDbf);
 proc(EdSoubeh);
+proc(Zaloha);
 proc(Vysl,('*KONEC*','OK',''));
 end;
