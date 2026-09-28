@@ -1,0 +1,5 @@
+{ test zálohování: indexovaný soubor s volným textem (archiv 01) }
+Kod :A,10;
+Hodn:F,7.2;
+Pozn:T;
+#K @ Kod;

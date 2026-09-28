@@ -1,0 +1,11 @@
+# Další záznamy katalogu úlohy: RdbName;FileName;Archive;PathName;Volume (RdbName * = úloha)
+# test Zaloha: archiv 01 a 02 pro backup/restore, archiv ZALM pro backupm/restorem
+*;TBKA;01;TBKA.000;
+*;TBKB;01;TBKB.000;
+*;TBKD;02;TBKD.DBF;
+*;TBKE;01;TBKE.000;
+*;TBKG;;TBKE.000;
+*;TBKO;;OBN\TBKA.000;
+*;TBKP;;OBN2\OBN\TBKA.000;
+ARCHIVES;ZALOHA;01;ZAL\ZALOHA 2;
+ARCHIVES;ZALM;;ZAL\ZALM.ARC;

@@ -1,0 +1,4 @@
+{ test zálohování: TBKA obnovený příkazem restorem do adresáře OBN }
+Id   :F,5.0;
+Nazev:A,20;
+Pozn :T;

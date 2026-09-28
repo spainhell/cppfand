@@ -1,0 +1,4 @@
+{ test zálohování: TBKA obnovený příkazem restorem se SUBDIR do OBN2\OBN }
+Id   :F,5.0;
+Nazev:A,20;
+Pozn :T;

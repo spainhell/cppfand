@@ -24,6 +24,7 @@
 #include "../Common/codePages.h"
 #include "../Common/Record.h"
 #include "../Drivers/constants.h"
+#include "../Logging/Logging.h"
 
 
 void ConvWinCp(unsigned char* buffer, const std::string& code_table, size_t length)
@@ -618,57 +619,58 @@ void MakeMerge(CopyD* CD)
 
 void BackUp(bool IsBackup, bool compress, WORD Ir, bool NoCancel)
 {
-	TbFile* F = new TbFile(compress);
-
-	try {
-		LastExitCode = 1;
-		F->Backup(IsBackup, Ir);
-		LastExitCode = 0;
+	const bool break_p = BreakP;
+	{
+		TbFile F(compress);
+		try {
+			LastExitCode = 1;
+			F.Backup(IsBackup, Ir);
+			LastExitCode = 0;
+		}
+		catch (std::exception& e) {
+			SPDLOG_WARN("BackUp(): {}", e.what());
+		}
 	}
-	catch (std::exception& e) {
-		// TODO: log error
-	}
 
-	delete F; F = nullptr;
 	if (LastExitCode != 0) {
 		RunMsgOff();
 		if (!NoCancel) GoExit(MsgLine);
+		BreakP = break_p; // NOCANCEL: the procedure continues (LastExitCode = 1)
 	}
 }
 
 void BackupM(Instr_backup* PD)
 {
 	std::string mask;
-	uint8_t* p = nullptr;
-
-	MarkStore(p);
 	if (PD->IsBackup) {
 		mask = RunString(nullptr, PD->bmMasks, nullptr);
 	}
+	const std::string aDir = RunString(nullptr, PD->bmDir, nullptr);
 
-	std::string aDir = RunString(nullptr, PD->bmDir, nullptr);
-	TzFile* F = new TzFile(PD->IsBackup, !PD->NoCompress, PD->bmSubDir, PD->bmOverwr, PD->BrCatIRec, aDir);
-
-	try {
-		LastExitCode = 1;
-		if (PD->IsBackup) {
-			F->Backup(mask);
+	const bool break_p = BreakP;
+	{
+		TzFile F(PD->IsBackup, !PD->NoCompress, PD->bmSubDir, PD->bmOverwr, PD->BrCatIRec, aDir);
+		try {
+			LastExitCode = 1;
+			if (PD->IsBackup) {
+				F.Backup(mask);
+			}
+			else {
+				F.Restore();
+			}
+			LastExitCode = 0;
 		}
-		else {
-			F->Restore();
+		catch (std::exception& e) {
+			SPDLOG_WARN("BackupM(): {}", e.what());
 		}
-		LastExitCode = 0;
-	}
-	catch (std::exception& e) {
-		// TODO: log error
+		F.Close();
 	}
 
-	F->Close();
 	if (LastExitCode != 0) {
 		RunMsgOff();
 		if (!PD->BrNoCancel) GoExit(MsgLine);
+		BreakP = break_p; // NOCANCEL: the procedure continues (LastExitCode = 1)
 	}
-	ReleaseStore(&p);
 }
 
 

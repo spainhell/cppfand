@@ -1,0 +1,4 @@
+{ test zálohování: soubor .DBF s memo souborem .DBT (archiv 02 ze seznamu za cestou archivu) }
+Kod  :F,5.0;
+Nazev:A,20;
+Pozn :T;

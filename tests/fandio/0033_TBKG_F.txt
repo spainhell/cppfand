@@ -1,0 +1,4 @@
+{ test zálohování: soubor TBKE.000; v archivu 01 je pod jménem TBKE, které úloha nedeklaruje,
+  záloha tedy pracuje se souborem na disku (ne s otevřeným souborem úlohy) }
+Id   :F,5.0;
+Nazev:A,20;

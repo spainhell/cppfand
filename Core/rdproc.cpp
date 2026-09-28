@@ -3262,6 +3262,7 @@ Instr* RdBackup(Compiler* compiler, char MTyp, bool IsBackup)
 			compiler->RdLex();
 			PD->BrCatIRec = i;
 			found = true;
+			break;
 		}
 	}
 

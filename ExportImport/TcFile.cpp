@@ -1,4 +1,8 @@
 #include "TcFile.h"
+
+#include <algorithm>
+#include <iterator>
+
 #include "../Core/legacy.h"
 #include "../Core/base.h"
 #include "../Drivers/files.h"
@@ -49,6 +53,8 @@ int32_t TcFile::MyDiskFree(bool floppy, char drive_letter)
 	return result;
 }
 
+// LZSS (4 KB ring buffer, matches 3..18 bytes); binary search trees of the strings
+// in the ring buffer, same as the assembler code of PC-FAND (DISK.PAS)
 void TcFile::InsertNode(short r)
 {
 	short res = 1;
@@ -87,7 +93,7 @@ label2:
 	XBuf->RSon[r] = XBuf->RSon[p];
 	XBuf->Dad[XBuf->LSon[p]] = r;
 	XBuf->Dad[XBuf->RSon[p]] = r;
-	if (XBuf->RSon[XBuf->Dad[p]] = p) XBuf->RSon[XBuf->Dad[p]] = r;
+	if (XBuf->RSon[XBuf->Dad[p]] == p) XBuf->RSon[XBuf->Dad[p]] = r;
 	else XBuf->LSon[XBuf->Dad[p]] = r;
 	XBuf->Dad[p] = Leer;
 }
@@ -111,16 +117,16 @@ void TcFile::DeleteNode(short p)
 		XBuf->Dad[XBuf->RSon[p]] = q;
 	}
 	XBuf->Dad[q] = XBuf->Dad[p];
-	if ((XBuf->RSon[XBuf->Dad[p]] = p)) XBuf->RSon[XBuf->Dad[p]] = q;
+	if (XBuf->RSon[XBuf->Dad[p]] == p) XBuf->RSon[XBuf->Dad[p]] = q;
 	else XBuf->LSon[XBuf->Dad[p]] = q;
 	XBuf->Dad[p] = Leer;
 }
 
 void TcFile::WriteCodeBuf()
 {
-	for (size_t i = 0; i <= lCode - 1; i++) {
+	for (size_t i = 0; i < lCode; i++) {
 		if (lBuf2 >= BufSize2) WriteBuf2();
-		buffer2[lBuf2] = (char)CodeBuf[i];
+		buffer2[lBuf2] = CodeBuf[i];
 		lBuf2++;
 	}
 	CodeBuf[0] = 0;
@@ -131,9 +137,11 @@ void TcFile::WriteCodeBuf()
 void TcFile::InitBufOutp()
 {
 	if (Compress) {
-		/*asm les bx, Self; les bx, es: [bx] .TcFile.XBuf; lea di, es: [bx] .TXBuf->LSon;
-		mov cx, 3 * (RingBufSz + 1) + 256; cld; mov ax, Leer; rep stosw;
-		lea di, es: [bx] .TXBuf->RingBuf; mov cx, RingBufSz; mov ax, 0; rep stosb;*/
+		// all trees empty, ring buffer filled with zeros
+		std::fill(std::begin(XBuf->LSon), std::end(XBuf->LSon), Leer);
+		std::fill(std::begin(XBuf->Dad), std::end(XBuf->Dad), Leer);
+		std::fill(std::begin(XBuf->RSon), std::end(XBuf->RSon), Leer);
+		std::fill(XBuf->RingBuf, XBuf->RingBuf + RingBufSz, 0);
 
 		CodeBuf[0] = 0;
 		lCode = 1;
@@ -149,7 +157,8 @@ void TcFile::InitBufOutp()
 
 void TcFile::WriteBuf(bool isLast)
 {
-	short i = 0, j = 0; uint8_t c = 0;
+	size_t i = 0;
+	uint8_t c = 0;
 
 	if (!Compress) {
 		lBuf2 = lBuf;
@@ -157,14 +166,13 @@ void TcFile::WriteBuf(bool isLast)
 		lBuf = 0;
 		return;
 	}
-	i = 0;
 	if (lInput == 0) { /*initialization phase */
 		while ((lInput < MaxMatchLen) && (i < lBuf)) {
 			XBuf->RingBuf[RingBufSz - MaxMatchLen + lInput] = buffer1[i];
 			i++;
 			lInput++;
 		}
-		for (j = 1; j <= MaxMatchLen; j++) {
+		for (short j = 1; j <= MaxMatchLen; j++) {
 			InsertNode(iRingBuf - j);
 		}
 		InsertNode(iRingBuf);
@@ -192,20 +200,20 @@ label1:
 			if (jRingBuf < MaxMatchLen - 1) {
 				XBuf->RingBuf[jRingBuf + RingBufSz] = c;
 			}
-			jRingBuf = (jRingBuf + 1) && (RingBufSz - 1);
-			iRingBuf = (iRingBuf + 1) && (RingBufSz - 1);
+			jRingBuf = (jRingBuf + 1) & (RingBufSz - 1);
+			iRingBuf = (iRingBuf + 1) & (RingBufSz - 1);
 			InsertNode(iRingBuf);
 		}
 		if (MatchLen > lInput) MatchLen = lInput;
 		if (MatchLen < MinMatchLen) {
 			nToRead = 1;
-			CodeBuf[0] = CodeBuf[0] || CodeMask;
+			CodeBuf[0] = CodeBuf[0] | CodeMask;
 			CodeBuf[lCode] = XBuf->RingBuf[iRingBuf];
 			lCode++;
 		}
 		else {
-			CodeBuf[lCode] = MatchPos;
-			CodeBuf[lCode + 1] = ((MatchPos >> 4) && 0xf0) || (MatchLen - MinMatchLen);
+			CodeBuf[lCode] = (uint8_t)MatchPos;
+			CodeBuf[lCode + 1] = (uint8_t)(((MatchPos >> 4) & 0xf0) | (MatchLen - MinMatchLen));
 			lCode += 2;
 			nToRead = MatchLen;
 		}
@@ -240,7 +248,6 @@ void TcFile::InitBufInp()
 
 void TcFile::ReadBuf()
 {
-	short i = 0, j = 0, k = 0, r = 0;
 	uint8_t c = 0; WORD wLo = 0, wHi = 0;
 
 	lBuf = 0; iBuf = 0;
@@ -257,14 +264,14 @@ label1:
 	CodeMaskW = CodeMaskW >> 1;
 	if ((CodeMaskW & 256) == 0) {
 		if (iBuf2 >= lBuf2) { ReadBuf2(); if (eof2) goto label2; }
-		CodeMaskW = buffer2[iBuf2] || 0xff00;
+		CodeMaskW = buffer2[iBuf2] | 0xff00;
 		iBuf2++;
 	}  /*hi:count eight*/
 	if ((CodeMaskW & 1) != 0) {
 		if (iBuf2 >= lBuf2) { ReadBuf2(); if (eof2) goto label2; }
 		c = buffer2[iBuf2];
 		iBuf2++;
-		buffer1[lBuf] = (char)c; lBuf++;
+		buffer1[lBuf] = c; lBuf++;
 		XBuf->RingBuf[iRingBuf] = c;
 		iRingBuf = (iRingBuf + 1) & (RingBufSz - 1);
 	}
@@ -275,11 +282,11 @@ label1:
 		if (iBuf2 >= lBuf2) { ReadBuf2(); if (eof2) goto label2; }
 		wHi = buffer2[iBuf2];
 		iBuf2++;
-		MatchPos = wLo || ((wHi & 0xf0) << 4);
+		MatchPos = wLo | ((wHi & 0xf0) << 4);
 		MatchLen = (wHi & 0x0f) + MinMatchLen;
-		for (i = 0; i <= MatchLen - 1; i++) {
+		for (WORD i = 0; i < MatchLen; i++) {
 			c = XBuf->RingBuf[(MatchPos + i) & (RingBufSz - 1)];
-			buffer1[lBuf] = (char)c;
+			buffer1[lBuf] = c;
 			lBuf++;
 			XBuf->RingBuf[iRingBuf] = c;
 			iRingBuf = (iRingBuf + 1) & (RingBufSz - 1);

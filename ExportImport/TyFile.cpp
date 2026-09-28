@@ -1,17 +1,29 @@
 #include "TyFile.h"
-#include "../Core/constants.h"
+#include "../Common/CommonVariables.h"
+#include "../Core/access.h"
+#include "../Core/base.h"
+#include "../Core/RunMessage.h"
 
 TyFile::TyFile(bool compress): TcFile(compress)
 {
 }
 
+TyFile::~TyFile()
+{
+	if (Handle != nullptr) {
+		// error during processing: the archive is closed as it is
+		try { CloseH(&Handle); }
+		catch (std::exception&) {}
+		Handle = nullptr;
+	}
+}
+
 void TyFile::MountVol(bool is_first)
 {
-	if (is_first) {
-		Floppy = (!Vol.empty()) && (Vol[0] != '#') && (drive_letter - '@' < FloppyDrives);
-	}
-
-	// TODO: rest is for a floppy -> not supported
+	// PC-FAND prompts here for the next floppy disk of the archive (volume label Vol),
+	// checks or formats it and splits the archive into more volumes (*.5xx) when
+	// the disk is full; floppy disks are not supported, the archive is always one file
+	Floppy = false;
 
 	/*
 	if isFirst then begin
@@ -74,5 +86,61 @@ void TyFile::MountVol(bool is_first)
 	  FillVolDirEntry(p^,Vol); bt.WriteSect(bt.RootSec,bt.SecsPerRoot,p^);
 	  ResetDisks; ReleaseStore(fat);
 	*/
+}
 
+void TyFile::Reset()
+{
+	CVol = Vol;
+	CPath = Path;
+	Handle = OpenH(CPath, _isOldFile, RdOnly);
+	Continued = false;
+	TestCPathError();
+	Size = FileSizeH(Handle);
+	OrigSize = Size;
+	RunMsgOn('C', Size);
+}
+
+void TyFile::Rewrite()
+{
+	CVol = Vol;
+	CPath = Path;
+	Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+	TestCPathError();
+}
+
+void TyFile::CloseArchive()
+{
+	CloseH(&Handle);
+	Handle = nullptr;
+}
+
+void TyFile::TestErr()
+{
+	CPath = Path;
+	TestCPathError();
+}
+
+void TyFile::ReadBuf2()
+{
+	lBuf2 = 0;
+	iBuf2 = 0;
+	if (Size == 0) {
+		eof2 = true;
+		return;
+	}
+	lBuf2 = BufSize2;
+	if (lBuf2 > (size_t)Size) lBuf2 = Size;
+	ReadH(Handle, lBuf2, buffer2);
+	TestErr();
+	Size -= (int)lBuf2;
+	RunMsgN(OrigSize - Size);
+}
+
+void TyFile::WriteBuf2()
+{
+	if (lBuf2 > 0) {
+		WriteH(Handle, lBuf2, buffer2);
+		TestErr();
+	}
+	lBuf2 = 0;
 }

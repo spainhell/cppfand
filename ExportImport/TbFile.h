@@ -3,32 +3,29 @@
 #include <string>
 #include "TyFile.h"
 
+class FileD;
 
-typedef void* HANDLE;
-
-class TbFile : TyFile
+// BACKUP/RESTORE: every file of the archive (catalog records with the archive number)
+// is saved in its own archive file <archive dir>\<file name>.0nn (text file .Tnn)
+class TbFile : public TyFile
 {
 public:
 	TbFile(bool compress);
-	~TbFile();
 
-	HANDLE Handle = nullptr;
 	std::string Dir;
 	std::string FName;
 	std::string Ext;
-    int Size, OrigSize, SpaceOnDisk;
 
-    void TestErr();
-    void Reset();
-    void Rewrite();
-    void ReadBuf2() override;
-    void WriteBuf2() override;
-    void BackupH();
-    void RestoreH();
-    void BackupHFD(WORD h);
-    void RestoreHFD(WORD h);
-    void BackupFD();
-    void RestoreFD();
 	void Backup(bool isBackup, WORD Ir);
-};
 
+private:
+	void ResetF();
+	void RewriteF();
+	void NextExt();
+	void BackupH();
+	void RestoreH();
+	void BackupHFD(HANDLE h);
+	void RestoreHFD(HANDLE h);
+	void BackupFD(FileD* file_d);
+	void RestoreFD(FileD* file_d);
+};
