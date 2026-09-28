@@ -1,0 +1,17 @@
+{ druhý uživatel testu EdSoubeh }
+VAR ok:boolean;
+begin
+proc(Cekej,('A','eds-start',ok));
+{ věta 3: Enter na Nazev, oprava a Enter vyvolá exit-proceduru EdPauza (A mezitím větu změní);
+  Esc = uložení, hlášení o změně jiným programem potvrdí F10, Esc konec }
+setkeybuf(char(0)+char(80)+char(0)+char(80)+char(13)+'Oprava B'+char(13)+char(27)+char(0)+char(68)+char(27)+char(27));
+edit(TEDS,(),exit=((Nazev):EdPauza));
+proc(Signal,('B','eds-oprava3',''));
+proc(Cekej,('A','eds-zamceno4',ok));
+{ věta 4 zamčená prvním uživatelem: pokus o opravu (Q, Enter), čekání na zámek spotřebuje klávesy do Esc, Esc konec }
+setkeybuf(char(0)+char(80)+char(0)+char(80)+char(0)+char(80)+char(13)+'Q'+char(13)+char(27)+char(27));
+edit(TEDS,());
+proc(Signal,('B','eds-pokus4',''));
+proc(Cekej,('A','eds-odemceno4',ok));
+proc(Signal,('B','EdSoubeh-konec',''));
+end;

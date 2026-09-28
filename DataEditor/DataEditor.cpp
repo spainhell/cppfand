@@ -494,12 +494,11 @@ label4:
 void DataEditor::SetWasUpdated()
 {
 	if (!params_->WasUpdated) {
+		// the record before the first change: other users' changes are detected
+		// against it (OldRecDiffers), additive changes and undo use it
+		current_rec_->CopyTo(original_rec_);
 		params_->WasUpdated = true;
 		current_rec_->SetUpdated();
-
-		// TODO:
-		// previously there was also:
-		//memcpy(original_rec_->GetRecord(), current_rec_->GetRecord(), file_d->GetRecordSize());
 	}
 }
 

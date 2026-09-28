@@ -1,0 +1,46 @@
+{ editor dvou uživatelů: věta rozeditovaná druhým uživatelem je zamčená;
+  věta zamčená prvním uživatelem nejde v editoru druhého změnit (EdSoubeh2) }
+VAR r:record of TEDS; i:real; ok,b:boolean; chyba:string;
+begin
+chyba:='';
+TEDS.nrecs:=0;
+for i:=1 to 5 do begin
+  readrec(r,0);
+  r.Kod:=i;
+  r.Nazev:='Věta '+str(i,1,0);
+  writerec(r,0);
+end;
+proc(Signal,('A','eds-start',''));
+{ 1. druhý uživatel rozeditoval větu 3 }
+proc(Cekej,('B','eds-rozeditovano',ok));
+if ^ok then chyba:='druhý uživatel nerozeditoval větu 3';
+b:=false;
+with locked TEDS[3] do b:=true else b:=false;
+if b & (chyba='') then chyba:='zámek věty rozeditované druhým uživatelem';
+b:=false;
+with locked TEDS[2] do b:=true else b:=false;
+if ^b & (chyba='') then chyba:='zámek jiné věty při editaci druhého uživatele';
+{ procedura zámek věty nerespektuje: A přepíše rozeditovanou větu 3, editor B to při uložení
+  zjistí (věta byla změněna jiným programem), načte ji znovu a jeho oprava se nezapíše }
+readrec(r,3);
+r.Nazev:='Změna A';
+writerec(r,3);
+proc(Signal,('A','eds-zkouseno',''));
+{ 2. věta 4 zamčená prvním uživatelem }
+proc(Cekej,('B','eds-oprava3',ok));
+with locked TEDS[4] do begin
+  proc(Signal,('A','eds-zamceno4',''));
+  proc(Cekej,('B','eds-pokus4',ok));
+  if ^ok & (chyba='') then chyba:='druhý uživatel zůstal viset na zamčené větě';
+end
+else if chyba='' then chyba:='zámek věty 4 nezískán';
+proc(Signal,('A','eds-odemceno4',''));
+proc(Cekej,('B','EdSoubeh-konec',ok));
+if ^ok & (chyba='') then chyba:='druhý uživatel nedoběhl';
+readrec(r,3);
+if (chyba='') & (trailchar(' ',r.Nazev)<>'Změna A') then chyba:='věta 3 změněná A při editaci B: '+r.Nazev;
+readrec(r,4);
+if (chyba='') & (trailchar(' ',r.Nazev)<>'Věta 4') then chyba:='zamčená věta 4 se změnila: '+r.Nazev;
+proc(ChybaB,('EdSoubeh',chyba));
+proc(Vysl,('EdSoubeh',cond(chyba='':'OK',else:'CHYBA'),chyba));
+end;

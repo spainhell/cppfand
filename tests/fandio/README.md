@@ -41,7 +41,7 @@ Soubor `NNNN_<název>_<typ>.txt`, kódování UTF-8 (při balení se převede do
 | 0001–0003 | `VYSLEDKY`, `Vysl`, `MAIN` |
 | 0010–0049 | deklarace testovacích souborů (F), otevírají se výhradně |
 | 0050–0059 | sdílené soubory pro testy souběhu (F), viz níže |
-| 0060–0069 | synchronizace dvou uživatelů: `Signal`, `Cekej`, `ChybaB` |
+| 0060–0069 | synchronizace dvou uživatelů: `Signal`, `Cekej`, `ChybaB`, exit-procedura `EdPauza` |
 | 0100–     | testy (P), jeden test = jedna procedura |
 
 | Test | Co ověřuje |
@@ -61,6 +61,7 @@ Soubor `NNNN_<název>_<typ>.txt`, kódování UTF-8 (při balení se převede do
 | Viditelnost | změny druhého uživatele (počet vět, přepis, přidání, zrušení, texty) jsou vidět; nový text nepřepíše cizí |
 | Soubezne | oba uživatelé současně přidávají věty s texty do indexovaného souboru, souboru bez indexu a .DBF |
 | ZamkyDbf | zámky režimu a věty u souboru .DBF |
+| EdSoubeh | editor dvou uživatelů: rozeditovaná věta je zamčená; změnu rozeditované věty jiným uživatelem editor při uložení zjistí a větu načte znovu; větu zamčenou jiným uživatelem editor nezmění |
 
 Nový test: přidat proceduru `01x0_<Název>_P.txt`, na jejím konci zavolat
 `proc(Vysl,('<Název>',cond(chyba='':'OK',else:'CHYBA'),chyba));`
@@ -81,6 +82,10 @@ a zařadit ji do `MAIN`. Každý test si na začátku vyprázdní své soubory
   ohlásí `Signal` s krokem `'<Test>!'` a popisem v Info; první uživatel ji převezme
   `proc(ChybaB,('<Test>',chyba))` a zapíše do výsledků.
 - Zámky se zkoušejí s větví `else` (`with shared F(RD) do … else …`), aby test nečekal na hlášku.
+- Editor druhého uživatele se zastaví uvnitř exit-procedury (`exit=((Nazev):EdPauza)`),
+  věta je v tu chvíli rozeditovaná a zamčená a první uživatel zkouší, co smí.
+- Když editor čeká na zámek věty, spotřebovává klávesy z `setkeybuf`, dokud nepřijde Esc.
+  Hlášku typu „věta byla změněna jiným programem“ zavře jen F10 (případně Enter podle FAND.CFG).
 - Kdo čeká na zámek, zkouší to znovu po `NetDelay` z FAND.CFG (v `fis-cppfand` asi 3 s),
   proto se zápisy dvou rychlých uživatelů neprokládají po větách, ale po delších úsecích.
 
@@ -100,5 +105,5 @@ a zařadit ji do `MAIN`. Každý test si na začátku vyprázdní své soubory
   `readrec(r/Klic,keyof(SOUBOR/Klic,…))`. Bez něj se hledá podle vlastního klíče `@`.
 - **České řazení:** samostatná písmena jsou jen Č, Ř, Š, Ž a CH. Ď, Ť, Ň se řadí jako D, T, N.
 - **Editor v testu:** klávesy se zadají předem příkazem `setkeybuf` (Enter `char(13)`, Esc `char(27)`,
-  šipky `char(0)+char(72)`/`char(80)`, Ctrl-písmeno `char(1)`..`char(26)`). Nová věta se uloží
+  šipky `char(0)+char(72)`/`char(80)`, Ctrl-písmeno `char(1)`..`char(26)`, F10 `char(0)+char(68)`). Nová věta se uloží
   až po průchodu všemi údaji (Enter na posledním).

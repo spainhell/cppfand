@@ -1,0 +1,3 @@
+{ sdílený soubor pro test editoru dvou uživatelů }
+Kod    :F,5.0;
+Nazev  :A,20;
